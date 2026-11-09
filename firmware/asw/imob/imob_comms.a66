@@ -1,0 +1,304 @@
+; asw/imob/imob_comms.a66
+; 0xE57D2-0xE5A86  (692 bytes, 7 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_ctr_lih_imob                       EQU  090178H
+c_dly_lih_imob                       EQU  09018EH
+c_dly_lock_imob                      EQU  090196H
+
+PUBLIC  ClrBits_kwp_comms_flags_a80, KWP_App_SID_13_case, KWP_App_SID_16_case, KWP_App_SID_17_case, KWP_App_SID_18_case, KWP_App_SID_19_case
+PUBLIC  KWP_App_SID_21_case, KWP_App_SID_reject_NRC11, L_E5A72
+EXTERN  Imob_DTC_update_comms:NEAR, Imob_Update_WarnLamp:NEAR
+
+S_E57D2 SECTION CODE AT 0E57D2H
+
+; ======== KWP_App_SID_18_case  (@0xe57d2) ========
+KWP_App_SID_18_case:
+        MOV R4,kwp_msg_len
+        CMP R4,#04H
+        JMPA cc_NE,L_E58C8
+        MOVB RL4,n_32
+        JMPR cc_NE,L_E58BC
+        MOVB RL5,imob_data_ram_state_imob
+        CMPB RL5,#01H
+        JMPR cc_NE,L_E58BC
+        MOVB RL3,[R9+]
+        MOVBZ R4,RL3
+        MOV inj_cc_0,R4
+        MOV R2,R9
+        SUB R9,#01H
+        MOVB RL4,[R2]
+        MOVBZ R4,RL4
+        MOV R5,inj_cc_0
+        SHL R5,#08H
+        ADD R5,R4
+        MOV inj_cc_0,R5
+        MOVB RL4,ctr_imob_nvm_2
+        CMPB RL4,#03H
+        JMPR cc_NC,L_E5858
+        CMP R5,imob_sdr_b5
+        JMPR cc_NE,L_E5858
+        BSET lv_carb_err.0FH
+        JNB lv_fmy_imob.02H,L_E5842
+        BSET lv_fmy_imob.01H
+        SUBB imob_data_ram_ctr_lih_imob,ONES
+        BCLR lv_fmy_imob.07H
+        MOVBZ R4,DPP0:c_dly_lih_imob
+        MOV imob_ca42,R4
+        MOVBZ R2,DPP0:c_dly_lih_imob
+        MOV R3,#05H
+        MOV 0FE0EH,R2
+        DIVU R3
+        MOV R2,0FE0EH
+        MOV R12,R2
+        ADD R12,#02H
+        CALLS 00BH,Imob_Update_WarnLamp
+L_E5842:                 ; 0xe5842
+        MOVB ctr_imob_nvm_2,ZEROS
+        MOVB RL4,#01H
+        MOVB [R9],RL4
+        MOV R4,#03H
+        MOV kwp_msg_len,R4
+        MOVB kwp_nrc,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E5858:                 ; 0xe5858
+        BCLR lv_carb_err.0FH
+        MOVB RL4,imob_sdr_ctr
+        CMPB RL4,#01H
+        JMPR cc_NE,L_E58AC
+        MOVB RL5,ctr_imob_nvm_2
+        CMPB RL5,#02H
+        JMPR cc_C,L_E589C
+        MOVB RL3,#04H
+        MOVB imob_data_ram_state_imob,RL3
+        MOVB lv_crank_c289,RL4
+        MOVB RL2,#04H
+        MOVB imob_sdr_ctr,RL2
+        MOVBZ R4,DPP0:c_dly_lock_imob
+        MOV R12,R4
+        SHL R12,#04H
+        SUB R12,R4
+        SHL R12,#02H
+        ADD R12,#02H
+        CALLS 00BH,Imob_Update_WarnLamp
+        MOVBZ R4,DPP0:c_dly_lock_imob
+        MOV R5,R4
+        SHL R5,#04H
+        SUB R5,R4
+        SHL R5,#02H
+        MOV imob_ca40,R5
+L_E589C:                 ; 0xe589c
+        MOVB RL4,ctr_imob_nvm_2
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NC,L_E58AC
+        ADDB RL4,#01H
+        MOVB ctr_imob_nvm_2,RL4
+L_E58AC:                 ; 0xe58ac
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        MOVB diag_c283,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E58BC:                 ; 0xe58bc
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPA cc_UC,L_E5A72
+L_E58C8:                 ; 0xe58c8
+        BSET lv_fmy_imob.05H
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPA cc_UC,L_E5A72
+
+; ======== KWP_App_SID_17_case  (@0xe58d6) ========
+KWP_App_SID_17_case:
+        MOV R4,kwp_msg_len
+        CMP R4,#04H
+        JMPR cc_NE,L_E5914
+        MOVB RL4,n_32
+        JMPR cc_NE,L_E5908
+        MOVB RL5,imob_data_ram_state_imob
+        CMPB RL5,#01H
+        JMPR cc_NE,L_E5908
+        MOVB RL3,[R9+]
+        MOVBZ R4,RL3
+        MOV lv_crank_c162,R4
+        SHL R4,#08H
+        MOVB RL3,[R9]
+        MOVBZ R5,RL3
+        ADD R4,R5
+        MOV lv_crank_c162,R4
+        MOVB kwp_nrc,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E5908:                 ; 0xe5908
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPA cc_UC,L_E5A72
+L_E5914:                 ; 0xe5914
+        BSET lv_fmy_imob.05H
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPA cc_UC,L_E5A72
+
+; ======== KWP_App_SID_13_case  (@0xe5922) ========
+KWP_App_SID_13_case:
+        MOV R4,kwp_msg_len
+        CMP R4,#02H
+        JMPR cc_NE,L_E594E
+        MOVB RL4,n_32
+        JMPR cc_NE,L_E5942
+        MOVB [R9],imob_sdr_ctr
+        MOV R4,#03H
+        MOV kwp_msg_len,R4
+        MOVB kwp_nrc,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E5942:                 ; 0xe5942
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPA cc_UC,L_E5A72
+L_E594E:                 ; 0xe594e
+        BSET lv_fmy_imob.05H
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPA cc_UC,L_E5A72
+
+; ======== KWP_App_SID_19_case  (@0xe595c) ========
+KWP_App_SID_19_case:
+        MOV R4,kwp_msg_len
+        CMP R4,#03H
+        JMPR cc_NE,L_E59CE
+        MOVB RL4,n_32
+        JMPR cc_NE,L_E59C0
+        JB lv_carb_err.0FH,L_E597A
+        JB imob_bw.0AH,L_E597A
+        MOVB RL5,imob_sdr_ctr
+        CMPB RL5,#02H
+        JMPR cc_NE,L_E59C0
+L_E597A:                 ; 0xe597a
+        MOVB RL4,[R9]
+        CMPB RL4,#01H
+        JMPR cc_NE,L_E599E
+        MOV R4,lv_crank_c162
+        MOV imob_sdr_b5,R4
+        MOVB RL4,#01H
+        MOVB imob_sdr_ctr,RL4
+        MOVB RL5,#01H
+        MOVB [R9],RL5
+        MOV R4,#03H
+        MOV kwp_msg_len,R4
+        MOVB kwp_nrc,ZEROS
+        JMPR cc_UC,L_E59C8
+L_E599E:                 ; 0xe599e
+        MOVB RL4,[R9]
+        CMPB RL4,#02H
+        JMPR cc_NE,L_E59B6
+        MOVB RL4,#DATA16 000F0H
+        MOVB [R9],RL4
+        MOV R4,#03H
+        MOV kwp_msg_len,R4
+        MOVB kwp_nrc,ZEROS
+        JMPR cc_UC,L_E59C8
+L_E59B6:                 ; 0xe59b6
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_E59C8
+L_E59C0:                 ; 0xe59c0
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+L_E59C8:                 ; 0xe59c8
+        BCLR lv_carb_err.0FH
+        BCLR imob_bw.0AH
+        JMPR cc_UC,L_E5A72
+L_E59CE:                 ; 0xe59ce
+        BSET lv_fmy_imob.05H
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_E5A72
+
+; ======== KWP_App_SID_16_case  (@0xe59da) ========
+KWP_App_SID_16_case:
+        MOV R4,kwp_msg_len
+        CMP R4,#02H
+        JMPR cc_NE,L_E5A44
+        MOVB RL4,n_32
+        JMPR cc_NE,L_E5A38
+        MOVB RL5,imob_sdr_ctr
+        CMPB RL5,#01H
+        JMPR cc_EQ,L_E59F4
+        CMPB RL5,#04H
+        JMPR cc_NE,L_E5A38
+L_E59F4:                 ; 0xe59f4
+        MOVB RL4,imob_data_ram_ctr_lih_imob
+        CMPB RL4,DPP0:c_ctr_lih_imob
+        JMPR cc_NC,L_E5A38
+        MOVB RL5,imob_data_ram_state_imob
+        CMPB RL5,#01H
+        JMPR cc_EQ,L_E5A0C
+        CMPB RL5,#04H
+        JMPR cc_EQ,L_E5A1A
+        JMPR cc_UC,L_E5A2C
+L_E5A0C:                 ; 0xe5a0c
+        BSET lv_fmy_imob.02H
+        MOV R4,#02H
+        MOV kwp_msg_len,R4
+        MOVB kwp_nrc,ZEROS
+        JMPR cc_UC,L_E5A72
+L_E5A1A:                 ; 0xe5a1a
+        BCLR lv_fmy_imob.02H
+        MOVB RL4,#04H
+        MOVB [R9],RL4
+        MOV R4,#03H
+        MOV kwp_msg_len,R4
+        MOVB kwp_nrc,ZEROS
+        JMPR cc_UC,L_E5A72
+L_E5A2C:                 ; 0xe5a2c
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        BCLR lv_fmy_imob.02H
+        JMPR cc_UC,L_E5A72
+L_E5A38:                 ; 0xe5a38
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        BCLR lv_fmy_imob.02H
+        JMPR cc_UC,L_E5A72
+L_E5A44:                 ; 0xe5a44
+        BSET lv_fmy_imob.05H
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_E5A72
+
+; ======== KWP_App_SID_21_case  (@0xe5a50) ========
+KWP_App_SID_21_case:
+        MOV R4,kwp_msg_len
+        CMP R4,#02H
+        JMPR cc_NE,L_E5A64
+        MOV R4,#02H
+        MOV kwp_msg_len,R4
+        MOVB kwp_nrc,ZEROS
+        JMPR cc_UC,L_E5A72
+L_E5A64:                 ; 0xe5a64
+        BSET lv_fmy_imob.05H
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_E5A72
+KWP_App_SID_reject_NRC11: ; 0xe5a70
+        BCLR kwp_comms_flags.0FH
+L_E5A72:                 ; 0xe5a72
+        MOVB RL4,kwp_nrc
+        JMPR cc_NE,L_E5A7A
+        BCLR lv_fmy_imob.05H
+L_E5A7A:                 ; 0xe5a7a
+        CALLS 00BH,Imob_DTC_update_comms
+        JMPR cc_UC,L_E5A82
+
+; ======== ClrBits_kwp_comms_flags_a80  (@0xe5a80) ========
+ClrBits_kwp_comms_flags_a80:
+        BCLR kwp_comms_flags.0FH
+L_E5A82:                 ; 0xe5a82
+        MOV R9,[R0+]
+        RETS
+
+S_E57D2 ENDS
+        END

@@ -1,0 +1,96 @@
+; asw/tq/tq_fcut.a66
+; 0xB1810-0xB18B2  (162 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_n_min_fcut_fast                    EQU  0902BAH
+c_tco_min_fcut_fast                  EQU  090388H
+c_tq_st_crlc                         EQU  0903F6H
+
+PUBLIC  Calc_Fcut_Fast, Calc_FuelFlow_Add_CP, Calc_TQ_St
+EXTERN  Get_IP_Word_3D_Table_DWord_XByte_YWord:NEAR, Interp_S16:NEAR, L_B19C6:NEAR, Reset_fuel_flow_add_ad_cp_9e0:NEAR
+
+S_B1810 SECTION CODE AT 0B1810H
+
+; ======== Calc_Fcut_Fast  (@0xb1810) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): Dynamic Torque request coordination (lv_fcut_fast enable)
+        ; ------------------------------------------------------------
+Calc_Fcut_Fast:
+        JB lv_pl.00H,L_B1818
+        JNB lv_pl.01H,L_B184A
+L_B1818:                 ; 0xb1818
+        MOVB RL4,tco
+        CMPB RL4,DPP0:c_tco_min_fcut_fast
+        JMPR cc_C,L_B1846
+        JB lv_maf_puls.0FH,L_B1846
+        JB lv_lam_fd2c.04H,L_B1846
+        JNB lv_ch.06H,L_B1846
+        JNB lv_ct.00H,L_B1846
+        MOV R4,tqi_req_tra
+        JMPR cc_NE,L_B1846
+        MOVB RL4,n_32
+        CMPB RL4,DPP0:c_n_min_fcut_fast
+        JMPR cc_C,L_B1846
+        BSET lv_fcut_fast.00H
+        JMPR cc_UC,L_B1848
+L_B1846:                 ; 0xb1846
+        BCLR lv_fcut_fast.00H
+L_B1848:                 ; 0xb1848
+        BCLR lv_fcut_fast.01H
+L_B184A:                 ; 0xb184a
+        RETS
+
+; ======== Calc_TQ_St  (@0xb184c) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tq/tqi output signals): Cranking/start torque tq_st (/_1): from n_dif_st/tco
+        ; 3D map, filtered toward target by c_tq_st_crlc.
+        ; ------------------------------------------------------------
+Calc_TQ_St:
+        JB lv_ast.05H,L_B188E
+        MOV R12,#DATA16 04686H
+        MOV R13,n_dif_st
+        ADD R13,#DATA16 08000H
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YWord
+        SUB R4,#DATA16 08000H
+        MOV tq_st_1,R4
+        CMP R4,tq_st
+        JMPR cc_SLT,L_B1878
+        MOV tq_st,R4
+        RETS
+L_B1878:                 ; 0xb1878
+        MOV R12,tq_st
+        MOV R13,tq_st_1
+        MOVBZ R14,DPP0:c_tq_st_crlc
+        SHL R14,#08H
+        CALLS 00FH,Interp_S16
+        MOV tq_st,R4
+L_B188E:                 ; 0xb188e
+        RETS
+
+; ======== Calc_FuelFlow_Add_CP  (@0xb1890) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tq/tqi output signals): Canister-purge fuel-flow additive adaptation:
+        ; fuel_flow_add_ad_cp / _dly + ti_add_ad_cp_1.
+        ; ------------------------------------------------------------
+Calc_FuelFlow_Add_CP:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        JB lv_cp_act.05H,L_B189C
+        JMPA cc_UC,Reset_fuel_flow_add_ad_cp_9e0
+L_B189C:                 ; 0xb189c
+        MOV R4,cp_state
+        SUB R4,#01H
+        CMP R4,#05H
+        JMPA cc_UGT,L_B19C6
+        SHL R4,#01H
+        ADD R4,#DATA16 04692H
+        MOV R4,[R4]
+        JMPI cc_UC,[R4]
+
+S_B1810 ENDS
+        END

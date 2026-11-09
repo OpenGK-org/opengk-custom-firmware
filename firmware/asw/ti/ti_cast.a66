@@ -1,0 +1,528 @@
+; asw/ti/ti_cast.a66
+; 0xC598A-0xC5EC6  (1340 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+lc_ena_vo_cor_pl                     EQU  090465H
+c_ti_fac                             EQU  09078EH
+c_ti_min                             EQU  090798H
+sstm_tkw_1_5                      EQU  090B10H
+sst_tkw_kf_ti_abr_kst             EQU  090B88H
+ldpm_n_32__ti_wup                 EQU  090B8FH
+sstm_tkw_4_4                      EQU  090DF4H
+ldpm_tco_st_ip_ti_deac_cast       EQU  090E88H
+ldp_maf_fac_alti_ip_ti_fac_cast                EQU  090EBBH
+ldp_tco_fac_alti_ip_ti_fac_cast                EQU  090EC4H
+ldp_maf_fac_alti_ip_ti_fac_wup                 EQU  090ECBH
+ldp_tco_fac_alti_ip_ti_fac_wup                 EQU  090ED4H
+sst_tkw_kf_ti_katv_fak             EQU  090EDBH
+sst_n_kf_ti_katv              EQU  090EE7H
+sst_lm_kf_ti_katv              EQU  090EEEH
+sst_tkw_st_ti_tkw_wl              EQU  090EF5H
+ldp_tco_ip_ti_tco_wup_asr     EQU  090EF9H
+ldp_tco_st_ip_ti_tco_wup_asr     EQU  090F00H
+sstm_lm_6_4                       EQU  090F20H
+sstm_n_2_5                           EQU  09155CH
+ldpm_n_2_3                           EQU  0917FEH
+ldpm_maf_1_3                    EQU  091820H
+ldp_n_ip_ti_cor_is               EQU  09183AH
+ldp_maf_ip_ti_cor_is               EQU  09184CH
+ldpm_cycnr_st_ast_ip_ti_deac_cast                EQU  09185EH
+sst_zyk_kf_ti_abr_kst                 EQU  09186CH
+ip_ti_cst__n__tco_st                 EQU  09423CH
+ip_ti_cst_at__n__tco_st              EQU  09428CH
+ip_fac_ti_cst_crk_lih                EQU  09571BH
+ip_ti_ast_rest__tco                  EQU  09666CH
+ip_ti_cor__n__maf                    EQU  0966FCH
+ip_ti_cor_is__n__maf                 EQU  0967BCH
+ip_ti_deac_cast__cyc__tco            EQU  09681CH
+ip_ti_deac_cast_at__cyc__tco         EQU  09684CH
+ip_ti_deac_cst__cycnr__tco           EQU  09687CH
+ip_ti_deac_cst_at__cycnr__tco        EQU  096894H
+ip_ti_fac_alti_cast                  EQU  0968B4H
+ip_ti_fac_alti_wup                   EQU  0968E4H
+ip_ti_fac_not_cat__tco               EQU  096914H
+ip_ti_not_cat__n__maf                EQU  096976H
+ip_ti_st_rest__tco                   EQU  09699AH
+ip_ti_tco_wup__tco__tco_st           EQU  0969A6H
+ip_ti_tco_wup_asr__tco__tco_st       EQU  0969BEH
+ip_ti_tco_wup_at__tco__tco_st        EQU  0969E2H
+ip_ti_wup__n__maf                    EQU  096A3AH
+ip_ti_wup_at__n__maf                 EQU  096A7AH
+
+PUBLIC  Calc_AST_Enrich_2, Calc_TIB, Calc_TI_Base_Map, Calc_TI_CAST, Calc_TI_WUP
+EXTERN  Add_Clamp_U8:NEAR, Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_3D_Table:NEAR, Get_IP_Byte_3D_Table_DWord_XByte_YByte:NEAR
+EXTERN  Get_IP_Byte_3D_Table_DWord_XWord_YByte:NEAR, Get_IP_Byte_X_Axis:NEAR, Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_3D_Table:NEAR
+EXTERN  Get_IP_Word_X_Axis:NEAR, Get_IP_Word_Y_Axis:NEAR, Lookup_Alti_Cor_MMV:NEAR, Mul_Frac_Sat_x2:NEAR
+EXTERN  Mul_Frac_U16_Sat:NEAR, Mul_Q15_Sat:NEAR, Mul_Shift_U16_Sat32:NEAR, Read_MulDiv_MD:NEAR
+EXTERN  mul32:NEAR, sub_r12_r13_rets_r4:NEAR
+
+S_C598A SECTION CODE AT 0C598AH
+
+; ======== Calc_TI_WUP  (@0xc598a) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signal): Warm-up injection enrichment: ti_wup from tco/vo/maf 3D maps
+        ; + altitude fac; ti_wup==0x1000 => no enrichment (clears lv_ast.0).
+        ; ------------------------------------------------------------
+Calc_TI_WUP:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R6
+        MOV R12,amp
+        MOV R13,map
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV map_amp_dif,R4
+        MOV R12,#DATA16 POF ldpm_n_32__ti_wup
+        MOV R13,#DATA16 PAG ldpm_n_32__ti_wup
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF sstm_lm_6_4
+        MOV R13,#DATA16 PAG sstm_lm_6_4
+        MOVBZ R14,lv_iga_cc2b
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        JNB lv_conf_mis.0AH,L_C59D4
+        MOV R12,#DATA16 POF ip_ti_wup_at__n__maf
+        MOV R13,#DATA16 PAG ip_ti_wup_at__n__maf
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB RL6,RL4
+        JMPR cc_UC,L_C59E2
+L_C59D4:                 ; 0xc59d4
+        MOV R12,#DATA16 POF ip_ti_wup__n__maf
+        MOV R13,#DATA16 PAG ip_ti_wup__n__maf
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB RL6,RL4
+L_C59E2:                 ; 0xc59e2
+        MOV R12,#DATA16 POF ldp_maf_fac_alti_ip_ti_fac_wup
+        MOV R13,#DATA16 PAG ldp_maf_fac_alti_ip_ti_fac_wup
+        MOVBZ R14,maf_fac_alti_mmv
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_tco_fac_alti_ip_ti_fac_wup
+        MOV R13,#DATA16 PAG ldp_tco_fac_alti_ip_ti_fac_wup
+        MOVBZ R14,tco_st
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 04B4AH
+        MOVBZ R13,tco
+        MOV R14,vo
+        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XByte_YByte
+        MOVBZ R4,RL4
+        MOV [-R0],R4
+        MOV [-R0],R5
+        MOV R12,#DATA16 04B56H
+        MOVBZ R13,n_32
+        MOV R14,map_amp_dif
+        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YByte
+        MOVBZ R4,RL4
+        MOV R10,R4
+        MOV R5,[R0+]
+        MOV R4,[R0+]
+        MULU R4,R10
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOVBZ R10,fac_wf_vo_fdout
+        MOV R11,#00H
+        CALLS 00DH,mul32
+        MOV R2,R5
+        SHR R4,#0EH
+        SHR R5,#0EH
+        SHL R2,#02H
+        OR R4,R2
+        MOV R8,R4
+        ADD R8,#DATA16 00080H
+        JB lv_act_aj.09H,L_C5AB8
+        MOVB RL4,lv_ti_f490
+        JMPR cc_NE,L_C5A68
+        MOV R4,#DATA16 01000H
+        MOV ti_wup,R4
+        JMPR cc_UC,L_C5B16
+L_C5A68:                 ; 0xc5a68
+        MOV R12,#DATA16 POF ip_ti_fac_alti_wup
+        MOV R13,#DATA16 PAG ip_ti_fac_alti_wup
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R13,RL4
+        MOVBZ R12,lv_ti_f490
+        MOVBZ R4,RL6
+        MUL R12,R4
+        MOV R12,0FE0EH
+        CALLS 00FH,Mul_Frac_Sat_x2
+        MOV R9,R4
+        SHR R9,#03H
+        JB lv_cdn_diag_maf_dif_ch_int.0EH,L_C5A94
+        MOVB RL4,DPP0:lc_ena_vo_cor_pl
+        JMPR cc_NE,L_C5A98
+L_C5A94:                 ; 0xc5a94
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_C5AAC
+L_C5A98:                 ; 0xc5a98
+        MOV R12,R9
+        MOV R13,R8
+        MOV R14,#07H
+        CALLS 00FH,Mul_Shift_U16_Sat32
+        ADD R4,#DATA16 01000H
+        MOV ti_wup,R4
+        JMPR cc_UC,L_C5B16
+L_C5AAC:                 ; 0xc5aac
+        MOV R4,#DATA16 01000H
+        ADD R4,R9
+        MOV ti_wup,R4
+        JMPR cc_UC,L_C5B16
+L_C5AB8:                 ; 0xc5ab8
+        MOVB RL4,lv_ti_f491
+        JMPR cc_NE,L_C5AC8
+        MOV R4,#DATA16 01000H
+        MOV ti_wup,R4
+        JMPR cc_UC,L_C5B16
+L_C5AC8:                 ; 0xc5ac8
+        MOV R12,#DATA16 POF ip_ti_fac_alti_wup
+        MOV R13,#DATA16 PAG ip_ti_fac_alti_wup
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R13,RL4
+        MOVBZ R12,lv_ti_f491
+        MOVBZ R4,RL6
+        MUL R12,R4
+        MOV R12,0FE0EH
+        CALLS 00FH,Mul_Frac_Sat_x2
+        MOV R9,R4
+        SHR R9,#03H
+        JB lv_cdn_diag_maf_dif_ch_int.0EH,L_C5AF4
+        MOVB RL4,DPP0:lc_ena_vo_cor_pl
+        JMPR cc_NE,L_C5AF8
+L_C5AF4:                 ; 0xc5af4
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_C5B0C
+L_C5AF8:                 ; 0xc5af8
+        MOV R12,R9
+        MOV R13,R8
+        MOV R14,#07H
+        CALLS 00FH,Mul_Shift_U16_Sat32
+        ADD R4,#DATA16 01000H
+        MOV ti_wup,R4
+        JMPR cc_UC,L_C5B16
+L_C5B0C:                 ; 0xc5b0c
+        MOV R4,#DATA16 01000H
+        ADD R4,R9
+        MOV ti_wup,R4
+L_C5B16:                 ; 0xc5b16
+        MOV R4,ti_wup
+        CMP R4,#DATA16 01000H
+        JMPR cc_NE,L_C5B22
+        BCLR lv_ast.00H
+L_C5B22:                 ; 0xc5b22
+        MOV R6,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_AST_Enrich_2  (@0xc5b2a) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Calc_AST_Enrich_2:
+        MOV R12,#DATA16 POF sstm_tkw_4_4
+        MOV R13,#DATA16 PAG sstm_tkw_4_4
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF sst_tkw_st_ti_tkw_wl
+        MOV R13,#DATA16 PAG sst_tkw_st_ti_tkw_wl
+        MOVBZ R14,tco_st
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        JNB lv_conf_mis.0AH,L_C5B60
+        MOV R12,#DATA16 POF ip_ti_tco_wup_at__tco__tco_st
+        MOV R13,#DATA16 PAG ip_ti_tco_wup_at__tco__tco_st
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB lv_ti_f490,RL4
+        JMPR cc_UC,L_C5B70
+L_C5B60:                 ; 0xc5b60
+        MOV R12,#DATA16 POF ip_ti_tco_wup__tco__tco_st
+        MOV R13,#DATA16 PAG ip_ti_tco_wup__tco__tco_st
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB lv_ti_f490,RL4
+L_C5B70:                 ; 0xc5b70
+        MOV R12,#DATA16 POF ldp_tco_ip_ti_tco_wup_asr
+        MOV R13,#DATA16 PAG ldp_tco_ip_ti_tco_wup_asr
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_tco_st_ip_ti_tco_wup_asr
+        MOV R13,#DATA16 PAG ldp_tco_st_ip_ti_tco_wup_asr
+        MOVBZ R14,tco_st
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_ti_tco_wup_asr__tco__tco_st
+        MOV R13,#DATA16 PAG ip_ti_tco_wup_asr__tco__tco_st
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB lv_ti_f491,RL4
+        RETS
+
+; ======== Calc_TI_CAST  (@0xc5ba2) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signal): After-start injection enrichment: ti_cast from
+        ; cyc-since-start/tco maps; returns 0 (disabled) when map byte==0.
+        ; ------------------------------------------------------------
+Calc_TI_CAST:
+        MOV R12,#DATA16 POF ldpm_cycnr_st_ast_ip_ti_deac_cast
+        MOV R13,#DATA16 PAG ldpm_cycnr_st_ast_ip_ti_deac_cast
+        MOV R14,cycnr_st_ast
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ldpm_tco_st_ip_ti_deac_cast
+        MOV R13,#DATA16 PAG ldpm_tco_st_ip_ti_deac_cast
+        MOVBZ R14,tco_eng_start
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        JNB lv_conf_mis.0AH,L_C5BD8
+        MOV R12,#DATA16 POF ip_ti_deac_cast_at__cyc__tco
+        MOV R13,#DATA16 PAG ip_ti_deac_cast_at__cyc__tco
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB lv_ti_f48f,RL4
+        JMPR cc_UC,L_C5BE8
+L_C5BD8:                 ; 0xc5bd8
+        MOV R12,#DATA16 POF ip_ti_deac_cast__cyc__tco
+        MOV R13,#DATA16 PAG ip_ti_deac_cast__cyc__tco
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB lv_ti_f48f,RL4
+L_C5BE8:                 ; 0xc5be8
+        MOVB RL4,lv_ti_f48f
+        JMPR cc_NE,L_C5BF8
+        MOV ti_cast,ZEROS
+        BCLR lv_ast.01H
+        BCLR lv_ast.02H
+        RETS
+L_C5BF8:                 ; 0xc5bf8
+        JNB lv_maf_trim.05H,L_C5C1E
+        MOV R12,#DATA16 POF sstm_tkw_1_5
+        MOV R13,#DATA16 PAG sstm_tkw_1_5
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_ti_ast_rest__tco
+        MOV R13,#DATA16 PAG ip_ti_ast_rest__tco
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB lv_ti_f492,RL4
+        JMPR cc_UC,L_C5C22
+L_C5C1E:                 ; 0xc5c1e
+        MOVB lv_ti_f492,ONES
+L_C5C22:                 ; 0xc5c22
+        MOV R12,#DATA16 POF ldp_maf_fac_alti_ip_ti_fac_cast
+        MOV R13,#DATA16 PAG ldp_maf_fac_alti_ip_ti_fac_cast
+        MOVBZ R14,maf_fac_alti_mmv
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_tco_fac_alti_ip_ti_fac_cast
+        MOV R13,#DATA16 PAG ldp_tco_fac_alti_ip_ti_fac_cast
+        MOVBZ R14,tco_st
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_ti_fac_alti_cast
+        MOV R13,#DATA16 PAG ip_ti_fac_alti_cast
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R13,RL4
+        MOVBZ R4,maf_as_base
+        MOVBZ R2,lv_ti_f492
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOVBZ R10,lv_ti_f48f
+        MOV R11,#00H
+        CALLS 00DH,mul32
+        MOV R2,R5
+        SHR R4,#0AH
+        SHR R5,#0AH
+        SHL R2,#06H
+        OR R4,R2
+        MOV R12,R4
+        CALLS 00FH,Mul_Frac_Sat_x2
+        MOV ti_cast,R4
+        RETS
+
+; ======== Calc_TI_Base_Map  (@0xc5c82) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signal): Map-based base injection quantity: n/tco 3D maps x maf-trim x
+        ; altitude (DAT_f738), floored to c_ti_min; returns base ti.
+        ; ------------------------------------------------------------
+Calc_TI_Base_Map:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV R12,#DATA16 POF sst_zyk_kf_ti_abr_kst
+        MOV R13,#DATA16 PAG sst_zyk_kf_ti_abr_kst
+        MOV R14,maf_wf_init
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF sst_tkw_kf_ti_abr_kst
+        MOV R13,#DATA16 PAG sst_tkw_kf_ti_abr_kst
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        JNB lv_conf_mis.0AH,L_C5CBC
+        MOV R12,#DATA16 POF ip_ti_deac_cst_at__cycnr__tco
+        MOV R13,#DATA16 PAG ip_ti_deac_cst_at__cycnr__tco
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB lv_ti_c328,RL4
+        JMPR cc_UC,L_C5CCC
+L_C5CBC:                 ; 0xc5cbc
+        MOV R12,#DATA16 POF ip_ti_deac_cst__cycnr__tco
+        MOV R13,#DATA16 PAG ip_ti_deac_cst__cycnr__tco
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB lv_ti_c328,RL4
+L_C5CCC:                 ; 0xc5ccc
+        MOV R12,#DATA16 POF sstm_n_2_5
+        MOV R13,#DATA16 PAG sstm_n_2_5
+        MOV R14,n_C93C
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF sstm_tkw_1_5
+        MOV R13,#DATA16 PAG sstm_tkw_1_5
+        MOVBZ R14,tco_st
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        JNB lv_conf_mis.0AH,L_C5D00
+        MOV R12,#DATA16 POF ip_ti_cst_at__n__tco_st
+        MOV R13,#DATA16 PAG ip_ti_cst_at__n__tco_st
+        CALLS 00FH,Get_IP_Word_3D_Table
+        MOV R9,R4
+        JMPR cc_UC,L_C5D0E
+L_C5D00:                 ; 0xc5d00
+        MOV R12,#DATA16 POF ip_ti_cst__n__tco_st
+        MOV R13,#DATA16 PAG ip_ti_cst__n__tco_st
+        CALLS 00FH,Get_IP_Word_3D_Table
+        MOV R9,R4
+L_C5D0E:                 ; 0xc5d0e
+        JB lv_crk_tooth_err.08H,L_C5D22
+        MOV R12,R9
+        MOVBZ R13,lv_ti_c328
+        CALLS 00FH,Read_MulDiv_MD
+        MOV lv_ti_f738,R4
+        JMPR cc_UC,L_C5D5A
+L_C5D22:                 ; 0xc5d22
+        MOV R12,#DATA16 POF sst_tkw_kf_ti_abr_kst
+        MOV R13,#DATA16 PAG sst_tkw_kf_ti_abr_kst
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_fac_ti_cst_crk_lih
+        MOV R13,#DATA16 PAG ip_fac_ti_cst_crk_lih
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVBZ R4,RL4
+        SHL R4,#02H
+        MOV [-R0],R4
+        MOV R12,R9
+        MOVBZ R13,lv_ti_c328
+        CALLS 00FH,Read_MulDiv_MD
+        MOV R12,R4
+        MOV R13,[R0+]
+        CALLS 00FH,Mul_Frac_U16_Sat
+        MOV lv_ti_f738,R4
+L_C5D5A:                 ; 0xc5d5a
+        JNB lv_maf_trim.05H,L_C5D80
+        MOV R12,#DATA16 POF sstm_tkw_1_5
+        MOV R13,#DATA16 PAG sstm_tkw_1_5
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_ti_st_rest__tco
+        MOV R13,#DATA16 PAG ip_ti_st_rest__tco
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB lv_ti_f493,RL4
+        JMPR cc_UC,L_C5D84
+L_C5D80:                 ; 0xc5d80
+        MOVB lv_ti_f493,ONES
+L_C5D84:                 ; 0xc5d84
+        CALLS 00DH,Lookup_Alti_Cor_MMV
+        MOVB lv_ti_f50d,RL4
+        MOV R12,lv_ti_f738
+        MOVBZ R13,lv_ti_f493
+        CALLS 00FH,Read_MulDiv_MD
+        MOV R12,R4
+        MOVBZ R13,lv_ti_f50d
+        CALLS 00FH,Read_MulDiv_MD
+        MOV R8,R4
+        MOV R4,maf_wf_init
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_EQ,L_C5DB4
+        ADD R4,#01H
+        MOV maf_wf_init,R4
+L_C5DB4:                 ; 0xc5db4
+        CMP R8,DPP0:c_ti_min
+        JMPR cc_NC,L_C5DC0
+        MOV R4,DPP0:c_ti_min
+        JMPR cc_UC,L_C5DC2
+L_C5DC0:                 ; 0xc5dc0
+        MOV R4,R8
+L_C5DC2:                 ; 0xc5dc2
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_TIB  (@0xc5dc8) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signal): Base injection time: tib = Mul_Q15(maf_word,c_ti_fac) x
+        ; correction maps (tco/n, +ti_cor_ivvt). The MAF-based base injector pulse width.
+        ; ------------------------------------------------------------
+Calc_TIB:
+        MOV [-R0],R9
+        MOV [-R0],R6
+        MOV R12,maf_word
+        MOV R13,DPP0:c_ti_fac
+        CALLS 00FH,Mul_Q15_Sat
+        MOV R9,R4
+        JB lv_conf_mis.00H,L_C5E46
+        MOV R12,#DATA16 POF sst_tkw_kf_ti_katv_fak
+        MOV R13,#DATA16 PAG sst_tkw_kf_ti_katv_fak
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_ti_fac_not_cat__tco
+        MOV R13,#DATA16 PAG ip_ti_fac_not_cat__tco
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB g_c329,RL4
+        MOV R12,#DATA16 POF sst_n_kf_ti_katv
+        MOV R13,#DATA16 PAG sst_n_kf_ti_katv
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF sst_lm_kf_ti_katv
+        MOV R13,#DATA16 PAG sst_lm_kf_ti_katv
+        MOVBZ R14,lv_iga_cc2b
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_ti_not_cat__n__maf
+        MOV R13,#DATA16 PAG ip_ti_not_cat__n__maf
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV [-R0],R4
+        MOV R12,R9
+        MOVBZ R13,g_c329
+        CALLS 00FH,Mul_Frac_Sat_x2
+        MOV R12,R4
+        MOV R13,[R0+]
+        CALLS 00FH,Mul_Frac_Sat_x2
+        MOV tib,R4
+        JMPR cc_UC,L_C5EC0
+L_C5E46:                 ; 0xc5e46
+        JB lv_cdn_diag_maf_dif_ch_int.0EH,L_C5E7A
+        MOV R12,#DATA16 POF ldpm_n_2_3
+        MOV R13,#DATA16 PAG ldpm_n_2_3
+        MOV R14,n_C93C
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ldpm_maf_1_3
+        MOV R13,#DATA16 PAG ldpm_maf_1_3
+        MOV R14,maf_word
+        CALLS 00FH,Get_IP_Word_X_Axis
+        MOV R12,#DATA16 POF ip_ti_cor__n__maf
+        MOV R13,#DATA16 PAG ip_ti_cor__n__maf
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB RL6,RL4
+        JMPR cc_UC,L_C5EA8
+L_C5E7A:                 ; 0xc5e7a
+        MOV R12,#DATA16 POF ldp_n_ip_ti_cor_is
+        MOV R13,#DATA16 PAG ldp_n_ip_ti_cor_is
+        MOV R14,n_C93C
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ldp_maf_ip_ti_cor_is
+        MOV R13,#DATA16 PAG ldp_maf_ip_ti_cor_is
+        MOV R14,maf_word
+        CALLS 00FH,Get_IP_Word_X_Axis
+        MOV R12,#DATA16 POF ip_ti_cor_is__n__maf
+        MOV R13,#DATA16 PAG ip_ti_cor_is__n__maf
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB RL6,RL4
+L_C5EA8:                 ; 0xc5ea8
+        MOVBZ R12,RL6
+        MOVBS R13,ti_cor_ivvt
+        CALLS 00FH,Add_Clamp_U8
+        MOVBZ R13,RL4
+        SHL R13,#08H
+        MOV R12,R9
+        CALLS 00FH,Mul_Q15_Sat
+        MOV tib,R4
+L_C5EC0:                 ; 0xc5ec0
+        MOV R6,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_C598A ENDS
+        END

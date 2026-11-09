@@ -1,0 +1,175 @@
+; asw/diag/diag_output.a66
+; 0xA3750-0xA38EE  (414 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Diag_Output_EGR, Diag_Output_SecAir, Reset_Dfd62_830, Reset_Dfd62_8ca
+
+S_A3750 SECTION CODE AT 0A3750H
+
+; ======== Diag_Output_EGR  (@0xa3750) ========
+        ; ------------------------------------------------------------
+        ; Seg-A ISR helper (verified by SFR/CCP usage): Output-stage diagnosis (feedback DAT_00fdaa bits
+        ; 0x10/0x1000, state f583=-0x6a) -> DAT_00fd62.
+        ; ------------------------------------------------------------
+Diag_Output_EGR:
+        JB capcom_12.04H,L_A3762
+        JB capcom_12.0CH,L_A3762
+        MOVB RL4,diag_f583
+        CMPB RL4,#DATA16 00096H
+        JMPR cc_EQ,L_A376E
+L_A3762:                 ; 0xa3762
+        BCLR sched_flags2.05H
+        BSET sched_flags2.04H
+        BMOV PSW.06H,capcom_12.0CH
+        BCLR capcom_12.04H
+        JMPR cc_UC,L_A3816
+L_A376E:                 ; 0xa376e
+        MOV R15,diag_fda8
+        JNB sched_flags2.05H,L_A37F8
+        MOVBZ R12,diag_f585
+        SHL R12,#08H
+        OR R12,#DATA16 000FFH
+        AND R12,#DATA16 05555H
+        MOVBZ R4,diag_f586
+        ; ------------------------------------------------------------
+        ; (likely) RAM/paged global @0xa3788 [dpp]  W:{-}  R:{Calc_Cat_Temp_Dly}
+        ; ------------------------------------------------------------
+        SHL R4,#01H
+        MOVBZ R5,diag_f584
+        SHL R5,#09H
+        OR R4,R5
+        AND R4,#DATA16 0AAAAH
+        OR R12,R4
+        MOVBZ R13,diag_f585
+        SHL R13,#07H
+        OR R13,#DATA16 0007FH
+        AND R13,#DATA16 05555H
+        MOVBZ R4,diag_f586
+        MOVBZ R5,diag_f584
+        SHL R5,#08H
+        OR R4,R5
+        AND R4,#DATA16 0AAAAH
+        OR R13,R4
+        MOV R14,R12
+        AND R14,R13
+        CPL R14
+        MOV R4,diag_fda8
+        AND R4,diag_fba8
+        MOV R5,R14
+        AND R5,R12
+        AND R5,R4
+        OR dtc_cond_s1,R5
+        MOV R4,diag_fda8
+        AND R4,diag_fba8
+        MOV R5,R12
+        OR R5,R13
+        CPL R5
+        AND R5,R4
+        OR dtc_cond_s2,R5
+        MOV R4,diag_fda8
+        AND R4,diag_fba8
+        MOV R5,R14
+        AND R5,R13
+        AND R5,R4
+        OR dtc_cond_s3,R5
+        JMPR cc_UC,L_A37FA
+L_A37F8:                 ; 0xa37f8
+        BSET sched_flags2.05H
+L_A37FA:                 ; 0xa37fa
+        MOV R4,dtc_cond_s1
+        OR R4,dtc_cond_s2
+        OR R4,dtc_cond_s3
+        MOV lv_ivvt_fba6,R4
+        MOV R5,diag_fba8
+        MOV diag_fbaa,R5
+        MOV diag_fba8,R15
+L_A3816:                 ; 0xa3816
+        MOV R4,#DATA16 0FFFFH
+        OR diag_fda8,R4
+        MOVB RL4,#DATA16 00069H
+        MOVB diag_f583,RL4
+        BSET capcom_12.0CH
+        EXTR #01H
+        BFLDL 0F196H,#080H,#080H
+        RETS
+
+; ======== Reset_Dfd62_830  (@0xa3830) ========
+Reset_Dfd62_830:
+        BCLR sched_flags2.05H
+        MOV dtc_cond_s2,ZEROS
+        MOV dtc_cond_s1,ZEROS
+        MOV dtc_cond_s3,ZEROS
+        MOV diag_fda8,ONES
+        MOV diag_fba8,ONES
+        MOV diag_fbaa,ONES
+        MOVB RL4,#DATA16 00096H
+        MOVB diag_f583,RL4
+        RETS
+
+; ======== Diag_Output_SecAir  (@0xa3854) ========
+        ; ------------------------------------------------------------
+        ; Seg-A ISR helper (verified by SFR/CCP usage): Output-stage diagnosis (feedback DAT_00fdaa
+        ; 0x40/0x4000/0x20/0x2000, state f580=-0x5a).
+        ; ------------------------------------------------------------
+Diag_Output_SecAir:
+        JB capcom_12.06H,L_A386E
+        JB capcom_12.0EH,L_A386E
+        JB capcom_12.05H,L_A386E
+        JB capcom_12.0DH,L_A386E
+        MOVB RL4,diag_f580
+        CMPB RL4,#DATA16 000A6H
+        JMPR cc_EQ,L_A3880
+L_A386E:                 ; 0xa386e
+        BCLR sched_flags2.0CH
+        BSET sched_flags2.0BH
+        JB capcom_12.0EH,L_A387A
+        BMOV PSW.06H,capcom_12.0DH
+L_A387A:                 ; 0xa387a
+        BCLR capcom_12.06H
+        BCLR capcom_12.05H
+        JMPR cc_UC,L_A38B8
+L_A3880:                 ; 0xa3880
+        JNB sched_flags2.0CH,L_A38B6
+        MOVBZ R12,diag_f581
+        SHL R12,#08H
+        MOV R4,diag_fbc0
+        OR R4,R12
+        CPL R4
+        AND R4,#DATA16 0FF00H
+        OR dtc_rly_cond2,R4
+        MOV R4,diag_fbc0
+        AND R4,R12
+        AND R4,#DATA16 0FF00H
+        OR dtc_rly_cond1,R4
+        MOV R4,dtc_rly_cond1
+        OR R4,dtc_rly_cond2
+        MOV diag_fbbc,R4
+        JMPR cc_UC,L_A38B8
+L_A38B6:                 ; 0xa38b6
+        BSET sched_flags2.0CH
+L_A38B8:                 ; 0xa38b8
+        MOVB RL4,#DATA16 00059H
+        MOVB diag_f580,RL4
+        BSET capcom_12.0EH
+        EXTR #01H
+        BFLDL 0F196H,#080H,#080H
+        RETS
+
+; ======== Reset_Dfd62_8ca  (@0xa38ca) ========
+Reset_Dfd62_8ca:
+        BCLR sched_flags2.0CH
+        MOV dtc_rly_cond2,ZEROS
+        MOV dtc_rly_cond1,ZEROS
+        MOV R4,state_out_diag
+        MOV g_fbbe,R4
+        MOV R4,state_out_diag
+        MOV diag_fbc0,R4
+        MOVB RL4,#DATA16 000A6H
+        MOVB diag_f580,RL4
+        RETS
+
+S_A3750 ENDS
+        END

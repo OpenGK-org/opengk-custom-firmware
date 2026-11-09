@@ -1,0 +1,80 @@
+; asw/iga/iga_window.a66
+; 0xC840C-0xC849E  (146 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Check_N_Window, Reset_trt_word_40c, Task_IV_Combustion
+EXTERN  Diag_IV_Combustion:NEAR, ProgSession_StateMachine_VbGated:NEAR, SpinHalt_a3d48:NEAR
+
+S_C840C SECTION CODE AT 0C840CH
+
+; ======== Reset_trt_word_40c  (@0xc840c) ========
+Reset_trt_word_40c:
+        SUB trt_word,ONES
+        MOV R4,#DATA16 00168H
+        MOV crank_tim_13,R4
+        RETS
+
+; ======== Check_N_Window  (@0xc841a) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Check_N_Window:
+        MOVB RL4,[R12+#02H]
+        JMPR cc_EQ,L_C8468
+        MOVB RL4,[R12+#02H]
+        CMPB RL4,n_32
+        JMPR cc_NC,L_C8434
+        MOVB RL4,n_32
+        MOVB [R12+#02H],RL4
+        JMPR cc_UC,L_C8440
+L_C8434:                 ; 0xc8434
+        MOVB RL4,[R12]
+        CMPB RL4,n_32
+        JMPR cc_ULE,L_C8440
+        MOVB [R12],n_32
+L_C8440:                 ; 0xc8440
+        MOVB RL4,[R12+#03H]
+        CMPB RL4,lv_iga_cc2b
+        JMPR cc_NC,L_C8454
+        MOVB RL4,lv_iga_cc2b
+        MOVB [R12+#03H],RL4
+        RETS
+L_C8454:                 ; 0xc8454
+        MOVB RL4,[R12+#01H]
+        CMPB RL4,lv_iga_cc2b
+        JMPR cc_ULE,L_C8486
+        MOVB RL4,lv_iga_cc2b
+        MOVB [R12+#01H],RL4
+        RETS
+L_C8468:                 ; 0xc8468
+        MOVB RL4,n_32
+        MOVB [R12+#02H],RL4
+        MOVB RL4,[R12+#02H]
+        MOVB [R12],RL4
+        MOVB RL4,lv_iga_cc2b
+        MOVB [R12+#03H],RL4
+        MOVB RL4,[R12+#03H]
+        MOVB [R12+#01H],RL4
+L_C8486:                 ; 0xc8486
+        RETS
+
+; ======== Task_IV_Combustion  (@0xc8488) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Task_IV_Combustion:
+        JB state_out_act.0EH,L_C8492
+        CALLS 00AH,Diag_IV_Combustion
+        JMPR cc_UC,L_C8494
+L_C8492:                 ; 0xc8492
+        BCLR state_out_act.0EH
+L_C8494:                 ; 0xc8494
+        CALLS 00AH,SpinHalt_a3d48
+        CALLS 00AH,ProgSession_StateMachine_VbGated
+        RETS
+
+S_C840C ENDS
+        END

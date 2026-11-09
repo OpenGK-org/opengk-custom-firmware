@@ -1,0 +1,92 @@
+; asw/comm/comm_nrc.a66
+; 0xDF052-0xDF0EC  (154 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Compare_r9_to_0xff00_return_rl6_xFE_xFD_or_xFF, KWP_SID14_ClearDiagnosticInformation, SetBits_kwp_comms_flags_05c, Set_kwp_nrc_052
+EXTERN  Reset_Adaptive_LearnedValues:NEAR
+
+S_DF052 SECTION CODE AT 0DF052H
+
+; ======== Set_kwp_nrc_052  (@0xdf052) ========
+Set_kwp_nrc_052:
+        MOVB RL4,#DATA16 00011H
+        MOVB kwp_nrc,RL4
+        RETS
+
+; ======== SetBits_kwp_comms_flags_05c  (@0xdf05c) ========
+SetBits_kwp_comms_flags_05c:
+        BSET kwp_comms_flags.0AH
+        RETS
+
+; ======== KWP_SID14_ClearDiagnosticInformation  (@0xdf060) ========
+KWP_SID14_ClearDiagnosticInformation:
+        SUB R0,#02H
+        MOV R4,kwp_msg_len
+        CMP R4,#03H
+        JMPR cc_NE,L_DF0B0
+        MOV R4,kwp_req_ptr
+        MOVB RL5,[R4]
+        MOVBZ R5,RL5
+        SHL R5,#08H
+        MOV [R0],R5
+        MOVB RL5,[R4+#01H]
+        MOVBZ R5,RL5
+        MOV R2,[R0]
+        OR R2,R5
+        MOV [R0],R2
+        MOV R12,R2
+        CALLS 00DH,Compare_r9_to_0xff00_return_rl6_xFE_xFD_or_xFF
+        CMPB RL4,#DATA16 000FEH
+        JMPR cc_EQ,L_DF096
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_EQ,L_DF09C
+        JMPR cc_UC,L_DF0A6
+L_DF096:                 ; 0xdf096
+        MOVB kwp_nrc,ZEROS
+        JMPR cc_UC,L_DF0B8
+L_DF09C:                 ; 0xdf09c
+        MOVB RL4,#DATA16 00031H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_DF0B8
+L_DF0A6:                 ; 0xdf0a6
+        MOVB RL4,#DATA16 00022H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_DF0B8
+L_DF0B0:                 ; 0xdf0b0
+        MOVB RL4,#DATA16 00079H
+        MOVB kwp_nrc,RL4
+L_DF0B8:                 ; 0xdf0b8
+        ADD R0,#02H
+        RETS
+
+; ======== Compare_r9_to_0xff00_return_rl6_xFE_xFD_or_xFF  (@0xdf0bc) ========
+Compare_r9_to_0xff00_return_rl6_xFE_xFD_or_xFF:
+        MOV [-R0],R9
+        MOV [-R0],R6
+        MOV R9,R12
+        CMP R9,#DATA16 0FF00H
+        JMPR cc_EQ,L_DF0CC
+        CMP R9,#00H
+        JMPR cc_NE,L_DF0E0
+L_DF0CC:                 ; 0xdf0cc
+        CALLS 00DH,Reset_Adaptive_LearnedValues
+        MOVB RL6,RL4
+        JMPR cc_NE,L_DF0DA
+        MOVB RL6,#DATA16 000FEH
+        JMPR cc_UC,L_DF0E4
+L_DF0DA:                 ; 0xdf0da
+        MOVB RL6,#DATA16 000FDH
+        JMPR cc_UC,L_DF0E4
+L_DF0E0:                 ; 0xdf0e0
+        MOVB RL6,#DATA16 000FFH
+L_DF0E4:                 ; 0xdf0e4
+        MOVB RL4,RL6
+        MOV R6,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_DF052 ENDS
+        END

@@ -1,0 +1,1110 @@
+; asw/diagcp/diagcp_st7.a66
+; 0xD2454-0xD3154  (3328 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_diagcp_dia_max                     EQU  090185H
+c_diagcp_dia_max_vap_chk             EQU  090186H
+c_diagcp_dia_min                     EQU  090187H
+c_diagcp_dia_min_vap_chk             EQU  090188H
+c_diagcp_vol_max                     EQU  090189H
+c_diagcp_vol_min                     EQU  09018AH
+c_maf_mmv_crlc_diagcp                EQU  090235H
+c_max_dtp_rec_diagcp                 EQU  09023CH
+c_t_1_diagcp                         EQU  090311H
+c_t_2_diagcp                         EQU  090313H
+c_t_2_dif_diagcp                     EQU  090314H
+c_t_dtp_mv_evac_inc                  EQU  090336H
+c_t_max_cps                          EQU  090346H
+c_t_max_fac_slop_mmv                 EQU  090348H
+c_diagcp_mdl_bas_max_vap_chk         EQU  090516H
+c_dtp_dyw_2                          EQU  090524H
+c_dtp_dyw_3                          EQU  090526H
+c_maf_cps_sp_diagcp                  EQU  0905B0H
+c_maf_cps_sp_inc_diagcp              EQU  0905B2H
+c_maf_mmv_diagcp                     EQU  090606H
+c_t_dtp_grd_diagcp                   EQU  0906E6H
+c_dtp_diagcp                         EQU  090868H
+c_dtp_dif_diagcp                     EQU  09086CH
+c_dtp_dif_min_diagcp                 EQU  090870H
+c_dtp_mv_evac_dif                    EQU  090876H
+c_dtp_mv_evac_inc                    EQU  090878H
+c_dtp_mv_evac_thd                    EQU  09087AH
+c_dtp_mv_min_diagcp                  EQU  09087CH
+c_dtp_slop_min                       EQU  090880H
+c_lam_min_diagcp                     EQU  0908C4H
+
+PUBLIC  DiagCP_St7_EvacLeakMeas, DiagCP_St8, DiagCP_St9_ModelEval
+EXTERN  Abs_Diff_U16:NEAR, Abs_S16_Safe:NEAR, Add_r12_r13_Return_r4:NEAR, Calc_DiagCP_Dtp:NEAR
+EXTERN  Calc_DiagCP_Evac_Slop:NEAR, Calc_DiagCP_Scale:NEAR, DTC_Update_Immediate:NEAR, DiagCP_Calc_DtpDyw:NEAR
+EXTERN  DiagCP_Calc_Vol:NEAR, DiagCP_SetFaultState:NEAR, Div_S16_Round_Sat:NEAR, Div_S32_S16_Round:NEAR
+EXTERN  Get_IP_Byte_2D_Table_DWord_YWord:NEAR, Interp_U16:NEAR, L_D3586:NEAR, Lookup_DiagCP_Vol:NEAR
+EXTERN  Mul_S16_Q7_Sat:NEAR, Reset_uVar1_9b0:NEAR, Sat_Sub_S16:NEAR, sub_r12_r13_rets_r4:NEAR
+
+S_D2454 SECTION CODE AT 0D2454H
+
+; ======== DiagCP_St7_EvacLeakMeas  (@0xd2454) ========
+        ; ------------------------------------------------------------
+        ; DiagCP (EVAP leak-diag) state_diagcp==7 arm, via DiagCP_State_jmptab@0xa105e.
+        ; ------------------------------------------------------------
+DiagCP_St7_EvacLeakMeas:
+        JB lv_cdn_diag_maf_dif_ch_int.0EH,L_D245C
+        JMPA cc_UC,L_D2BC6
+L_D245C:                 ; 0xd245c
+        MOV R12,DPP0:c_dtp_dyw_2
+        CALLA cc_UC,DiagCP_Calc_DtpDyw
+        CMPB RL4,#01H
+        JMPA cc_NE,L_D2BAA
+        JB lv_err_maf_tps_ratio_2.08H,L_D24C0
+        JB lv_err_maf_tps_ratio_2.09H,L_D24C0
+        BSET lv_err_maf_tps_ratio_2.08H
+        BCLR lv_err_maf_tps_ratio_2.09H
+        BSET lv_diagcp_cdn_nok.09H
+        BCLR lv_diagcp_cdn_nok.0AH
+        MOVBZ R4,DPP0:c_t_max_cps
+        MOV state_diagcp_F978,R4
+        MOV R5,lam_bank_1_lam_up_lam_mv
+        MOV lam_mv_1_diagcp,R5
+        BCLR lv_err_maf_tps_ratio_2.0BH
+        BCLR lv_err_maf_tps_ratio_2.0CH
+        MOV dtp_mv_ref,ZEROS
+        MOVB t_dly_dtp_evac_inc,ZEROS
+        MOV R2,dtp_mv
+        MOV g_cfe2,R2
+        MOV R3,dtp_sword
+        MOV dtp_evac_mmv,R3
+        MOV dtp_evac_slop,ZEROS
+        MOV dtp_evac_slop_mmv,ZEROS
+        BCLR lv_diagcp_cdn_nok.06H
+        BCLR lv_diagcp_cdn_nok.05H
+        BCLR lv_diagcp_cdn_nok.04H
+        MOVBZ R1,DPP0:c_t_max_fac_slop_mmv
+        MOV diag_f976,R1
+        JMPA cc_UC,L_D3586
+L_D24C0:                 ; 0xd24c0
+        MOV R12,dtp_mv
+        MOV R13,dtp_evac_beg_diagcp
+        CALLS 00FH,Sat_Sub_S16
+        MOV dtp_dif_act_sword,R4
+        MOV R4,t_dtp_grd_diagcp
+        CMP R4,DPP0:c_t_dtp_grd_diagcp
+        JMPR cc_NC,L_D2596
+        ADD R4,#01H
+        MOV t_dtp_grd_diagcp,R4
+        MOV R5,dtp_dif_act_sword
+        MOV dtp_dif_act_grd_diagcp,R5
+        MOV R12,dtp_dif_cor_sword
+        MOV R13,R12
+        ASHR R13,#0FH
+        MOV R2,R12
+        SHL R12,#03H
+        SHL R13,#03H
+        SHR R2,#0DH
+        OR R13,R2
+        MOVBZ R14,DPP0:c_t_1_diagcp
+        CALLS 00FH,Div_S32_S16_Round
+        MOV [-R0],R4
+        MOV R12,dtp_dif_act_grd_diagcp
+        MOV R13,R12
+        ASHR R13,#0FH
+        MOV R4,R12
+        SHL R12,#04H
+        SHL R13,#04H
+        SHR R4,#0CH
+        OR R13,R4
+        MOV R14,t_dtp_grd_diagcp
+        CALLS 00FH,Div_S32_S16_Round
+        MOV R12,R4
+        MOV R13,[R0+]
+        CALLS 00FH,Sat_Sub_S16
+        MOV dtp_grd,R4
+        MOV R12,#DATA16 05042H
+        MOV R13,diagcp_mdl_bas
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YWord
+        MOVBZ R4,RL4
+        MOV [-R0],R4
+        MOV R12,#DATA16 0503AH
+        MOV R13,dtp_grd
+        ADD R13,#DATA16 08000H
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YWord
+        MOVBZ R12,RL4
+        MOV R13,[R0+]
+        CALLS 00FH,Mul_S16_Q7_Sat
+        MOVB diagcp_vol,RL4
+        MOV R12,maf_mmv_diagcp
+        MOV R13,maf_word
+        MOVBZ R14,DPP0:c_maf_mmv_crlc_diagcp
+        SHL R14,#08H
+        CALLS 00FH,Interp_U16
+        MOV maf_mmv_diagcp,R4
+        MOV R12,R4
+        MOV R13,maf_word
+        CALLS 00FH,Abs_Diff_U16
+        CMP R4,DPP0:c_maf_mmv_diagcp
+        JMPR cc_C,L_D2596
+        MOV R4,#DATA16 00100H
+        OR intr_state_diagcp,R4
+        BCLR lv_err_maf_tps_ratio_2.08H
+        BCLR lv_err_maf_tps_ratio_2.09H
+        BCLR lv_diagcp_cdn_nok.09H
+        BCLR lv_diagcp_cdn_nok.0AH
+        MOV state_diagcp_F978,ZEROS
+        MOVB RL4,#0CH
+        MOVB state_diagcp,RL4
+L_D2596:                 ; 0xd2596
+        MOV R4,flow_sp_cps_ext
+        CMP R4,DPP0:c_maf_cps_sp_diagcp
+        JMPR cc_NE,L_D2616
+        JB lv_err_maf_tps_ratio_2.0BH,L_D2616
+        JB lv_err_maf_tps_ratio_2.0CH,L_D25E0
+        MOV R12,dtp_mv
+        MOV R13,g_cfe2
+        CALLS 00FH,Sat_Sub_S16
+        CMP R4,DPP0:c_dtp_mv_evac_dif
+        JMPR cc_SLT,L_D25E0
+        MOV R4,dtp_mv
+        CMP R4,DPP0:c_dtp_mv_evac_thd
+        JMPR cc_SLT,L_D25E0
+        MOVB RL4,t_dly_dtp_evac_inc
+        JMPR cc_NE,L_D2620
+        MOVB RL5,DPP0:c_t_dtp_mv_evac_inc
+        MOVB t_dly_dtp_evac_inc,RL5
+        MOV R4,g_cfe2
+        MOV dtp_mv_ref,R4
+        BSET lv_err_maf_tps_ratio_2.0CH
+        BCLR lv_diagcp_cdn_nok.03H
+        JMPR cc_UC,L_D2620
+L_D25E0:                 ; 0xd25e0
+        MOVB RL4,t_dly_dtp_evac_inc
+        JMPR cc_EQ,L_D2620
+        JNB lv_diagcp_cdn_nok.03H,L_D2610
+        SUBB RL4,#01H
+        MOVB t_dly_dtp_evac_inc,RL4
+        CMPB RL4,#00H
+        JMPR cc_UGT,L_D2610
+        BCLR lv_err_maf_tps_ratio_2.0CH
+        MOV R12,dtp_mv
+        MOV R13,dtp_mv_ref
+        CALLS 00FH,Sat_Sub_S16
+        MOV R12,R4
+        CALLS 00FH,Abs_S16_Safe
+        CMP R4,DPP0:c_dtp_mv_evac_inc
+        JMPR cc_SGT,L_D2610
+        BSET lv_err_maf_tps_ratio_2.0BH
+L_D2610:                 ; 0xd2610
+        BXOR lv_diagcp_cdn_nok.03H,ONES.00H
+        JMPR cc_UC,L_D2620
+L_D2616:                 ; 0xd2616
+        BCLR lv_err_maf_tps_ratio_2.0CH
+        MOVB t_dly_dtp_evac_inc,ZEROS
+        MOV dtp_mv_ref,ZEROS
+L_D2620:                 ; 0xd2620
+        MOV R4,dtp_mv
+        MOV g_cfe2,R4
+        JNB lv_diagcp_cdn_nok.06H,L_D2632
+        CALLA cc_UC,Calc_DiagCP_Evac_Slop
+        JMPR cc_UC,L_D2638
+L_D2632:                 ; 0xd2632
+        CALLA cc_UC,Reset_uVar1_9b0
+        BSET lv_diagcp_cdn_nok.06H
+L_D2638:                 ; 0xd2638
+        JB lv_err_maf_tps_ratio_2.09H,L_D2640
+        JMPA cc_UC,L_D2950
+L_D2640:                 ; 0xd2640
+        MOV R4,dtp_mv
+        MOV dtp_mv_mod_6_sword,R4
+        CMP R4,DPP0:c_dtp_dif_min_diagcp
+        JMPA cc_SGE,L_D27BE
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D338H
+        MOV R13,#DATA16 055F6H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0CH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_2
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D2678
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_st_grp_cp,R4
+L_D2678:                 ; 0xd2678
+        MOV R4,#DATA16 02000H
+        OR intr_state_diagcp,R4
+        MOVB RL4,g_d344
+        CMPB RL4,#03H
+        JMPR cc_NE,L_D26A0
+        MOV R4,#DATA16 0F7FFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+L_D26A0:                 ; 0xd26a0
+        MOVB RL4,g_d352
+        JMPR cc_EQ,L_D26F4
+        MOVB RL5,#08H
+        MOVB dtc_test_result,RL5
+        MOV R12,#DATA16 0D346H
+        MOV R13,#DATA16 0560CH
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0DH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_3
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D26CE
+        MOV R4,#DATA16 0DFFFH
+        AND dtc_st_grp_cp,R4
+L_D26CE:                 ; 0xd26ce
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0F7FFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        JMPR cc_UC,L_D2700
+L_D26F4:                 ; 0xd26f4
+        MOV R4,#DATA16 0DFFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+L_D2700:                 ; 0xd2700
+        MOVB RL4,g_d336
+        JMPR cc_EQ,L_D2754
+        MOVB RL5,#08H
+        MOVB dtc_test_result,RL5
+        MOV R12,#DATA16 0D32AH
+        MOV R13,#DATA16 055E0H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0BH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_1
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D272E
+        MOV R4,#DATA16 0F7FFH
+        AND dtc_st_grp_cp,R4
+L_D272E:                 ; 0xd272e
+        MOV R4,#DATA16 0DFFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        JMPR cc_UC,L_D275C
+L_D2754:                 ; 0xd2754
+        MOV R4,#DATA16 0F7FFH
+        AND lv_cat_f874,R4
+L_D275C:                 ; 0xd275c
+        MOVB RL4,g_d328
+        JMPR cc_EQ,L_D27B2
+        MOVB RL5,#08H
+        MOVB dtc_test_result,RL5
+        MOV R12,#DATA16 0D31CH
+        MOV R13,#DATA16 055CAH
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0AH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_0
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D278A
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_cp,R4
+L_D278A:                 ; 0xd278a
+        MOV R4,#DATA16 0DFFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0F7FFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        JMPA cc_UC,L_D2926
+L_D27B2:                 ; 0xd27b2
+        MOV R4,#DATA16 0FBFFH
+        AND lv_cat_f874,R4
+        JMPA cc_UC,L_D2926
+L_D27BE:                 ; 0xd27be
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D346H
+        MOV R13,#DATA16 0560CH
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0DH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_3
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D27E6
+        MOV R4,#DATA16 0DFFFH
+        AND dtc_st_grp_cp,R4
+L_D27E6:                 ; 0xd27e6
+        MOV R4,#DATA16 02000H
+        OR intr_state_diagcp,R4
+        MOVB RL4,g_d352
+        CMPB RL4,#03H
+        JMPR cc_NE,L_D280E
+        MOV R4,#DATA16 0F7FFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+L_D280E:                 ; 0xd280e
+        MOVB RL4,g_d344
+        JMPR cc_EQ,L_D2862
+        MOVB RL5,#08H
+        MOVB dtc_test_result,RL5
+        MOV R12,#DATA16 0D338H
+        MOV R13,#DATA16 055F6H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0CH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_2
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D283C
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_st_grp_cp,R4
+L_D283C:                 ; 0xd283c
+        MOV R4,#DATA16 0DFFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0F7FFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        JMPR cc_UC,L_D286E
+L_D2862:                 ; 0xd2862
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+L_D286E:                 ; 0xd286e
+        MOVB RL4,g_d336
+        JMPR cc_EQ,L_D28C2
+        MOVB RL5,#08H
+        MOVB dtc_test_result,RL5
+        MOV R12,#DATA16 0D32AH
+        MOV R13,#DATA16 055E0H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0BH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_1
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D289C
+        MOV R4,#DATA16 0F7FFH
+        AND dtc_st_grp_cp,R4
+L_D289C:                 ; 0xd289c
+        MOV R4,#DATA16 0DFFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        JMPR cc_UC,L_D28CA
+L_D28C2:                 ; 0xd28c2
+        MOV R4,#DATA16 0F7FFH
+        AND lv_cat_f874,R4
+L_D28CA:                 ; 0xd28ca
+        MOVB RL4,g_d328
+        JMPR cc_EQ,L_D291E
+        MOVB RL5,#08H
+        MOVB dtc_test_result,RL5
+        MOV R12,#DATA16 0D31CH
+        MOV R13,#DATA16 055CAH
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0AH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_0
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D28F8
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_cp,R4
+L_D28F8:                 ; 0xd28f8
+        MOV R4,#DATA16 0DFFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0F7FFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        JMPR cc_UC,L_D2926
+L_D291E:                 ; 0xd291e
+        MOV R4,#DATA16 0FBFFH
+        AND lv_cat_f874,R4
+L_D2926:                 ; 0xd2926
+        MOV R4,sum_obd_diag_ram_sum_diagcp
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_EQ,L_D2936
+        ADD R4,#01H
+        MOV sum_obd_diag_ram_sum_diagcp,R4
+L_D2936:                 ; 0xd2936
+        BCLR lv_err_maf_tps_ratio_2.08H
+        BCLR lv_err_maf_tps_ratio_2.09H
+        BCLR lv_diagcp_cdn_nok.09H
+        BCLR lv_diagcp_cdn_nok.0AH
+        MOV state_diagcp_F978,ZEROS
+        BCLR lv_diagcp_cdn_nok.02H
+        BSET lv_diagcp_cdn_nok.0FH
+        MOVB RL4,#0CH
+        MOVB state_diagcp,RL4
+        JMPA cc_UC,L_D3586
+L_D2950:                 ; 0xd2950
+        MOV R12,lam_bank_1_lam_up_ti_lam
+        MOV R13,lam_mv_1_diagcp
+        CALLS 00FH,Sat_Sub_S16
+        CMP R4,DPP0:c_lam_min_diagcp
+        JMPR cc_SGE,L_D2980
+        MOV R4,#DATA16 00080H
+        OR intr_state_diagcp,R4
+        BCLR lv_err_maf_tps_ratio_2.08H
+        BCLR lv_err_maf_tps_ratio_2.09H
+        BCLR lv_diagcp_cdn_nok.09H
+        BCLR lv_diagcp_cdn_nok.0AH
+        MOV state_diagcp_F978,ZEROS
+        MOVB RL4,#0CH
+        MOVB state_diagcp,RL4
+        JMPA cc_UC,L_D3586
+L_D2980:                 ; 0xd2980
+        MOV R4,dtp_mv
+        CMP R4,DPP0:c_dtp_dif_diagcp
+        JMPA cc_SLE,L_D2B4E
+        JB lv_err_maf_tps_ratio_2.0BH,L_D29B4
+        MOV R12,flow_sp_cps_ext
+        MOV R13,DPP0:c_maf_cps_sp_inc_diagcp
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV R9,R4
+        CMP R9,DPP0:c_maf_cps_sp_diagcp
+        JMPR cc_NC,L_D29A8
+        MOV R4,R9
+        JMPR cc_UC,L_D29AC
+L_D29A8:                 ; 0xd29a8
+        MOV R4,DPP0:c_maf_cps_sp_diagcp
+L_D29AC:                 ; 0xd29ac
+        MOV flow_sp_cps_ext,R4
+        JMPA cc_UC,L_D3586
+L_D29B4:                 ; 0xd29b4
+        MOV R4,dtp_mv
+        MOV dtp_mv_mod_6_sword,R4
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D338H
+        MOV R13,#DATA16 055F6H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0CH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_2
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D29E4
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_st_grp_cp,R4
+L_D29E4:                 ; 0xd29e4
+        MOV R4,#DATA16 02000H
+        OR intr_state_diagcp,R4
+        MOVB RL4,g_d344
+        CMPB RL4,#03H
+        JMPR cc_NE,L_D2A0C
+        MOV R4,#DATA16 0F7FFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+L_D2A0C:                 ; 0xd2a0c
+        MOVB RL4,g_d352
+        JMPR cc_EQ,L_D2A60
+        MOVB RL5,#08H
+        MOVB dtc_test_result,RL5
+        MOV R12,#DATA16 0D346H
+        MOV R13,#DATA16 0560CH
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0DH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_3
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D2A3A
+        MOV R4,#DATA16 0DFFFH
+        AND dtc_st_grp_cp,R4
+L_D2A3A:                 ; 0xd2a3a
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0F7FFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        JMPR cc_UC,L_D2A6C
+L_D2A60:                 ; 0xd2a60
+        MOV R4,#DATA16 0DFFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+L_D2A6C:                 ; 0xd2a6c
+        MOVB RL4,g_d336
+        JMPR cc_EQ,L_D2AC0
+        MOVB RL5,#08H
+        MOVB dtc_test_result,RL5
+        MOV R12,#DATA16 0D32AH
+        MOV R13,#DATA16 055E0H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0BH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_1
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D2A9A
+        MOV R4,#DATA16 0F7FFH
+        AND dtc_st_grp_cp,R4
+L_D2A9A:                 ; 0xd2a9a
+        MOV R4,#DATA16 0DFFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        JMPR cc_UC,L_D2AC8
+L_D2AC0:                 ; 0xd2ac0
+        MOV R4,#DATA16 0F7FFH
+        AND lv_cat_f874,R4
+L_D2AC8:                 ; 0xd2ac8
+        MOVB RL4,g_d328
+        JMPR cc_EQ,L_D2B1C
+        MOVB RL5,#08H
+        MOVB dtc_test_result,RL5
+        MOV R12,#DATA16 0D31CH
+        MOV R13,#DATA16 055CAH
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0AH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_0
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D2AF6
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_cp,R4
+L_D2AF6:                 ; 0xd2af6
+        MOV R4,#DATA16 0DFFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0F7FFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        JMPR cc_UC,L_D2B24
+L_D2B1C:                 ; 0xd2b1c
+        MOV R4,#DATA16 0FBFFH
+        AND lv_cat_f874,R4
+L_D2B24:                 ; 0xd2b24
+        MOV R4,sum_obd_diag_ram_sum_diagcp
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_EQ,L_D2B34
+        ADD R4,#01H
+        MOV sum_obd_diag_ram_sum_diagcp,R4
+L_D2B34:                 ; 0xd2b34
+        BCLR lv_err_maf_tps_ratio_2.08H
+        BCLR lv_err_maf_tps_ratio_2.09H
+        BCLR lv_diagcp_cdn_nok.09H
+        BCLR lv_diagcp_cdn_nok.0AH
+        MOV state_diagcp_F978,ZEROS
+        BCLR lv_diagcp_cdn_nok.02H
+        BSET lv_diagcp_cdn_nok.0FH
+        MOVB RL4,#0CH
+        MOVB state_diagcp,RL4
+        JMPA cc_UC,L_D3586
+L_D2B4E:                 ; 0xd2b4e
+        MOV R4,dtp_mv
+        MOV g_d03c,R4
+        MOV R12,#DATA16 0D346H
+        MOV R13,#DATA16 0560CH
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0DH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_3
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D2B78
+        MOV R4,#DATA16 0DFFFH
+        AND dtc_st_grp_cp,R4
+L_D2B78:                 ; 0xd2b78
+        MOV R4,#DATA16 0DFFFH
+        AND obd_mode06_avail,R4
+        MOV flow_sp_cps_ext,ZEROS
+        BSET lv_act_diagcps.04H
+        BCLR lv_err_maf_tps_ratio_2.08H
+        BCLR lv_err_maf_tps_ratio_2.09H
+        BCLR lv_diagcp_cdn_nok.09H
+        BCLR lv_diagcp_cdn_nok.0AH
+        MOV state_diagcp_F978,ZEROS
+        BSET lv_act_diagcps.00H
+        MOVB RL4,#09H
+        MOVB state_diagcp,RL4
+        MOVB g_c39a,ZEROS
+        MOV R4,dtp_mv
+        MOV dtp_mv_per_sword,R4
+        JMPA cc_UC,L_D3586
+L_D2BAA:                 ; 0xd2baa
+        MOV R4,#08H
+        OR intr_state_diagcp,R4
+        BCLR lv_err_maf_tps_ratio_2.08H
+        BCLR lv_err_maf_tps_ratio_2.09H
+        BCLR lv_diagcp_cdn_nok.09H
+        BCLR lv_diagcp_cdn_nok.0AH
+        MOV state_diagcp_F978,ZEROS
+        MOVB RL4,#0CH
+        MOVB state_diagcp,RL4
+        JMPA cc_UC,L_D3586
+L_D2BC6:                 ; 0xd2bc6
+        MOV R4,#DATA16 04000H
+        OR intr_state_diagcp,R4
+        BCLR lv_err_maf_tps_ratio_2.08H
+        BCLR lv_err_maf_tps_ratio_2.09H
+        BCLR lv_diagcp_cdn_nok.09H
+        BCLR lv_diagcp_cdn_nok.0AH
+        MOV state_diagcp_F978,ZEROS
+        MOVB RL4,#0CH
+        MOVB state_diagcp,RL4
+        JMPA cc_UC,L_D3586
+
+; ======== DiagCP_St8  (@0xd2be4) ========
+        ; ------------------------------------------------------------
+        ; DiagCP (EVAP leak-diag) state_diagcp==8 arm, via DiagCP_State_jmptab@0xa105e.
+        ; ------------------------------------------------------------
+DiagCP_St8:
+        MOV R4,dtp_mv
+        CMP R4,DPP0:c_dtp_mv_min_diagcp
+        JMPA cc_SLT,L_D2DC2
+        MOV R12,DPP0:c_dtp_dyw_2
+        CALLA cc_UC,DiagCP_Calc_DtpDyw
+        CMPB RL4,#01H
+        JMPA cc_NE,L_D2DB2
+        MOVB RL4,eol_state_diagcp
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_D2C1A
+        MOVB RL5,diagcp_vol
+        CMPB RL5,DPP0:c_diagcp_vol_min
+        JMPA cc_C,L_D2DA0
+        CMPB RL5,DPP0:c_diagcp_vol_max
+        JMPA cc_UGT,L_D2DA0
+L_D2C1A:                 ; 0xd2c1a
+        MOV R4,dtp_mv
+        CMP R4,DPP0:c_dtp_diagcp
+        JMPR cc_SLE,L_D2C46
+        BSET lv_act_diagcps.08H
+        MOVB RL4,#0AH
+        MOVB state_diagcp,RL4
+        MOV ctr_sum_dtp,ZEROS
+        MOV tot_dif_sig_diag,ZEROS
+        MOV g_d000,ZEROS
+        MOVBZ R4,DPP0:c_t_2_diagcp
+        SHL R4,#01H
+        MOV tot_sum_dtp,R4
+        JMPA cc_UC,L_D3586
+L_D2C46:                 ; 0xd2c46
+        MOVB RL4,g_c39a
+        CMPB RL4,DPP0:c_max_dtp_rec_diagcp
+        JMPR cc_C,L_D2CEE
+        MOV diagcp_ar,ZEROS
+        MOVB diagcp_dia,ZEROS
+        MOVB diagcp_dia_mod_6,ZEROS
+        MOV R4,g_d03c
+        MOV dtp_mv_mod_6_sword,R4
+        MOV R12,#DATA16 0D32AH
+        MOV R13,#DATA16 055E0H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0BH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_1
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D2C86
+        MOV R4,#DATA16 0F7FFH
+        AND dtc_st_grp_cp,R4
+L_D2C86:                 ; 0xd2c86
+        MOV R12,#DATA16 0D31CH
+        MOV R13,#DATA16 055CAH
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0AH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_0
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D2CA8
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_cp,R4
+L_D2CA8:                 ; 0xd2ca8
+        MOV R12,#DATA16 0D338H
+        MOV R13,#DATA16 055F6H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0CH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_2
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D2CCA
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_st_grp_cp,R4
+L_D2CCA:                 ; 0xd2cca
+        MOV R4,#DATA16 0E3FFH
+        AND obd_mode06_avail,R4
+        MOV R4,sum_obd_diag_ram_sum_diagcp
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_EQ,L_D2CE2
+        ADD R4,#01H
+        MOV sum_obd_diag_ram_sum_diagcp,R4
+L_D2CE2:                 ; 0xd2ce2
+        BSET lv_act_diagcps.01H
+        MOV R12,#02H
+        CALLA cc_UC,DiagCP_SetFaultState
+        JMPA cc_UC,L_D3586
+L_D2CEE:                 ; 0xd2cee
+        JB lv_err_maf_tps_ratio_2.08H,L_D2D18
+        JB lv_err_maf_tps_ratio_2.09H,L_D2D18
+        BSET lv_act_diagcps.06H
+        MOV ctr_sum_dtp,ZEROS
+        MOV g_cfd4,ZEROS
+        MOV g_cfd6,ZEROS
+        BSET lv_err_maf_tps_ratio_2.08H
+        BCLR lv_err_maf_tps_ratio_2.09H
+        BSET lv_diagcp_cdn_nok.09H
+        BCLR lv_diagcp_cdn_nok.0AH
+        MOVBZ R4,DPP0:c_t_2_dif_diagcp
+        MOV state_diagcp_F978,R4
+        JMPA cc_UC,L_D3586
+L_D2D18:                 ; 0xd2d18
+        JB lv_err_maf_tps_ratio_2.09H,L_D2D34
+        MOV R4,dtp_sword
+        MOV R5,R4
+        ASHR R5,#0FH
+        ADD g_cfd4,R4
+        ADDC g_cfd6,R5
+        SUB ctr_sum_dtp,ONES
+        JMPA cc_UC,L_D3586
+L_D2D34:                 ; 0xd2d34
+        BCLR lv_err_maf_tps_ratio_2.08H
+        BCLR lv_err_maf_tps_ratio_2.09H
+        BCLR lv_diagcp_cdn_nok.09H
+        BCLR lv_diagcp_cdn_nok.0AH
+        MOV state_diagcp_F978,ZEROS
+        SUBB g_c39a,ONES
+        MOV R4,dtp_mv_per_sword
+        MOV g_cff4,R4
+        MOV R12,g_cfd4
+        MOV R13,g_cfd6
+        MOV R14,ctr_sum_dtp
+        CALLS 00FH,Div_S32_S16_Round
+        MOV dtp_mv_per_sword,R4
+        MOVB RL4,g_c39a
+        CMPB RL4,#02H
+        JMPA cc_C,L_D3586
+        MOV R12,dtp_mv_per_sword
+        MOV R13,g_cff4
+        CALLS 00FH,Sat_Sub_S16
+        MOV R12,R4
+        MOVBZ R13,DPP0:c_t_2_dif_diagcp
+        SUB R13,#01H
+        CALLS 00FH,Div_S16_Round_Sat
+        MOV dtp_slop,R4
+        CMP R4,DPP0:c_dtp_slop_min
+        JMPA cc_SGE,L_D3586
+        MOV R5,#DATA16 01000H
+        OR intr_state_diagcp,R5
+        MOV R12,#00H
+        CALLA cc_UC,DiagCP_SetFaultState
+        JMPA cc_UC,L_D3586
+L_D2DA0:                 ; 0xd2da0
+        MOV R4,#DATA16 00800H
+        OR intr_state_diagcp,R4
+        MOV R12,#00H
+        CALLA cc_UC,DiagCP_SetFaultState
+        JMPA cc_UC,L_D3586
+L_D2DB2:                 ; 0xd2db2
+        MOV R4,#08H
+        OR intr_state_diagcp,R4
+        MOV R12,#00H
+        CALLA cc_UC,DiagCP_SetFaultState
+        JMPA cc_UC,L_D3586
+L_D2DC2:                 ; 0xd2dc2
+        MOV R4,#DATA16 01000H
+        OR intr_state_diagcp,R4
+        MOV R12,#00H
+        CALLA cc_UC,DiagCP_SetFaultState
+        JMPA cc_UC,L_D3586
+
+; ======== DiagCP_St9_ModelEval  (@0xd2dd4) ========
+        ; ------------------------------------------------------------
+        ; DiagCP (EVAP leak-diag) state_diagcp==9 arm, via DiagCP_State_jmptab@0xa105e.
+        ; ------------------------------------------------------------
+DiagCP_St9_ModelEval:
+        MOV R12,DPP0:c_dtp_dyw_3
+        CALLA cc_UC,DiagCP_Calc_DtpDyw
+        CMPB RL4,#01H
+        JMPA cc_NE,L_D3142
+        MOV R4,ctr_sum_dtp
+        CMP R4,tot_sum_dtp
+        JMPR cc_NC,L_D2E0E
+        MOV R12,dtp_sword
+        MOV R13,R4
+        MOV R14,tot_dif_sig_diag
+        MOV R15,g_d000
+        CALLA cc_UC,Calc_DiagCP_Dtp
+        MOV tot_dif_sig_diag,R4
+        MOV g_d000,R5
+        SUB ctr_sum_dtp,ONES
+        JMPA cc_UC,L_D3586
+L_D2E0E:                 ; 0xd2e0e
+        MOV R12,tot_dif_sig_diag
+        MOV R13,g_d000
+        CALLA cc_UC,Calc_DiagCP_Scale
+        MOV diagcp_mdl_diag,R4
+        MOV R12,R4
+        MOV R13,diagcp_mdl_estim
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV diagcp_mdl_end,R4
+        MOV R12,R4
+        CALLA cc_UC,DiagCP_Calc_Vol
+        MOV diagcp_ar,R4
+        MOV R12,R4
+        CALLA cc_UC,Lookup_DiagCP_Vol
+        MOVB diagcp_dia,RL4
+        CMPB RL4,DPP0:c_diagcp_dia_min_vap_chk
+        JMPR cc_ULE,L_D2E6C
+        CMPB RL4,DPP0:c_diagcp_dia_max_vap_chk
+        JMPR cc_NC,L_D2E6C
+        MOV R4,diagcp_mdl_bas
+        CMP R4,DPP0:c_diagcp_mdl_bas_max_vap_chk
+        JMPR cc_NC,L_D2E6C
+        BCLR lv_err_maf_tps_ratio_2.08H
+        BCLR lv_err_maf_tps_ratio_2.09H
+        BCLR lv_diagcp_cdn_nok.09H
+        BCLR lv_diagcp_cdn_nok.0AH
+        MOV state_diagcp_F978,ZEROS
+        MOVB RL4,#0FH
+        MOVB state_diagcp,RL4
+        JMPA cc_UC,L_D3586
+L_D2E6C:                 ; 0xd2e6c
+        MOV R4,g_d03c
+        MOV dtp_mv_mod_6_sword,R4
+        BCLR lv_diagcp_cdn_nok.07H
+        MOVB RL4,diagcp_dia
+        CMPB RL4,DPP0:c_diagcp_dia_min
+        JMPA cc_ULE,L_D3092
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        JNB lv_diagcp_cdn_nok.02H,L_D2E96
+        JMPA cc_UC,L_D3086
+L_D2E96:                 ; 0xd2e96
+        MOVB RL4,diagcp_dia
+        CMPB RL4,DPP0:c_diagcp_dia_max
+        JMPR cc_ULE,L_D2F8A
+        MOVB diagcp_dia_mod_6,RL4
+        MOVB RL5,#08H
+        MOVB dtc_test_result,RL5
+        MOV R12,#DATA16 0D32AH
+        MOV R13,#DATA16 055E0H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0BH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_1
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D2ECC
+        MOV R4,#DATA16 0F7FFH
+        AND dtc_st_grp_cp,R4
+L_D2ECC:                 ; 0xd2ecc
+        MOV R4,#DATA16 02000H
+        OR intr_state_diagcp,R4
+        MOVB RL4,g_d336
+        CMPB RL4,#03H
+        JMPR cc_NE,L_D2F00
+        MOV R4,#DATA16 0DFFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+L_D2F00:                 ; 0xd2f00
+        MOVB RL4,g_d344
+        JMPR cc_EQ,L_D2F46
+        MOVB RL5,#08H
+        MOVB dtc_test_result,RL5
+        MOV R12,#DATA16 0D338H
+        MOV R13,#DATA16 055F6H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0CH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_2
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D2F2E
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_st_grp_cp,R4
+L_D2F2E:                 ; 0xd2f2e
+        MOV R4,#DATA16 0F7FFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+L_D2F46:                 ; 0xd2f46
+        MOVB RL4,g_d328
+        JMPR cc_EQ,L_D2F7A
+        MOVB RL5,#08H
+        MOVB dtc_test_result,RL5
+        MOV R12,#DATA16 0D31CH
+        MOV R13,#DATA16 055CAH
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0AH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_0
+        AND R4,#DATA16 00020H
+        JMPA cc_EQ,L_D3118
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_cp,R4
+        JMPA cc_UC,L_D3118
+L_D2F7A:                 ; 0xd2f7a
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        JMPA cc_UC,L_D3118
+L_D2F8A:                 ; 0xd2f8a
+        JNB lv_act_diagcps.05H,L_D2F92
+        JMPA cc_UC,L_D307A
+L_D2F92:                 ; 0xd2f92
+        MOVB RL4,diagcp_dia
+        MOVB diagcp_dia_mod_6,RL4
+        MOVB RL5,#08H
+        MOVB dtc_test_result,RL5
+        MOV R12,#DATA16 0D31CH
+        MOV R13,#DATA16 055CAH
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0AH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_0
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D2FC2
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_cp,R4
+L_D2FC2:                 ; 0xd2fc2
+        MOV R4,#DATA16 02000H
+        OR intr_state_diagcp,R4
+        MOVB RL4,g_d328
+        CMPB RL4,#03H
+        JMPR cc_NE,L_D2FF6
+        MOV R4,#DATA16 0DFFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0F7FFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+L_D2FF6:                 ; 0xd2ff6
+        MOVB RL4,g_d344
+        JMPR cc_EQ,L_D303C
+        MOVB RL5,#08H
+        MOVB dtc_test_result,RL5
+        MOV R12,#DATA16 0D338H
+        MOV R13,#DATA16 055F6H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0CH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_2
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D3024
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_st_grp_cp,R4
+L_D3024:                 ; 0xd3024
+        MOV R4,#DATA16 0F7FFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+L_D303C:                 ; 0xd303c
+        MOVB RL4,g_d336
+        JMPR cc_EQ,L_D306C
+        MOVB RL5,#08H
+        MOVB dtc_test_result,RL5
+        MOV R12,#DATA16 0D32AH
+        MOV R13,#DATA16 055E0H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0BH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_1
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D3118
+        MOV R4,#DATA16 0F7FFH
+        AND dtc_st_grp_cp,R4
+        JMPR cc_UC,L_D3118
+L_D306C:                 ; 0xd306c
+        MOV R4,#DATA16 0F7FFH
+        AND dtc_st_grp_cp,R4
+        AND obd_mode06_avail,R4
+        JMPR cc_UC,L_D3118
+L_D307A:                 ; 0xd307a
+        BSET lv_diagcp_cdn_nok.07H
+        MOV R4,#DATA16 00400H
+        OR intr_state_diagcp,R4
+        JMPR cc_UC,L_D3118
+L_D3086:                 ; 0xd3086
+        BSET lv_diagcp_cdn_nok.07H
+        MOV R4,#DATA16 04000H
+        OR intr_state_diagcp,R4
+        JMPR cc_UC,L_D3118
+L_D3092:                 ; 0xd3092
+        MOVB RL4,diagcp_dia
+        MOVB diagcp_dia_mod_6,RL4
+        MOV R12,#DATA16 0D338H
+        MOV R13,#DATA16 055F6H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0CH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_2
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D30BC
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_st_grp_cp,R4
+L_D30BC:                 ; 0xd30bc
+        MOV R4,#DATA16 0EFFFH
+        AND obd_mode06_avail,R4
+        MOV R12,#DATA16 0D32AH
+        MOV R13,#DATA16 055E0H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0BH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_1
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D30E6
+        MOV R4,#DATA16 0F7FFH
+        AND dtc_st_grp_cp,R4
+L_D30E6:                 ; 0xd30e6
+        MOV R4,#DATA16 0F7FFH
+        AND obd_mode06_avail,R4
+        MOV R12,#DATA16 0D31CH
+        MOV R13,#DATA16 055CAH
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.0AH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_0
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D3110
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_cp,R4
+L_D3110:                 ; 0xd3110
+        MOV R4,#DATA16 0FBFFH
+        AND obd_mode06_avail,R4
+L_D3118:                 ; 0xd3118
+        JB lv_diagcp_cdn_nok.07H,L_D3138
+        MOV R4,sum_obd_diag_ram_sum_diagcp
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_EQ,L_D312C
+        ADD R4,#01H
+        MOV sum_obd_diag_ram_sum_diagcp,R4
+L_D312C:                 ; 0xd312c
+        BSET lv_act_diagcps.02H
+        MOV R12,#02H
+        CALLA cc_UC,DiagCP_SetFaultState
+        JMPA cc_UC,L_D3586
+L_D3138:                 ; 0xd3138
+        MOV R12,#00H
+        CALLA cc_UC,DiagCP_SetFaultState
+        JMPA cc_UC,L_D3586
+L_D3142:                 ; 0xd3142
+        MOV R4,#DATA16 00010H
+        OR intr_state_diagcp,R4
+        MOV R12,#00H
+        CALLA cc_UC,DiagCP_SetFaultState
+        JMPA cc_UC,L_D3586
+
+S_D2454 ENDS
+        END

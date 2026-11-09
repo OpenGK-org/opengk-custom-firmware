@@ -1,0 +1,110 @@
+; asw/lo/lo_lsh.a66
+; 0xB6384-0xB6464  (224 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Calc_LSH_Down_Ctl, Calc_LSH_Down_PWM, LSH_Down_Heater_Start, Log_Event_f62c
+
+S_B6384 SECTION CODE AT 0B6384H
+
+; ======== Log_Event_f62c  (@0xb6384) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Log_Event_f62c:
+        MOVB RL4,#DATA16 00018H
+        MOVBZ R5,tq_lo_wr
+        MOVB [R5+#0F66EH],RL4
+        MOVB RL4,tq_lo_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_wr,RL4
+        MOVB RL4,tq_lo_wr
+        CMPB RL4,tq_lo_rd
+        JMPR cc_NE,L_B63B8
+        BSET sched_flags.03H
+        MOVB RL4,tq_lo_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_rd,RL4
+L_B63B8:                 ; 0xb63b8
+        RETS
+
+; ======== LSH_Down_Heater_Start  (@0xb63ba) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signal): Downstream O2 sensor-heater start: when conf_cat_eff, sets
+        ; lsh_down state=1 / t_lsh_down_prev=0 and logs event.
+        ; ------------------------------------------------------------
+LSH_Down_Heater_Start:
+        MOVB RL4,conf_cat_eff
+        CMPB RL4,#01H
+        JMPR cc_NE,L_B6406
+        MOV R4,#05H
+        MOV g_f95e,R4
+        MOVB RL4,#DATA16 00015H
+        MOVBZ R5,tq_lo_wr
+        MOVB [R5+#0F66EH],RL4
+        MOVB RL4,tq_lo_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_wr,RL4
+        MOVB RL4,tq_lo_wr
+        CMPB RL4,tq_lo_rd
+        JMPR cc_NE,L_B63FC
+        BSET sched_flags.03H
+        MOVB RL4,tq_lo_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_rd,RL4
+L_B63FC:                 ; 0xb63fc
+        MOV R4,#01H
+        MOV lam_bank_1_lsh_down_struct_state_lsh_down,R4
+        MOVB lam_bank_1_lsh_down_struct_t_lsh_down_prev,ZEROS
+L_B6406:                 ; 0xb6406
+        RETS
+
+; ======== Calc_LSH_Down_PWM  (@0xb6408) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by lsh/ls_cur/n_grd/mtv output signals): Rear O2 sensor-heater PWM: lsh_down
+        ; state + lshpwm_down output.
+        ; ------------------------------------------------------------
+Calc_LSH_Down_PWM:
+        MOV g_f95e,ZEROS
+        MOV lam_bank_1_lsh_down_struct_state_lsh_down,ZEROS
+        MOVB lam_bank_1_lsh_down_struct_t_lsh_down_prev,ZEROS
+        MOVB lam_bank_1_lsh_down_struct_lshpwm_down,ZEROS
+        MOVBZ R4,lam_bank_1_lsh_down_struct_lshpwm_down
+        SHL R4,#08H
+        MOV R2,#DATA16 0493EH
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV lv_ivvt_f9c8,R4
+        RETS
+
+; ======== Calc_LSH_Down_Ctl  (@0xb6434) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by lsh/ls_cur/n_grd/mtv output signals): Rear O2 heater closed-loop control:
+        ; fac_lshpwm_down_ctl, t_lshpwm_down_lim, lshpwm_down.
+        ; ------------------------------------------------------------
+Calc_LSH_Down_Ctl:
+        MOV R4,#DATA16 08000H
+        MOV lam_bank_1_lsh_down_struct_fac_lshpwm_down_ctl,R4
+        MOVB lam_bank_1_lsh_down_struct_t_lsh_down_prev,ZEROS
+        MOVB lam_bank_1_lsh_down_struct_t_lshpwm_down_lim,ZEROS
+        MOVB lam_bank_1_lsh_down_struct_lshpwm_down,ZEROS
+        MOVBZ R5,lam_bank_1_lsh_down_struct_lshpwm_down
+        SHL R5,#08H
+        MOV R2,#DATA16 0493EH
+        MULU R5,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV lv_ivvt_f9c8,R4
+        RETS
+
+S_B6384 ENDS
+        END

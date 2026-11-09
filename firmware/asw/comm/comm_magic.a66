@@ -1,0 +1,714 @@
+; asw/comm/comm_magic.a66
+; 0xDE082-0xDE73A  (1720 bytes, 6 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  BL_Arm_Exec_Magic, BL_Set_ExecMagic_2, BL_Set_ExecMagic_NVM, BL_Set_Mode_Status, Scan_Block_Bit0_Clear, xor_routine
+EXTERN  BL_Copy_Blocks:NEAR, BL_Validate_Setup:NEAR, Calc_ECU_Diag_SF_2:NEAR, Elevated_Eeprom_Clear__Routine:NEAR
+EXTERN  Elevated_Write_Routine_prg_zone_wrapper:NEAR, Push_To_System_Stack:NEAR, Scan_Block_Bit0_Set:NEAR
+
+S_DE082 SECTION CODE AT 0DE082H
+
+; ======== xor_routine  (@0xde082) ========
+xor_routine:
+        MOV R4,#0FH
+        ADD R14,R12
+        JMPR cc_UC,L_DE09E
+L_DE088:                 ; 0xde088
+        EXTP R13, #01H
+        MOVB RL5,[R12+]
+        XORB RL5,RL4
+        MOVB RH5,#00H
+        SHL R5,#01H
+        EXTP #028H, #01H
+        MOV R5,[R5+#025F6H]
+        SHR R4,#08H
+        XOR R4,R5
+L_DE09E:                 ; 0xde09e
+        CMP R12,R14
+        JMPR cc_C,L_DE088
+        RETS
+
+; ======== BL_Set_ExecMagic_NVM  (@0xde0a4) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by bl_/kwp_ output signals): Arms bootloader reprogramming: writes
+        ; bl_exec_arm_magic/magic_b1/b2 to NVM + Elevated_Eeprom_Clear, so the next reset enters the flash
+        ; bootloader. (GKFlasher reflash entry.)
+        ; ------------------------------------------------------------
+BL_Set_ExecMagic_NVM:
+        MOV [-R0],R14
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        SUB R0,#04H
+        MOV R6,R12
+        MOV R7,R13
+        BCLR can_fd58.03H
+        BCLR can_fd58.04H
+        BCLR can_fd58.06H
+        BCLR can_fd58.05H
+        MOV bl_blk_addr_lo,ZEROS
+        MOV bl_blk_addr_hi,ZEROS
+        MOV bl_blk_cnt_lo,ZEROS
+        MOV bl_blk_cnt_hi,ZEROS
+        MOV R4,#00H
+        MOV R5,#00H
+        EXTP #03H, #02H
+        MOV DPP0:bl_cur_addr_lo,R4
+        MOV DPP0:bl_cur_addr_hi,R5
+        MOV R2,#00H
+        MOV [R0+#02H],R2
+        MOVB RL4,#DATA16 00053H
+        MOVB bl_exec_arm_magic,RL4
+        CMP R14,#DATA16 053ACH
+        JMPR cc_NE,L_DE0FA
+        MOVB RL5,#DATA16 00096H
+        MOVB bl_exec_magic_b1,RL5
+        JMPR cc_UC,L_DE102
+L_DE0FA:                 ; 0xde0fa
+        MOVB RL4,#DATA16 000ACH
+        MOVB bl_exec_magic_b1,RL4
+L_DE102:                 ; 0xde102
+        MOV R4,#00H
+        MOV [R0],R4
+L_DE106:                 ; 0xde106
+        EXTP R7, #01H
+        MOVB RL4,[R6]
+        MOV R5,[R0]
+        MOVB [R5+#0F56AH],RL4
+        MOV R4,[R0]
+        ADD R4,#01H
+        MOV [R0],R4
+        ADD R6,#01H
+        CMP R4,#DATA16 0000AH
+        JMPR cc_C,L_DE106
+        JNB PSW.0BH,L_DE126
+        JMPA cc_UC,L_DE5AC
+L_DE126:                 ; 0xde126
+        MOV WDTCON,#DATA16 09201H
+        SRVWDT
+        CALLS 00DH,BL_Validate_Setup
+        JB can_fd58.04H,L_DE13A
+        JMPA cc_UC,L_DE26C
+L_DE13A:                 ; 0xde13a
+        EXTP #03H, #01H
+        MOV R4,DPP0:bl_cur_addr_lo
+        CMP R4,#00H
+        JMPR cc_C,L_DE1E4
+        EXTP #03H, #01H
+        MOV R5,DPP0:bl_cur_addr_lo
+        CMP R5,#DATA16 02000H
+        JMPR cc_NC,L_DE1E4
+        MOV R12,#DATA16 0F562H
+        MOV R13,#04H
+        CALLS 00DH,Scan_Block_Bit0_Clear
+        MOV [R0],R4
+        CMP R4,#04H
+        JMPR cc_NE,L_DE1B0
+        EXTP #03H, #02H
+        MOV R8,DPP0:bl_cur_addr_lo
+        MOV R9,DPP0:bl_cur_addr_hi
+        EXTP R9, #02H
+        MOV R5,[R8+#07F2H]
+        NOP
+        MOV [R0+#02H],R5
+        CMP R5,#DATA16 0003CH
+        JMPR cc_EQ,L_DE186
+        JNB can_fd58.08H,L_DE18E
+L_DE186:                 ; 0xde186
+        BCLR can_fd58.04H
+        BSET can_fd58.06H
+        JMPA cc_UC,L_DE286
+L_DE18E:                 ; 0xde18e
+        MOV R12,#DATA16 0F566H
+        MOV R13,#04H
+        CALLS 00DH,Scan_Block_Bit0_Set
+        CMP R4,#04H
+        JMPR cc_NE,L_DE1A8
+        MOV R8,#DATA16 02000H
+        MOV R9,#01H
+        BSET can_fd58.04H
+        JMPA cc_UC,L_DE286
+L_DE1A8:                 ; 0xde1a8
+        BCLR can_fd58.04H
+        BSET can_fd58.06H
+        JMPA cc_UC,L_DE286
+L_DE1B0:                 ; 0xde1b0
+        MOV R4,[R0]
+        SHL R4,#0BH
+        ADD R4,#DATA16 04000H
+        MOV R8,R4
+        MOV R9,R8
+        SHR R9,#0EH
+        AND R8,#DATA16 03FFFH
+        BSET can_fd58.04H
+        MOV R4,[R0]
+        CMP R4,#01H
+        JMPR cc_C,L_DE286
+        JNB can_fd58.08H,L_DE1D2
+        BSET can_fd58.06H
+        JMPR cc_UC,L_DE286
+L_DE1D2:                 ; 0xde1d2
+        MOV R12,#DATA16 0F566H
+        MOV R13,#04H
+        CALLS 00DH,Scan_Block_Bit0_Set
+        CMP R4,#04H
+        JMPR cc_EQ,L_DE286
+        BSET can_fd58.06H
+        JMPR cc_UC,L_DE286
+L_DE1E4:                 ; 0xde1e4
+        MOV R12,#DATA16 0F566H
+        MOV R13,#04H
+        CALLS 00DH,Scan_Block_Bit0_Clear
+        MOV [R0],R4
+        CMP R4,#04H
+        JMPR cc_NE,L_DE238
+        EXTP #03H, #02H
+        MOV R8,DPP0:bl_cur_addr_lo
+        MOV R9,DPP0:bl_cur_addr_hi
+        EXTP R9, #02H
+        MOV R5,[R8+#07F2H]
+        NOP
+        MOV [R0+#02H],R5
+        CMP R5,#DATA16 0003CH
+        JMPR cc_EQ,L_DE216
+        JNB can_fd58.07H,L_DE21C
+L_DE216:                 ; 0xde216
+        BCLR can_fd58.04H
+        BSET can_fd58.05H
+        JMPR cc_UC,L_DE286
+L_DE21C:                 ; 0xde21c
+        MOV R12,#DATA16 0F562H
+        MOV R13,#04H
+        CALLS 00DH,Scan_Block_Bit0_Set
+        CMP R4,#04H
+        JMPR cc_NE,L_DE232
+        MOV R8,#00H
+        MOV R9,#01H
+        BSET can_fd58.04H
+        JMPR cc_UC,L_DE286
+L_DE232:                 ; 0xde232
+        BCLR can_fd58.04H
+        BSET can_fd58.05H
+        JMPR cc_UC,L_DE286
+L_DE238:                 ; 0xde238
+        MOV R4,[R0]
+        SHL R4,#0BH
+        ADD R4,#DATA16 06000H
+        MOV R8,R4
+        MOV R9,R8
+        SHR R9,#0EH
+        AND R8,#DATA16 03FFFH
+        BSET can_fd58.04H
+        MOV R4,[R0]
+        CMP R4,#01H
+        JMPR cc_C,L_DE286
+        JNB can_fd58.07H,L_DE25A
+        BSET can_fd58.05H
+        JMPR cc_UC,L_DE286
+L_DE25A:                 ; 0xde25a
+        MOV R12,#DATA16 0F562H
+        MOV R13,#04H
+        CALLS 00DH,Scan_Block_Bit0_Set
+        CMP R4,#04H
+        JMPR cc_EQ,L_DE286
+        BSET can_fd58.05H
+        JMPR cc_UC,L_DE286
+L_DE26C:                 ; 0xde26c
+        MOV R12,#DATA16 0F562H
+        MOV R13,#04H
+        CALLS 00DH,Scan_Block_Bit0_Set
+        CMP R4,#04H
+        JMPR cc_NE,L_DE282
+        MOV R8,#00H
+        MOV R9,#01H
+        BSET can_fd58.04H
+        JMPR cc_UC,L_DE286
+L_DE282:                 ; 0xde282
+        BCLR can_fd58.04H
+        BSET can_fd58.05H
+L_DE286:                 ; 0xde286
+        MOV R4,bl_blk_addr_lo
+        MOV R5,bl_blk_addr_hi
+        SUB R4,bl_blk_cnt_lo
+        SUBC R5,bl_blk_cnt_hi
+        SUB R4,#DATA16 00080H
+        SUBC R5,#00H
+        JMPR cc_ULE,L_DE2AE
+        MOV R4,bl_blk_cnt_lo
+        MOV R5,bl_blk_cnt_hi
+        MOV bl_blk_addr_lo,R4
+        MOV bl_blk_addr_hi,R5
+L_DE2AE:                 ; 0xde2ae
+        SUB bl_blk_addr_lo,ONES
+        SUBC bl_blk_addr_hi,ONES
+        MOV R4,bl_blk_addr_lo
+        MOV R5,bl_blk_addr_hi
+        SUB R4,#DATA16 0FFFFH
+        SUBC R5,#DATA16 0FFFFH
+        JMPR cc_NE,L_DE2D4
+        MOV R4,#DATA16 0FFFEH
+        MOV bl_blk_addr_lo,R4
+        MOV bl_blk_addr_hi,ONES
+L_DE2D4:                 ; 0xde2d4
+        MOVB RL4,#DATA16 000CAH
+        MOVB bl_exec_magic_b2,RL4
+        MOVB RL5,#DATA16 00035H
+        MOVB bl_exec_magic_b3,RL5
+        JB can_fd58.04H,L_DE3B2
+        MOV R4,[R0+#02H]
+        JMPR cc_EQ,L_DE324
+        MOVB RL4,#DATA16 00065H
+        MOVB bl_exec_arm_magic,RL4
+        MOV R4,#DATA16 0003CH
+        MOV [R0],R4
+        MOV R12,R8
+        MOV R13,R9
+        ADD R12,#DATA16 007F2H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,R0
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOVB RL4,#DATA16 00053H
+        MOVB bl_exec_arm_magic,RL4
+L_DE324:                 ; 0xde324
+        JNB can_fd58.05H,L_DE36A
+        MOV R12,#DATA16 04000H
+        MOV R13,#00H
+        CALLS 00DH,Elevated_Eeprom_Clear__Routine
+        MOV R12,#DATA16 0F562H
+        MOV R13,#DATA16 04000H
+        MOV R14,#00H
+        MOV R15,#04H
+        CALLS 00DH,BL_Copy_Blocks
+        MOV R12,#DATA16 0F562H
+        MOV R13,#04H
+        CALLS 00DH,Scan_Block_Bit0_Clear
+        MOV [R0],R4
+        CMP R4,#04H
+        JMPR cc_NE,L_DE356
+        MOV R5,#00H
+        MOV [R0],R5
+L_DE356:                 ; 0xde356
+        MOV R4,[R0]
+        SHL R4,#0BH
+        ADD R4,#DATA16 04000H
+        MOV R8,R4
+        MOV R9,R8
+        SHR R9,#0EH
+        AND R8,#DATA16 03FFFH
+        JMPR cc_UC,L_DE3AE
+L_DE36A:                 ; 0xde36a
+        JNB can_fd58.06H,L_DE3AE
+        MOV R12,#DATA16 06000H
+        MOV R13,#00H
+        CALLS 00DH,Elevated_Eeprom_Clear__Routine
+        MOV R12,#DATA16 0F566H
+        MOV R13,#DATA16 06000H
+        MOV R14,#00H
+        MOV R15,#04H
+        CALLS 00DH,BL_Copy_Blocks
+        MOV R12,#DATA16 0F566H
+        MOV R13,#04H
+        CALLS 00DH,Scan_Block_Bit0_Clear
+        MOV [R0],R4
+        CMP R4,#04H
+        JMPR cc_NE,L_DE39C
+        MOV R5,#00H
+        MOV [R0],R5
+L_DE39C:                 ; 0xde39c
+        MOV R4,[R0]
+        SHL R4,#0BH
+        ADD R4,#DATA16 06000H
+        MOV R8,R4
+        MOV R9,R8
+        SHR R9,#0EH
+        AND R8,#DATA16 03FFFH
+L_DE3AE:                 ; 0xde3ae
+        BCLR can_fd58.06H
+        BCLR can_fd58.05H
+L_DE3B2:                 ; 0xde3b2
+        BCLR can_fd58.03H
+        MOV R12,R8
+        MOV R13,R9
+        SHL R13,#0EH
+        OR R12,R13
+        MOV R13,R9
+        SHR R13,#02H
+        MOV R14,#DATA16 0F9A6H
+        MOV R15,#04H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R4,bl_blk_addr_lo
+        MOV R5,bl_blk_addr_hi
+        CPL R4
+        CPL R5
+        MOV bl_blk_addr_lo,R4
+        MOV bl_blk_addr_hi,R5
+        MOV R12,R8
+        MOV R13,R9
+        ADD R12,#DATA16 007F8H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0F9A6H
+        MOV R15,#04H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,R8
+        MOV R13,R9
+        ADD R12,#04H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0F56AH
+        MOV R15,#0AH
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R4,R8
+        MOV R5,R9
+        ADD R4,#DATA16 00010H
+        EXTP #03H, #02H
+        MOV DPP0:bl_cur_addr_lo,R4
+        MOV DPP0:bl_cur_addr_hi,R5
+        CALLS 00DH,Calc_ECU_Diag_SF_2
+        MOV [R0],DPP1:0A0944H
+        MOV R4,[R0]
+        ADD R4,#DATA16 00010H
+        MOV [R0],R4
+        JNB can_fd58.03H,L_DE45E
+        MOV R12,R8
+        MOV R13,R9
+        MOV R14,R4
+        CALLS 00DH,xor_routine
+        MOV [R0+#02H],R4
+        ADD R4,#02H
+        MOV [R0+#02H],R4
+        JMPR cc_UC,L_DE49C
+L_DE45E:                 ; 0xde45e
+        MOV R4,0FF1CH
+        MOV R5,#00H
+        MOV bl_blk_hdr0,R4
+        MOV bl_blk_hdr1,R5
+        MOV R12,R8
+        MOV R13,R9
+        ADD R12,#DATA16 0000EH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0F9AEH
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,R8
+        MOV R13,R9
+        MOV R14,[R0]
+        CALLS 00DH,xor_routine
+        MOV [R0+#02H],R4
+L_DE49C:                 ; 0xde49c
+        MOV R12,R8
+        MOV R13,R9
+        ADD R12,#DATA16 007FEH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#02H
+        ADD R14,R0
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,R8
+        MOV R13,R9
+        ADD R12,#DATA16 007F6H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,R0
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        JNB can_fd58.06H,L_DE542
+        MOV R4,#DATA16 07C3EH
+        MOV [R0],R4
+        MOV R12,R8
+        MOV R13,R9
+        ADD R12,#DATA16 007F2H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,R0
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,#DATA16 06000H
+        MOV R13,#00H
+        CALLS 00DH,Elevated_Eeprom_Clear__Routine
+        MOVB RL4,#DATA16 00065H
+        MOVB bl_exec_arm_magic,RL4
+        MOV R4,#DATA16 0383CH
+        MOV [R0],R4
+        MOV R12,R8
+        MOV R13,R9
+        ADD R12,#DATA16 007F2H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,R0
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        JMPR cc_UC,L_DE5A4
+L_DE542:                 ; 0xde542
+        JNB can_fd58.05H,L_DE5A4
+        MOV R4,#DATA16 07C3EH
+        MOV [R0],R4
+        MOV R12,R8
+        MOV R13,R9
+        ADD R12,#DATA16 007F2H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,R0
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,#DATA16 04000H
+        MOV R13,#00H
+        CALLS 00DH,Elevated_Eeprom_Clear__Routine
+        MOVB RL4,#DATA16 00065H
+        MOVB bl_exec_arm_magic,RL4
+        MOV R4,#DATA16 0383CH
+        MOV [R0],R4
+        MOV R12,R8
+        MOV R13,R9
+        ADD R12,#DATA16 007F2H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,R0
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+L_DE5A4:                 ; 0xde5a4
+        MOV WDTCON,#DATA16 09201H
+        SRVWDT
+L_DE5AC:                 ; 0xde5ac
+        MOVB bl_exec_arm_magic,ZEROS
+        MOVB bl_exec_magic_b1,ZEROS
+        MOVB bl_exec_magic_b2,ZEROS
+        MOVB bl_exec_magic_b3,ZEROS
+        BCLR can_fd58.04H
+        BCLR can_fd58.05H
+        BCLR can_fd58.06H
+        ADD R0,#04H
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        ADD R0,#02H
+        RETS
+
+; ======== BL_Arm_Exec_Magic  (@0xde5d0) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by bl_/kwp_ output signals): Set bootloader-execute arm magic (bl_exec_arm_magic / _b1
+        ; / _b2).
+        ; ------------------------------------------------------------
+BL_Arm_Exec_Magic:
+        MOV [-R0],R13
+        MOV [-R0],R12
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        BCLR can_fd58.00H
+        BCLR can_fd58.01H
+        BCLR can_fd58.02H
+        BCLR can_fd58.03H
+        BCLR can_fd58.04H
+        MOV R4,#00H
+        MOV R5,#00H
+        EXTP #03H, #02H
+        MOV DPP0:bl_cur_addr_lo,R4
+        MOV DPP0:bl_cur_addr_hi,R5
+        MOV bl_blk_addr_lo,ZEROS
+        MOV bl_blk_addr_hi,ZEROS
+        MOV bl_blk_cnt_lo,ZEROS
+        MOV bl_blk_cnt_hi,ZEROS
+        CALLS 00DH,BL_Validate_Setup
+        JNB can_fd58.04H,L_DE66C
+        EXTP #03H, #02H
+        MOV R7,DPP0:bl_cur_addr_lo
+        MOV R8,DPP0:bl_cur_addr_hi
+        MOV R4,bl_blk_cnt_lo
+        MOV R5,bl_blk_cnt_hi
+        SUB R4,bl_blk_addr_lo
+        SUBC R5,bl_blk_addr_hi
+        JMPR cc_EQ,L_DE62C
+        BSET can_fd58.01H
+L_DE62C:                 ; 0xde62c
+        MOV R4,#DATA16 00010H
+        EXTP #03H, #01H
+        ADD DPP0:bl_cur_addr_lo,R4
+        BSET can_fd58.00H
+        MOV R9,#00H
+L_DE63C:                 ; 0xde63c
+        MOV R4,R7
+        MOV R5,R8
+        ADD R4,#04H
+        ADD R4,R9
+        EXTP R5, #01H
+        MOVB RL3,[R4]
+        MOV R4,[R0+#06H]
+        MOV R5,[R0+#08H]
+        MOV R2,R4
+        ADD R2,#01H
+        MOV [R0+#06H],R2
+        EXTP R5, #01H
+        MOVB RL2,[R4]
+        CMPB RL3,RL2
+        JMPR cc_NE,L_DE66A
+        ADD R9,#01H
+        CMP R9,#DATA16 0000AH
+        JMPR cc_C,L_DE63C
+        JMPR cc_UC,L_DE66C
+L_DE66A:                 ; 0xde66a
+        BSET can_fd58.02H
+L_DE66C:                 ; 0xde66c
+        BCLR can_fd58.04H
+        BCLR can_fd58.05H
+        BCLR can_fd58.06H
+        MOVB bl_exec_arm_magic,ZEROS
+        MOVB bl_exec_magic_b1,ZEROS
+        MOVB bl_exec_magic_b2,ZEROS
+        MOVB bl_exec_magic_b3,ZEROS
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        ADD R0,#04H
+        RETS
+
+; ======== BL_Set_Mode_Status  (@0xde68c) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by bl_/kwp_ output signals): Set bootloader mode-status flags bl_mode_status_flags.
+        ; ------------------------------------------------------------
+BL_Set_Mode_Status:
+        BCLR PSW.0BH
+        MOV R4,DPP1:0A046AH
+        MOV R5,DPP1:0A046CH
+        CALLS 00CH,Push_To_System_Stack
+        MOV R12,#DATA16 0005CH
+        MOV R13,#DATA16 00028H
+        MOV R14,#DATA16 0AC53H
+        CALLS 00DH,BL_Set_ExecMagic_NVM
+        BMOVN bl_mode_status_flags.07H,can_fd58.03H
+        MOV R4,DPP1:0A0476H
+        MOV R5,DPP1:0A0478H
+        CALLS 00CH,Push_To_System_Stack
+        RETS
+
+; ======== BL_Set_ExecMagic_2  (@0xde6bc) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by bl_/kwp_ output signals): Write bootloader-execute magic to NVM (second path).
+        ; ------------------------------------------------------------
+BL_Set_ExecMagic_2:
+        MOV [-R0],R12
+        BCLR PSW.0BH
+        MOV R4,DPP1:0A046AH
+        MOV R5,DPP1:0A046CH
+        CALLS 00CH,Push_To_System_Stack
+        MOVB RL4,#DATA16 00065H
+        MOVB bl_exec_arm_magic,RL4
+        MOVB RL5,#DATA16 000ACH
+        MOVB bl_exec_magic_b1,RL5
+        MOVB RL3,#DATA16 000CAH
+        MOVB bl_exec_magic_b2,RL3
+        MOVB RL2,#DATA16 00035H
+        MOVB bl_exec_magic_b3,RL2
+        EXTP #03H, #02H
+        MOV R12,DPP0:bl_cur_addr_lo
+        MOV R13,DPP0:bl_cur_addr_hi
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,[R0]
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R4,DPP1:0A0476H
+        MOV R5,DPP1:0A0478H
+        CALLS 00CH,Push_To_System_Stack
+        ADD R0,#02H
+        RETS
+
+; ======== Scan_Block_Bit0_Clear  (@0xde720) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Scan_Block_Bit0_Clear:
+        MOV R14,#00H
+        JMPR cc_UC,L_DE726
+L_DE724:                 ; 0xde724
+        ADD R14,#01H
+L_DE726:                 ; 0xde726
+        CMP R14,R13
+        JMPR cc_NC,L_DE736
+        MOV R4,R12
+        ADD R4,R14
+        MOVB RL5,[R4]
+        MOVBZ R4,RL5
+        AND R4,#01H
+        JMPR cc_EQ,L_DE724
+L_DE736:                 ; 0xde736
+        MOV R4,R14
+        RETS
+
+S_DE082 ENDS
+        END

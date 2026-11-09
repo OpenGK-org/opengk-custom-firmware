@@ -1,0 +1,131 @@
+; asw/lam/lam_close_2.a66
+; 0xCF900-0xCFA1E  (286 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_lam_n_min                          EQU  09021EH
+c_lam_cycnr                          EQU  09058EH
+ldp_tco_t_lam_stop                         EQU  090E1FH
+ldp_tco_ti_wf_max_lam              EQU  090F19H
+ip_t_lam_stop__tco                   EQU  093AEAH
+ip_ti_wf_max_lam__tco                EQU  0947BCH
+
+PUBLIC  CanPurge_Set_Close_3, ClrBits_Dfd66_a1a
+EXTERN  Abs_S16_Simple:NEAR, Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_2D_Table:NEAR
+
+S_CF900 SECTION CODE AT 0CF900H
+
+; ======== CanPurge_Set_Close_3  (@0xcf900) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+CanPurge_Set_Close_3:
+        MOV [-R0],R9
+        MOV R9,p_lam_bank1
+        JB lv_inh_int_puc_1.01H,L_CF932
+        JB lv_iga_dif_max_er.0BH,L_CF932
+        JB lv_err_tps_det.02H,L_CF932
+        JB lv_iga_tra_knk.0CH,L_CF932
+        JB lv_pl.02H,L_CF932
+        MOV R4,[R9+#024H]
+        JMPR cc_NE,L_CF924
+        BSET state_lam_ctl.0AH
+        JMPR cc_UC,L_CF93C
+L_CF924:                 ; 0xcf924
+        MOV R4,R9
+        ADD R4,#DATA16 00024H
+        MOV R5,[R4]
+        SUB R5,#01H
+        MOV [R4],R5
+        JMPR cc_UC,L_CF93C
+L_CF932:                 ; 0xcf932
+        MOV R4,DPP0:c_lam_cycnr
+        MOV [R9+#024H],R4
+        BCLR state_lam_ctl.0AH
+L_CF93C:                 ; 0xcf93c
+        MOV R12,#DATA16 POF ldp_tco_ti_wf_max_lam
+        MOV R13,#DATA16 PAG ldp_tco_ti_wf_max_lam
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R4,[R9+#0AH]
+        CMP R4,#00H
+        JMPR cc_SGE,L_CF99A
+        MOV R12,ti_add_wf
+        CALLS 00DH,Abs_S16_Simple
+        MOV [-R0],R4
+        MOV R12,#DATA16 POF ip_ti_wf_max_lam__tco
+        MOV R13,#DATA16 PAG ip_ti_wf_max_lam__tco
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV R5,[R0+]
+        CMP R5,R4
+        JMPR cc_ULE,L_CF99A
+        BSET lv_cp_set_close.09H
+        JB lv_cp_set_close.0AH,L_CF9CC
+        BSET lv_cp_set_close.0AH
+        MOV R12,#DATA16 POF ldp_tco_t_lam_stop
+        MOV R13,#DATA16 PAG ldp_tco_t_lam_stop
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_t_lam_stop__tco
+        MOV R13,#DATA16 PAG ip_t_lam_stop__tco
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV lv_cp_cf94,R4
+        JMPR cc_UC,L_CF9CC
+L_CF99A:                 ; 0xcf99a
+        BCLR lv_cp_set_close.0AH
+        JNB lv_cp_set_close.09H,L_CF9CA
+        MOV R4,lv_cp_cf94
+        CMP R4,#00H
+        JMPR cc_ULE,L_CF9CA
+        MOV R12,ti_add_wf
+        CALLS 00DH,Abs_S16_Simple
+        MOV [-R0],R4
+        MOV R12,#DATA16 POF ip_ti_wf_max_lam__tco
+        MOV R13,#DATA16 PAG ip_ti_wf_max_lam__tco
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV R5,[R0+]
+        CMP R5,R4
+        JMPR cc_UGT,L_CF9CA
+        ADD lv_cp_cf94,ONES
+        JMPR cc_UC,L_CF9CC
+L_CF9CA:                 ; 0xcf9ca
+        BCLR lv_cp_set_close.09H
+L_CF9CC:                 ; 0xcf9cc
+        JNB state_lam_ctl.0AH,L_CFA04
+        JNB lv_cp_set_close.0BH,L_CFA04
+        JNB state_lam_ctl2.08H,L_CFA04
+        MOVB RL4,n_32
+        CMPB RL4,DPP0:c_lam_n_min
+        JMPR cc_ULE,L_CFA04
+        JB lv_pl.04H,L_CFA04
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_CF9EE
+        JB lv_cp_set_close.03H,L_CF9F6
+L_CF9EE:                 ; 0xcf9ee
+        JB lv_cdn_diag_maf_dif_ch_int.0EH,L_CFA04
+        JNB lv_cp_set_close.02H,L_CFA04
+L_CF9F6:                 ; 0xcf9f6
+        JB lv_ch.04H,L_CFA04
+        JB lv_cp_set_close.09H,L_CFA04
+        BSET state_lam_ctl.00H
+        BSET state_lam_ctl.06H
+        JMPR cc_UC,L_CFA06
+L_CFA04:                 ; 0xcfa04
+        BCLR state_lam_ctl.00H
+L_CFA06:                 ; 0xcfa06
+        MOV R4,lam_bank_1_lam_up_lam_mv_lpf
+        MOV lv_cp_cf90,R4
+        MOVB RL4,lam_bank_1_lam_up_lam_p_ctr
+        MOVB lv_cp_cf92,RL4
+        MOV R9,[R0+]
+        RETS
+
+; ======== ClrBits_Dfd66_a1a  (@0xcfa1a) ========
+ClrBits_Dfd66_a1a:
+        BCLR state_lam_ctl.06H
+        RETS
+
+S_CF900 ENDS
+        END

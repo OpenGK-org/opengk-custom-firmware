@@ -1,0 +1,926 @@
+; asw/mis/mis_counters.a66
+; 0xBE20C-0xBEC7C  (2672 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_abc_inc_t_seg_diag                 EQU  0900C0H
+c_abc_max_er                         EQU  0900DEH
+c_abc_max_t_seg_diag                 EQU  0900F5H
+c_maf_mis_ftp_max                    EQU  090234H
+c_mis_max_nr_off_iv                  EQU  090287H
+c_mis_min_nr_puc                     EQU  090288H
+c_n_mis_ftp_max                      EQU  0902C5H
+c_mis_a_min_nr                       EQU  090618H
+c_mis_a_thd                          EQU  09061AH
+c_mis_b_min_nr                       EQU  09061CH
+c_mis_b1_thd                         EQU  09061EH
+c_mis_b1_thd_at                      EQU  090620H
+c_mis_b4_thd                         EQU  090622H
+c_mis_b4_thd_at                      EQU  090624H
+c_mis_nr_a_min_ftp                   EQU  090626H
+sst_n_kf_wf_auss_a               EQU  090D6BH
+sst_lm_kf_wf_auss_a               EQU  090D72H
+ip_mis_a_fac__n__maf                 EQU  096007H
+
+PUBLIC  Calc_Mis_Inh_IV, Calc_Mis_Rate_Err, Diag_DTC_dd496, Diag_DTC_dd4a4, Init_Misfire_Counters
+EXTERN  Add_r12_r13_Return_r4:NEAR, ArgMax_U16_Arr:NEAR, Calc_Mis_Rate_FromFault:NEAR, Check_N_Window:NEAR
+EXTERN  DTC_Status_Proc_1:NEAR, DTC_Status_Proc_2:NEAR, DTC_Update_Debounced:NEAR, DTC_Update_Immediate:NEAR
+EXTERN  Eval_DTC_Status:NEAR, Get_IP_Byte_3D_Table:NEAR, Get_IP_Byte_X_Axis:NEAR, Get_IP_Byte_Y_Axis:NEAR
+
+S_BE20C SECTION CODE AT 0BE20CH
+
+; ======== Init_Misfire_Counters  (@0xbe20c) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS2000, verified): Misfire rate determination & error management (reset path)
+        ; ------------------------------------------------------------
+Init_Misfire_Counters:
+        JB lv_conf_mis.02H,L_BE214
+        JMPA cc_UC,L_BE37E
+L_BE214:                 ; 0xbe214
+        MOV mis_nr_tdc_a,ZEROS
+        MOV R4,#02H
+        MOV mis_nr_tdc_b,R4
+        MOVB mis_a_win_n_32_unt,ZEROS
+        MOVB mis_a_win_n_32_ob,ZEROS
+        MOVB mis_a_win_lm_unt,ZEROS
+        MOVB mis_a_win_lm_ob,ZEROS
+        MOVB mis_b_win_n_32_unt,ZEROS
+        MOVB mis_b_win_n_32_ob,ZEROS
+        MOVB mis_b_win_lm_unt,ZEROS
+        MOVB mis_b_win_lm_ob,ZEROS
+        MOV mis_sum_a,ZEROS
+        MOV mis_a_0_,ZEROS
+        MOV mis_a_1_,ZEROS
+        MOV mis_a_2_,ZEROS
+        MOV mis_sum_b,ZEROS
+        MOV mis_b_0_,ZEROS
+        MOV mis_b_1_,ZEROS
+        MOV mis_b_2_,ZEROS
+        MOVB RL4,ctr_mis_a
+        MOVB mis_nr_a,RL4
+        MOVB RL5,ctr_mis_b
+        MOVB mis_nr_b,RL5
+        MOV mis_nr_a_inside_ftp,ZEROS
+        MOVB mis_a_obd_ctr,ZEROS
+        MOVB mis_b4_obd_ctr,ZEROS
+        MOVB ctr_mis_b_startup,ZEROS
+        BCLR obd_sf.03H
+        BCLR lv_er_carb_b4.04H
+        BCLR lv_er_carb_b4.05H
+        MOVB inh_iv_mis,ZEROS
+        JNB lv_conf_mis.02H,L_BE29A
+        MOVB RL3,inh_iv_as
+        ORB RL3,imob_c286
+        MOVB msk_inj_cyl_ok,RL3
+        JMPR cc_UC,L_BE2AA
+L_BE29A:                 ; 0xbe29a
+        MOVB RL4,inh_iv_as
+        ORB RL4,lv_iga_c2ea
+        ORB RL4,imob_c286
+        MOVB msk_inj_cyl_ok,RL4
+L_BE2AA:                 ; 0xbe2aa
+        MOVB mis_nr_off_iv,ZEROS
+        MOVB RL4,#01H
+        MOVB g_d4b3,RL4
+        MOV R12,#DATA16 0D4B2H
+        MOV R13,#DATA16 05848H
+        MOVBZ R14,DPP0:c_abc_max_er
+        MOVBZ R15,DPP0:c_abc_max_er
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_ecu_err.07H,dtc_status_work.06H
+        MOVBZ R4,dtc_flg_mis_cyl0
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BE2DE
+        MOV R4,#DATA16 0FF7FH
+        AND dtc_st_grp_ecu,R4
+L_BE2DE:                 ; 0xbe2de
+        MOVB RL4,#01H
+        MOVB g_d4c1,RL4
+        MOV R12,#DATA16 0D4C0H
+        MOV R13,#DATA16 0585EH
+        MOVBZ R14,DPP0:c_abc_max_er
+        MOVBZ R15,DPP0:c_abc_max_er
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_ecu_err.08H,dtc_status_work.06H
+        MOVBZ R4,dtc_flg_mis_cyl1
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BE30E
+        MOV R4,#DATA16 0FEFFH
+        AND dtc_st_grp_ecu,R4
+L_BE30E:                 ; 0xbe30e
+        MOVB RL4,#01H
+        MOVB g_d4cf,RL4
+        MOV R12,#DATA16 0D4CEH
+        MOV R13,#DATA16 05874H
+        MOVBZ R14,DPP0:c_abc_max_er
+        MOVBZ R15,DPP0:c_abc_max_er
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_ecu_err.09H,dtc_status_work.06H
+        MOVBZ R4,dtc_flg_mis_cyl2
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BE33E
+        MOV R4,#DATA16 0FDFFH
+        AND dtc_st_grp_ecu,R4
+L_BE33E:                 ; 0xbe33e
+        MOV mis_a_3_,ZEROS
+        MOV mis_b_3_,ZEROS
+        MOVB RL4,#01H
+        MOVB g_d4dd,RL4
+        MOV R12,#DATA16 0D4DCH
+        MOV R13,#DATA16 0588AH
+        MOVBZ R14,DPP0:c_abc_max_er
+        MOVBZ R15,DPP0:c_abc_max_er
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_ecu_err.0AH,dtc_status_work.06H
+        MOVBZ R4,dtc_flg_mis_cyl3
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BE376
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_ecu,R4
+L_BE376:                 ; 0xbe376
+        MOVB igc_diag_mis,ZEROS
+        MOVB iv_diag_mis,ZEROS
+L_BE37E:                 ; 0xbe37e
+        RETS
+
+; ======== Calc_Mis_Rate_Err  (@0xbe380) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS2000, verified): Misfire rate determination & error management
+        ; ------------------------------------------------------------
+Calc_Mis_Rate_Err:
+        MOV [-R0],R9
+        MOV [-R0],R6
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_BE38C
+        JMPA cc_UC,L_BEB58
+L_BE38C:                 ; 0xbe38c
+        MOV R4,mis_nr_tdc_er
+        MOV R5,mis_nr_tdc_er_hi
+        MOV tmp32_lo,R4
+        MOV tmp32_hi,R5
+        MOV R2,tmp32_hi
+        MOV mis_nr_tdc_er_hw,R2
+        MOV R3,tmp32_lo
+        MOV mis_nr_tdc_er_lw,R3
+        JB lv_act_diagcps.0FH,L_BE426
+        MOVB RL4,er_igc_dur_iv_sum
+        CMPB RL4,#DATA16 00032H
+        JMPR cc_C,L_BE426
+        MOV R12,#DATA16 POF sst_n_kf_wf_auss_a
+        MOV R13,#DATA16 PAG sst_n_kf_wf_auss_a
+        MOV R14,mis_crank_seg
+        SHR R14,#05H
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF sst_lm_kf_wf_auss_a
+        MOV R13,#DATA16 PAG sst_lm_kf_wf_auss_a
+        MOVBZ R14,diag_d049
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_mis_a_fac__n__maf
+        MOV R13,#DATA16 PAG ip_mis_a_fac__n__maf
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV R5,#DATA16 0CA7AH
+        MOVBZ R2,seg_nr_er
+        SHL R2,#01H
+        ADD R5,R2
+        MOV R2,[R5]
+        ADD R2,R4
+        MOV [R5],R2
+        MOV R4,#DATA16 0CA84H
+        MOVBZ R5,seg_nr_er
+        SHL R5,#01H
+        ADD R4,R5
+        MOV R5,[R4]
+        ADD R5,#01H
+        MOV [R4],R5
+        SUB mis_sum_a,ONES
+        SUB mis_sum_b,ONES
+        MOV R12,#DATA16 0CA68H
+        CALLS 00CH,Check_N_Window
+        MOV R12,#DATA16 0CA6CH
+        CALLS 00CH,Check_N_Window
+L_BE426:                 ; 0xbe426
+        MOVB RL4,n_32
+        CMPB RL4,DPP0:c_n_mis_ftp_max
+        JMPR cc_UGT,L_BE43E
+        MOVB RL5,lv_iga_cc2b
+        CMPB RL5,DPP0:c_maf_mis_ftp_max
+        JMPR cc_UGT,L_BE43E
+        SUB mis_nr_a_inside_ftp,ONES
+L_BE43E:                 ; 0xbe43e
+        JNB lv_act_diagcps.0FH,L_BE44A
+        JB lv_carb_err.09H,L_BE44A
+        JMPA cc_UC,L_BE808
+L_BE44A:                 ; 0xbe44a
+        SUB mis_nr_tdc_a,ONES
+        MOV R4,mis_nr_tdc_a
+        CMP R4,#DATA16 00190H
+        JMPA cc_NE,L_BE808
+        BCLR obd_sf.03H
+        MOV R9,#00H
+        MOVB RL6,#00H
+L_BE460:                 ; 0xbe460
+        MOV R12,R9
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R13,[R4+#0CA7AH]
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV R9,R4
+        ADDB RL6,#01H
+        CMPB RL6,#04H
+        JMPR cc_C,L_BE460
+        CMP R9,DPP0:c_mis_a_thd
+        JMPA cc_ULE,L_BE72C
+        MOV R12,#DATA16 0CA7AH
+        MOV R13,#04H
+        CALLS 00FH,ArgMax_U16_Arr
+        MOVB RL6,RL4
+        MOVB RL4,ctr_mis_a
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_EQ,L_BE49E
+        ADDB RL4,#01H
+        MOVB ctr_mis_a,RL4
+        MOVB mis_nr_a,RL4
+L_BE49E:                 ; 0xbe49e
+        MOV R4,mis_nr_a_inside_ftp
+        CMP R4,DPP0:c_mis_nr_a_min_ftp
+        JMPR cc_NC,L_BE4B0
+        MOVB RL4,#03H
+        MOVB mis_a_obd_ctr,RL4
+        JMPR cc_UC,L_BE4BE
+L_BE4B0:                 ; 0xbe4b0
+        MOVB RL4,mis_a_obd_ctr
+        CMPB RL4,#03H
+        JMPR cc_NC,L_BE4BE
+        ADDB RL4,#01H
+        MOVB mis_a_obd_ctr,RL4
+L_BE4BE:                 ; 0xbe4be
+        MOVB RL4,mis_a_win_n_32_unt
+        MOVB mis_n_bol,RL4
+        MOVB RL5,mis_a_win_n_32_ob
+        MOVB mis_n_tol,RL5
+        MOVB RL3,mis_a_win_lm_unt
+        MOVB mis_maf_bol,RL3
+        MOVB RL2,mis_a_win_lm_ob
+        MOVB mis_maf_tol,RL2
+        MOV R4,mis_a_0_
+        CMP R4,DPP0:c_mis_a_min_nr
+        JMPR cc_UGT,L_BE4EC
+        CMPB RL6,#00H
+        JMPR cc_NE,L_BE510
+L_BE4EC:                 ; 0xbe4ec
+        MOV R12,#DATA16 00047H
+        CALLS 00DH,DTC_Status_Proc_1
+        MOV R12,#DATA16 00047H
+        CALLS 00DH,Calc_Mis_Rate_FromFault
+        JNB PSW.06H,L_BE510
+        BSET lv_er_carb_b4.04H
+        MOVB RL4,dtc_st_mis_cyl0
+        ANDB RL4,#DATA16 0000FH
+        ORB RL4,#01H
+        MOVB dtc_test_result,RL4
+L_BE510:                 ; 0xbe510
+        MOV R12,#DATA16 0D4B2H
+        MOV R13,#DATA16 05848H
+        MOVBZ R14,DPP0:c_abc_max_er
+        MOVBZ R15,DPP0:c_abc_max_er
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_ecu_err.07H,dtc_status_work.06H
+        MOVBZ R4,dtc_flg_mis_cyl0
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BE53A
+        MOV R4,#DATA16 0FF7FH
+        AND dtc_st_grp_ecu,R4
+L_BE53A:                 ; 0xbe53a
+        MOV R4,mis_a_1_
+        CMP R4,DPP0:c_mis_a_min_nr
+        JMPR cc_UGT,L_BE548
+        CMPB RL6,#01H
+        JMPR cc_NE,L_BE56C
+L_BE548:                 ; 0xbe548
+        MOV R12,#DATA16 00048H
+        CALLS 00DH,DTC_Status_Proc_1
+        MOV R12,#DATA16 00048H
+        CALLS 00DH,Calc_Mis_Rate_FromFault
+        JNB PSW.06H,L_BE56C
+        BSET lv_er_carb_b4.04H
+        MOVB RL4,dtc_st_mis_cyl1
+        ANDB RL4,#DATA16 0000FH
+        ORB RL4,#01H
+        MOVB dtc_test_result,RL4
+L_BE56C:                 ; 0xbe56c
+        MOV R12,#DATA16 0D4C0H
+        MOV R13,#DATA16 0585EH
+        MOVBZ R14,DPP0:c_abc_max_er
+        MOVBZ R15,DPP0:c_abc_max_er
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_ecu_err.08H,dtc_status_work.06H
+        MOVBZ R4,dtc_flg_mis_cyl1
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BE596
+        MOV R4,#DATA16 0FEFFH
+        AND dtc_st_grp_ecu,R4
+L_BE596:                 ; 0xbe596
+        MOV R4,mis_a_2_
+        CMP R4,DPP0:c_mis_a_min_nr
+        JMPR cc_UGT,L_BE5A4
+        CMPB RL6,#02H
+        JMPR cc_NE,L_BE5C8
+L_BE5A4:                 ; 0xbe5a4
+        MOV R12,#DATA16 00049H
+        CALLS 00DH,DTC_Status_Proc_1
+        MOV R12,#DATA16 00049H
+        CALLS 00DH,Calc_Mis_Rate_FromFault
+        JNB PSW.06H,L_BE5C8
+        BSET lv_er_carb_b4.04H
+        MOVB RL4,dtc_st_mis_cyl2
+        ANDB RL4,#DATA16 0000FH
+        ORB RL4,#01H
+        MOVB dtc_test_result,RL4
+L_BE5C8:                 ; 0xbe5c8
+        MOV R12,#DATA16 0D4CEH
+        MOV R13,#DATA16 05874H
+        MOVBZ R14,DPP0:c_abc_max_er
+        MOVBZ R15,DPP0:c_abc_max_er
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_ecu_err.09H,dtc_status_work.06H
+        MOVBZ R4,dtc_flg_mis_cyl2
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BE5F2
+        MOV R4,#DATA16 0FDFFH
+        AND dtc_st_grp_ecu,R4
+L_BE5F2:                 ; 0xbe5f2
+        MOV R4,mis_a_3_
+        CMP R4,DPP0:c_mis_a_min_nr
+        JMPR cc_UGT,L_BE600
+        CMPB RL6,#03H
+        JMPR cc_NE,L_BE624
+L_BE600:                 ; 0xbe600
+        MOV R12,#DATA16 0004AH
+        CALLS 00DH,DTC_Status_Proc_1
+        MOV R12,#DATA16 0004AH
+        CALLS 00DH,Calc_Mis_Rate_FromFault
+        JNB PSW.06H,L_BE624
+        BSET lv_er_carb_b4.04H
+        MOVB RL4,dtc_st_mis_cyl3
+        ANDB RL4,#DATA16 0000FH
+        ORB RL4,#01H
+        MOVB dtc_test_result,RL4
+L_BE624:                 ; 0xbe624
+        MOV R12,#DATA16 0D4DCH
+        MOV R13,#DATA16 0588AH
+        MOVBZ R14,DPP0:c_abc_max_er
+        MOVBZ R15,DPP0:c_abc_max_er
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_ecu_err.0AH,dtc_status_work.06H
+        MOVBZ R4,dtc_flg_mis_cyl3
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BE64E
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_ecu,R4
+L_BE64E:                 ; 0xbe64e
+        JB lv_er_carb_b4.04H,L_BE656
+        JMPA cc_UC,L_BE7DC
+L_BE656:                 ; 0xbe656
+        MOVBZ R4,RL6
+        MOV R5,#01H
+        SHL R5,R4
+        MOVBZ R4,inh_iv_mis
+        AND R4,R5
+        JMPR cc_NE,L_BE6F0
+        MOVB RL4,mis_nr_off_iv
+        CMPB RL4,DPP0:c_mis_max_nr_off_iv
+        JMPR cc_NC,L_BE6EA
+        MOVBZ R4,RL6
+        MOV R5,#01H
+        SHL R5,R4
+        ORB inh_iv_mis,RL5
+        JNB lv_conf_mis.02H,L_BE68E
+        MOVB RL4,inh_iv_as
+        ORB RL4,inh_iv_mis
+        ORB RL4,imob_c286
+        MOVB msk_inj_cyl_ok,RL4
+        JMPR cc_UC,L_BE69E
+L_BE68E:                 ; 0xbe68e
+        MOVB RL4,inh_iv_as
+        ORB RL4,lv_iga_c2ea
+        ORB RL4,imob_c286
+        MOVB msk_inj_cyl_ok,RL4
+L_BE69E:                 ; 0xbe69e
+        SUBB mis_nr_off_iv,ONES
+        MOVB RL4,DPP0:c_mis_min_nr_puc
+        MOVB mis_nr_puc,RL4
+        MOVBZ R4,dtc_st_inj_cyl0
+        AND R4,#DATA16 00042H
+        CMP R4,#DATA16 00042H
+        JMPR cc_EQ,L_BE6E4
+        MOVBZ R4,dtc_st_inj_cyl1
+        AND R4,#DATA16 00042H
+        CMP R4,#DATA16 00042H
+        JMPR cc_EQ,L_BE6E4
+        MOVBZ R4,dtc_st_inj_cyl2
+        AND R4,#DATA16 00042H
+        CMP R4,#DATA16 00042H
+        JMPR cc_EQ,L_BE6E4
+        MOVBZ R4,dtc_st_inj_cyl3
+        AND R4,#DATA16 00042H
+        CMP R4,#DATA16 00042H
+        JMPA cc_NE,L_BE7DC
+L_BE6E4:                 ; 0xbe6e4
+        BSET obd_sf.03H
+        JMPA cc_UC,L_BE7DC
+L_BE6EA:                 ; 0xbe6ea
+        BSET obd_sf.03H
+        JMPA cc_UC,L_BE7DC
+L_BE6F0:                 ; 0xbe6f0
+        MOVBZ R4,dtc_st_inj_cyl0
+        AND R4,#DATA16 00042H
+        CMP R4,#DATA16 00042H
+        JMPR cc_EQ,L_BE728
+        MOVBZ R4,dtc_st_inj_cyl1
+        AND R4,#DATA16 00042H
+        CMP R4,#DATA16 00042H
+        JMPR cc_EQ,L_BE728
+        MOVBZ R4,dtc_st_inj_cyl2
+        AND R4,#DATA16 00042H
+        CMP R4,#DATA16 00042H
+        JMPR cc_EQ,L_BE728
+        MOVBZ R4,dtc_st_inj_cyl3
+        AND R4,#DATA16 00042H
+        CMP R4,#DATA16 00042H
+        JMPR cc_NE,L_BE7DC
+L_BE728:                 ; 0xbe728
+        BSET obd_sf.03H
+        JMPR cc_UC,L_BE7DC
+L_BE72C:                 ; 0xbe72c
+        MOVB RL4,inh_iv_mis
+        JMPR cc_NE,L_BE734
+        BCLR lv_er_carb_b4.04H
+L_BE734:                 ; 0xbe734
+        MOV R12,#DATA16 0D4B2H
+        MOV R13,#DATA16 05848H
+        MOVBZ R14,DPP0:c_abc_max_er
+        MOVBZ R15,DPP0:c_abc_max_er
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_ecu_err.07H,dtc_status_work.06H
+        MOVBZ R4,dtc_flg_mis_cyl0
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BE75E
+        MOV R4,#DATA16 0FF7FH
+        AND dtc_st_grp_ecu,R4
+L_BE75E:                 ; 0xbe75e
+        MOV R12,#DATA16 0D4C0H
+        MOV R13,#DATA16 0585EH
+        MOVBZ R14,DPP0:c_abc_max_er
+        MOVBZ R15,DPP0:c_abc_max_er
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_ecu_err.08H,dtc_status_work.06H
+        MOVBZ R4,dtc_flg_mis_cyl1
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BE788
+        MOV R4,#DATA16 0FEFFH
+        AND dtc_st_grp_ecu,R4
+L_BE788:                 ; 0xbe788
+        MOV R12,#DATA16 0D4CEH
+        MOV R13,#DATA16 05874H
+        MOVBZ R14,DPP0:c_abc_max_er
+        MOVBZ R15,DPP0:c_abc_max_er
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_ecu_err.09H,dtc_status_work.06H
+        MOVBZ R4,dtc_flg_mis_cyl2
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BE7B2
+        MOV R4,#DATA16 0FDFFH
+        AND dtc_st_grp_ecu,R4
+L_BE7B2:                 ; 0xbe7b2
+        MOV R12,#DATA16 0D4DCH
+        MOV R13,#DATA16 0588AH
+        MOVBZ R14,DPP0:c_abc_max_er
+        MOVBZ R15,DPP0:c_abc_max_er
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_ecu_err.0AH,dtc_status_work.06H
+        MOVBZ R4,dtc_flg_mis_cyl3
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BE7DC
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_ecu,R4
+L_BE7DC:                 ; 0xbe7dc
+        MOV mis_nr_a_inside_ftp,ZEROS
+        MOV mis_nr_tdc_a,ZEROS
+        MOVB mis_a_win_n_32_unt,ZEROS
+        MOVB mis_a_win_n_32_ob,ZEROS
+        MOVB mis_a_win_lm_unt,ZEROS
+        MOVB mis_a_win_lm_ob,ZEROS
+        MOV mis_sum_a,ZEROS
+        MOV mis_a_0_,ZEROS
+        MOV mis_a_1_,ZEROS
+        MOV mis_a_2_,ZEROS
+        MOV mis_a_3_,ZEROS
+L_BE808:                 ; 0xbe808
+        MOVB RL4,mis_nr_off_iv
+        CMPB RL4,#00H
+        JMPR cc_ULE,L_BE814
+        BSET lv_er_carb_b4.0CH
+        JMPR cc_UC,L_BE816
+L_BE814:                 ; 0xbe814
+        BCLR lv_er_carb_b4.0CH
+L_BE816:                 ; 0xbe816
+        JNB lv_act_diagcps.0FH,L_BE822
+        JB lv_carb_err.09H,L_BE822
+        JMPA cc_UC,L_BEB54
+L_BE822:                 ; 0xbe822
+        SUB mis_nr_tdc_b,ONES
+        MOV R4,mis_nr_tdc_b
+        CMP R4,#DATA16 007D0H
+        JMPA cc_NE,L_BEB54
+        MOVB RL4,ctr_mis_b_startup
+        CMPB RL4,#04H
+        JMPR cc_C,L_BE860
+        JNB obd_sf.0DH,L_BE864
+        MOV R12,#DATA16 00047H
+        CALLS 00DH,Eval_DTC_Status
+        MOV R12,#DATA16 00048H
+        CALLS 00DH,Eval_DTC_Status
+        MOV R12,#DATA16 00049H
+        CALLS 00DH,Eval_DTC_Status
+        MOV R12,#DATA16 0004AH
+        CALLS 00DH,Eval_DTC_Status
+        JMPR cc_UC,L_BE864
+L_BE860:                 ; 0xbe860
+        SUBB ctr_mis_b_startup,ONES
+L_BE864:                 ; 0xbe864
+        JB lv_er_carb_b4.03H,L_BE878
+        JB lv_conf_mis.0AH,L_BE872
+        MOV R9,DPP0:c_mis_b1_thd
+        JMPR cc_UC,L_BE886
+L_BE872:                 ; 0xbe872
+        MOV R9,DPP0:c_mis_b1_thd_at
+        JMPR cc_UC,L_BE886
+L_BE878:                 ; 0xbe878
+        JB lv_conf_mis.0AH,L_BE882
+        MOV R9,DPP0:c_mis_b4_thd
+        JMPR cc_UC,L_BE886
+L_BE882:                 ; 0xbe882
+        MOV R9,DPP0:c_mis_b4_thd_at
+L_BE886:                 ; 0xbe886
+        CMP R9,mis_sum_b
+        JMPA cc_NC,L_BEA80
+        MOV R12,#DATA16 0CA84H
+        MOV R13,#04H
+        CALLS 00FH,ArgMax_U16_Arr
+        MOVB RL6,RL4
+        MOVB RL4,ctr_mis_b
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_EQ,L_BE8AE
+        ADDB RL4,#01H
+        MOVB ctr_mis_b,RL4
+        MOVB mis_nr_b,RL4
+L_BE8AE:                 ; 0xbe8ae
+        JNB lv_er_carb_b4.03H,L_BE8C0
+        MOVB RL4,mis_b4_obd_ctr
+        CMPB RL4,#04H
+        JMPR cc_NC,L_BE8C0
+        ADDB RL4,#01H
+        MOVB mis_b4_obd_ctr,RL4
+L_BE8C0:                 ; 0xbe8c0
+        JNB lv_er_carb_b4.03H,L_BE8CE
+        MOVB RL4,mis_b4_obd_ctr
+        CMPB RL4,#04H
+        JMPA cc_C,L_BEB2A
+L_BE8CE:                 ; 0xbe8ce
+        MOVB RL4,mis_b_win_n_32_unt
+        MOVB mis_n_bol,RL4
+        MOVB RL5,mis_b_win_n_32_ob
+        MOVB mis_n_tol,RL5
+        MOVB RL3,mis_b_win_lm_unt
+        MOVB mis_maf_bol,RL3
+        MOVB RL2,mis_b_win_lm_ob
+        MOVB mis_maf_tol,RL2
+        MOV R4,mis_b_0_
+        CMP R4,DPP0:c_mis_b_min_nr
+        JMPR cc_UGT,L_BE8FC
+        CMPB RL6,#00H
+        JMPR cc_NE,L_BE928
+L_BE8FC:                 ; 0xbe8fc
+        BSET lv_er_carb_b4.05H
+        MOV R12,#DATA16 00047H
+        CALLS 00DH,DTC_Status_Proc_2
+        JNB lv_er_carb_b4.03H,L_BE91A
+        MOVB RL4,dtc_st_mis_cyl0
+        ANDB RL4,#DATA16 0000FH
+        ORB RL4,#04H
+        MOVB dtc_test_result,RL4
+        JMPR cc_UC,L_BE928
+L_BE91A:                 ; 0xbe91a
+        MOVB RL4,dtc_st_mis_cyl0
+        ANDB RL4,#DATA16 0000FH
+        ORB RL4,#02H
+        MOVB dtc_test_result,RL4
+L_BE928:                 ; 0xbe928
+        MOV R12,#DATA16 0D4B2H
+        MOV R13,#DATA16 05848H
+        MOVBZ R14,DPP0:c_abc_max_er
+        MOVBZ R15,DPP0:c_abc_max_er
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_ecu_err.07H,dtc_status_work.06H
+        MOVBZ R4,dtc_flg_mis_cyl0
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BE952
+        MOV R4,#DATA16 0FF7FH
+        AND dtc_st_grp_ecu,R4
+L_BE952:                 ; 0xbe952
+        MOV R4,mis_b_1_
+        CMP R4,DPP0:c_mis_b_min_nr
+        JMPR cc_UGT,L_BE960
+        CMPB RL6,#01H
+        JMPR cc_NE,L_BE98C
+L_BE960:                 ; 0xbe960
+        BSET lv_er_carb_b4.05H
+        MOV R12,#DATA16 00048H
+        CALLS 00DH,DTC_Status_Proc_2
+        JNB lv_er_carb_b4.03H,L_BE97E
+        MOVB RL4,dtc_st_mis_cyl1
+        ANDB RL4,#DATA16 0000FH
+        ORB RL4,#04H
+        MOVB dtc_test_result,RL4
+        JMPR cc_UC,L_BE98C
+L_BE97E:                 ; 0xbe97e
+        MOVB RL4,dtc_st_mis_cyl1
+        ANDB RL4,#DATA16 0000FH
+        ORB RL4,#02H
+        MOVB dtc_test_result,RL4
+L_BE98C:                 ; 0xbe98c
+        MOV R12,#DATA16 0D4C0H
+        MOV R13,#DATA16 0585EH
+        MOVBZ R14,DPP0:c_abc_max_er
+        MOVBZ R15,DPP0:c_abc_max_er
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_ecu_err.08H,dtc_status_work.06H
+        MOVBZ R4,dtc_flg_mis_cyl1
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BE9B6
+        MOV R4,#DATA16 0FEFFH
+        AND dtc_st_grp_ecu,R4
+L_BE9B6:                 ; 0xbe9b6
+        MOV R4,mis_b_2_
+        CMP R4,DPP0:c_mis_b_min_nr
+        JMPR cc_UGT,L_BE9C4
+        CMPB RL6,#02H
+        JMPR cc_NE,L_BE9F0
+L_BE9C4:                 ; 0xbe9c4
+        BSET lv_er_carb_b4.05H
+        MOV R12,#DATA16 00049H
+        CALLS 00DH,DTC_Status_Proc_2
+        JNB lv_er_carb_b4.03H,L_BE9E2
+        MOVB RL4,dtc_st_mis_cyl2
+        ANDB RL4,#DATA16 0000FH
+        ORB RL4,#04H
+        MOVB dtc_test_result,RL4
+        JMPR cc_UC,L_BE9F0
+L_BE9E2:                 ; 0xbe9e2
+        MOVB RL4,dtc_st_mis_cyl2
+        ANDB RL4,#DATA16 0000FH
+        ORB RL4,#02H
+        MOVB dtc_test_result,RL4
+L_BE9F0:                 ; 0xbe9f0
+        MOV R12,#DATA16 0D4CEH
+        MOV R13,#DATA16 05874H
+        MOVBZ R14,DPP0:c_abc_max_er
+        MOVBZ R15,DPP0:c_abc_max_er
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_ecu_err.09H,dtc_status_work.06H
+        MOVBZ R4,dtc_flg_mis_cyl2
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BEA1A
+        MOV R4,#DATA16 0FDFFH
+        AND dtc_st_grp_ecu,R4
+L_BEA1A:                 ; 0xbea1a
+        MOV R4,mis_b_3_
+        CMP R4,DPP0:c_mis_b_min_nr
+        JMPR cc_UGT,L_BEA28
+        CMPB RL6,#03H
+        JMPR cc_NE,L_BEA54
+L_BEA28:                 ; 0xbea28
+        BSET lv_er_carb_b4.05H
+        MOV R12,#DATA16 0004AH
+        CALLS 00DH,DTC_Status_Proc_2
+        JNB lv_er_carb_b4.03H,L_BEA46
+        MOVB RL4,dtc_st_mis_cyl3
+        ANDB RL4,#DATA16 0000FH
+        ORB RL4,#04H
+        MOVB dtc_test_result,RL4
+        JMPR cc_UC,L_BEA54
+L_BEA46:                 ; 0xbea46
+        MOVB RL4,dtc_st_mis_cyl3
+        ANDB RL4,#DATA16 0000FH
+        ORB RL4,#02H
+        MOVB dtc_test_result,RL4
+L_BEA54:                 ; 0xbea54
+        MOV R12,#DATA16 0D4DCH
+        MOV R13,#DATA16 0588AH
+        MOVBZ R14,DPP0:c_abc_max_er
+        MOVBZ R15,DPP0:c_abc_max_er
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_ecu_err.0AH,dtc_status_work.06H
+        MOVBZ R4,dtc_flg_mis_cyl3
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BEB2A
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_ecu,R4
+        JMPR cc_UC,L_BEB2A
+L_BEA80:                 ; 0xbea80
+        BCLR lv_er_carb_b4.05H
+        MOV R12,#DATA16 0D4B2H
+        MOV R13,#DATA16 05848H
+        MOVBZ R14,DPP0:c_abc_max_er
+        MOVBZ R15,DPP0:c_abc_max_er
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_ecu_err.07H,dtc_status_work.06H
+        MOVBZ R4,dtc_flg_mis_cyl0
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BEAAC
+        MOV R4,#DATA16 0FF7FH
+        AND dtc_st_grp_ecu,R4
+L_BEAAC:                 ; 0xbeaac
+        MOV R12,#DATA16 0D4C0H
+        MOV R13,#DATA16 0585EH
+        MOVBZ R14,DPP0:c_abc_max_er
+        MOVBZ R15,DPP0:c_abc_max_er
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_ecu_err.08H,dtc_status_work.06H
+        MOVBZ R4,dtc_flg_mis_cyl1
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BEAD6
+        MOV R4,#DATA16 0FEFFH
+        AND dtc_st_grp_ecu,R4
+L_BEAD6:                 ; 0xbead6
+        MOV R12,#DATA16 0D4CEH
+        MOV R13,#DATA16 05874H
+        MOVBZ R14,DPP0:c_abc_max_er
+        MOVBZ R15,DPP0:c_abc_max_er
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_ecu_err.09H,dtc_status_work.06H
+        MOVBZ R4,dtc_flg_mis_cyl2
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BEB00
+        MOV R4,#DATA16 0FDFFH
+        AND dtc_st_grp_ecu,R4
+L_BEB00:                 ; 0xbeb00
+        MOV R12,#DATA16 0D4DCH
+        MOV R13,#DATA16 0588AH
+        MOVBZ R14,DPP0:c_abc_max_er
+        MOVBZ R15,DPP0:c_abc_max_er
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_ecu_err.0AH,dtc_status_work.06H
+        MOVBZ R4,dtc_flg_mis_cyl3
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BEB2A
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_ecu,R4
+L_BEB2A:                 ; 0xbeb2a
+        BSET lv_er_carb_b4.03H
+        MOV mis_nr_tdc_b,ZEROS
+        MOVB mis_b_win_n_32_unt,ZEROS
+        MOVB mis_b_win_n_32_ob,ZEROS
+        MOVB mis_b_win_lm_unt,ZEROS
+        MOVB mis_b_win_lm_ob,ZEROS
+        MOV mis_sum_b,ZEROS
+        MOV mis_b_0_,ZEROS
+        MOV mis_b_1_,ZEROS
+        MOV mis_b_2_,ZEROS
+        MOV mis_b_3_,ZEROS
+L_BEB54:                 ; 0xbeb54
+        CALLS 00BH,Diag_DTC_dd4a4
+L_BEB58:                 ; 0xbeb58
+        JB lv_cam_err.05H,L_BEB84
+        JB lv_cam_err.06H,L_BEB84
+        JB lv_cam_err.02H,L_BEB84
+        JB lv_cam_err.03H,L_BEB84
+        JB lv_dur_igc_0_err.00H,L_BEB84
+        JB lv_dur_igc_0_err.01H,L_BEB84
+        JB lv_dur_igc_0_err.02H,L_BEB84
+        JB lv_dur_igc_0_err.03H,L_BEB84
+        JB lv_cps_err.05H,L_BEB84
+        JB lv_cps_err.06H,L_BEB84
+        JB can_fd58.0CH,L_BEB88
+L_BEB84:                 ; 0xbeb84
+        BSET PSW.06H
+        JMPR cc_UC,L_BEB8A
+L_BEB88:                 ; 0xbeb88
+        BCLR PSW.06H
+L_BEB8A:                 ; 0xbeb8a
+        BMOV lv_er_carb_b4.06H,PSW.06H
+        JB lv_cam_err.05H,L_BEBB2
+        JB lv_cam_err.06H,L_BEBB2
+        JB lv_cam_err.02H,L_BEBB2
+        JB lv_cam_err.03H,L_BEBB2
+        JB lv_carb_err.09H,L_BEBB2
+        JB can_fd58.0CH,L_BEBA8
+        JMPR cc_UC,L_BEBB2
+L_BEBA8:                 ; 0xbeba8
+        JB lv_diag_trip_avl_ivvt.04H,L_BEBB2
+        JB lv_er_carb_b4.08H,L_BEBB2
+        JMPR cc_UC,L_BEBB6
+L_BEBB2:                 ; 0xbebb2
+        BSET PSW.06H
+        JMPR cc_UC,L_BEBB8
+L_BEBB6:                 ; 0xbebb6
+        BCLR PSW.06H
+L_BEBB8:                 ; 0xbebb8
+        BMOV lv_er_carb_b4.07H,PSW.06H
+        MOV R6,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_Mis_Inh_IV  (@0xbebc2) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): Misfire injection-valve inhibit after overrun
+        ; (mis_nr_puc/inh_iv_mis)
+        ; ------------------------------------------------------------
+Calc_Mis_Inh_IV:
+        MOVB RL4,mis_nr_puc
+        JMPR cc_NE,L_BEBF4
+        MOVB inh_iv_mis,ZEROS
+        JNB lv_conf_mis.02H,L_BEBDE
+        MOVB RL5,inh_iv_as
+        ORB RL5,imob_c286
+        MOVB msk_inj_cyl_ok,RL5
+        JMPR cc_UC,L_BEBEE
+L_BEBDE:                 ; 0xbebde
+        MOVB RL4,inh_iv_as
+        ORB RL4,lv_iga_c2ea
+        ORB RL4,imob_c286
+        MOVB msk_inj_cyl_ok,RL4
+L_BEBEE:                 ; 0xbebee
+        MOVB mis_nr_off_iv,ZEROS
+        RETS
+L_BEBF4:                 ; 0xbebf4
+        ADDB mis_nr_puc,ONES
+        RETS
+
+; ======== Diag_DTC_dd496  (@0xbebfa) ========
+        ; ------------------------------------------------------------
+        ; Per-fault DTC setter: sets dtc_test_result and updates the DTC at status-address 0xd496. Name = DTC
+        ; status RAM address (unique per fault).
+        ; ------------------------------------------------------------
+Diag_DTC_dd496:
+        JNB lv_act_diagcps.0DH,L_BEC04
+        MOVB RL4,#01H
+        MOVB dtc_test_result,RL4
+L_BEC04:                 ; 0xbec04
+        MOV R12,#DATA16 0D496H
+        MOV R13,#DATA16 0581CH
+        MOVBZ R14,DPP0:c_abc_inc_t_seg_diag
+        MOVBZ R15,DPP0:c_abc_max_t_seg_diag
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_ecu_err.05H,dtc_status_work.06H
+        MOVBZ R4,diag_d4a0
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BEC2E
+        MOV R4,#DATA16 0FFDFH
+        AND dtc_st_grp_ecu,R4
+L_BEC2E:                 ; 0xbec2e
+        RETS
+
+; ======== Diag_DTC_dd4a4  (@0xbec30) ========
+        ; ------------------------------------------------------------
+        ; Per-fault DTC setter: sets dtc_test_result and updates the DTC at status-address 0xd4a4. Name = DTC
+        ; status RAM address (unique per fault).
+        ; ------------------------------------------------------------
+Diag_DTC_dd4a4:
+        MOV [-R0],R6
+        MOVB RL6,#00H
+        JNB lv_ecu_err.07H,L_BEC3A
+        MOVB RL6,#01H
+L_BEC3A:                 ; 0xbec3a
+        JNB lv_ecu_err.08H,L_BEC40
+        ADDB RL6,#01H
+L_BEC40:                 ; 0xbec40
+        JNB lv_ecu_err.09H,L_BEC46
+        ADDB RL6,#01H
+L_BEC46:                 ; 0xbec46
+        JNB lv_ecu_err.0AH,L_BEC4C
+        ADDB RL6,#01H
+L_BEC4C:                 ; 0xbec4c
+        CMPB RL6,#02H
+        JMPR cc_C,L_BEC56
+        MOVB RL4,#01H
+        MOVB dtc_test_result,RL4
+L_BEC56:                 ; 0xbec56
+        MOV R12,#DATA16 0D4A4H
+        MOV R13,#DATA16 05832H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_ecu_err.06H,dtc_status_work.06H
+        MOVBZ R4,diag_d4ae
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BEC78
+        MOV R4,#DATA16 0FFBFH
+        AND dtc_st_grp_ecu,R4
+L_BEC78:                 ; 0xbec78
+        MOV R6,[R0+]
+        RETS
+
+S_BE20C ENDS
+        END

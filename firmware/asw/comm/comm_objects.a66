@@ -1,0 +1,163 @@
+; asw/comm/comm_objects.a66
+; 0xA56DE-0xA5822  (324 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  CAN_wipe_recurring_msg_obj_from_buffer_, CCP_Connect_ArmCanObjects, CCP_Rebuild_CanDaqObjects
+EXTERN  Move_xFF_items__from_PTR_R12_to_PTR_R13:NEAR
+
+S_A56DE SECTION CODE AT 0A56DEH
+
+; ======== CCP_Connect_ArmCanObjects  (@0xa56de) ========
+        ; CCP_Connect_ArmCanObjects: CCP CONNECT arming. Rebuilds all CAN DAQ/transmit message objects
+        ; (CCP_Rebuild_CanDaqObjects), clears DAT_00fd62 bit2, sets CAN interrupt priority XP1IC=9 and enables
+        ; the CC11 CAN-object interrupt (CC11IC |= 0x40).
+CCP_Connect_ArmCanObjects:
+        CALLS 00AH,CCP_Rebuild_CanDaqObjects
+        BCLR sched_flags2.02H
+        EXTR #02H
+        MOV XP1IC,#DATA16 00009H
+        BSET CC11IC.06H
+        RETS
+
+; ======== CCP_Rebuild_CanDaqObjects  (@0xa56ee) ========
+        ; CCP_Rebuild_CanDaqObjects: rebuilds the 15 CCP CAN transmit message objects at 0xEE10 (16-byte
+        ; stride). For each slot: if its bit in ccp_daq_active_mask is clear -> write idle framing 0x5555 +
+        ; padding + 8 bytes from ROM @0x6428; else write active framing (0x5599/0x55A5 per node state),
+        ; arbitration id and status byte from the DAQ object (ccp_daq_object_ptr_tbl[i]), then 8 data bytes.
+        ; The 0x55xx/0xFFFF words are C166 CAN msg-obj control patterns (MSGVAL/NEWDAT/TXRQ). Called on CCP
+        ; connect (CCP_Connect_ArmCanObjects) and MOVE.
+CCP_Rebuild_CanDaqObjects:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        SUB R0,#02H
+        MOV R9,#DATA16 0EE00H
+        MOV R4,#DATA16 0074BH
+        MOV [R9],R4
+        MOV R9,#DATA16 0EE04H
+        MOV R4,#DATA16 03601H
+        MOV [R9],R4
+        MOV R9,#DATA16 0EE06H
+        MOV R4,#DATA16 0FFFFH
+        MOV [R9],R4
+        MOV R9,#DATA16 0EE08H
+        MOV [R9],R4
+        MOV R9,#DATA16 0EE0AH
+        MOV [R9],R4
+        MOV R9,#DATA16 0EE0CH
+        MOV [R9],R4
+        MOV R9,#DATA16 0EE0EH
+        MOV [R9],R4
+        MOV R9,#DATA16 0EE02H
+        MOV R4,#DATA16 00100H
+        MOV [R9],R4
+        MOVB RL6,#00H
+        MOV R8,#DATA16 0EE10H
+        JMPR cc_UC,L_A57F2
+L_A5740:                 ; 0xa5740
+        MOVBZ R4,RL6
+        MOV R5,#01H
+        SHL R5,R4
+        AND R5,ccp_daq_active_mask
+        JMPR cc_EQ,CAN_clear_out_a_message_box_
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R7,[R4+#0E18AH]
+        MOV R4,[R7+#06H]
+        MOV [R0],R4
+        MOVB RL5,[R4+#01H]
+        MOVBZ R5,RL5
+        SHR R5,#01H
+        CMPB RL5,#00H
+        JMPR cc_EQ,L_A576C
+        MOV R4,#DATA16 055A5H
+        JMPR cc_UC,L_A5770
+L_A576C:                 ; 0xa576c
+        MOV R4,#DATA16 05599H
+L_A5770:                 ; 0xa5770
+        MOV [R8],R4
+        MOV R4,[R7]
+        MOV [R8+#02H],R4
+        MOV R4,[R7+#02H]
+        AND R4,#DATA16 0F8FFH
+        MOV [R8+#04H],R4
+        MOV R4,[R0]
+        MOVB RL5,[R4+#03H]
+        MOVBZ R5,RL5
+        SHL R5,#02H
+        MOVB RL3,[R4+#01H]
+        MOVBZ R2,RL3
+        SHR R2,#01H
+        SHL R2,#01H
+        OR R5,R2
+        MOV R2,[R7+#02H]
+        AND R2,#DATA16 00100H
+        SHR R2,#06H
+        OR R5,R2
+        SHL R5,#02H
+        MOVB [R8+#06H],RL5
+        MOV R12,R8
+        ADD R12,#07H
+        MOV R13,#DATA16 06428H
+        MOV R14,#08H
+        CALLS 00AH,Move_xFF_items__from_PTR_R12_to_PTR_R13
+        MOV R4,#00H
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        MOV [R5+#0E16CH],R4
+        JMPR cc_UC,L_A57EC
+CAN_clear_out_a_message_box_: ; 0xa57c6
+        MOV R4,#DATA16 05555H
+        ; with padding, i suspect this is the same 5555 we see in CCP -
+        ; in fact, i'll check
+        ;
+        ;
+        MOV [R8],R4
+        MOV R4,#DATA16 0FFFFH
+        MOV [R8+#02H],R4
+        MOV [R8+#04H],R4
+        MOVB RL4,#00H
+        MOVB [R8+#06H],RL4
+        MOV R12,R8
+        ADD R12,#07H
+        MOV R13,#DATA16 06428H
+        MOV R14,#08H
+        CALLS 00AH,Move_xFF_items__from_PTR_R12_to_PTR_R13
+L_A57EC:                 ; 0xa57ec
+        ADD R8,#DATA16 00010H
+        ADDB RL6,#01H
+L_A57F2:                 ; 0xa57f2
+        CMPB RL6,#DATA16 0000FH
+        ; [*] have we transfered the whole messsage object?
+        ; 0xF is the specified length [*]
+        JMPR cc_C,L_A5740
+        MOV R9,#DATA16 0EE00H
+        MOV R4,[R9]
+        AND R4,#DATA16 0FFFEH
+        MOV [R9],R4
+        ADD R0,#02H
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== CAN_wipe_recurring_msg_obj_from_buffer?  (@0xa5810) ========
+        ; like a CCP DAQ or sth.
+        ; r12 is the definition address of
+        ; your message - inside the buffer
+CAN_wipe_recurring_msg_obj_from_buffer_:
+        MOV R13,#DATA16 0EE00H
+        MOV R4,[R13]
+        OR R4,#01H
+        MOV [R13],R4
+        MOVB RL4,#00H
+        MOVB [R12+#02H],RL4
+        RETS
+
+S_A56DE ENDS
+        END

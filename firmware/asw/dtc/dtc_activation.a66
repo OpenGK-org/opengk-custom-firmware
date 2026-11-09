@@ -1,0 +1,714 @@
+; asw/dtc/dtc_activation.a66
+; 0xD9436-0xD9BE8  (1970 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  DTC_Calc_Activation, DTC_Calc_Activation_MIL, DTC_Update_Immediate
+EXTERN  DTC_Capture_FreezeFrame:NEAR, DTC_Update_Status_MIL:NEAR
+
+S_D9436 SECTION CODE AT 0D9436H
+
+; ======== DTC_Update_Immediate  (@0xd9436) ========
+        ; DTC_Update_Immediate(recordPtr, cfgPtr): immediate (non-debounced) fault set/heal. Same record/cfg
+        ; layout as DTC_Update_Debounced. Caller presets dtc_test_result (0=pass/heal, else fault-type bits
+        ; 1/2/4/8) then calls this to set or clear the DTC in one pass. This is the entry the SMARTRA
+        ; immobilizer uses, e.g. dtc_test_result=8; DTC_Update_Immediate(0xd522,0x58f8). Returns updated
+        ; status/occurrence.
+DTC_Update_Immediate:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R6
+        MOV R8,R13
+        MOV R9,R12
+        MOVB RL4,[R9]
+        MOVBZ R4,RL4
+        MOV dtc_status_work,R4
+        MOVB RL4,[R8]
+        JMPR cc_EQ,L_D9458
+        MOVB RL4,[R8]
+        ANDB RL4,#DATA16 0000FH
+        JMPR cc_EQ,L_D9466
+        JNB obd_sf.0DH,L_D9466
+L_D9458:                 ; 0xd9458
+        MOV R4,R9
+        ADD R4,#DATA16 0000AH
+        MOVB RL5,[R4]
+        ORB RL5,#DATA16 00020H
+        MOVB [R4],RL5
+L_D9466:                 ; 0xd9466
+        MOVB RL4,dtc_test_result
+        JMPR cc_NE,L_D94D4
+        MOV R4,R8
+        MOV R2,#DATA16 0522EH
+        SUB R4,R2
+        MOV R5,#DATA16 00016H
+        MOV 0FE0EH,R4
+        DIVU R5
+        MOV R4,0FE0EH
+        MOVB RL6,RL4
+        MOVBZ R3,RL6
+        MOV R1,R3
+        SHL R1,#03H
+        SUB R1,R3
+        SHL R1,#01H
+        MOVB RL4,[R1+#0D0DAH]
+        MOVBZ R4,RL4
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D94B8
+        MOVBZ R4,RL6
+        AND R4,#DATA16 0000FH
+        MOV R5,#01H
+        SHL R5,R4
+        CPL R5
+        MOV R4,#DATA16 0F854H
+        MOVBZ R3,RL6
+        SHR R3,#04H
+        SHL R3,#01H
+        ADD R4,R3
+        MOV R3,[R4]
+        AND R3,R5
+        MOV [R4],R3
+L_D94B8:                 ; 0xd94b8
+        JB dtc_status_work.06H,L_D94C0
+        JMPA cc_UC,L_D9710
+L_D94C0:                 ; 0xd94c0
+        BSET dtc_status_work.07H
+        BCLR dtc_status_work.06H
+        MOVB RL4,dtc_status_work
+        MOVB [R9],RL4
+        MOVB RL4,#00H
+        MOVB [R9+#01H],RL4
+        JMPA cc_UC,L_D9710
+L_D94D4:                 ; 0xd94d4
+        CALLS 00DH,DTC_Capture_FreezeFrame
+        JNB dtc_status_work.06H,L_D94E0
+        JMPA cc_UC,L_D96BC
+L_D94E0:                 ; 0xd94e0
+        JNB dtc_status_work.05H,L_D94E8
+        JMPA cc_UC,L_D9644
+L_D94E8:                 ; 0xd94e8
+        MOV R4,R8
+        MOV R2,#DATA16 0522EH
+        SUB R4,R2
+        MOV R5,#DATA16 00016H
+        MOV 0FE0EH,R4
+        DIVU R5
+        MOV R4,0FE0EH
+        MOVBZ R5,fmy_f_anz
+        MOVB [R5+#0C3DBH],RL4
+        MOVBZ R4,fmy_f_anz
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,fmy_s_f_anz
+        MOVB [R4+#0C441H],RL5
+        MOVBZ R4,dtc_test_result
+        AND R4,#02H
+        JMPR cc_EQ,L_D953C
+        MOVBZ R4,fmy_s_f_anz
+        MOVB RL5,[R4+#0C441H]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05232H]
+        MOV dtc_act_shadow,R5
+        JMPR cc_UC,L_D957E
+L_D953C:                 ; 0xd953c
+        MOVBZ R4,dtc_test_result
+        AND R4,#04H
+        JMPR cc_EQ,L_D9562
+        MOVBZ R4,fmy_s_f_anz
+        MOVB RL5,[R4+#0C441H]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05234H]
+        MOV dtc_act_shadow,R5
+        JMPR cc_UC,L_D957E
+L_D9562:                 ; 0xd9562
+        MOVBZ R4,fmy_s_f_anz
+        MOVB RL5,[R4+#0C441H]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05230H]
+        MOV dtc_act_shadow,R5
+L_D957E:                 ; 0xd957e
+        MOVBZ R4,dtc_test_result
+        AND R4,#02H
+        JMPR cc_EQ,L_D95A4
+        MOVBZ R4,fmy_f_anz
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05232H]
+        MOV dtc_act,R5
+        JMPR cc_UC,L_D95E6
+L_D95A4:                 ; 0xd95a4
+        MOVBZ R4,dtc_test_result
+        AND R4,#04H
+        JMPR cc_EQ,L_D95CA
+        MOVBZ R4,fmy_f_anz
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05234H]
+        MOV dtc_act,R5
+        JMPR cc_UC,L_D95E6
+L_D95CA:                 ; 0xd95ca
+        MOVBZ R4,fmy_f_anz
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05230H]
+        MOV dtc_act,R5
+L_D95E6:                 ; 0xd95e6
+        SUBB fmy_f_anz,ONES
+        SUBB fmy_s_f_anz,ONES
+        MOV R4,[R8+#08H]
+        MOVB RL5,[R4]
+        MOVB [R9+#04H],RL5
+        MOV R4,[R8+#0AH]
+        MOVB RL5,[R4]
+        MOVB [R9+#05H],RL5
+        MOV R4,[R8+#0CH]
+        MOVB RL5,[R4]
+        MOVB [R9+#06H],RL5
+        MOV R4,[R8+#0EH]
+        MOVB RL5,[R4]
+        MOVB [R9+#07H],RL5
+        MOVB RL4,[R8]
+        MOVBZ R4,RL4
+        AND R4,#DATA16 00010H
+        MOVBZ R5,dtc_test_result
+        OR R5,R4
+        OR R5,#DATA16 00020H
+        MOV dtc_status_work,R5
+        MOVB RL4,dtc_test_result
+        MOVB [R9+#0DH],RL4
+        MOVB RL4,trt_word
+        MOVB [R9+#09H],RL4
+        MOVB RL4,diag_f87f
+        MOVB [R9+#08H],RL4
+L_D9644:                 ; 0xd9644
+        BSET dtc_status_work.06H
+        MOVB RL4,dtc_status_work
+        MOVBZ R4,RL4
+        AND R4,#DATA16 0000FH
+        MOVBZ R5,dtc_test_result
+        CMP R4,R5
+        JMPR cc_EQ,L_D9680
+        MOV R4,[R8+#08H]
+        MOVB RL5,[R4]
+        MOVB [R9+#04H],RL5
+        MOV R4,[R8+#0AH]
+        MOVB RL5,[R4]
+        MOVB [R9+#05H],RL5
+        MOV R4,[R8+#0CH]
+        MOVB RL5,[R4]
+        MOVB [R9+#06H],RL5
+        MOV R4,[R8+#0EH]
+        MOVB RL5,[R4]
+        MOVB [R9+#07H],RL5
+L_D9680:                 ; 0xd9680
+        MOVB RL4,dtc_status_work
+        ANDB RL4,#DATA16 000F0H
+        ORB RL4,dtc_test_result
+        MOVB [R9],RL4
+        MOVB RL4,#DATA16 000FFH
+        MOVB [R9+#01H],RL4
+        MOV R12,R9
+        MOV R13,R8
+        CALLS 00DH,DTC_Update_Status_MIL
+        MOVB RL4,#DATA16 00028H
+        MOVB [R9+#03H],RL4
+        MOVB RL4,[R9+#02H]
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NC,L_D970C
+        MOV R4,R9
+        ADD R4,#02H
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+        JMPR cc_UC,L_D970C
+L_D96BC:                 ; 0xd96bc
+        MOVB RL4,dtc_status_work
+        MOVBZ R4,RL4
+        AND R4,#DATA16 0000FH
+        MOVBZ R5,dtc_test_result
+        CMP R4,R5
+        JMPR cc_EQ,L_D96F6
+        MOV R4,[R8+#08H]
+        MOVB RL5,[R4]
+        MOVB [R9+#04H],RL5
+        MOV R4,[R8+#0AH]
+        MOVB RL5,[R4]
+        MOVB [R9+#05H],RL5
+        MOV R4,[R8+#0CH]
+        MOVB RL5,[R4]
+        MOVB [R9+#06H],RL5
+        MOV R4,[R8+#0EH]
+        MOVB RL5,[R4]
+        MOVB [R9+#07H],RL5
+L_D96F6:                 ; 0xd96f6
+        MOVB RL4,dtc_status_work
+        ANDB RL4,#DATA16 000F0H
+        ORB RL4,dtc_test_result
+        MOVB [R9],RL4
+        MOV R12,R9
+        MOV R13,R8
+        CALLS 00DH,DTC_Update_Status_MIL
+L_D970C:                 ; 0xd970c
+        MOVB dtc_test_result,ZEROS
+L_D9710:                 ; 0xd9710
+        MOV R6,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== DTC_Calc_Activation  (@0xd9718) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by dtc/obd_sf signals): Computes DTC activation/MIL state: dtc_act / dtc_act_shadow
+        ; from dtc_status_work (confirms/heals DTCs).
+        ; ------------------------------------------------------------
+DTC_Calc_Activation:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R6
+        MOV R8,R13
+        MOV R9,R12
+        MOVB RL4,[R9]
+        MOVBZ R4,RL4
+        MOV dtc_status_work,R4
+        MOVB RL4,[R8]
+        JMPR cc_EQ,L_D973A
+        MOVB RL4,[R8]
+        ANDB RL4,#DATA16 0000FH
+        JMPR cc_EQ,L_D9748
+        JNB obd_sf.0DH,L_D9748
+L_D973A:                 ; 0xd973a
+        MOV R4,R9
+        ADD R4,#DATA16 0000AH
+        MOVB RL5,[R4]
+        ORB RL5,#DATA16 00020H
+        MOVB [R4],RL5
+L_D9748:                 ; 0xd9748
+        MOVB RL4,dtc_test_result
+        JMPR cc_NE,L_D97B6
+        MOV R4,R8
+        MOV R2,#DATA16 0522EH
+        SUB R4,R2
+        MOV R5,#DATA16 00016H
+        MOV 0FE0EH,R4
+        DIVU R5
+        MOV R4,0FE0EH
+        MOVB RL6,RL4
+        MOVBZ R3,RL6
+        MOV R1,R3
+        SHL R1,#03H
+        SUB R1,R3
+        SHL R1,#01H
+        MOVB RL4,[R1+#0D0DAH]
+        MOVBZ R4,RL4
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D979A
+        MOVBZ R4,RL6
+        AND R4,#DATA16 0000FH
+        MOV R5,#01H
+        SHL R5,R4
+        CPL R5
+        MOV R4,#DATA16 0F854H
+        MOVBZ R3,RL6
+        SHR R3,#04H
+        SHL R3,#01H
+        ADD R4,R3
+        MOV R3,[R4]
+        AND R3,R5
+        MOV [R4],R3
+L_D979A:                 ; 0xd979a
+        JB dtc_status_work.06H,L_D97A2
+        JMPA cc_UC,L_D99FE
+L_D97A2:                 ; 0xd97a2
+        BSET dtc_status_work.07H
+        BCLR dtc_status_work.06H
+        MOVB RL4,dtc_status_work
+        MOVB [R9],RL4
+        MOVB RL4,#00H
+        MOVB [R9+#01H],RL4
+        JMPA cc_UC,L_D99FE
+L_D97B6:                 ; 0xd97b6
+        CALLS 00DH,DTC_Capture_FreezeFrame
+        JNB dtc_status_work.06H,L_D97C2
+        JMPA cc_UC,L_D99AA
+L_D97C2:                 ; 0xd97c2
+        JNB dtc_status_work.05H,L_D97CA
+        JMPA cc_UC,L_D9926
+L_D97CA:                 ; 0xd97ca
+        MOV R4,R8
+        MOV R2,#DATA16 0522EH
+        SUB R4,R2
+        MOV R5,#DATA16 00016H
+        MOV 0FE0EH,R4
+        DIVU R5
+        MOV R4,0FE0EH
+        MOVBZ R5,fmy_f_anz
+        MOVB [R5+#0C3DBH],RL4
+        MOVBZ R4,fmy_f_anz
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,fmy_s_f_anz
+        MOVB [R4+#0C441H],RL5
+        MOVBZ R4,dtc_test_result
+        AND R4,#02H
+        JMPR cc_EQ,L_D981E
+        MOVBZ R4,fmy_s_f_anz
+        MOVB RL5,[R4+#0C441H]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05232H]
+        MOV dtc_act_shadow,R5
+        JMPR cc_UC,L_D9860
+L_D981E:                 ; 0xd981e
+        MOVBZ R4,dtc_test_result
+        AND R4,#04H
+        JMPR cc_EQ,L_D9844
+        MOVBZ R4,fmy_s_f_anz
+        MOVB RL5,[R4+#0C441H]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05234H]
+        MOV dtc_act_shadow,R5
+        JMPR cc_UC,L_D9860
+L_D9844:                 ; 0xd9844
+        MOVBZ R4,fmy_s_f_anz
+        MOVB RL5,[R4+#0C441H]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05230H]
+        MOV dtc_act_shadow,R5
+L_D9860:                 ; 0xd9860
+        MOVBZ R4,dtc_test_result
+        AND R4,#02H
+        JMPR cc_EQ,L_D9886
+        MOVBZ R4,fmy_f_anz
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05232H]
+        MOV dtc_act,R5
+        JMPR cc_UC,L_D98C8
+L_D9886:                 ; 0xd9886
+        MOVBZ R4,dtc_test_result
+        AND R4,#04H
+        JMPR cc_EQ,L_D98AC
+        MOVBZ R4,fmy_f_anz
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05234H]
+        MOV dtc_act,R5
+        JMPR cc_UC,L_D98C8
+L_D98AC:                 ; 0xd98ac
+        MOVBZ R4,fmy_f_anz
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05230H]
+        MOV dtc_act,R5
+L_D98C8:                 ; 0xd98c8
+        SUBB fmy_f_anz,ONES
+        SUBB fmy_s_f_anz,ONES
+        MOV R4,[R8+#08H]
+        MOVB RL5,[R4]
+        MOVB [R9+#04H],RL5
+        MOV R4,[R8+#0AH]
+        MOVB RL5,[R4]
+        MOVB [R9+#05H],RL5
+        MOV R4,[R8+#0CH]
+        MOVB RL5,[R4]
+        MOVB [R9+#06H],RL5
+        MOV R4,[R8+#0EH]
+        MOVB RL5,[R4]
+        MOVB [R9+#07H],RL5
+        MOVB RL4,[R8]
+        MOVBZ R4,RL4
+        AND R4,#DATA16 00010H
+        MOVBZ R5,dtc_test_result
+        OR R5,R4
+        OR R5,#DATA16 00020H
+        MOV dtc_status_work,R5
+        MOVB RL4,dtc_test_result
+        MOVB [R9+#0DH],RL4
+        MOVB RL4,trt_word
+        MOVB [R9+#09H],RL4
+        MOVB RL4,diag_f87f
+        MOVB [R9+#08H],RL4
+L_D9926:                 ; 0xd9926
+        BSET dtc_status_work.06H
+        MOVB RL4,dtc_status_work
+        MOVBZ R4,RL4
+        AND R4,#DATA16 0000FH
+        MOVBZ R5,dtc_test_result
+        CMP R4,R5
+        JMPR cc_EQ,L_D9962
+        MOV R4,[R8+#08H]
+        MOVB RL5,[R4]
+        MOVB [R9+#04H],RL5
+        MOV R4,[R8+#0AH]
+        MOVB RL5,[R4]
+        MOVB [R9+#05H],RL5
+        MOV R4,[R8+#0CH]
+        MOVB RL5,[R4]
+        MOVB [R9+#06H],RL5
+        MOV R4,[R8+#0EH]
+        MOVB RL5,[R4]
+        MOVB [R9+#07H],RL5
+L_D9962:                 ; 0xd9962
+        MOVB RL4,dtc_status_work
+        ANDB RL4,#DATA16 000F0H
+        ORB RL4,dtc_test_result
+        MOVB [R9],RL4
+        MOVB RL4,#DATA16 000FFH
+        MOVB [R9+#01H],RL4
+        MOVB RL4,[R9+#0CH]
+        JMPR cc_NE,L_D9984
+        MOVB RL4,#01H
+        MOVB [R9+#0CH],RL4
+L_D9984:                 ; 0xd9984
+        MOV R12,R9
+        MOV R13,R8
+        CALLS 00DH,DTC_Update_Status_MIL
+        MOVB RL4,#DATA16 00028H
+        MOVB [R9+#03H],RL4
+        MOVB RL4,[R9+#02H]
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NC,L_D99FA
+        MOV R4,R9
+        ADD R4,#02H
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+        JMPR cc_UC,L_D99FA
+L_D99AA:                 ; 0xd99aa
+        MOVB RL4,dtc_status_work
+        MOVBZ R4,RL4
+        AND R4,#DATA16 0000FH
+        MOVBZ R5,dtc_test_result
+        CMP R4,R5
+        JMPR cc_EQ,L_D99E4
+        MOV R4,[R8+#08H]
+        MOVB RL5,[R4]
+        MOVB [R9+#04H],RL5
+        MOV R4,[R8+#0AH]
+        MOVB RL5,[R4]
+        MOVB [R9+#05H],RL5
+        MOV R4,[R8+#0CH]
+        MOVB RL5,[R4]
+        MOVB [R9+#06H],RL5
+        MOV R4,[R8+#0EH]
+        MOVB RL5,[R4]
+        MOVB [R9+#07H],RL5
+L_D99E4:                 ; 0xd99e4
+        MOVB RL4,dtc_status_work
+        ANDB RL4,#DATA16 000F0H
+        ORB RL4,dtc_test_result
+        MOVB [R9],RL4
+        MOV R12,R9
+        MOV R13,R8
+        CALLS 00DH,DTC_Update_Status_MIL
+L_D99FA:                 ; 0xd99fa
+        MOVB dtc_test_result,ZEROS
+L_D99FE:                 ; 0xd99fe
+        MOV R6,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== DTC_Calc_Activation_MIL  (@0xd9a06) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by dtc/obd_sf signals): DTC activation + MIL-request processing (DTC 0xd47a): dtc_act
+        ; / dtc_act_shadow / dtc_status_work.
+        ; ------------------------------------------------------------
+DTC_Calc_Activation_MIL:
+        MOV [-R0],R9
+        MOV R9,R12
+        MOVBZ R4,dtc_st_ecu_mil
+        MOV dtc_status_work,R4
+        MOVB RL4,DPP1:0A17F0H
+        JMPR cc_EQ,L_D9A1C
+        ANDB RL4,#07H
+        JMPR cc_EQ,L_D9A24
+L_D9A1C:                 ; 0xd9a1c
+        MOVB RL4,#DATA16 00020H
+        ORB dtc_ecu_flags,RL4
+L_D9A24:                 ; 0xd9a24
+        MOV R4,ecu_diag_sf_word
+        AND R4,R9
+        JMPR cc_NE,L_D9A5C
+        MOVBZ R4,dtc_ecu_flags
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D9A3E
+        MOV R4,#DATA16 0FFF7H
+        AND dtc_mil_grp,R4
+L_D9A3E:                 ; 0xd9a3e
+        JB dtc_status_work.06H,L_D9A46
+        JMPA cc_UC,L_D9BE4
+L_D9A46:                 ; 0xd9a46
+        MOV R4,ecu_diag_sf_word
+        JMPR cc_NE,L_D9A50
+        BCLR dtc_status_work.06H
+        BSET dtc_status_work.07H
+L_D9A50:                 ; 0xd9a50
+        MOVB RL4,dtc_status_work
+        MOVB dtc_st_ecu_mil,RL4
+        JMPA cc_UC,L_D9BE4
+L_D9A5C:                 ; 0xd9a5c
+        CALLS 00DH,DTC_Capture_FreezeFrame
+        JNB dtc_status_work.05H,L_D9A68
+        JMPA cc_UC,L_D9B92
+L_D9A68:                 ; 0xd9a68
+        MOVB RL4,#DATA16 00043H
+        MOVBZ R5,fmy_f_anz
+        MOVB [R5+#0C3DBH],RL4
+        MOVBZ R4,fmy_f_anz
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,fmy_s_f_anz
+        MOVB [R4+#0C441H],RL5
+        MOVBZ R4,dtc_test_result
+        AND R4,#02H
+        JMPR cc_EQ,L_D9AAA
+        MOVBZ R4,fmy_s_f_anz
+        MOVB RL5,[R4+#0C441H]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05232H]
+        MOV dtc_act_shadow,R5
+        JMPR cc_UC,L_D9AEC
+L_D9AAA:                 ; 0xd9aaa
+        MOVBZ R4,dtc_test_result
+        AND R4,#04H
+        JMPR cc_EQ,L_D9AD0
+        MOVBZ R4,fmy_s_f_anz
+        MOVB RL5,[R4+#0C441H]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05234H]
+        MOV dtc_act_shadow,R5
+        JMPR cc_UC,L_D9AEC
+L_D9AD0:                 ; 0xd9ad0
+        MOVBZ R4,fmy_s_f_anz
+        MOVB RL5,[R4+#0C441H]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05230H]
+        MOV dtc_act_shadow,R5
+L_D9AEC:                 ; 0xd9aec
+        MOVBZ R4,dtc_test_result
+        AND R4,#02H
+        JMPR cc_EQ,L_D9B12
+        MOVBZ R4,fmy_f_anz
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05232H]
+        MOV dtc_act,R5
+        JMPR cc_UC,L_D9B54
+L_D9B12:                 ; 0xd9b12
+        MOVBZ R4,dtc_test_result
+        AND R4,#04H
+        JMPR cc_EQ,L_D9B38
+        MOVBZ R4,fmy_f_anz
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05234H]
+        MOV dtc_act,R5
+        JMPR cc_UC,L_D9B54
+L_D9B38:                 ; 0xd9b38
+        MOVBZ R4,fmy_f_anz
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05230H]
+        MOV dtc_act,R5
+L_D9B54:                 ; 0xd9b54
+        MOV R4,DPP1:0A17F8H
+        MOVB dtc_ff_ram0,[R4]
+        MOV R5,DPP1:0A17FAH
+        MOVB dtc_ff_ram1,[R5]
+        MOVB RL4,trt_word
+        MOVB dtc_ff_trt_lo,RL4
+        MOVB RL5,diag_f87f
+        MOVB dtc_ff_trt_hi,RL5
+        SUBB fmy_f_anz,ONES
+        SUBB fmy_s_f_anz,ONES
+        MOVBZ R4,DPP1:0A17F0H
+        AND R4,#DATA16 00010H
+        OR R4,#DATA16 00028H
+        MOV dtc_status_work,R4
+        MOVB RL4,#08H
+        MOVB dtc_ff_len,RL4
+L_D9B92:                 ; 0xd9b92
+        MOV R4,R9
+        ANDB RL4,ecu_diag_sf_word
+        ORB dtc_act_acc_lo,RL4
+        MOV R4,R9
+        SHR R4,#08H
+        ANDB RL4,ecu_diag_sf_byte_1_
+        ORB dtc_act_acc_hi,RL4
+        JB dtc_status_work.06H,L_D9BCE
+        MOVB RL4,#DATA16 00028H
+        MOVB dtc_st_scratch,RL4
+        BSET dtc_status_work.06H
+        MOVB RL5,dtc_status_work
+        MOVB dtc_st_ecu_mil,RL5
+        MOVB RL3,dtc_occ_ctr
+        CMPB RL3,#DATA16 000FFH
+        JMPR cc_NC,L_D9BCE
+        ADDB RL3,#01H
+        MOVB dtc_occ_ctr,RL3
+L_D9BCE:                 ; 0xd9bce
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D47AH
+        MOV R13,#DATA16 057F0H
+        CALLS 00DH,DTC_Update_Status_MIL
+        MOVB dtc_test_result,ZEROS
+L_D9BE4:                 ; 0xd9be4
+        MOV R9,[R0+]
+        RETS
+
+S_D9436 ENDS
+        END

@@ -1,0 +1,687 @@
+; asw/ivvt/ivvt_hold.a66
+; 0xAEB0C-0xAF1FE  (1778 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_cam_hys_ad_ivvt                    EQU  090124H
+c_cam_hys_adh_ivvt                   EQU  090125H
+c_cam_hys_rst_adh_ivvt               EQU  09012BH
+c_cyc_max_adh_ivvt                   EQU  09017EH
+c_n_32_min_ivvthpwm_ad               EQU  09028DH
+c_toil_max_ivvthpwm_ad               EQU  0903CAH
+lc_ena_adh_rest_ivvt                 EQU  09045BH
+c_cam_dif_int_adh_rest_ivvt          EQU  0904C6H
+ldpm_cam_dif_ivvt                             EQU  098374H
+
+PUBLIC  Calc_IVVT_CamAd_Hold, Calc_IVVT_HPWM_Adapt, IVVT_MesStep_a, IVVT_MesStep_b, Nop_aef6c
+EXTERN  Abs_S16:NEAR, Calc_CtrlModule_Voltage:NEAR, Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_2D_Table_DWord_YByte:NEAR
+EXTERN  Get_IP_Word_2D_Table_DWord_YWord:NEAR, Get_IP_Word_3D_Table_DWord_XByte_YByte:NEAR, Get_IP_Word_Y_Axis:NEAR, Get_Word_2D_Table_DWord_YByte:NEAR
+EXTERN  MulAdd_U32_Sat:NEAR, Mul_S16_Sat16:NEAR, Sat_Add_S16:NEAR, Sat_Add_U16:NEAR
+EXTERN  Sat_Add_U8:NEAR, Sat_HiByte_ff:NEAR, Sat_Sub_S16_Min:NEAR, Sel_Ovf_U16:NEAR
+EXTERN  sub_r12_13_ret_r4:NEAR, subtract_r12_r13_negate_if_not_rets_r4:NEAR
+
+S_AEB0C SECTION CODE AT 0AEB0CH
+
+; ======== IVVT_MesStep_a  (@0xaeb0c) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IVVT_MesStep_a:
+        MOV R12,p_ivvt_cam_m
+        MOVB RL4,#01H
+        MOVB [R12+#0BBH],RL4
+        MOVB [R12+#0BAH],RL4
+        MOV R4,#DATA16 0FFFFH
+        MOV [R12+#0B0H],R4
+        RETS
+
+; ======== IVVT_MesStep_b  (@0xaeb24) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IVVT_MesStep_b:
+        MOV R12,p_ivvt_cam_m
+        MOVB RL4,#01H
+        MOVB [R12+#0BBH],RL4
+        MOVB [R12+#0BAH],RL4
+        MOV R4,#00H
+        MOV [R12+#0B8H],R4
+        MOV [R12+#0B4H],R4
+        MOV R4,#DATA16 0FFFFH
+        MOV [R12+#0B0H],R4
+        RETS
+
+; ======== Calc_IVVT_CamAd_Hold  (@0xaeb46) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified): IVVT cam-phase adaptation HOLD/REST: steady-state cam_dif integral +
+        ; per-op-point learned cam-adaptation (state @camstruct+0xba/0xbb/0xbc), applied via toil/n maps;
+        ; gated by state_ivvt==2.
+        ; ------------------------------------------------------------
+Calc_IVVT_CamAd_Hold:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R6,R12
+        MOV R7,#00H
+        MOV R8,p_ivvt_cam_m
+        MOV R9,p_ivvt_cam_s
+        MOVB RL4,[R8+#0BEH]
+        JMPR cc_NE,L_AEB84
+        MOV R4,state_ivvt
+        CMP R4,#02H
+        JMPR cc_NE,L_AEBC2
+        MOVB RL4,toil
+        CMPB RL4,DPP0:c_toil_max_ivvthpwm_ad
+        JMPR cc_ULE,L_AEB7C
+        MOVB RL5,n_32
+        CMPB RL5,DPP0:c_n_32_min_ivvthpwm_ad
+        JMPR cc_C,L_AEBC2
+L_AEB7C:                 ; 0xaeb7c
+        MOVB RL4,#01H
+        MOVB [R8+#0BEH],RL4
+        JMPR cc_UC,L_AEBC2
+L_AEB84:                 ; 0xaeb84
+        MOV R4,state_ivvt
+        CMP R4,#02H
+        JMPR cc_NE,L_AEBA0
+        MOVB RL4,toil
+        CMPB RL4,DPP0:c_toil_max_ivvthpwm_ad
+        JMPR cc_ULE,L_AEBC2
+        MOVB RL5,n_32
+        CMPB RL5,DPP0:c_n_32_min_ivvthpwm_ad
+        JMPR cc_NC,L_AEBC2
+L_AEBA0:                 ; 0xaeba0
+        MOVB RL4,#01H
+        MOVB [R8+#0BAH],RL4
+        MOVB [R8+#0BBH],RL4
+        MOV R4,#00H
+        MOV [R8+#0B8H],R4
+        MOV [R8+#0B4H],R4
+        MOV R4,#DATA16 0FFFFH
+        MOV [R8+#0B0H],R4
+        MOVB RL4,#00H
+        MOVB [R8+#0BEH],RL4
+L_AEBC2:                 ; 0xaebc2
+        MOVB RL4,[R8+#0BEH]
+        JMPA cc_EQ,L_AEF50
+        MOVB RL4,[R8+#0BBH]
+        JMPR cc_NE,L_AEC16
+        MOV R12,[R8+#038H]
+        CALLS 00FH,Abs_S16
+        MOVBZ R5,DPP0:c_cam_hys_rst_adh_ivvt
+        CMP R4,R5
+        JMPR cc_ULE,L_AEBE6
+        MOV R4,[R8+#036H]
+        JMPR cc_NE,L_AEC10
+L_AEBE6:                 ; 0xaebe6
+        MOVB RL4,[R8+#0BDH]
+        JMPR cc_NE,L_AEBF0
+        JB lv_act_cle_slv_ivvt.09H,L_AEC10
+L_AEBF0:                 ; 0xaebf0
+        MOV R4,[R8+#0B8H]
+        CMP R4,#00H
+        JMPR cc_SGE,L_AEC00
+        MOV R4,[R8+#0B8H]
+        NEG R4
+        JMPR cc_UC,L_AEC04
+L_AEC00:                 ; 0xaec00
+        MOV R4,[R8+#0B8H]
+L_AEC04:                 ; 0xaec04
+        CMP R4,DPP0:c_cam_dif_int_adh_rest_ivvt
+        JMPR cc_C,L_AEC16
+        MOVB RL4,DPP0:lc_ena_adh_rest_ivvt
+        JMPR cc_EQ,L_AEC16
+L_AEC10:                 ; 0xaec10
+        MOVB RL4,#01H
+        MOVB [R8+#0BBH],RL4
+L_AEC16:                 ; 0xaec16
+        MOVB RL4,[R9+#0CH]
+        JMPR cc_EQ,L_AECD4
+        MOV R12,[R8+#03AH]
+        CALLS 00FH,Abs_S16
+        MOVBZ R5,DPP0:c_cam_hys_adh_ivvt
+        CMP R4,R5
+        JMPR cc_UGT,L_AECD4
+        MOVB RL4,[R8+#0E6H]
+        JMPR cc_NE,L_AECD4
+        MOV R4,[R6]
+        MOVB RL5,[R4]
+        MOVBZ R12,RL5
+        MOV R4,[R6+#02H]
+        MOVB RL5,[R4]
+        MOVBZ R13,RL5
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB RL5,[R9+#04H]
+        CMPB RL5,RL4
+        JMPR cc_NC,L_AECD4
+        MOVB RL4,[R8+#0BBH]
+        JMPR cc_EQ,L_AEC88
+        MOVB RL4,[R8+#0BAH]
+        JMPR cc_EQ,L_AECEC
+        MOVB RL4,#00H
+        MOVB [R8+#0BAH],RL4
+        MOV R4,#00H
+        MOV [R8+#0B8H],R4
+        MOVB [R8+#0BCH],RL4
+        MOVBS R4,RL4
+        MOV [R8+#0B6H],R4
+        MOV [R8+#0B4H],R4
+        MOV [R8+#0ACH],R4
+        MOV R4,#DATA16 0FFFFH
+        MOV [R8+#0AEH],R4
+        MOV R4,t_dly_mes_ivvt
+        MOV [R8+#0B0H],R4
+        JMPR cc_UC,L_AECEC
+L_AEC88:                 ; 0xaec88
+        MOVB RL4,#01H
+        MOVB [R8+#0BAH],RL4
+        MOV R4,#00H
+        MOV [R8+#0B4H],R4
+        MOVB RL4,DPP0:lc_ena_adh_rest_ivvt
+        JMPR cc_EQ,L_AECEC
+        MOV R4,[R8+#0B0H]
+        MOV R5,t_dly_mes_ivvt
+        SUB R5,R4
+        CMP R5,#DATA16 00014H
+        JMPR cc_C,L_AECEC
+        MOV R12,[R8+#03AH]
+        MOV R4,[R8+#0B0H]
+        MOV R13,t_dly_mes_ivvt
+        SUB R13,R4
+        CALLS 00FH,Mul_S16_Sat16
+        MOV R13,R4
+        MOV R12,[R8+#0B8H]
+        CALLS 00FH,Sat_Add_S16
+        MOV [R8+#0B8H],R4
+        MOV R4,t_dly_mes_ivvt
+        MOV [R8+#0B0H],R4
+        JMPR cc_UC,L_AECEC
+L_AECD4:                 ; 0xaecd4
+        MOVB RL4,#01H
+        MOVB [R8+#0BAH],RL4
+        MOV R4,#00H
+        MOV [R8+#0B8H],R4
+        MOV [R8+#0B4H],R4
+        MOV R4,t_dly_mes_ivvt
+        MOV [R8+#0B0H],R4
+L_AECEC:                 ; 0xaecec
+        MOV R12,#DATA16 04554H
+        MOVBZ R13,n_32
+        MOVBZ R14,toil
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YByte
+        MOV lv_ivvt_c582,R4
+        MOVB RL4,[R8+#0BAH]
+        JMPA cc_NE,L_AEF0C
+        MOV R4,[R8+#0ACH]
+        CMP R4,lv_ivvt_c582
+        JMPA cc_C,L_AEF0C
+        MOVB RL4,[R8+#014H]
+        MOVBZ R12,RL4
+        MOVB RL4,[R9+#04H]
+        MOVBZ R13,RL4
+        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CMPB RL4,#02H
+        JMPR cc_ULE,L_AED38
+        MOV R4,[R8+#03AH]
+        SHR R4,#0FH
+        MOV R5,[R8+#0B2H]
+        SHR R5,#0FH
+        XOR R4,R5
+        JMPR cc_EQ,L_AEDA0
+L_AED38:                 ; 0xaed38
+        MOV R4,[R8+#0B4H]
+        CMP R4,#00H
+        JMPR cc_SLT,L_AED60
+        MOV R12,#DATA16 04560H
+        MOV R13,[R8+#03AH]
+        ADD R13,#DATA16 000A0H
+        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YWord
+        MOV R13,R4
+        MOV R12,[R8+#0B4H]
+        CALLS 00FH,Sat_Sub_S16_Min
+        MOV [R8+#0B6H],R4
+        JMPR cc_UC,L_AED7E
+L_AED60:                 ; 0xaed60
+        MOV R12,#DATA16 04560H
+        MOV R13,[R8+#03AH]
+        ADD R13,#DATA16 000A0H
+        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YWord
+        MOV R12,R4
+        MOV R13,[R8+#0B4H]
+        CALLS 00FH,Sat_Add_U16
+        MOV [R8+#0B6H],R4
+L_AED7E:                 ; 0xaed7e
+        MOVB RL4,#01H
+        MOVB [R8+#0BAH],RL4
+        MOVB RL4,#00H
+        MOVB [R8+#0BBH],RL4
+        MOV R4,#00H
+        MOV [R8+#0B4H],R4
+        MOV [R8+#0B8H],R4
+        MOV R4,t_dly_mes_ivvt
+        MOV [R8+#0B0H],R4
+        JMPA cc_UC,L_AEF0C
+L_AEDA0:                 ; 0xaeda0
+        MOV R4,[R8+#034H]
+        CMP R4,#03H
+        JMPR cc_NE,L_AEE54
+        MOV R12,#DATA16 POF ldpm_cam_dif_ivvt
+        MOV R13,#DATA16 PAG ldpm_cam_dif_ivvt
+        MOV R14,[R8+#03AH]
+        ADD R14,#DATA16 000A0H
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,[R6+#04H]
+        MOV R13,[R6+#06H]
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB RL5,[R8+#0BCH]
+        CMPB RL5,RL4
+        JMPR cc_C,L_AEE46
+        MOVB RL4,[R8+#014H]
+        MOVB RL5,[R9+#04H]
+        CMPB RL4,RL5
+        JMPR cc_ULE,L_AEE0E
+        MOV R12,#DATA16 04568H
+        MOV R4,[R8+#040H]
+        CMP R4,#00H
+        JMPR cc_SGE,L_AEDF0
+        MOV R4,[R8+#040H]
+        NEG R4
+        JMPR cc_UC,L_AEDF4
+L_AEDF0:                 ; 0xaedf0
+        MOV R4,[R8+#040H]
+L_AEDF4:                 ; 0xaedf4
+        MOVBZ R13,RL4
+        MOVBZ R14,toil
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YByte
+        MOV R12,R4
+        MOV R13,[R8+#0B4H]
+        CALLS 00FH,Sat_Add_U16
+        MOV [R8+#0B4H],R4
+        JMPR cc_UC,L_AEE3E
+L_AEE0E:                 ; 0xaee0e
+        MOV R12,#DATA16 04568H
+        MOV R4,[R8+#040H]
+        CMP R4,#00H
+        JMPR cc_SGE,L_AEE22
+        MOV R4,[R8+#040H]
+        NEG R4
+        JMPR cc_UC,L_AEE26
+L_AEE22:                 ; 0xaee22
+        MOV R4,[R8+#040H]
+L_AEE26:                 ; 0xaee26
+        MOVBZ R13,RL4
+        MOVBZ R14,toil
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YByte
+        MOV R13,R4
+        MOV R12,[R8+#0B4H]
+        CALLS 00FH,Sat_Sub_S16_Min
+        MOV [R8+#0B4H],R4
+L_AEE3E:                 ; 0xaee3e
+        MOVB RL4,#00H
+        MOVB [R8+#0BCH],RL4
+        JMPR cc_UC,L_AEF0C
+L_AEE46:                 ; 0xaee46
+        MOV R4,R8
+        ADD R4,#DATA16 000BCH
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+        JMPR cc_UC,L_AEF0C
+L_AEE54:                 ; 0xaee54
+        MOV R4,[R8+#036H]
+        JMPR cc_NE,L_AEF0C
+        MOVB RL4,[R8+#014H]
+        MOVB RL5,[R9+#04H]
+        CMPB RL4,RL5
+        JMPR cc_ULE,L_AEEBA
+        CMP R9,#DATA16 0CBCAH
+        JMPR cc_NE,L_AEE72
+        MOVB RL4,[R9+#010H]
+        MOVBZ R7,RL4
+L_AEE72:                 ; 0xaee72
+        MOV R4,[R8+#0AEH]
+        MOV R5,t_dly_mes_ivvt
+        SUB R5,R4
+        CMP R5,R7
+        JMPR cc_C,L_AEF0C
+        MOV R12,#DATA16 04568H
+        MOV R4,[R8+#040H]
+        CMP R4,#00H
+        JMPR cc_SGE,L_AEE94
+        MOV R4,[R8+#040H]
+        NEG R4
+        JMPR cc_UC,L_AEE98
+L_AEE94:                 ; 0xaee94
+        MOV R4,[R8+#040H]
+L_AEE98:                 ; 0xaee98
+        MOVBZ R13,RL4
+        MOVBZ R14,toil
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YByte
+        MOV R12,R4
+        MOV R13,[R8+#0B4H]
+        CALLS 00FH,Sat_Add_U16
+        MOV [R8+#0B4H],R4
+        MOV R4,t_dly_mes_ivvt
+        MOV [R8+#0AEH],R4
+        JMPR cc_UC,L_AEF0C
+L_AEEBA:                 ; 0xaeeba
+        CMP R9,#DATA16 0CBCAH
+        JMPR cc_NE,L_AEEC6
+        MOVB RL4,[R9+#011H]
+        MOVBZ R7,RL4
+L_AEEC6:                 ; 0xaeec6
+        MOV R4,[R8+#0AEH]
+        MOV R5,t_dly_mes_ivvt
+        SUB R5,R4
+        CMP R5,R7
+        JMPR cc_C,L_AEF0C
+        MOV R12,#DATA16 04568H
+        MOV R4,[R8+#040H]
+        CMP R4,#00H
+        JMPR cc_SGE,L_AEEE8
+        MOV R4,[R8+#040H]
+        NEG R4
+        JMPR cc_UC,L_AEEEC
+L_AEEE8:                 ; 0xaeee8
+        MOV R4,[R8+#040H]
+L_AEEEC:                 ; 0xaeeec
+        MOVBZ R13,RL4
+        MOVBZ R14,toil
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YByte
+        MOV R13,R4
+        MOV R12,[R8+#0B4H]
+        CALLS 00FH,Sat_Sub_S16_Min
+        MOV [R8+#0B4H],R4
+        MOV R4,t_dly_mes_ivvt
+        MOV [R8+#0AEH],R4
+L_AEF0C:                 ; 0xaef0c
+        MOVB RL4,[R8+#0BAH]
+        JMPR cc_NE,L_AEF50
+        MOV R4,[R8+#0ACH]
+        MOVBZ R5,DPP0:c_cyc_max_adh_ivvt
+        ADD R5,lv_ivvt_c582
+        CMP R4,R5
+        JMPR cc_C,L_AEF44
+        MOVB RL4,#00H
+        MOVB [R8+#0BBH],RL4
+        MOV R4,#00H
+        MOV [R8+#0B4H],R4
+        MOVB RL4,#01H
+        MOVB [R8+#0BAH],RL4
+        MOV R4,#00H
+        MOV [R8+#0B8H],R4
+        MOV R4,t_dly_mes_ivvt
+        MOV [R8+#0B0H],R4
+        JMPR cc_UC,L_AEF50
+L_AEF44:                 ; 0xaef44
+        MOV R4,R8
+        ADD R4,#DATA16 000ACH
+        MOV R5,[R4]
+        ADD R5,#01H
+        MOV [R4],R5
+L_AEF50:                 ; 0xaef50
+        MOV R4,[R8+#03AH]
+        MOV [R8+#0B2H],R4
+        MOVB RL4,#00H
+        BMOV R4.00H,lv_act_cle_slv_ivvt.09H
+        MOVB [R8+#0BDH],RL4
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Nop_aef6c  (@0xaef6c) ========
+Nop_aef6c:
+        MOV R13,p_ivvt_cam_m
+        MOV R4,[R12]
+        MOVB RL5,[R4]
+        MOVB [R13+#0D0H],RL5
+        RETS
+
+; ======== Calc_IVVT_HPWM_Adapt  (@0xaef7a) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified): IVVT hold-PWM (OCV hold-current) adaptation: computes cam-position error integral
+        ; (c586/c588) during state_ivvt==2/sub-state 3, scales via Calc_CtrlModule_Voltage, writes cam
+        ; hold-adapt (camstruct+0xca/0xcc).
+        ; ------------------------------------------------------------
+Calc_IVVT_HPWM_Adapt:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R6,R12
+        MOV R7,#00H
+        MOV R8,p_ivvt_cam_m
+        MOV R9,p_ivvt_cam_s
+        MOVB RL4,[R8+#0D3H]
+        JMPR cc_NE,L_AEFB8
+        MOV R4,state_ivvt
+        CMP R4,#02H
+        JMPR cc_NE,L_AEFDE
+        MOVB RL4,toil
+        CMPB RL4,DPP0:c_toil_max_ivvthpwm_ad
+        JMPR cc_ULE,L_AEFB0
+        MOVB RL5,n_32
+        CMPB RL5,DPP0:c_n_32_min_ivvthpwm_ad
+        JMPR cc_C,L_AEFDE
+L_AEFB0:                 ; 0xaefb0
+        MOVB RL4,#01H
+        MOVB [R8+#0D3H],RL4
+        JMPR cc_UC,L_AEFDE
+L_AEFB8:                 ; 0xaefb8
+        MOV R4,state_ivvt
+        CMP R4,#02H
+        JMPR cc_NE,L_AEFD4
+        MOVB RL4,toil
+        CMPB RL4,DPP0:c_toil_max_ivvthpwm_ad
+        JMPR cc_ULE,L_AEFDE
+        MOVB RL5,n_32
+        CMPB RL5,DPP0:c_n_32_min_ivvthpwm_ad
+        JMPR cc_NC,L_AEFDE
+L_AEFD4:                 ; 0xaefd4
+        MOVB RL4,#00H
+        MOVB [R8+#0CEH],RL4
+        MOVB [R8+#0D3H],RL4
+L_AEFDE:                 ; 0xaefde
+        MOVB RL4,[R8+#0D3H]
+        JMPA cc_EQ,L_AF1F4
+        MOVB RL4,[R8+#0CEH]
+        JMPR cc_NE,L_AF02E
+        MOVB RL4,[R8+#0D1H]
+        CMPB RL4,#01H
+        JMPA cc_NE,L_AF1EC
+        MOV R4,[R8+#034H]
+        CMP R4,#02H
+        JMPA cc_NE,L_AF1EC
+        MOVB RL4,#01H
+        MOVB [R8+#0CEH],RL4
+        MOV R4,[R8+#04H]
+        MOV R5,[R8+#06H]
+        MOV [R8+#0C6H],R4
+        MOV [R8+#0C8H],R5
+        MOVB RL4,[R8+#014H]
+        MOVB [R8+#0D0H],RL4
+        MOVB RL4,#00H
+        MOVB [R8+#0CFH],RL4
+        MOV R4,#00H
+        MOV [R8+#0CCH],R4
+        JMPA cc_UC,L_AF1EC
+L_AF02E:                 ; 0xaf02e
+        MOVB RL4,[R8+#0CEH]
+        JMPA cc_EQ,L_AF1EC
+        MOV R4,[R8+#034H]
+        CMP R4,#03H
+        JMPA cc_NE,L_AF154
+        MOV R12,#DATA16 04580H
+        MOVBZ R13,n_32
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        MOVB RL5,[R8+#0CFH]
+        CMPB RL5,RL4
+        JMPA cc_C,L_AF154
+        MOV R4,[R8+#0C6H]
+        MOV R5,[R8+#0C8H]
+        MOV R10,[R8+#04H]
+        MOV R11,[R8+#06H]
+        SUB R4,R10
+        SUBC R5,R11
+        JMPR cc_NE,L_AF070
+        MOV R7,#00H
+        JMPR cc_UC,L_AF108
+L_AF070:                 ; 0xaf070
+        MOV R4,[R8+#0C6H]
+        MOV R5,[R8+#0C8H]
+        MOV R10,[R8+#04H]
+        MOV R11,[R8+#06H]
+        SUB R4,R10
+        SUBC R5,R11
+        JMPR cc_ULE,L_AF0B4
+        MOV R4,[R8+#0C6H]
+        MOV R5,[R8+#0C8H]
+        SUB R4,#01H
+        SUBC R5,#00H
+        MOV R10,#DATA16 0FFFFH
+        MOV R11,#DATA16 0FFFFH
+        SUB R10,R4
+        SUBC R11,R5
+        MOV R4,[R8+#04H]
+        MOV R5,[R8+#06H]
+        ADD R10,R4
+        ADDC R11,R5
+        MOV lv_ivvt_c586,R10
+        MOV lv_ivvt_c588,R11
+        JMPR cc_UC,L_AF0D0
+L_AF0B4:                 ; 0xaf0b4
+        MOV R4,[R8+#04H]
+        MOV R5,[R8+#06H]
+        MOV R10,[R8+#0C6H]
+        MOV R11,[R8+#0C8H]
+        SUB R4,R10
+        SUBC R5,R11
+        MOV lv_ivvt_c586,R4
+        MOV lv_ivvt_c588,R5
+L_AF0D0:                 ; 0xaf0d0
+        MOVB RL4,[R8+#014H]
+        MOVBZ R12,RL4
+        MOVB RL4,[R8+#0D0H]
+        MOVBZ R13,RL4
+        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        MOVBZ R14,RL4
+        MOV R12,#DATA16 0DC6CH
+        MOV R13,#02H
+        CALLS 00FH,MulAdd_U32_Sat
+        MOV R10,lv_ivvt_c586
+        MOV R11,lv_ivvt_c588
+        CALLS 00DH,Calc_CtrlModule_Voltage
+        MOV R12,R4
+        MOV R13,R5
+        CALLS 00FH,Sel_Ovf_U16
+        MOV R12,R4
+        CALLS 00FH,Sat_HiByte_ff
+        MOVBZ R7,RL4
+L_AF108:                 ; 0xaf108
+        MOV R12,#DATA16 04578H
+        MOV R4,R7
+        MOVBZ R13,RL4
+        CALLS 00FH,Get_Word_2D_Table_DWord_YByte
+        MOV lv_ivvt_c584,R4
+        CMP R9,#DATA16 0CBCAH
+        JMPR cc_NE,L_AF144
+        MOVB RL4,[R8+#014H]
+        MOVB RL5,[R8+#0D0H]
+        CMPB RL4,RL5
+        JMPR cc_ULE,L_AF132
+        MOV R4,R7
+        MOV [R8+#0CAH],R4
+        JMPR cc_UC,L_AF144
+L_AF132:                 ; 0xaf132
+        MOV R4,R7
+        NEG R4
+        MOV [R8+#0CAH],R4
+        MOV R4,lv_ivvt_c584
+        NEG R4
+        MOV lv_ivvt_c584,R4
+L_AF144:                 ; 0xaf144
+        MOV R4,lv_ivvt_c584
+        MOV [R8+#0CCH],R4
+        MOVB RL4,#00H
+        MOVB [R8+#0CEH],RL4
+        JMPR cc_UC,L_AF1EC
+L_AF154:                 ; 0xaf154
+        MOVB RL4,[R8+#0BAH]
+        JMPR cc_EQ,L_AF1E6
+        MOV R4,[R8+#034H]
+        CMP R4,#02H
+        JMPR cc_NE,L_AF1E6
+        CMP R9,#DATA16 0CBCAH
+        JMPR cc_NE,L_AF16E
+        MOVB RL4,[R8+#065H]
+        MOVBZ R7,RL4
+L_AF16E:                 ; 0xaf16e
+        MOV R4,[R6]
+        MOVB RL5,[R4]
+        MOVBZ R12,RL5
+        MOVBZ R13,DPP0:c_cam_hys_ad_ivvt
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB RL5,[R8+#014H]
+        CMPB RL5,RL4
+        JMPR cc_UGT,L_AF188
+        CMP R7,#00H
+        JMPR cc_NE,L_AF1B0
+L_AF188:                 ; 0xaf188
+        MOV R4,[R6+#02H]
+        MOVB RL5,[R4]
+        MOVBZ R12,RL5
+        MOVBZ R13,DPP0:c_cam_hys_ad_ivvt
+        CALLS 00FH,Sat_Add_U8
+        MOVBZ R13,RL4
+        MOV R4,[R6]
+        MOVB RL5,[R4]
+        MOVBZ R12,RL5
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB RL5,[R8+#014H]
+        CMPB RL5,RL4
+        JMPR cc_C,L_AF1DE
+        CMP R7,#00H
+        JMPR cc_NE,L_AF1DE
+L_AF1B0:                 ; 0xaf1b0
+        MOV R4,[R6]
+        MOVB RL5,[R4]
+        MOVBZ R12,RL5
+        MOVBZ R13,DPP0:c_cam_hys_ad_ivvt
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB RL5,[R9+#04H]
+        CMPB RL5,RL4
+        JMPR cc_UGT,L_AF1DE
+        MOVB RL4,[R8+#0CFH]
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NC,L_AF1EC
+        MOV R4,R8
+        ADD R4,#DATA16 000CFH
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+        JMPR cc_UC,L_AF1EC
+L_AF1DE:                 ; 0xaf1de
+        MOVB RL4,#00H
+        MOVB [R8+#0CEH],RL4
+        JMPR cc_UC,L_AF1EC
+L_AF1E6:                 ; 0xaf1e6
+        MOVB RL4,#00H
+        MOVB [R8+#0CEH],RL4
+L_AF1EC:                 ; 0xaf1ec
+        MOV R4,[R8+#034H]
+        MOVB [R8+#0D1H],RL4
+L_AF1F4:                 ; 0xaf1f4
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_AEB0C ENDS
+        END

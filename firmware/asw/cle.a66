@@ -1,0 +1,111 @@
+; asw/cle.a66
+; 0xAFF22-0xB0000  (222 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_ctr_cyc_cle_slv_ivvt               EQU  090176H
+c_ctr_step_cle_slv_ivvt              EQU  09017DH
+c_t_dly_pwl_cle_slv_ivvt             EQU  09032BH
+c_t_dly_st_cle_slv_ivvt              EQU  09032DH
+
+PUBLIC  IVVT_OCV_CleanSlv, Set_ctr_cyc_cle_slv_ivvt_f22
+EXTERN  Get_Byte_2D_Table_DWord_YByte:NEAR, Mul_S16_Q7_Sat:NEAR
+
+S_AFF22 SECTION CODE AT 0AFF22H
+
+; ======== Set_ctr_cyc_cle_slv_ivvt_f22  (@0xaff22) ========
+Set_ctr_cyc_cle_slv_ivvt_f22:
+        MOVB RL4,#01H
+        MOVB ctr_cyc_cle_slv_ivvt,RL4
+        RETS
+
+; ======== IVVT_OCV_CleanSlv  (@0xaff2a) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (ThetaII, verified): IVVT oil-control-solenoid cleaning PWM: ivvtpwm_cle_slv
+        ; (c_t_dly_pwl/st_cle_slv_ivvt)
+        ; (was FUN_0aff2a)
+        ; ------------------------------------------------------------
+IVVT_OCV_CleanSlv:
+        MOV [-R0],R9
+        MOVB RL4,lv_ivvt_c215
+        JMPR cc_NE,L_AFF54
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_AFF6C
+        MOVB RL5,ctr_cyc_cle_slv_ivvt
+        CMPB RL5,DPP0:c_ctr_cyc_cle_slv_ivvt
+        JMPR cc_UGT,L_AFF6C
+        JNB lv_diag_trip_avl_ivvt.0EH,L_AFF6C
+        MOVB RL3,#01H
+        MOVB lv_ivvt_c215,RL3
+        BCLR lv_act_cle_slv_ivvt.01H
+        MOVB RL4,#01H
+        MOVB ctr_step_cle_slv_ivvt,RL4
+        JMPR cc_UC,L_AFF6C
+L_AFF54:                 ; 0xaff54
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_AFF66
+        MOVB RL4,ctr_cyc_cle_slv_ivvt
+        CMPB RL4,DPP0:c_ctr_cyc_cle_slv_ivvt
+        JMPR cc_UGT,L_AFF66
+        JB lv_diag_trip_avl_ivvt.0EH,L_AFF6C
+L_AFF66:                 ; 0xaff66
+        BCLR lv_act_cle_slv_ivvt.00H
+        MOVB lv_ivvt_c215,ZEROS
+L_AFF6C:                 ; 0xaff6c
+        MOVB RL4,lv_ivvt_c215
+        JMPR cc_EQ,L_AFFFA
+        JB lv_act_cle_slv_ivvt.01H,L_AFF82
+        BSET lv_act_cle_slv_ivvt.01H
+        MOV R4,t_dly_mes_ivvt
+        MOV t_st_cle_slv_ivvt,R4
+        JMPR cc_UC,L_AFFA8
+L_AFF82:                 ; 0xaff82
+        MOV R9,t_dly_mes_ivvt
+        SUB R9,t_st_cle_slv_ivvt
+        JB lv_act_cle_slv_ivvt.00H,L_AFFA8
+        MOVBZ R4,DPP0:c_t_dly_st_cle_slv_ivvt
+        CMP R9,R4
+        JMPR cc_C,L_AFF9A
+        JB can_fd58.09H,L_AFFA6
+L_AFF9A:                 ; 0xaff9a
+        MOVBZ R4,DPP0:c_t_dly_pwl_cle_slv_ivvt
+        CMP R9,R4
+        JMPR cc_C,L_AFFA8
+        JB can_fd58.09H,L_AFFA8
+L_AFFA6:                 ; 0xaffa6
+        BSET lv_act_cle_slv_ivvt.00H
+L_AFFA8:                 ; 0xaffa8
+        JNB lv_act_cle_slv_ivvt.00H,L_AFFFA
+        MOV R12,#DATA16 045A8H
+        MOVBZ R13,ctr_step_cle_slv_ivvt
+        CALLS 00FH,Get_Byte_2D_Table_DWord_YByte
+        MOVBZ R12,RL4
+        MOVBZ R13,fac_cor_ivvtpwm
+        CALLS 00FH,Mul_S16_Q7_Sat
+        MOVB ivvtpwm_cle_slv,RL4
+        MOVB RL5,ctr_step_cle_slv_ivvt
+        CMPB RL5,#DATA16 000FFH
+        JMPR cc_NC,L_AFFD6
+        ADDB RL5,#01H
+        MOVB ctr_step_cle_slv_ivvt,RL5
+L_AFFD6:                 ; 0xaffd6
+        MOVBZ R4,ctr_step_cle_slv_ivvt
+        MOVBZ R5,DPP0:c_ctr_step_cle_slv_ivvt
+        SHL R5,#01H
+        CMP R4,R5
+        JMPR cc_ULE,L_AFFFA
+        MOVB RL4,#01H
+        MOVB ctr_step_cle_slv_ivvt,RL4
+        MOVB RL5,ctr_cyc_cle_slv_ivvt
+        CMPB RL5,#DATA16 000FFH
+        JMPR cc_NC,L_AFFFA
+        ADDB RL5,#01H
+        MOVB ctr_cyc_cle_slv_ivvt,RL5
+L_AFFFA:                 ; 0xafffa
+        MOV R9,[R0+]
+        RETS
+        RETS
+
+S_AFF22 ENDS
+        END

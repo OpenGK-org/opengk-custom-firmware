@@ -1,0 +1,371 @@
+; asw/imob/imob_smartra_2.a66
+; 0xBD034-0xBD3C8  (916 bytes, 11 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_max_dly_act_imob                   EQU  09023BH
+
+PUBLIC  Imob_BuildResponse, Imob_ValidateKey_Fmy, SMARTRA_SetCommErr, SMARTRA_auth_step1_Init_arm, SMARTRA_auth_step6_VerifyResp_arm, SMARTRA_proto_SendFrame3
+PUBLIC  SMARTRA_proto_SendFrame5, SMARTRA_start_step2, SMARTRA_start_step3, SMARTRA_start_step4, SMARTRA_start_step6
+EXTERN  L_BD656:NEAR, SMARTRA_flush_RX_buffers:NEAR, SMARTRA_gen_challenge_lcg:NEAR, SMARTRA_load_response_compare:NEAR
+
+S_BD034 SECTION CODE AT 0BD034H
+
+; ======== SMARTRA_auth_step1_Init_arm  (@0xbd034) ========
+SMARTRA_auth_step1_Init_arm:
+        MOVB smartra_cmd,ZEROS
+        BCLR lv_fmy_imob.00H
+        MOVB imob_key_wr_done,ZEROS
+        JB smartra_comms_status.0CH,L_BD046
+        JMPA cc_UC,L_BD656
+L_BD046:                 ; 0xbd046
+        MOVB RL4,DPP0:c_max_dly_act_imob
+        MOVB imob_resp_ready,RL4
+        MOVB RL5,#02H
+        MOVB smartra_frame_buf,RL5
+        MOVB RL3,#06H
+        MOVB smartra_tx_cmd,RL3
+
+; ======== SMARTRA_start_step2  (@0xbd05a) ========
+SMARTRA_start_step2:
+        CALLS 00AH,SMARTRA_flush_RX_buffers
+        MOVB RL4,#02H
+        MOVB smartra_proto_step,RL4
+        JMPA cc_UC,L_BD656
+
+; ======== Imob_BuildResponse  (@0xbd068) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): Immobilizer: build SMARTRA challenge-response frame
+        ; (seed/resp_key)
+        ; ------------------------------------------------------------
+Imob_BuildResponse:
+        MOVB key_state_imob,ZEROS
+        JB smartra_comms_status.0CH,L_BD074
+        JMPA cc_UC,L_BD656
+L_BD074:                 ; 0xbd074
+        MOVB RL4,smartra_frame_buf
+        CMPB RL4,#02H
+        JMPR cc_NE,L_BD112
+        MOVB RL4,smartra_tx_cmd
+        CMPB RL4,#06H
+        JMPR cc_NE,L_BD112
+        MOVB RL4,#DATA16 00011H
+        MOVB smartra_frame_buf,RL4
+        MOVB RL4,#DATA16 00057H
+        MOVB smartra_tx_cmd,RL4
+        MOVB RL4,#01H
+        MOVB smartra_tx_len,RL4
+        MOVB RL4,q_imob_seed_material
+        MOVB smartra_tx_seed,RL4
+        MOVB RL5,imob_sdr_b0
+        MOVB smartra_tx_sdr0,RL5
+        MOVB RL3,imob_sdr_b1
+        MOVB smartra_tx_sdr1,RL3
+        MOVB RL2,imob_sdr_b2
+        MOVB smartra_tx_sdr2,RL2
+        MOVB RL1,#02H
+        MOVB smartra_tx_c0,RL1
+        MOVB RL4,#DATA16 00020H
+        MOVB smartra_tx_c1,RL4
+        MOVB RL4,#DATA16 00018H
+        MOVB smartra_tx_c2,RL4
+        MOVB RL4,imob_sdr_b3
+        MOVB smartra_tx_sdr3,RL4
+        MOVB RL4,imob_sdr_b4
+        MOVB smartra_tx_sdr4,RL4
+        MOVB RL4,#03H
+        MOVB smartra_tx_c3,RL4
+        MOVB RL4,#0EH
+        MOVB smartra_tx_c4,RL4
+        MOVB RL4,q_imob_resp_key
+        MOVB smartra_tx_respkey,RL4
+        MOVB RL4,imob_ca25
+        MOVB smartra_tx_mac0,RL4
+        MOVB RL4,imob_ca26
+        MOVB smartra_tx_mac1,RL4
+
+; ======== SMARTRA_start_step3  (@0xbd104) ========
+SMARTRA_start_step3:
+        CALLS 00AH,SMARTRA_flush_RX_buffers
+        MOVB RL4,#03H
+        MOVB smartra_proto_step,RL4
+        JMPA cc_UC,L_BD656
+L_BD112:                 ; 0xbd112
+        MOVB RL4,smartra_tx_cmd
+        CMPB RL4,#DATA16 00015H
+        JMPR cc_NE,L_BD126
+        MOVB RL4,#08H
+        MOVB smartra_proto_step,RL4
+        JMPA cc_UC,L_BD656
+L_BD126:                 ; 0xbd126
+        BSET lv_err_com_resp_imob.00H
+        JMPA cc_UC,L_BD656
+
+; ======== SMARTRA_proto_SendFrame3  (@0xbd12c) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by imob/smartra output signals): SMARTRA proto-step: send frame, advance
+        ; smartra_proto_step (flush RX).
+        ; ------------------------------------------------------------
+SMARTRA_proto_SendFrame3:
+        JB smartra_comms_status.0CH,L_BD134
+        JMPA cc_UC,L_BD656
+L_BD134:                 ; 0xbd134
+        MOVB RL4,smartra_frame_buf
+        CMPB RL4,#02H
+        JMPR cc_EQ,L_BD146
+        MOVB RL4,smartra_tx_cmd
+        CMPB RL4,#DATA16 00015H
+        JMPR cc_NE,SMARTRA_SetCommErr
+L_BD146:                 ; 0xbd146
+        MOVB RL4,#02H
+        MOVB smartra_frame_buf,RL4
+        MOVB RL4,#DATA16 0004BH
+        MOVB smartra_tx_cmd,RL4
+
+; ======== SMARTRA_start_step4  (@0xbd154) ========
+SMARTRA_start_step4:
+        CALLS 00AH,SMARTRA_flush_RX_buffers
+        MOVB RL4,#04H
+        MOVB smartra_proto_step,RL4
+        JMPA cc_UC,L_BD656
+
+; ======== SMARTRA_SetCommErr  (@0xbd162) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by imob/smartra output signals): SMARTRA comms-error flags: lv_err_com_resp_imob /
+        ; ans_err_com_imob.
+        ; ------------------------------------------------------------
+SMARTRA_SetCommErr:
+        BSET lv_err_com_resp_imob.00H
+        JMPA cc_UC,L_BD656
+
+; ======== Imob_ValidateKey_Fmy  (@0xbd168) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): Immobilizer: validate key + set lv_fmy_imob (family/learn)
+        ; [twin of Imob_ValidateKey]
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): Immobilizer key validation -- smartra_proto_step path [twin
+        ; of 0xbdc50; SHARED key_table scan]. DISTINCT: asserts lv_fmy_imob|1 up front (family/learn context);
+        ; match -> c28a=3, proto_step=9 (no challenge); miss -> challenge(LCG)+response-compare, proto_step=5.
+        ; frame c51c==0x15 -> proto_step=8. Tail: c291==0 -> ans_err_com_imob=2. (Was Imob_ValidateKey_Fmy.)
+Imob_ValidateKey_Fmy:
+        JB smartra_comms_status.0CH,L_BD170
+        JMPA cc_UC,L_BD656
+L_BD170:                 ; 0xbd170
+        MOVB RL4,smartra_frame_buf
+        CMPB RL4,#05H
+        JMPA cc_NE,L_BD2AA
+        MOVB RL4,smartra_tx_cmd
+        MOVB imob_new_key0,RL4
+        MOVB RL5,smartra_tx_len
+        MOVB imob_new_key1,RL5
+        MOVB RL3,smartra_tx_seed
+        MOVB imob_new_key2,RL3
+        MOVB RL2,smartra_tx_sdr0
+        MOVB imob_new_key3,RL2
+        MOVB RL1,#DATA16 000ACH
+        MOVB imob_eeprom_block_sig,RL1
+        BSET lv_fmy_imob.00H
+        MOVB RL4,imob_data_ram_state_imob
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_BD1B0
+        CMPB RL4,#04H
+        JMPR cc_NE,L_BD22E
+L_BD1B0:                 ; 0xbd1b0
+        MOVB RL6,#00H
+L_BD1B2:                 ; 0xbd1b2
+        MOVBZ R4,RL6
+        SHL R4,#02H
+        MOVB RL5,[R4+#0CA0CH]
+        CMPB RL5,#DATA16 000FFH
+        JMPR cc_NE,L_BD1EA
+        MOVBZ R4,RL6
+        SHL R4,#02H
+        MOVB RL5,[R4+#0CA0DH]
+        CMPB RL5,#DATA16 000FFH
+        JMPR cc_NE,L_BD1EA
+        MOVBZ R4,RL6
+        SHL R4,#02H
+        MOVB RL5,[R4+#0CA0EH]
+        CMPB RL5,#DATA16 000FFH
+        JMPR cc_NE,L_BD1EA
+        MOVBZ R4,RL6
+        SHL R4,#02H
+        MOVB RL5,[R4+#0CA0FH]
+        CMPB RL5,#DATA16 000FFH
+        JMPR cc_EQ,L_BD228
+L_BD1EA:                 ; 0xbd1ea
+        MOVBZ R4,RL6
+        SHL R4,#02H
+        MOVB RL5,[R4+#0CA0CH]
+        CMPB RL5,imob_new_key0
+        JMPR cc_NE,L_BD228
+        MOVBZ R4,RL6
+        SHL R4,#02H
+        MOVB RL5,[R4+#0CA0DH]
+        CMPB RL5,imob_new_key1
+        JMPR cc_NE,L_BD228
+        MOVBZ R4,RL6
+        SHL R4,#02H
+        MOVB RL5,[R4+#0CA0EH]
+        CMPB RL5,imob_new_key2
+        JMPR cc_NE,L_BD228
+        MOVBZ R4,RL6
+        SHL R4,#02H
+        MOVB RL5,[R4+#0CA0FH]
+        CMPB RL5,imob_new_key3
+        JMPR cc_NE,L_BD228
+        MOVB RL4,#01H
+        MOVB key_state_imob,RL4
+L_BD228:                 ; 0xbd228
+        ADDB RL6,#01H
+        CMPB RL6,#04H
+        JMPR cc_C,L_BD1B2
+L_BD22E:                 ; 0xbd22e
+        MOVB RL4,key_state_imob
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_BD29A
+        CALLS 00BH,SMARTRA_gen_challenge_lcg
+        MOV imob_resp_len,R4
+        MOV imob_resp_b0,R5
+        MOV R12,#DATA16 0CA1EH
+        MOV R13,#DATA16 0C28BH
+        MOV R14,#DATA16 0CA4AH
+        CALLS 00BH,SMARTRA_load_response_compare
+        MOVB smartra_send_req,ZEROS
+        MOV R4,#01H
+        MOV t_oneshot_sched,R4
+        MOVB RL4,#DATA16 0003BH
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_BD290
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_BD290:                 ; 0xbd290
+        MOVB RL4,#05H
+        MOVB smartra_proto_step,RL4
+        JMPA cc_UC,L_BD656
+L_BD29A:                 ; 0xbd29a
+        MOVB RL4,#03H
+        MOVB imob_key_wr_done,RL4
+        MOVB RL5,#09H
+        MOVB smartra_proto_step,RL5
+        JMPA cc_UC,L_BD656
+L_BD2AA:                 ; 0xbd2aa
+        MOVB RL4,smartra_tx_cmd
+        CMPB RL4,#DATA16 00015H
+        JMPR cc_NE,L_BD2BE
+        MOVB RL4,#08H
+        MOVB smartra_proto_step,RL4
+        JMPA cc_UC,L_BD656
+L_BD2BE:                 ; 0xbd2be
+        BSET lv_err_com_resp_imob.00H
+        JMPA cc_UC,L_BD656
+
+; ======== SMARTRA_proto_SendFrame5  (@0xbd2c4) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by imob/smartra output signals): SMARTRA proto-step: send response frame, advance
+        ; smartra_proto_step.
+        ; ------------------------------------------------------------
+SMARTRA_proto_SendFrame5:
+        MOVB RL4,smartra_send_req
+        CMPB RL4,#07H
+        JMPA cc_ULE,L_BD656
+        JB smartra_comms_status.0CH,L_BD2D6
+        JMPA cc_UC,L_BD656
+L_BD2D6:                 ; 0xbd2d6
+        MOVB RL5,#0AH
+        MOVB smartra_frame_buf,RL5
+        MOVB RL3,#DATA16 00041H
+        MOVB smartra_tx_cmd,RL3
+        MOVB RL2,imob_resp_len
+        MOVB smartra_tx_len,RL2
+        MOVB RL2,imob_resp_seed
+        MOVB smartra_tx_seed,RL2
+        MOVB RL2,imob_resp_b0
+        MOVB smartra_tx_sdr0,RL2
+        MOVB RL2,imob_resp_b1
+        MOVB smartra_tx_sdr1,RL2
+        MOVB RL2,imob_tx_src0
+        MOVB smartra_tx_sdr2,RL2
+        MOVB RL1,imob_tx_src1
+        MOVB smartra_tx_c0,RL1
+        MOVB RL4,imob_tx_src2
+        MOVB smartra_tx_c1,RL4
+        MOVB RL4,imob_tx_src3
+        MOVB smartra_tx_c2,RL4
+
+; ======== SMARTRA_start_step6  (@0xbd324) ========
+SMARTRA_start_step6:
+        CALLS 00AH,SMARTRA_flush_RX_buffers
+        MOVB RL4,#06H
+        MOVB smartra_proto_step,RL4
+        JMPA cc_UC,L_BD656
+
+; ======== SMARTRA_auth_step6_VerifyResp_arm  (@0xbd332) ========
+SMARTRA_auth_step6_VerifyResp_arm:
+        JB smartra_comms_status.0CH,L_BD33A
+        JMPA cc_UC,L_BD656
+L_BD33A:                 ; 0xbd33a
+        MOVB RL4,smartra_send_req
+        CMPB RL4,#DATA16 0000CH
+        JMPA cc_C,L_BD656
+        MOVB RL5,smartra_frame_buf
+        CMPB RL5,#05H
+        JMPR cc_NE,L_BD3AE
+        MOVBZ R4,imob_c2a0
+        MOVBZ R5,smartra_tx_cmd
+        XOR R4,R5
+        CMP R4,#DATA16 0000EH
+        JMPR cc_NE,L_BD39E
+        MOVBZ R4,imob_c2a1
+        MOVBZ R5,smartra_tx_len
+        XOR R4,R5
+        MOVBZ R5,q_imob_resp_key
+        CMP R4,R5
+        JMPR cc_NE,L_BD39E
+        MOVBZ R4,imob_c2a2
+        MOVBZ R5,smartra_tx_seed
+        XOR R4,R5
+        MOVBZ R5,imob_ca25
+        CMP R4,R5
+        JMPR cc_NE,L_BD39E
+        MOVBZ R4,imob_c2a3
+        MOVBZ R5,smartra_tx_sdr0
+        XOR R4,R5
+        MOVBZ R5,imob_ca26
+        CMP R4,R5
+        JMPR cc_NE,L_BD39E
+        MOVB RL4,#07H
+        MOVB smartra_proto_step,RL4
+        JMPA cc_UC,L_BD656
+L_BD39E:                 ; 0xbd39e
+        MOVB RL4,#04H
+        MOVB imob_key_wr_done,RL4
+        MOVB RL5,#09H
+        MOVB smartra_proto_step,RL5
+        JMPA cc_UC,L_BD656
+L_BD3AE:                 ; 0xbd3ae
+        MOVB RL4,smartra_tx_cmd
+        CMPB RL4,#DATA16 00015H
+        JMPR cc_NE,L_BD3C2
+        MOVB RL4,#08H
+        MOVB smartra_proto_step,RL4
+        JMPA cc_UC,L_BD656
+L_BD3C2:                 ; 0xbd3c2
+        BSET lv_err_com_resp_imob.00H
+        JMPA cc_UC,L_BD656
+
+S_BD034 ENDS
+        END

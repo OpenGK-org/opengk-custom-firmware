@@ -1,0 +1,213 @@
+; asw/sf.a66
+; 0xDCC8E-0xDCE40  (434 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  DTC_Process_StatusByte, Get_Diag_Status_Bits, Sort3_Bytes
+EXTERN  Mul_S16_Q7_Sat:NEAR, Sat_Add_U8:NEAR, sub_r12_13_ret_r4:NEAR
+
+S_DCC8E SECTION CODE AT 0DCC8EH
+
+; ======== Sort3_Bytes  (@0xdcc8e) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Sort3_Bytes:
+        MOVB RL4,[R12]
+        MOVB RL5,[R13]
+        CMPB RL4,RL5
+        JMPR cc_UGT,L_DCCBE
+        MOVB RL4,[R12+#01H]
+        MOVB RL5,[R13+#01H]
+        CMPB RL4,RL5
+        JMPR cc_UGT,L_DCCBE
+        MOVB RL4,[R12+#02H]
+        MOVB RL5,[R13+#02H]
+        CMPB RL4,RL5
+        JMPR cc_C,L_DCCBE
+        MOVB RL4,[R12+#03H]
+        MOVB RL5,[R13+#03H]
+        CMPB RL4,RL5
+        JMPR cc_C,L_DCCBE
+        BSET PSW.06H
+        JMPR cc_UC,L_DCCC0
+L_DCCBE:                 ; 0xdccbe
+        BCLR PSW.06H
+L_DCCC0:                 ; 0xdccc0
+        RETS
+
+; ======== DTC_Process_StatusByte  (@0xdccc2) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+DTC_Process_StatusByte:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV R8,R13
+        MOV R9,R12
+        MOVB RL4,[R9+#04H]
+        MOVBZ R4,RL4
+        AND R4,#DATA16 00040H
+        JMPR cc_NE,L_DCD8C
+        MOV R4,R9
+        ADD R4,#04H
+        MOVB RL5,[R4]
+        ORB RL5,#DATA16 00040H
+        MOVB [R4],RL5
+        MOVB RL4,[R8+#02H]
+        MOVBZ R4,RL4
+        MOVB RL5,[R8]
+        MOVBZ R5,RL5
+        SUB R4,R5
+        CMP R4,#DATA16 00017H
+        JMPR cc_SLE,L_DCD12
+        MOVB RL4,[R8]
+        MOVBZ R12,RL4
+        MOV R13,#0DH
+        CALLS 00FH,Sat_Add_U8
+        MOVB [R9],RL4
+        MOVB RL4,[R8+#02H]
+        MOVBZ R12,RL4
+        MOV R13,#0AH
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB [R9+#02H],RL4
+        JMPR cc_UC,L_DCD26
+L_DCD12:                 ; 0xdcd12
+        MOVB RL4,[R8+#02H]
+        MOVBZ R4,RL4
+        MOVB RL5,[R8]
+        MOVBZ R5,RL5
+        ADD R5,R4
+        SHR R5,#01H
+        MOVB [R9],RL5
+        MOVB [R9+#02H],RL5
+L_DCD26:                 ; 0xdcd26
+        MOVB RL4,[R8+#03H]
+        MOVBZ R12,RL4
+        MOV R13,#DATA16 00066H
+        CALLS 00FH,Mul_S16_Q7_Sat
+        MOVB [R9+#03H],RL4
+        MOV [-R0],R4
+        MOVB RL4,[R8+#01H]
+        MOVBZ R12,RL4
+        MOV R13,#DATA16 00099H
+        CALLS 00FH,Mul_S16_Q7_Sat
+        MOVB [R9+#01H],RL4
+        MOV R5,[R0+]
+        CMPB RL5,RL4
+        JMPR cc_UGT,L_DCD6A
+        MOVB RL4,[R8+#01H]
+        MOVBZ R4,RL4
+        MOVB RL5,[R8+#03H]
+        MOVBZ R5,RL5
+        ADD R4,R5
+        SHR R4,#01H
+        MOVB [R9+#01H],RL4
+        MOVB [R9+#03H],RL4
+L_DCD6A:                 ; 0xdcd6a
+        JNB obd_sf.01H,L_DCD7A
+        MOV R4,R9
+        ADD R4,#04H
+        MOVB RL5,[R4]
+        ORB RL5,#02H
+        MOVB [R4],RL5
+        JMPR cc_UC,L_DCD84
+L_DCD7A:                 ; 0xdcd7a
+        MOV R4,R9
+        ADD R4,#04H
+        MOVB RL5,[R4]
+        ORB RL5,#01H
+        MOVB [R4],RL5
+L_DCD84:                 ; 0xdcd84
+        MOVB RL4,#DATA16 00050H
+        MOVB [R9+#06H],RL4
+L_DCD8C:                 ; 0xdcd8c
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Get_Diag_Status_Bits  (@0xdcd92) ========
+        ; u16 Get_Diag_Status_Bits(u16 index): builds a 4-bit monitor/fault status mask for 'index' by testing
+        ; bit[index] across 4 bitmap arrays - bit0:DAT_00f854, bit1:DAT_00d70a (cal), bit2:DAT_00f862,
+        ; bit3:DAT_00f870 (bit set in result = flag CLEAR in that array).
+Get_Diag_Status_Bits:
+        MOV [-R0],R6
+        MOV R4,R12
+        MOVBZ R4,RL4
+        SHR R4,#04H
+        SHL R4,#01H
+        MOV R5,[R4+#0F854H]
+        MOV R4,R12
+        MOVBZ R4,RL4
+        MOV R2,#DATA16 00010H
+        MOV 0FE0EH,R4
+        DIVU R2
+        MOV R4,MDH_FE0C
+        MOV R2,#01H
+        SHL R2,R4
+        AND R5,R2
+        JMPR cc_NE,L_DCDBE
+        MOVB RL6,#01H
+        JMPR cc_UC,L_DCDC0
+L_DCDBE:                 ; 0xdcdbe
+        MOVB RL6,#00H
+L_DCDC0:                 ; 0xdcdc0
+        MOV R4,R12
+        MOVBZ R4,RL4
+        SHR R4,#04H
+        SHL R4,#01H
+        MOV R5,[R4+#0D70AH]
+        MOV R4,R12
+        MOVBZ R4,RL4
+        MOV R2,#DATA16 00010H
+        MOV 0FE0EH,R4
+        DIVU R2
+        MOV R4,MDH_FE0C
+        MOV R2,#01H
+        SHL R2,R4
+        AND R5,R2
+        JMPR cc_NE,L_DCDE8
+        ORB RL6,#02H
+L_DCDE8:                 ; 0xdcde8
+        MOV R4,R12
+        MOVBZ R4,RL4
+        SHR R4,#04H
+        SHL R4,#01H
+        MOV R5,[R4+#0F862H]
+        MOV R4,R12
+        MOVBZ R4,RL4
+        MOV R2,#DATA16 00010H
+        MOV 0FE0EH,R4
+        DIVU R2
+        MOV R4,MDH_FE0C
+        MOV R2,#01H
+        SHL R2,R4
+        AND R5,R2
+        JMPR cc_NE,L_DCE10
+        ORB RL6,#04H
+L_DCE10:                 ; 0xdce10
+        MOV R4,R12
+        MOVBZ R4,RL4
+        SHR R4,#04H
+        SHL R4,#01H
+        MOV R5,[R4+#0F870H]
+        MOV R4,R12
+        MOVBZ R4,RL4
+        MOV R2,#DATA16 00010H
+        MOV 0FE0EH,R4
+        DIVU R2
+        MOV R4,MDH_FE0C
+        MOV R2,#01H
+        SHL R2,R4
+        AND R5,R2
+        JMPR cc_NE,L_DCE3A
+        ORB RL6,#DATA16 00008H
+L_DCE3A:                 ; 0xdce3a
+        MOVB RL4,RL6
+        MOV R6,[R0+]
+        RETS
+
+S_DCC8E ENDS
+        END

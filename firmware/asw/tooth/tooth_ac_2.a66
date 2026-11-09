@@ -1,0 +1,220 @@
+; asw/tooth/tooth_ac_2.a66
+; 0xC790A-0xC7A88  (382 bytes, 6 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_acp_max_hys                        EQU  090115H
+c_acp_max_rly_accout_off             EQU  090116H
+c_acp_min_hys                        EQU  090117H
+c_acp_min_rly_accout_off             EQU  090118H
+c_hys_tam_acc_st                     EQU  0901CCH
+c_t_accout_st_act                    EQU  090315H
+c_tam_min_acc_st                     EQU  090362H
+c_vb_min_acc_st                      EQU  09040DH
+c_t_gs_act_dly                       EQU  0906EAH
+
+PUBLIC  AcComp_AccIn_Reset, AcComp_PressureCutoff, AcComp_StartCond, Calc_GS_Act_Delay, Clr_Out_AJ, Set_Out_AJ
+EXTERN  AccInDelay_SetIfLonger:NEAR, Sat_Add_U8:NEAR, sub_r12_13_ret_r4:NEAR
+
+S_C790A SECTION CODE AT 0C790AH
+
+; ======== AcComp_PressureCutoff  (@0xc790a) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): A/C compressor control: pressure-based cutoff (conf_acp,
+        ; c_acp_*_hys)
+        ; ------------------------------------------------------------
+AcComp_PressureCutoff:
+        MOVB RL4,conf_acp
+        JMPR cc_EQ,L_C799C
+        JB lv_crk_tooth_err.04H,L_C793A
+        MOVB RL5,acp
+        CMPB RL5,DPP0:c_acp_max_rly_accout_off
+        JMPR cc_ULE,L_C7956
+        JB lv_asr_req.05H,L_C792A
+        JNB lv_crk_tooth_err.01H,L_C792E
+        JB lv_crk_tooth_err.02H,L_C792E
+L_C792A:                 ; 0xc792a
+        BSET lv_crk_tooth_err.01H
+        JMPR cc_UC,L_C7956
+L_C792E:                 ; 0xc792e
+        BSET lv_crk_tooth_err.04H
+        BCLR lv_crk_tooth_err.01H
+        MOV R12,#01H
+        CALLS 00CH,AccInDelay_SetIfLonger
+        JMPR cc_UC,L_C7956
+L_C793A:                 ; 0xc793a
+        MOVBZ R12,DPP0:c_acp_max_rly_accout_off
+        MOVBZ R13,DPP0:c_acp_max_hys
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL4,acp
+        JMPR cc_NC,L_C7954
+        MOV R12,#01H
+        CALLS 00CH,AccInDelay_SetIfLonger
+        JMPR cc_UC,L_C7956
+L_C7954:                 ; 0xc7954
+        BCLR lv_crk_tooth_err.04H
+L_C7956:                 ; 0xc7956
+        JB lv_crk_tooth_err.05H,L_C7980
+        MOVB RL4,acp
+        CMPB RL4,DPP0:c_acp_min_rly_accout_off
+        JMPR cc_NC,L_C799C
+        JB lv_asr_req.05H,L_C7970
+        JNB lv_crk_tooth_err.01H,L_C7974
+        JB lv_crk_tooth_err.02H,L_C7974
+L_C7970:                 ; 0xc7970
+        BSET lv_crk_tooth_err.01H
+        RETS
+L_C7974:                 ; 0xc7974
+        BSET lv_crk_tooth_err.05H
+        BCLR lv_crk_tooth_err.01H
+        MOV R12,#01H
+        CALLS 00CH,AccInDelay_SetIfLonger
+        RETS
+L_C7980:                 ; 0xc7980
+        MOVBZ R12,DPP0:c_acp_min_rly_accout_off
+        MOVBZ R13,DPP0:c_acp_min_hys
+        CALLS 00FH,Sat_Add_U8
+        CMPB RL4,acp
+        JMPR cc_ULE,L_C799A
+        MOV R12,#01H
+        CALLS 00CH,AccInDelay_SetIfLonger
+        RETS
+L_C799A:                 ; 0xc799a
+        BCLR lv_crk_tooth_err.05H
+L_C799C:                 ; 0xc799c
+        RETS
+
+; ======== AcComp_AccIn_Reset  (@0xc799e) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): A/C compressor control: accin delay reset
+        ; (t_accin_dly/state_acc_dly=0)
+        ; ------------------------------------------------------------
+AcComp_AccIn_Reset:
+        JNB lv_conf_mis.0DH,L_C79C6
+        JB lv_act_aj.0EH,L_C79AE
+        BCLR state_out_fault.0EH
+        JB state_out_req.02H,L_C79AE
+        BCLR state_out_diag.0EH
+L_C79AE:                 ; 0xc79ae
+        MOV sw_timer_a,ZEROS
+        MOV lv_isc_f940,ZEROS
+        MOV g_f962,ZEROS
+        MOV t_accin_dly,ZEROS
+        MOVB state_acc_dly,ZEROS
+        BCLR lv_act_aj.0CH
+        BCLR lv_act_aj.0BH
+L_C79C6:                 ; 0xc79c6
+        RETS
+
+; ======== Calc_GS_Act_Delay  (@0xc79c8) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by scc/acc output signals): Gear-shift actuator delay t_gs_act_dly.
+        ; ------------------------------------------------------------
+Calc_GS_Act_Delay:
+        JNB abs_def.04H,L_C7A0C
+        JNB lv_asr_req.05H,L_C79D4
+        BCLR lv_crk_tooth_err.02H
+        JMPR cc_UC,L_C7A06
+L_C79D4:                 ; 0xc79d4
+        JNB lv_crk_tooth_err.03H,L_C79F2
+        MOV R4,DPP0:c_t_gs_act_dly
+        MOV t_gs_act_dly,R4
+        CMP R4,#00H
+        JMPR cc_ULE,L_C79EE
+        BCLR lv_crk_tooth_err.02H
+        SUB R4,#01H
+        MOV t_gs_act_dly,R4
+        JMPR cc_UC,L_C7A06
+L_C79EE:                 ; 0xc79ee
+        BSET lv_crk_tooth_err.02H
+        JMPR cc_UC,L_C7A06
+L_C79F2:                 ; 0xc79f2
+        MOV R4,t_gs_act_dly
+        CMP R4,#00H
+        JMPR cc_ULE,L_C7A04
+        BCLR lv_crk_tooth_err.02H
+        SUB R4,#01H
+        MOV t_gs_act_dly,R4
+        JMPR cc_UC,L_C7A06
+L_C7A04:                 ; 0xc7a04
+        BSET lv_crk_tooth_err.02H
+L_C7A06:                 ; 0xc7a06
+        BMOV lv_crk_tooth_err.03H,lv_asr_req.05H
+        RETS
+L_C7A0C:                 ; 0xc7a0c
+        BSET lv_crk_tooth_err.02H
+        RETS
+
+; ======== AcComp_StartCond  (@0xc7a10) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (ThetaII, verified): A/C compressor start enable via ambient/battery (c_tam_min_acc_st,
+        ; c_vb_min_acc_st)
+        ; (was FUN_0c7a10)
+        ; ------------------------------------------------------------
+AcComp_StartCond:
+        JNB lv_conf_mis.0DH,L_C7A52
+        MOVB RL4,tam
+        CMPB RL4,DPP0:c_tam_min_acc_st
+        JMPR cc_ULE,L_C7A52
+        MOVB RL5,vb
+        CMPB RL5,DPP0:c_vb_min_acc_st
+        JMPR cc_ULE,L_C7A52
+        MOVBZ R12,tco
+        MOVBZ R13,RL4
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL4,DPP0:c_hys_tam_acc_st
+        JMPR cc_NC,L_C7A52
+        MOVB RL4,DPP0:c_t_accout_st_act
+        JMPR cc_EQ,L_C7A52
+        BSET lv_act_aj.0DH
+        BSET lv_act_aj.0EH
+        BSET state_out_fault.0EH
+        JB state_out_req.02H,L_C7A4A
+        BSET state_out_diag.0EH
+L_C7A4A:                 ; 0xc7a4a
+        MOVBZ R4,DPP0:c_t_accout_st_act
+        MOV lv_tco_f942,R4
+L_C7A52:                 ; 0xc7a52
+        RETS
+
+; ======== Clr_Out_AJ  (@0xc7a54) ========
+        ; ------------------------------------------------------------
+        ; Digital-output-latch driver (fd94=request/fd96=state, fd98=feedback; CC5/P2.5=fuel-pump relay):
+        ; Clear output latch bit 0x4000 (anti-jerk/aux output off).
+        ; ------------------------------------------------------------
+Clr_Out_AJ:
+        JNB lv_conf_mis.0DH,L_C7A6C
+        BCLR state_out_fault.0EH
+        JB state_out_req.02H,L_C7A60
+        BCLR state_out_diag.0EH
+L_C7A60:                 ; 0xc7a60
+        MOV lv_tco_f942,ZEROS
+        MOV g_f944,ZEROS
+        BCLR lv_act_aj.0DH
+        BCLR lv_act_aj.0EH
+L_C7A6C:                 ; 0xc7a6c
+        RETS
+
+; ======== Set_Out_AJ  (@0xc7a6e) ========
+        ; ------------------------------------------------------------
+        ; Digital-output-latch driver (fd94=request/fd96=state, fd98=feedback; CC5/P2.5=fuel-pump relay): Set
+        ; output latch bit 0x4000 (anti-jerk/aux output on).
+        ; ------------------------------------------------------------
+Set_Out_AJ:
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_C7A82
+        JB lv_pl.04H,L_C7A82
+        BSET state_out_fault.0EH
+        JB state_out_req.02H,L_C7A7E
+        BSET state_out_diag.0EH
+L_C7A7E:                 ; 0xc7a7e
+        BSET lv_act_aj.0BH
+        RETS
+L_C7A82:                 ; 0xc7a82
+        CALLS 00CH,AcComp_AccIn_Reset
+        RETS
+
+S_C790A ENDS
+        END

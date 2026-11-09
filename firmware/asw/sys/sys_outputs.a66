@@ -1,0 +1,124 @@
+; asw/sys/sys_outputs.a66
+; 0xA3A7C-0xA3BBC  (320 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  EngInj_ArmOutputs, EngInj_DisableOutputs
+
+S_A3A7C SECTION CODE AT 0A3A7CH
+
+; ======== EngInj_ArmOutputs  (@0xa3a7c) ========
+        ; Engine START - arms fuel-injection outputs. Arms injector CAPCOM CC0-3 (compare=0xfff,
+        ; CC0IC=0x5c..CC3IC=0x5f), CC8 (0x4a) / CC25 (0x5a), CCM0/CCM2/CCM6 modes; smartra_comms_status|=1.
+        ; Restart-group counterpart of EngInj_DisableOutputs.
+EngInj_ArmOutputs:
+        BSET state_mtv.03H
+        BCLR state_mtv.04H
+        MOV inj_cc_12,ZEROS
+        MOV R4,#DATA16 00080H
+        MOV inj_cc_11,R4
+        MOVB RL4,#0FH
+        MOVB prev_state_iv,RL4
+        MOVB inj_arm_mask,ONES
+        BSET state_mtv.07H
+        BCLR state_mtv.05H
+        BCLR state_mtv.06H
+        MOVB inj_ic_cyl0,ZEROS
+        MOV inj_cc_7,ZEROS
+        BSET state_mtv.0AH
+        BCLR state_mtv.08H
+        BCLR state_mtv.09H
+        MOVB inj_ic_cyl1,ZEROS
+        MOV inj_cc_8,ZEROS
+        BSET state_mtv.0DH
+        BCLR state_mtv.0BH
+        BCLR state_mtv.0CH
+        MOVB inj_ic_cyl2,ZEROS
+        MOV inj_cc_9,ZEROS
+        BSET smartra_comms_status.00H
+        BCLR state_mtv.0EH
+        BCLR state_mtv.0FH
+        MOVB inj_ic_cyl3,ZEROS
+        MOV inj_cc_10,ZEROS
+        MOV CC25,#DATA16 00FFFH
+        EXTR #01H
+        MOV CC25IC,#DATA16 0005AH
+        BFLDL 0FF26H,#0F0H,#050H
+        MOV CC8IC,#DATA16 00000H
+        BFLDL 0FF56H,#0FH,#00H
+        MOV CC8IC,#DATA16 0004AH
+        MOV CC0IC,#DATA16 00000H
+        MOV CC0,#DATA16 00FFFH
+        BFLDL 0FF52H,#0FH,#00H
+        MOV CC0IC,#DATA16 0005CH
+        MOV CC1IC,#DATA16 00000H
+        MOV CC1,#DATA16 00FFFH
+        BFLDL 0FF52H,#0F0H,#00H
+        MOV CC1IC,#DATA16 0005DH
+        MOV CC2IC,#DATA16 00000H
+        MOV CC2,#DATA16 00FFFH
+        BFLDH CCM0_FF52,#0FH,#00H
+        MOV CC2IC,#DATA16 0005EH
+        MOV CC3IC,#DATA16 00000H
+        MOV CC3,#DATA16 00FFFH
+        BFLDH CCM0_FF52,#0F0H,#00H
+        MOV CC3IC,#DATA16 0005FH
+        RETS
+
+; ======== EngInj_DisableOutputs  (@0xa3b2a) ========
+        ; Engine STOP - disables fuel-injection outputs. Masks injector CAPCOM CC0-3 (CC0IC..CC3IC=0,
+        ; CCM0=0xff) on P2.0-3 (forced via P2|=0xf, DP2|=0xf outputs, push-pull ODP2&~0xf), plus CC8/CC25;
+        ; zeroes fuel accumulators (fco_sum and DAT_00fa24..fa32). STOP-trio member; counterpart of
+        ; EngInj_ArmOutputs.
+EngInj_DisableOutputs:
+        MOV CC0IC,#DATA16 00000H
+        BFLDL 0FF52H,#0FH,#00H
+        EXTR #01H
+        BCLR ODP2.00H
+        BSET P2.00H
+        BSET DP2.00H
+        MOVB RL4,#0EH
+        MOVB inj_ic_cyl0,RL4
+        MOV ti_dur_cyl0,ZEROS
+        MOV CC1IC,#DATA16 00000H
+        BFLDL 0FF52H,#0F0H,#00H
+        EXTR #01H
+        BCLR ODP2.01H
+        BSET P2.01H
+        BSET DP2.01H
+        MOVB inj_ic_cyl1,RL4
+        MOV ti_dur_cyl1,ZEROS
+        MOV CC2IC,#DATA16 00000H
+        BFLDH CCM0_FF52,#0FH,#00H
+        EXTR #01H
+        BCLR ODP2.02H
+        BSET P2.02H
+        BSET DP2.02H
+        MOVB inj_ic_cyl2,RL4
+        MOV ti_dur_cyl2,ZEROS
+        MOV CC3IC,#DATA16 00000H
+        BFLDH CCM0_FF52,#0F0H,#00H
+        EXTR #01H
+        BCLR ODP2.03H
+        BSET P2.03H
+        BSET DP2.03H
+        MOVB inj_ic_cyl3,RL4
+        MOV ti_dur_cyl3,ZEROS
+        EXTR #01H
+        MOV CC25IC,#DATA16 00000H
+        BFLDL 0FF26H,#0F0H,#00H
+        MOV CC8IC,#DATA16 00000H
+        MOV fco_cyl3,ZEROS
+        MOV fco_cyl4,ZEROS
+        MOV fco_cyl1,ZEROS
+        MOV fco_cyl2,ZEROS
+        MOV fco_sum,ZEROS
+        MOV fco_cyl0,ZEROS
+        MOV fco_acc_lo,ZEROS
+        MOV fco_acc_hi,ZEROS
+        RETS
+
+S_A3A7C ENDS
+        END

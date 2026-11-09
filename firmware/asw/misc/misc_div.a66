@@ -1,0 +1,120 @@
+; asw/misc/misc_div.a66
+; 0xDFEE4-0xDFFBC  (216 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Calc_CtrlModule_Voltage, Div_S32_S16_b, Div_S32_Signed
+
+S_DFEE4 SECTION CODE AT 0DFEE4H
+
+; ======== Div_S32_Signed  (@0xdfee4) ========
+        ; Div_S32_Signed(): compiler runtime. Signed 32/32 divide, dividend r5:r4, divisor r11:r10; magnitude
+        ; via inline long-div or FUN_0dff64, sign applied to result. Returns signed quotient.
+Div_S32_Signed:
+        SUB R0,#02H
+        MOV [R0],0FF1CH
+        OR R5,R5
+        JMPR cc_SGE,L_DFF04
+        NEG R5
+        NEG R4
+        SUBC R5,#00H
+        MOV [-R0],R5
+        MOV R5,[R0+#02H]
+        XOR R5,0FF1EH
+        MOV [R0+#02H],R5
+        MOV R5,[R0+]
+L_DFF04:                 ; 0xdff04
+        OR R11,R11
+        JMPR cc_SGE,L_DFF1E
+        NEG R11
+        NEG R10
+        SUBC R11,#00H
+        MOV [-R0],R11
+        MOV R11,[R0+#02H]
+        XOR R11,0FF1EH
+        MOV [R0+#02H],R11
+        MOV R11,[R0+]
+L_DFF1E:                 ; 0xdff1e
+        OR R11,R11
+        JMPR cc_NE,L_DFF38
+        MOV 0FE0EH,R5
+        DIVU R10
+        MOV R5,0FE0EH
+        MOV 0FE0EH,R4
+        DIVLU R10
+        MOV R4,0FE0EH
+        JMPR cc_UC,L_DFF3C
+L_DFF38:                 ; 0xdff38
+        CALLS 00DH,Div_S32_S16_b
+L_DFF3C:                 ; 0xdff3c
+        MOV R11,[R0+]
+        JNB R11.00H,L_DFF48
+        NEG R5
+        NEG R4
+        SUBC R5,#00H
+L_DFF48:                 ; 0xdff48
+        RETS
+
+; ======== Calc_CtrlModule_Voltage  (@0xdff4a) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified): Control-module (battery) voltage computation from ADC registers (OBD PID42 source).
+        ; ------------------------------------------------------------
+Calc_CtrlModule_Voltage:
+        OR R11,R11
+        JMPR cc_NE,Div_S32_S16_b
+        MOV 0FE0EH,R5
+        DIVU R10
+        MOV R5,0FE0EH
+        MOV 0FE0EH,R4
+        DIVLU R10
+        MOV R4,0FE0EH
+        RETS
+
+; ======== Div_S32_S16_b  (@0xdff64) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Div_S32_S16_b:
+        MOV [-R0],R4
+        MOV [-R0],R5
+        MOV [-R0],R10
+        MOV [-R0],R11
+L_DFF6C:                 ; 0xdff6c
+        SHR R10,#01H
+        BMOV R10.0FH,R11.00H
+        SHR R11,#01H
+        SHR R4,#01H
+        BMOV R4.0FH,R5.00H
+        SHR R5,#01H
+        OR R11,R11
+        JMPR cc_NE,L_DFF6C
+        MOV MDH_FE0C,R5
+        MOV 0FE0EH,R4
+        DIVLU R10
+        MOV R4,0FE0EH
+        MOV R10,[R0+]
+        MULU R4,R10
+        MOV R5,0FE0EH
+        MOV R10,[R0+]
+        MULU R4,R10
+        MOV R11,0FE0EH
+        ADD R5,MDH_FE0C
+        JMPR cc_C,L_DFFB4
+        MOV R10,[R0]
+        CMP R5,R10
+        JMPR cc_UGT,L_DFFB4
+        JMPR cc_C,L_DFFB6
+        MOV R10,[R0+#02H]
+        CMP R11,R10
+        JMPR cc_ULE,L_DFFB6
+L_DFFB4:                 ; 0xdffb4
+        SUB R4,#01H
+L_DFFB6:                 ; 0xdffb6
+        MOV R5,#00H
+        ADD R0,#04H
+        RETS
+
+S_DFEE4 ENDS
+        END

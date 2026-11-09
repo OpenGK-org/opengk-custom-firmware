@@ -1,0 +1,261 @@
+; asw/sys/sys_dword.a66
+; 0xFFBEA-0xFFDEE  (516 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Get_Byte_2D_Table_DWord_YByte, Get_Byte_2D_Table_DWord_YWord, Get_IP_Byte_3D_Table_DWord_XWord_YWord, Get_Word_2D_Table_DWord_YByte, Get_Word_2D_Table_DWord_YWord
+
+S_FFBEA SECTION CODE AT 0FFBEAH
+
+; ======== Get_IP_Byte_3D_Table_DWord_XWord_YWord  (@0xffbea) ========
+Get_IP_Byte_3D_Table_DWord_XWord_YWord:
+        MOV R10,[R12]
+        MOV R2,[R12+#04H]
+        MOV R3,[R12+#08H]
+        MOV R5,[R12+#06H]
+        MOV R11,[R12+#0AH]
+        MOV R12,[R12+#02H]
+        MOV DPP0_FE00,R5
+        MOV R1,R2
+        ADD R1,[R2]
+        ADD R1,[R2+]
+        CMP R13,[R1]
+        JMPR cc_NC,L_FFC34
+        CMP R13,[R2]
+        JMPR cc_ULE,L_FFC32
+L_FFC12:                 ; 0xffc12
+        SUB R1,#02H
+        CMP R13,[R1]
+        JMPR cc_C,L_FFC12
+        JMPR cc_EQ,L_FFC34
+        SUB R13,[R1]
+        MOV MDH_FE0C,R13
+        MOV MDL,#DATA16 00000H
+        MOV R4,[R1+#02H]
+        SUB R4,[R1]
+        DIVLU R4
+        MOV R13,0FE0EH
+        JMPR cc_UC,L_FFC36
+L_FFC32:                 ; 0xffc32
+        MOV R1,R2
+L_FFC34:                 ; 0xffc34
+        XOR R13,R13
+L_FFC36:                 ; 0xffc36
+        MOV DPP0_FE00,R11
+        SUB R1,R2
+        SHR R1,#01H
+        MOV R15,[R3]
+        MULU R1,R15
+        ADD R10,0FE0EH
+        MOV R1,R15
+        ADD R1,R1
+        ADD R1,R3
+        ADD R3,#02H
+        CMP R14,[R1]
+        JMPR cc_NC,L_FFCD4
+        CMP R14,[R3]
+        JMPR cc_ULE,L_FFCD2
+L_FFC56:                 ; 0xffc56
+        SUB R1,#02H
+        CMP R14,[R1]
+        JMPR cc_C,L_FFC56
+        JMPR cc_EQ,L_FFCD4
+        SUB R14,[R1]
+        MOV MDH_FE0C,R14
+        MOV MDL,#DATA16 00000H
+        MOV R5,[R1+#02H]
+        SUB R5,[R1]
+        DIVLU R5
+        MOV R14,0FE0EH
+        MOV DPP0,#DATA16 00024H
+        SUB R1,R3
+        SHR R1,#01H
+        ADD R1,R10
+        EXTP R12, #03H
+        MOVB RL4,[R1]
+        MOVB RL5,[R1+#01H]
+        MOVBZ R4,RL4
+        MOVBZ R5,RL5
+        SUB R5,R4
+        JMPR cc_NC,L_FFC9C
+        NEG R5
+        MULU R5,R14
+        ADD MDL,0FE0EH
+        SUBC R4,MDH_FE0C
+        JMPR cc_UC,L_FFCA6
+L_FFC9C:                 ; 0xffc9c
+        MULU R5,R14
+        ADD MDL,0FE0EH
+        ADDC R4,MDH_FE0C
+L_FFCA6:                 ; 0xffca6
+        OR R13,R13
+        JMPR cc_EQ,L_FFD0A
+        ADD R1,R15
+        EXTP R12, #03H
+        MOVB RL5,[R1+]
+        MOVB RL2,[R1]
+        MOVBZ R2,RL2
+        SUB R2,R5
+        JMPR cc_NC,L_FFCC6
+        NEG R2
+        MULU R2,R14
+        ADD MDL,0FE0EH
+        SUBC R5,MDH_FE0C
+        JMPR cc_UC,L_FFCEE
+L_FFCC6:                 ; 0xffcc6
+        MULU R2,R14
+        ADD MDL,0FE0EH
+        ADDC R5,MDH_FE0C
+        JMPR cc_UC,L_FFCEE
+L_FFCD2:                 ; 0xffcd2
+        MOV R1,R3
+L_FFCD4:                 ; 0xffcd4
+        MOV DPP0,#DATA16 00024H
+        SUB R1,R3
+        SHR R1,#01H
+        ADD R1,R10
+        OR R13,R13
+        JMPR cc_EQ,L_FFD0C
+        ADD R15,R1
+        EXTP R12, #02H
+        MOVB RL4,[R1]
+        MOVB RL5,[R15]
+        MOVBZ R4,RL4
+        MOVBZ R5,RL5
+L_FFCEE:                 ; 0xffcee
+        SUB R5,R4
+        JMPR cc_NC,L_FFD00
+        NEG R5
+        MULU R5,R13
+        ADD MDL,0FE0EH
+        SUBC R4,MDH_FE0C
+        RETS
+L_FFD00:                 ; 0xffd00
+        MULU R5,R13
+        ADD MDL,0FE0EH
+        ADDC R4,MDH_FE0C
+L_FFD0A:                 ; 0xffd0a
+        RETS
+L_FFD0C:                 ; 0xffd0c
+        EXTP R12, #01H
+        MOVB RL4,[R1]
+        RETS
+
+; ======== Get_Word_2D_Table_DWord_YWord  (@0xffd12) ========
+Get_Word_2D_Table_DWord_YWord:
+        MOV R10,[R12]
+        MOV R2,[R12+#04H]
+        MOV R5,[R12+#06H]
+        MOV R12,[R12+#02H]
+        MOV DPP0_FE00,R5
+        MOV R1,R2
+        ADD R1,[R2]
+        ADD R1,[R2+]
+        CMP R13,[R1]
+        JMPR cc_NC,L_FFD38
+        CMP R13,[R2]
+        JMPR cc_ULE,L_FFD3C
+L_FFD32:                 ; 0xffd32
+        SUB R1,#02H
+        CMP R13,[R1]
+        JMPR cc_C,L_FFD32
+L_FFD38:                 ; 0xffd38
+        SUB R1,R2
+        ADD R10,R1
+L_FFD3C:                 ; 0xffd3c
+        EXTP R12, #01H
+        MOV R4,[R10]
+        MOV DPP0,#DATA16 00024H
+        RETS
+
+; ======== Get_Byte_2D_Table_DWord_YWord  (@0xffd46) ========
+Get_Byte_2D_Table_DWord_YWord:
+        MOV R10,[R12]
+        MOV R2,[R12+#04H]
+        MOV R5,[R12+#06H]
+        MOV R12,[R12+#02H]
+        MOV DPP0_FE00,R5
+        MOV R1,R2
+        ADD R1,[R2]
+        ADD R1,[R2+]
+        CMP R13,[R1]
+        JMPR cc_NC,L_FFD6C
+        CMP R13,[R2]
+        JMPR cc_ULE,L_FFD72
+L_FFD66:                 ; 0xffd66
+        SUB R1,#02H
+        CMP R13,[R1]
+        JMPR cc_C,L_FFD66
+L_FFD6C:                 ; 0xffd6c
+        SUB R1,R2
+        SHR R1,#01H
+        ADD R10,R1
+L_FFD72:                 ; 0xffd72
+        EXTP R12, #01H
+        MOVB RL4,[R10]
+        MOV DPP0,#DATA16 00024H
+        RETS
+
+; ======== Get_Word_2D_Table_DWord_YByte  (@0xffd7c) ========
+Get_Word_2D_Table_DWord_YByte:
+        MOV R10,[R12]
+        MOV R2,[R12+#04H]
+        MOV R5,[R12+#06H]
+        MOV R12,[R12+#02H]
+        MOV DPP0_FE00,R5
+        MOV R4,R13
+        MOVB RL1,[R2]
+        MOVBZ R1,RL1
+        ADD R1,R2
+        ADD R2,#01H
+        CMPB RL4,[R1]
+        JMPR cc_NC,L_FFDA6
+        CMPB RL4,[R2]
+        JMPR cc_ULE,L_FFDAC
+L_FFDA0:                 ; 0xffda0
+        SUB R1,#01H
+        CMPB RL4,[R1]
+        JMPR cc_C,L_FFDA0
+L_FFDA6:                 ; 0xffda6
+        SUB R1,R2
+        SHL R1,#01H
+        ADD R10,R1
+L_FFDAC:                 ; 0xffdac
+        EXTP R12, #01H
+        MOV R4,[R10]
+        MOV DPP0,#DATA16 00024H
+        RETS
+
+; ======== Get_Byte_2D_Table_DWord_YByte  (@0xffdb6) ========
+Get_Byte_2D_Table_DWord_YByte:
+        MOV R10,[R12]
+        MOV R2,[R12+#04H]
+        MOV R5,[R12+#06H]
+        MOV R12,[R12+#02H]
+        MOV DPP0_FE00,R5
+        MOV R4,R13
+        MOVB RL1,[R2]
+        MOVBZ R1,RL1
+        ADD R1,R2
+        ADD R2,#01H
+        CMPB RL4,[R1]
+        JMPR cc_NC,L_FFDE0
+        CMPB RL4,[R2]
+        JMPR cc_ULE,L_FFDE4
+L_FFDDA:                 ; 0xffdda
+        SUB R1,#01H
+        CMPB RL4,[R1]
+        JMPR cc_C,L_FFDDA
+L_FFDE0:                 ; 0xffde0
+        SUB R1,R2
+        ADD R10,R1
+L_FFDE4:                 ; 0xffde4
+        EXTP R12, #01H
+        MOVB RL4,[R10]
+        MOV DPP0,#DATA16 00024H
+        RETS
+
+S_FFBEA ENDS
+        END

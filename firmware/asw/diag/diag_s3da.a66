@@ -1,0 +1,296 @@
+; asw/diag/diag_s3da.a66
+; 0xCA984-0xCABF2  (622 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_clr_fmy_backup                     EQU  090146H
+
+PUBLIC  Diag_VS_Plaus, NVM_Restore_s3da
+EXTERN  Init_DTC_Shadow_Table:NEAR, xor_routine:NEAR
+
+S_CA984 SECTION CODE AT 0CA984H
+
+; ======== NVM_Restore_s3da  (@0xca984) ========
+        ; ------------------------------------------------------------
+        ; NVM adaptation I/O: restores <- validated NVM block (DAT_00f890 base) section; xor_routine checksum.
+        ; Section offset in name.
+        ; ------------------------------------------------------------
+NVM_Restore_s3da:
+        MOV [-R0],R9
+        MOV [-R0],R7
+        MOV [-R0],R6
+        JB can_fd58.02H,L_CAA68
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 003DAH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#DATA16 00098H
+        CALLS 00DH,xor_routine
+        MOV R10,diag_f890
+        MOV R11,diag_f892
+        EXTP R11, #02H
+        MOV R5,[R10+#0472H]
+        NOP
+        CMP R5,R4
+        JMPR cc_NE,L_CAA68
+        MOVB RL4,DPP0:c_clr_fmy_backup
+        JMPR cc_NE,L_CAA68
+        MOVB RL6,#00H
+L_CA9DC:                 ; 0xca9dc
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOVB [R4+#0CE8CH],RL6
+        MOV R4,diag_f890
+        MOV R5,diag_f892
+        ADD R4,#DATA16 003DAH
+        MOVBZ R2,RL6
+        ADD R4,R2
+        EXTP R5, #01H
+        MOVB RL3,[R4]
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOVB [R4+#0CE8DH],RL3
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOVB RL5,[R4+#0CE8CH]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOV R9,#DATA16 0CE00H
+        ADD R9,R5
+        MOVB RL7,#00H
+L_CAA1A:                 ; 0xcaa1a
+        MOV R4,diag_f890
+        MOV R5,diag_f892
+        ADD R4,#DATA16 003E4H
+        MOVBZ R2,RL6
+        MOV R3,R2
+        SHL R3,#03H
+        SUB R3,R2
+        SHL R3,#01H
+        MOVBZ R2,RL7
+        ADD R2,R3
+        ADD R4,R2
+        EXTP R5, #01H
+        MOVB RL3,[R4]
+        MOVBZ R4,RL7
+        MOV R2,R9
+        ADD R2,R4
+        MOVB [R2],RL3
+        ADDB RL7,#01H
+        CMPB RL7,#DATA16 0000EH
+        JMPR cc_C,L_CAA1A
+        ADDB RL6,#01H
+        CMPB RL6,#DATA16 0000AH
+        JMPR cc_C,L_CA9DC
+        MOV R4,diag_f890
+        MOV R5,diag_f892
+        EXTP R5, #02H
+        MOVB RL3,[R4+#0470H]
+        NOP
+        MOVB diag_c35f,RL3
+        JMPR cc_UC,L_CAA6C
+L_CAA68:                 ; 0xcaa68
+        CALLS 00CH,Init_DTC_Shadow_Table
+L_CAA6C:                 ; 0xcaa6c
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Diag_VS_Plaus  (@0xcaa74) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by vs/mwss/lv_ch output signals): Vehicle-speed plausibility diagnosis:
+        ; lv_cdn_diag_vs_plaus.
+        ; ------------------------------------------------------------
+Diag_VS_Plaus:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOVB RL7,#00H
+        JMPA cc_UC,L_CABE0
+L_CAA82:                 ; 0xcaa82
+        BCLR lv_cdn_diag_vs_plaus.03H
+        BCLR lv_cdn_diag_vs_plaus.02H
+        MOVBZ R4,RL7
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0D9H]
+        MOVBZ R9,RL4
+        MOVBZ R4,RL7
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0D8H]
+        MOVBZ R4,RL4
+        SHL R4,#08H
+        ADD R9,R4
+        MOVB RL6,#00H
+        JMPR cc_UC,L_CAB74
+L_CAABA:                 ; 0xcaaba
+        JB lv_cdn_diag_vs_plaus.03H,L_CAB1A
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOVB RL5,[R4+#0CE8CH]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0CE09H]
+        MOVBZ R4,RL4
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        MOVB RL3,[R5+#0CE8CH]
+        MOVBZ R5,RL3
+        MOV R2,R5
+        SHL R2,#03H
+        SUB R2,R5
+        SHL R2,#01H
+        MOVB RL5,[R2+#0CE08H]
+        MOVBZ R5,RL5
+        SHL R5,#08H
+        ADD R4,R5
+        CMP R9,R4
+        JMPR cc_C,L_CAB72
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOVB RL5,[R4+#0CE8DH]
+        MOVBZ R4,RL7
+        MOVB RL3,[R4+#0C3DBH]
+        CMPB RL5,RL3
+        JMPR cc_NE,L_CAB0C
+        BSET lv_cdn_diag_vs_plaus.02H
+        JMPR cc_UC,L_CAB16
+L_CAB0C:                 ; 0xcab0c
+        BSET lv_cdn_diag_vs_plaus.03H
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R13,[R4+#0CE8CH]
+L_CAB16:                 ; 0xcab16
+        MOV R12,R6
+        JMPR cc_UC,L_CAB72
+L_CAB1A:                 ; 0xcab1a
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOVB RL5,[R4+#0CE8DH]
+        MOVBZ R4,RL7
+        MOVB RL3,[R4+#0C3DBH]
+        CMPB RL5,RL3
+        JMPR cc_EQ,L_CAB42
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOVB RL5,[R4+#0CE8DH]
+        CMPB RL5,#DATA16 000FFH
+        JMPR cc_EQ,L_CAB42
+        MOVBZ R4,RL6
+        CMP R4,#DATA16 00009H
+        JMPR cc_NE,L_CAB60
+L_CAB42:                 ; 0xcab42
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOVB RL5,[R4+#0CE8CH]
+        MOV R4,R12
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        MOVB [R4+#0CE8CH],RL5
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV [R4+#0CE8CH],R13
+        BSET lv_cdn_diag_vs_plaus.02H
+        JMPR cc_UC,L_CAB72
+L_CAB60:                 ; 0xcab60
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R8,[R4+#0CE8CH]
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV [R4+#0CE8CH],R13
+        MOV R13,R8
+L_CAB72:                 ; 0xcab72
+        ADDB RL6,#01H
+L_CAB74:                 ; 0xcab74
+        CMPB RL6,#DATA16 0000AH
+        JMPR cc_NC,L_CAB7E
+        JNB lv_cdn_diag_vs_plaus.02H,L_CAABA
+L_CAB7E:                 ; 0xcab7e
+        JB lv_cdn_diag_vs_plaus.03H,L_CAB86
+        JNB lv_cdn_diag_vs_plaus.02H,L_CABDE
+L_CAB86:                 ; 0xcab86
+        MOV R4,R12
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        MOVB RL5,[R4+#0CE8CH]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOV R14,#DATA16 0CE00H
+        ADD R14,R5
+        MOVBZ R4,RL7
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOV R15,#DATA16 0D0D0H
+        ADD R15,R5
+        MOVB RL6,#00H
+L_CABB8:                 ; 0xcabb8
+        MOVBZ R4,RL6
+        MOV R5,R15
+        ADD R5,R4
+        MOVBZ R4,RL6
+        MOV R2,R14
+        ADD R2,R4
+        MOVB [R2],[R5]
+        ADDB RL6,#01H
+        CMPB RL6,#DATA16 0000EH
+        JMPR cc_C,L_CABB8
+        MOVBZ R4,RL7
+        MOVB RL5,[R4+#0C3DBH]
+        MOV R4,R12
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        MOVB [R4+#0CE8DH],RL5
+L_CABDE:                 ; 0xcabde
+        ADDB RL7,#01H
+L_CABE0:                 ; 0xcabe0
+        CMPB RL7,fmy_f_anz
+        JMPA cc_C,L_CAA82
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_CA984 ENDS
+        END

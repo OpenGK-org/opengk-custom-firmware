@@ -1,0 +1,250 @@
+; asw/comm/comm_daq.a66
+; 0xCC7E2-0xCC9A4  (450 bytes, 8 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Advance_Buffer_Ptr, Advance_Buffer_Ptr_C966, CCP_DAQ_Scheduler, CCP_DAQ_Task_A, CCP_DAQ_Task_B, CCP_DAQ_Task_C
+PUBLIC  CCP_DAQ_Task_D, Flash_Compare_Block
+EXTERN  CCP_DAQ_BuildDTO:NEAR
+
+S_CC7E2 SECTION CODE AT 0CC7E2H
+
+; ======== CCP_DAQ_Scheduler  (@0xcc7e2) ========
+        ; CCP_DAQ_Scheduler(daqListIdx): periodic DAQ list processor (<6 lists). Checks list active flag
+        ; @0xe50c (8-byte stride), computes ODT range, calls CCP_DAQ_BuildDTO to emit DTOs, advances the
+        ; per-list ODT cursor @0xe50e. Gated by DAT_00fd04 bit8. Run from the CCP periodic task.
+CCP_DAQ_Scheduler:
+        MOV [-R0],R12
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        JB kwp_prog_flags.08H,L_CC87C
+        MOV R4,R12
+        MOVBZ R4,RL4
+        CMP R4,#06H
+        JMPR cc_SGE,L_CC878
+        MOV R9,#DATA16 0E50CH
+        MOV R4,R12
+        MOVBZ R4,RL4
+        SHL R4,#03H
+        ADD R9,R4
+        MOVB RL4,[R9]
+        CMPB RL4,#01H
+        JMPR cc_NE,L_CC874
+        MOV R4,R12
+        MOVBZ R4,RL4
+        MOV R5,R4
+        SHL R5,#02H
+        SUB R5,R4
+        SHL R5,#01H
+        MOV R6,[R5+#04F56H]
+        MOVB RL4,[R9+#02H]
+        MOVBZ R4,RL4
+        SHL R4,#04H
+        ADD R6,R4
+        MOVB RL4,[R9+#01H]
+        MOVBZ R7,RL4
+        MOVB RL4,[R9+#02H]
+        MOVBZ R4,RL4
+        SUB R7,R4
+        ADD R7,#01H
+        MOV R12,R6
+        MOVB RL4,[R0+#08H]
+        MOVBZ R13,RL4
+        MOV R14,R7
+        CALLS 00AH,CCP_DAQ_BuildDTO
+        MOVBZ R4,RL4
+        MOV R8,R7
+        SUB R8,R4
+        MOVB RL4,[R9+#01H]
+        MOVBZ R4,RL4
+        MOVB RL5,[R9+#02H]
+        MOVBZ R5,RL5
+        ADD R5,R8
+        CMP R4,R5
+        JMPR cc_NC,L_CC864
+        MOVB RL4,#00H
+        MOVB [R9+#02H],RL4
+        MOV R8,#01H
+        JMPR cc_UC,L_CC87E
+L_CC864:                 ; 0xcc864
+        MOV R4,R8
+        MOV R5,R9
+        ADD R5,#02H
+        MOVB RL3,[R5]
+        ADDB RL3,RL4
+        MOVB [R5],RL3
+        MOV R8,#00H
+        JMPR cc_UC,L_CC87E
+L_CC874:                 ; 0xcc874
+        MOV R8,#01H
+        JMPR cc_UC,L_CC87E
+L_CC878:                 ; 0xcc878
+        MOV R8,#01H
+        JMPR cc_UC,L_CC87E
+L_CC87C:                 ; 0xcc87c
+        MOV R8,#01H
+L_CC87E:                 ; 0xcc87e
+        MOV R4,R8
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        ADD R0,#02H
+        RETS
+
+; ======== CCP_DAQ_Task_A  (@0xcc88c) ========
+        ; CCP periodic DAQ service task entry (pointer-table target). Invokes CCP_DAQ_Scheduler to emit DAQ
+        ; DTOs for its event channel.
+CCP_DAQ_Task_A:
+        MOVBZ R12,seg_nr
+        CALLS 00CH,CCP_DAQ_Scheduler
+        CMPB RL4,#00H
+        JMPR cc_NE,L_CC8A6
+        MOVBZ R4,seg_nr
+        MOV R5,#DATA16 08000H
+        SHR R5,R4
+        OR ccp_cf0a,R5
+L_CC8A6:                 ; 0xcc8a6
+        RETS
+
+; ======== CCP_DAQ_Task_B  (@0xcc8a8) ========
+        ; CCP periodic DAQ service task entry (pointer-table target). Invokes CCP_DAQ_Scheduler to emit DAQ
+        ; DTOs for its event channel.
+CCP_DAQ_Task_B:
+        MOV R12,#04H
+        CALLS 00CH,CCP_DAQ_Scheduler
+        CMPB RL4,#00H
+        JMPR cc_NE,L_CC8BA
+        MOV R4,#DATA16 00800H
+        OR ccp_cf0a,R4
+L_CC8BA:                 ; 0xcc8ba
+        RETS
+
+; ======== CCP_DAQ_Task_C  (@0xcc8bc) ========
+        ; CCP periodic DAQ service task entry (pointer-table target). Builds and queues DAQ ODT DTOs via
+        ; CCP_DAQ_BuildDTO(0a6664).
+CCP_DAQ_Task_C:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        JB kwp_prog_flags.08H,L_CC90A
+        MOV R9,#DATA16 0E534H
+        MOVB RL4,[R9]
+        CMPB RL4,#01H
+        JMPR cc_NE,L_CC90A
+        MOV R8,DPP1:0A0F74H
+        MOVB RL4,[R9+#02H]
+        MOVBZ R4,RL4
+        SHL R4,#04H
+        ADD R8,R4
+        MOV R12,R8
+        MOV R13,#05H
+        MOV R14,#01H
+        CALLS 00AH,CCP_DAQ_BuildDTO
+        MOVB RL4,[R9+#01H]
+        MOVBZ R4,RL4
+        MOVB RL5,[R9+#02H]
+        MOVBZ R5,RL5
+        ADD R5,#01H
+        CMP R4,R5
+        JMPR cc_SGE,L_CC900
+        MOVB RL4,#00H
+        MOVB [R9+#02H],RL4
+        JMPR cc_UC,L_CC90A
+L_CC900:                 ; 0xcc900
+        MOV R4,R9
+        ADD R4,#02H
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+L_CC90A:                 ; 0xcc90a
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== CCP_DAQ_Task_D  (@0xcc910) ========
+        ; CCP periodic DAQ service task entry (pointer-table target). Invokes CCP_DAQ_Scheduler to emit DAQ
+        ; DTOs for its event channel.
+CCP_DAQ_Task_D:
+        MOV R4,ccp_cf0a
+        JMPR cc_EQ,L_CC932
+        PRIOR R12,R4
+        CALLS 00CH,CCP_DAQ_Scheduler
+        CMPB RL4,#00H
+        JMPR cc_EQ,L_CC932
+        MOV R5,ccp_cf0a
+        PRIOR R4,R5
+        MOV R2,#DATA16 08000H
+        SHR R2,R4
+        CPL R2
+        AND ccp_cf0a,R2
+L_CC932:                 ; 0xcc932
+        RETS
+
+; ======== Advance_Buffer_Ptr  (@0xcc934) ========
+Advance_Buffer_Ptr:
+        JMPR cc_UC,Advance_Buffer_Ptr_C966
+L_CC936:                 ; 0xcc936
+        MOV R4,R14
+        ADD R14,#01H
+        MOVB [R12+#01H],RL4
+        MOVB [R12],0FF1CH
+        MOV R4,#DATA16 04C94H
+        MOV [R12+#0EH],R4
+        MOV [R12+#0CH],R4
+        MOV [R12+#0AH],R4
+        MOV [R12+#08H],R4
+        MOV [R12+#06H],R4
+        MOV [R12+#04H],R4
+        MOV [R12+#02H],R4
+        ADD R12,#DATA16 00010H
+
+; ======== Advance_Buffer_Ptr  (@0xcc966) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Advance_Buffer_Ptr_C966:
+        MOV R4,R13
+        SUB R13,#01H
+        CMP R4,#00H
+        JMPR cc_NE,L_CC936
+        RETS
+
+; ======== Flash_Compare_Block  (@0xcc970) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Flash_Compare_Block:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV R15,#00H
+        JMPR cc_UC,L_CC996
+L_CC978:                 ; 0xcc978
+        MOV R8,[R13]
+        MOV R9,[R13+#02H]
+        MOV R14,[R13+#04H]
+        JMPR cc_UC,L_CC990
+L_CC984:                 ; 0xcc984
+        EXTP R9, #01H
+        MOVB RL4,[R8+]
+        MOVB [R12],RL4
+        ADD R12,#01H
+        ADD R15,#01H
+        SUB R14,#01H
+L_CC990:                 ; 0xcc990
+        CMP R14,#00H
+        JMPR cc_NE,L_CC984
+        ADD R13,#06H
+L_CC996:                 ; 0xcc996
+        MOV R4,[R13+#04H]
+        JMPR cc_NE,L_CC978
+        MOV R4,R15
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_CC7E2 ENDS
+        END

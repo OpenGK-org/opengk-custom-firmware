@@ -1,0 +1,99 @@
+; asw/comm/comm_flash_7.a66
+; 0xCC380-0xCC42C  (172 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  KWP_Flash_Cmd23_arm, KWP_Flash_Cmd24_arm, KWP_Flash_Cmd25_arm, KWP_Flash_Cmd27_arm, KWP_Flash_Cmd32_arm
+EXTERN  Flash_Compare_Block:NEAR, L_CC708:NEAR
+
+S_CC380 SECTION CODE AT 0CC380H
+
+; ======== KWP_Flash_Cmd23_arm  (@0xcc380) ========
+        ; ------------------------------------------------------------
+        ; KWP flash-service dispatcher arm, command id 0x17 (kwp_cmd_id@d780) via
+        ; KWP_Flash_Svc_jmptab@0xa0fa8.
+        ; ------------------------------------------------------------
+KWP_Flash_Cmd23_arm:
+        MOVB RL4,kwp_sec_level
+        CMPB RL4,#02H
+        JMPR cc_C,L_CC3D2
+        MOV R4,#DATA16 0CEC6H
+        MOV R5,#DATA16 00000H
+        MOV kwp_dl_addr,R4
+        MOV kwp_dl_count,R5
+        MOV R12,#DATA16 0CEC6H
+        MOV R13,#DATA16 04C98H
+        CALLS 00CH,Flash_Compare_Block
+        MOVBZ R9,RL4
+        MOV R4,R9
+        MOVB kwp_resp_status2,RL4
+        MOVB RL5,#DATA16 000D7H
+        MOVB kwp_resp_addr_lo,RL5
+        MOVB RL3,kwp_c368
+        MOVB kwp_resp_addr_hi,RL3
+        MOVB RL2,kwp_dl_mask
+        XORB RL2,kwp_c368
+        MOVB kwp_resp_cnt_lo,RL2
+        MOVB RL1,#05H
+        MOVB kwp_resp_status,RL1
+        JMPA cc_UC,L_CC708
+L_CC3D2:                 ; 0xcc3d2
+        MOVB RL4,#DATA16 00031H
+        MOVB kwp_nrc_D78B,RL4
+        JMPA cc_UC,L_CC708
+
+; ======== KWP_Flash_Cmd24_arm  (@0xcc3de) ========
+        ; ------------------------------------------------------------
+        ; KWP flash-service dispatcher arm, command id 0x18 (kwp_cmd_id@d780) via
+        ; KWP_Flash_Svc_jmptab@0xa0fa8.
+        ; ------------------------------------------------------------
+KWP_Flash_Cmd24_arm:
+        MOVB RL4,#DATA16 00036H
+        MOVB kwp_nrc_D78B,RL4
+        JMPA cc_UC,L_CC708
+
+; ======== KWP_Flash_Cmd25_arm  (@0xcc3ea) ========
+        ; ------------------------------------------------------------
+        ; KWP flash-service dispatcher arm, command id 0x19 (kwp_cmd_id@d780) via
+        ; KWP_Flash_Svc_jmptab@0xa0fa8.
+        ; ------------------------------------------------------------
+KWP_Flash_Cmd25_arm:
+        MOVB RL4,#DATA16 00036H
+        MOVB kwp_nrc_D78B,RL4
+        JMPA cc_UC,L_CC708
+
+; ======== KWP_Flash_Cmd27_arm  (@0xcc3f6) ========
+        ; ------------------------------------------------------------
+        ; KWP flash-service dispatcher arm, command id 0x1B (kwp_cmd_id@d780) via
+        ; KWP_Flash_Svc_jmptab@0xa0fa8.
+        ; ------------------------------------------------------------
+KWP_Flash_Cmd27_arm:
+        MOVB RL4,kwp_sec_level
+        CMPB RL4,#04H
+        JMPR cc_C,L_CC414
+        MOVB RL5,#02H
+        MOVB kwp_resp_status2,RL5
+        MOVB RL3,#01H
+        MOVB kwp_resp_addr_lo,RL3
+        MOVB RL2,#04H
+        MOVB kwp_resp_status,RL2
+        JMPA cc_UC,L_CC708
+L_CC414:                 ; 0xcc414
+        MOVB RL4,#DATA16 00031H
+        MOVB kwp_nrc_D78B,RL4
+        JMPA cc_UC,L_CC708
+
+; ======== KWP_Flash_Cmd32_arm  (@0xcc420) ========
+        ; ------------------------------------------------------------
+        ; KWP flash-service dispatcher arm, command id 0x20 (kwp_cmd_id@d780) via
+        ; KWP_Flash_Svc_jmptab@0xa0fa8.
+        ; ------------------------------------------------------------
+KWP_Flash_Cmd32_arm:
+        MOVB RL4,#DATA16 00036H
+        MOVB kwp_nrc_D78B,RL4
+        JMPA cc_UC,L_CC708
+
+S_CC380 ENDS
+        END

@@ -1,0 +1,166 @@
+; asw/hi/hi_req.a66
+; 0xDA6A0-0xDA842  (418 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_t_efp_igk                          EQU  090338H
+
+PUBLIC  CAN_Init_Task, Set_Out_FuelReq_3
+EXTERN  Acq_TIA_TCO_Inputs:NEAR, Acq_TOIL:NEAR, CAN1_Init:NEAR, Calc_ACP_State:NEAR
+EXTERN  Calc_Cat_Diag_Inhibit:NEAR, Calc_Cyl_InjPhase:NEAR, Calc_ER_Seg_Ad:NEAR, Calc_Fac_WF_VO_Fdout_B95A:NEAR
+EXTERN  Calc_IGA_Av:NEAR, Calc_IGA_ST_FF28:NEAR, Calc_IGC_Dur_Fault:NEAR, Calc_MTV_Ctr:NEAR
+EXTERN  Calc_TD_Dwell_Base:NEAR, Calc_TPS_ErrSubst:NEAR, Calc_WallFilm_Seg:NEAR, Calc_tam_min_diagcp:NEAR
+EXTERN  CanPurge_Deac_State:NEAR, CanPurge_Set_TState:NEAR, Clamp_IGC_Dur_Min:NEAR, Clamp_IGC_Dur_Min_2:NEAR
+EXTERN  ClrBits_lv_er_carb_b4_c7c:NEAR, Diag_Cam_N_Max_d194:NEAR, Diag_DTC_dd108:NEAR, Diag_IVVT_Trip_d62c:NEAR
+EXTERN  Diag_MAF_TPS_Ratio_d1be:NEAR, Diag_VS_Purge_Cond:NEAR, IVVT_Task_Group_1:NEAR, Init_Fault_Table_1:NEAR
+EXTERN  Init_Fault_Table_2:NEAR, Init_GearRatio:NEAR, Init_IGA_Dif_Min_Ext:NEAR, Init_ISC_State:NEAR
+EXTERN  Init_Misfire_Counters:NEAR, Init_N_SP_IS:NEAR, Init_TQ_Lamb_Defaults:NEAR, KWP_Init_Resp:NEAR
+EXTERN  NVM_Restore_s632:NEAR, Reset_Dc2b4_028:NEAR, Reset_Df380_408:NEAR, Reset_Df7e6_57e:NEAR
+EXTERN  Reset_Dfd62_830:NEAR, Reset_Dfd62_8ca:NEAR, Reset_Eff_Lamb:NEAR, Reset_Eff_SCC:NEAR
+EXTERN  Reset_LS_State_Group_3:NEAR, Reset_RBM_Full:NEAR, Reset_eff_vol_slop_540:NEAR, Reset_fac_ch_red_fd6:NEAR
+EXTERN  Reset_iga_min_teg_6dc:NEAR, Reset_ign_mpl_crk_max_c7e:NEAR, Reset_state_cfa_is_92a:NEAR, Reset_sum_maf_tps_plaus_diag_2_9f0:NEAR
+EXTERN  Reset_t_acc_fast_862:NEAR, Reset_toil_mes_max_diag_fca:NEAR, Reset_tq_conv_036:NEAR, Reset_tqi_gs_slow_dec_196:NEAR
+EXTERN  Reset_tqi_req_slow_2d6:NEAR, Set_TQI_N_Max:NEAR, Set_eff_tot_bas_21e:NEAR, Set_iga_bas_amp_cor_73a:NEAR
+EXTERN  Set_iga_bas_cor_a10:NEAR, Set_iga_ref_cor_f66:NEAR, Set_iga_sp_e36:NEAR, Set_lv_cps_err:NEAR
+EXTERN  Set_lv_maf_puls:NEAR, Set_tqi_av_ems_7dc:NEAR, Tail_f0b28ec_99e:NEAR, Tail_f0c5ec6_f48:NEAR
+
+S_DA6A0 SECTION CODE AT 0DA6A0H
+
+; ======== CAN_Init_Task  (@0xda6a0) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+CAN_Init_Task:
+        JNB lv_conf_mis.09H,L_DA6A8
+        CALLS 00DH,CAN1_Init
+L_DA6A8:                 ; 0xda6a8
+        CALLS 00CH,KWP_Init_Resp
+        MOVB RL4,lv_sched_diag_inh
+        ANDB RL4,#01H
+        JMPR cc_NE,L_DA6E6
+        MOVB RL4,#0EH
+        MOVBZ R5,tq_hi_wr
+        MOVB [R5+#0F62EH],RL4
+        MOVB RL4,tq_hi_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_wr,RL4
+        MOVB RL4,tq_hi_wr
+        CMPB RL4,tq_hi_rd
+        JMPR cc_NE,L_DA6E6
+        BSET sched_flags.01H
+        MOVB RL4,tq_hi_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_rd,RL4
+L_DA6E6:                 ; 0xda6e6
+        RETS
+
+; ======== Set_Out_FuelReq_3  (@0xda6e8) ========
+        ; ------------------------------------------------------------
+        ; Digital-output-latch driver (fd94=request/fd96=state, fd98=feedback; CC5/P2.5=fuel-pump relay): Set
+        ; output-request latch bit 0x2000 (variant) + Diag_DTC.
+        ; ------------------------------------------------------------
+Set_Out_FuelReq_3:
+        CALLS 00CH,Reset_Df7e6_57e
+        CALLS 00CH,Acq_TIA_TCO_Inputs
+        CALLS 00CH,Diag_Cam_N_Max_d194
+        CALLS 00CH,Init_N_SP_IS
+        CALLS 00BH,Calc_tam_min_diagcp
+        CALLS 00CH,Set_lv_maf_puls
+        CALLS 00DH,Reset_eff_vol_slop_540
+        CALLS 00DH,NVM_Restore_s632
+        CALLS 00CH,Diag_VS_Purge_Cond
+        CALLS 00BH,Reset_LS_State_Group_3
+        CALLS 00CH,Set_lv_cps_err
+        CALLS 00BH,CanPurge_Deac_State
+        CALLS 00CH,CanPurge_Set_TState
+        CALLS 00BH,Tail_f0b28ec_99e
+        CALLS 00CH,Calc_Cat_Diag_Inhibit
+        CALLS 00BH,Reset_ign_mpl_crk_max_c7e
+        CALLS 00BH,Calc_IGA_ST_FF28
+        CALLS 00CH,Calc_IGA_Av
+        CALLS 00BH,Set_iga_sp_e36
+        CALLS 00BH,Set_iga_bas_amp_cor_73a
+        CALLS 00AH,Set_iga_ref_cor_f66
+        CALLS 00BH,Set_iga_bas_cor_a10
+        CALLS 00AH,Calc_TD_Dwell_Base
+        CALLS 00CH,Reset_iga_min_teg_6dc
+        CALLS 00BH,Init_IGA_Dif_Min_Ext
+        CALLS 00BH,Set_TQI_N_Max
+        CALLS 00BH,Init_ISC_State
+        CALLS 00BH,Calc_Cyl_InjPhase
+        CALLS 00CH,Init_TQ_Lamb_Defaults
+        CALLS 00CH,Reset_Eff_SCC
+        CALLS 00BH,Set_eff_tot_bas_21e
+        CALLS 00BH,Reset_Eff_Lamb
+        CALLS 00CH,Reset_tqi_gs_slow_dec_196
+        CALLS 00CH,Reset_tqi_req_slow_2d6
+        CALLS 00CH,Reset_t_acc_fast_862
+        CALLS 00BH,Reset_fac_ch_red_fd6
+        CALLS 00CH,Set_tqi_av_ems_7dc
+        CALLS 00CH,Reset_tq_conv_036
+        JNB lv_conf_mis.02H,L_DA790
+        CALLS 00DH,Calc_ER_Seg_Ad
+        CALLS 00BH,Init_Misfire_Counters
+        CALLS 00BH,ClrBits_lv_er_carb_b4_c7c
+L_DA790:                 ; 0xda790
+        MOVB RL4,#DATA16 00014H
+        MOVB lv_iga_c2e5,RL4
+        CALLS 00CH,Tail_f0c5ec6_f48
+        CALLS 00CH,Calc_TPS_ErrSubst
+        CALLS 00BH,Calc_Fac_WF_VO_Fdout_B95A
+        CALLS 00BH,Calc_WallFilm_Seg
+        MOV R4,#DATA16 00168H
+        MOV crank_tim_13,R4
+        MOV R5,#01H
+        MOV g_f968,R5
+        CALLS 00DH,Reset_state_cfa_is_92a
+        CALLS 00BH,Reset_Df380_408
+        CALLS 00AH,Reset_Dfd62_8ca
+        CALLS 00AH,Reset_Dfd62_830
+        CALLS 00DH,Init_Fault_Table_1
+        CALLS 00DH,Init_Fault_Table_2
+        CALLS 00DH,Clamp_IGC_Dur_Min
+        CALLS 00DH,Clamp_IGC_Dur_Min_2
+        MOVB RL4,dbc_rly_efp
+        CMPB RL4,#02H
+        JMPR cc_UGT,L_DA7E4
+        MOVB RL5,#02H
+        MOVB dbc_rly_efp,RL5
+L_DA7E4:                 ; 0xda7e4
+        CALLS 00BH,Reset_Dc2b4_028
+        CALLS 00CH,Calc_IGC_Dur_Fault
+        CALLS 00BH,Calc_MTV_Ctr
+        CALLS 00BH,Acq_TOIL
+        CALLS 00BH,Reset_toil_mes_max_diag_fca
+        CALLS 00CH,IVVT_Task_Group_1
+        CALLS 00CH,Diag_IVVT_Trip_d62c
+        CALLS 00DH,Reset_sum_maf_tps_plaus_diag_2_9f0
+        CALLS 00BH,Init_GearRatio
+        CALLS 00BH,Calc_ACP_State
+        CALLS 00BH,Reset_RBM_Full
+        CALLS 00DH,Diag_DTC_dd108
+        MOVB RL4,#DATA16 000FEH
+        ANDB state_fuel_req,RL4
+        MOVB RL4,state_fuel_req
+        JMPR cc_NE,L_DA82C
+        BSET state_out_fault.0DH
+        JB state_out_req.04H,L_DA834
+        BSET state_out_diag.0DH
+        JMPR cc_UC,L_DA834
+L_DA82C:                 ; 0xda82c
+        BCLR state_out_fault.0DH
+        JB state_out_req.04H,L_DA834
+        BCLR state_out_diag.0DH
+L_DA834:                 ; 0xda834
+        MOVBZ R4,DPP0:c_t_efp_igk
+        MOV sw_timer_b,R4
+        CALLS 00DH,Diag_MAF_TPS_Ratio_d1be
+        RETS
+
+S_DA6A0 ENDS
+        END

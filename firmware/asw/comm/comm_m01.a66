@@ -1,0 +1,559 @@
+; asw/comm/comm_m01.a66
+; 0xE0000-0xE044A  (1098 bytes, 15 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_temp_min_ls_up                     EQU  09077AH
+c_vls_afl_max_diag                   EQU  0907DAH
+c_vls_afr_min_diag                   EQU  0907E2H
+
+PUBLIC  KWP_OBD_Svc01_ReadPID, OBD_M01_PID00_SupportedPID_01_20, OBD_M01_PID01_MonitorStatus_SinceClear, OBD_M01_PID03_FuelSystemStatus, OBD_M01_PID04_CalcEngineLoad, OBD_M01_PID05_CoolantTemp
+PUBLIC  OBD_M01_PID06_STFT_B1, OBD_M01_PID07_LTFT_B1, OBD_M01_PID0B_IntakeMAP_Unsupported, OBD_M01_PID0C_EngineRPM, OBD_M01_PID0D_VehicleSpeed, OBD_M01_PID0E_TimingAdvance
+PUBLIC  OBD_M01_PID0F_IntakeAirTemp, OBD_M01_PID10_MAF, OBD_M01_PID11_ThrottlePos
+EXTERN  L_E0940:NEAR, OBD_Scale_FuelSys:NEAR, OBD_Scale_FuelTrim:NEAR, OBD_Scale_RPM:NEAR
+EXTERN  OBD_Scale_Temp:NEAR, Read_MulDiv_MD:NEAR, RetC_fe_936:NEAR, RetC_ff_93c:NEAR
+EXTERN  Ret_Const_fe0f:NEAR, Tail_Div_Ratio_U8_Sat_89e:NEAR, sub_r12_r13_rets_r4:NEAR
+
+S_E0000 SECTION CODE AT 0E0000H
+
+; ======== KWP_OBD_Svc01_ReadPID  (@0xe0000) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Service/Mode 01 (current data) reader+DISPATCHER. Reads PID byte, bounds-checks <=0x4e, jmpi
+        ; through OBD_M01_PID_jmptab@0xa1afe (0x50 u16 offset entries, seg e). Each table target is a per-PID
+        ; handler arm (OBD_M01_PIDxx_*); unmapped PIDs -> default FUN_0e0936 (returns 0xfe=not-supported).
+        ; Gated by lv_conf_mis&0x10; !mode01 path tail-calls 0xe093c.
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 (current data) PID reader. param_1 = KWP buffer ptr; first byte = PID.
+        ; case0=supported-PID bitmask (01-20), case1=monitor status since DTC clear (MIL+readiness). Returns
+        ; #bytes written. Invoked by KWP_App_Process_Records_0a2ffc (record fmt 1).
+KWP_OBD_Svc01_ReadPID:
+        MOV [-R0],R12
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        SUB R0,#06H
+        JB lv_conf_mis.04H,L_E0014
+        JMPA cc_UC,RetC_ff_93c
+L_E0014:                 ; 0xe0014
+        MOV R9,R12
+        MOVB RL4,[R9+]
+        CMPB RL4,#DATA16 0004EH
+        JMPA cc_UGT,RetC_fe_936
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        ADD R4,#DATA16 05AFEH
+        MOV R4,[R4]
+        JMPI cc_UC,[R4]
+
+; ======== OBD_M01_PID00_SupportedPID_01_20  (@0xe002c) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x00 handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID00_SupportedPID_01_20:
+        MOVB RL6,#DATA16 000B8H
+        JNB lv_conf_mis.00H,L_E0038
+        MOVB RL6,#DATA16 000BEH
+L_E0038:                 ; 0xe0038
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],RL6
+        MOVB RL6,#DATA16 0001FH
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],RL6
+        MOVB RL6,#DATA16 000A0H
+        JNB lv_conf_mis.00H,L_E0054
+        MOVB RL6,#DATA16 000B8H
+L_E0054:                 ; 0xe0054
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],RL6
+        MOVB RL6,#DATA16 00013H
+        MOVB [R9],RL6
+        MOVB RL7,#04H
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID01_MonitorStatus_SinceClear  (@0xe0066) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x01 handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID01_MonitorStatus_SinceClear:
+        MOVB RL4,#00H
+        MOVB [R0],RL4
+        MOVB RL6,#00H
+        JMPR cc_UC,L_E00AE
+L_E006E:                 ; 0xe006e
+        MOVB RL4,[R0]
+        MOVBZ R4,RL4
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0DAH]
+        ANDB RL4,#04H
+        JMPR cc_EQ,L_E00A8
+        MOVB RL4,[R0]
+        MOVBZ R4,RL4
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOVB RL5,[R4+#0522EH]
+        ANDB RL5,#DATA16 00010H
+        JMPR cc_EQ,L_E00A8
+        ADDB RL6,#01H
+L_E00A8:                 ; 0xe00a8
+        MOVB RL4,[R0]
+        ADDB RL4,#01H
+        MOVB [R0],RL4
+L_E00AE:                 ; 0xe00ae
+        MOVB RL4,[R0]
+        CMPB RL4,fmy_f_anz
+        JMPR cc_C,L_E006E
+        MOVBZ R4,DPP1:0A181CH
+        AND R4,#DATA16 00010H
+        JMPR cc_NE,L_E00FA
+        MOVBZ R4,obd_mon_cat_ena
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_E00FA
+        MOVB RL4,#00H
+        MOVB [R0],RL4
+L_E00CE:                 ; 0xe00ce
+        MOVB RL4,[R0]
+        MOVBZ R4,RL4
+        MOVB RL5,[R4+#05AFAH]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0DAH]
+        MOVBZ R4,RL4
+        AND R4,#04H
+        JMPR cc_EQ,L_E00F0
+        ADDB RL6,#01H
+        MOVB RL4,#04H
+        MOVB [R0],RL4
+L_E00F0:                 ; 0xe00f0
+        MOVB RL4,[R0]
+        ADDB RL4,#01H
+        MOVB [R0],RL4
+        CMPB RL4,#04H
+        JMPR cc_C,L_E00CE
+L_E00FA:                 ; 0xe00fa
+        MOVBZ R4,DPP1:0A1832H
+        AND R4,#DATA16 00010H
+        JMPR cc_NE,L_E0152
+        MOVBZ R4,obd_mon_o2_ena
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_E0152
+        MOVB RL4,#00H
+        MOVB [R0+#01H],RL4
+        MOVB RL5,#00H
+        MOVB [R0],RL5
+L_E0118:                 ; 0xe0118
+        MOVB RL4,[R0]
+        MOVBZ R4,RL4
+        MOVB RL5,[R4+#05AFAH]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0DAH]
+        MOVBZ R4,RL4
+        AND R4,#04H
+        JMPR cc_EQ,L_E013E
+        MOVB RL4,[R0+#01H]
+        ADDB RL4,#01H
+        MOVB [R0+#01H],RL4
+L_E013E:                 ; 0xe013e
+        MOVB RL4,[R0]
+        ADDB RL4,#01H
+        MOVB [R0],RL4
+        CMPB RL4,#04H
+        JMPR cc_C,L_E0118
+        MOVB RL5,[R0+#01H]
+        CMPB RL5,#02H
+        JMPR cc_C,L_E0152
+        ADDB RL6,#01H
+L_E0152:                 ; 0xe0152
+        JNB obd_sf.08H,L_E0164
+        MOVB RL4,#DATA16 00080H
+        ORB RL4,RL6
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        JMPR cc_UC,L_E0170
+L_E0164:                 ; 0xe0164
+        MOVB RL4,#DATA16 0007FH
+        ANDB RL4,RL6
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+L_E0170:                 ; 0xe0170
+        MOVB RL6,#04H
+        JNB lv_conf_mis.02H,L_E0178
+        MOVB RL6,#05H
+L_E0178:                 ; 0xe0178
+        JNB lv_conf_mis.01H,L_E017E
+        ORB RL6,#02H
+L_E017E:                 ; 0xe017e
+        JNB lv_conf_mis.02H,L_E0194
+        JNB lv_pl.0FH,L_E0194
+        JNB obd_rdy_cont.00H,L_E0190
+        ORB RL6,#DATA16 00010H
+        JMPR cc_UC,L_E0194
+L_E0190:                 ; 0xe0190
+        ANDB RL6,#DATA16 000EFH
+L_E0194:                 ; 0xe0194
+        JNB lv_conf_mis.01H,L_E01AA
+        JNB lv_pl.0FH,L_E01AA
+        JNB obd_rdy_cont.01H,L_E01A6
+        ORB RL6,#DATA16 00020H
+        JMPR cc_UC,L_E01AA
+L_E01A6:                 ; 0xe01a6
+        ANDB RL6,#DATA16 000DFH
+L_E01AA:                 ; 0xe01aa
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],RL6
+        MOVB RL6,#00H
+        JNB lv_conf_mis.01H,L_E01BA
+        MOVB RL6,#DATA16 00061H
+L_E01BA:                 ; 0xe01ba
+        MOVB RL4,conf_diagcp
+        JMPR cc_EQ,L_E01C2
+        ORB RL6,#04H
+L_E01C2:                 ; 0xe01c2
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],RL6
+        MOVB RL6,#00H
+        JNB lv_conf_mis.01H,L_E026E
+        MOV R4,obd_rdy_complete
+        AND R4,#DATA16 08000H
+        JMPR cc_EQ,L_E01DA
+        MOVB RL6,#01H
+L_E01DA:                 ; 0xe01da
+        MOVB RL4,dtc_done_o2_0
+        ANDB RL4,#04H
+        JMPR cc_NE,L_E0246
+        MOVB RL4,dtc_done_o2_1
+        ANDB RL4,#04H
+        JMPR cc_NE,L_E0246
+        MOVB RL4,dtc_done_o2_2
+        ANDB RL4,#04H
+        JMPR cc_NE,L_E0246
+        MOVB RL4,dtc_done_vls_up_puc
+        ANDB RL4,#04H
+        JMPR cc_NE,L_E0246
+        MOVB RL4,dtc_done_vls_up_stk
+        ANDB RL4,#04H
+        JMPR cc_NE,L_E0246
+        MOVB RL4,dtc_done_vls_down_puc
+        ANDB RL4,#04H
+        JMPR cc_NE,L_E0246
+        MOV R4,obd_rdy_support
+        AND R4,#02H
+        JMPR cc_NE,L_E0242
+        MOV R4,obd_rdy_support
+        AND R4,#04H
+        JMPR cc_NE,L_E0242
+        MOV R4,obd_rdy_support
+        AND R4,#DATA16 00008H
+        JMPR cc_NE,L_E0242
+        MOV R4,obd_rdy_complete
+        AND R4,#DATA16 00020H
+        JMPR cc_NE,L_E0242
+        MOV R4,obd_rdy_complete
+        AND R4,#DATA16 00040H
+        JMPR cc_NE,L_E0242
+        MOV R4,obd_rdy_complete
+        AND R4,#DATA16 00200H
+        JMPR cc_EQ,L_E0246
+L_E0242:                 ; 0xe0242
+        ORB RL6,#DATA16 00020H
+L_E0246:                 ; 0xe0246
+        MOVB RL4,dtc_done_o2h_0
+        ANDB RL4,#04H
+        JMPR cc_NE,L_E026E
+        MOVB RL4,dtc_done_o2h_1
+        ANDB RL4,#04H
+        JMPR cc_NE,L_E026E
+        MOV R4,obd_rdy_complete
+        AND R4,#DATA16 02000H
+        JMPR cc_NE,L_E026A
+        MOV R4,obd_rdy_complete
+        AND R4,#DATA16 04000H
+        JMPR cc_EQ,L_E026E
+L_E026A:                 ; 0xe026a
+        ORB RL6,#DATA16 00040H
+L_E026E:                 ; 0xe026e
+        MOVB RL4,conf_diagcp
+        JMPR cc_EQ,L_E02D0
+        MOVB RL5,dtc_done_cp_0
+        ANDB RL5,#04H
+        JMPR cc_NE,L_E02D0
+        MOVB RL5,dtc_done_cp_1
+        ANDB RL5,#04H
+        JMPR cc_NE,L_E02D0
+        MOVB RL5,dtc_done_cp_2
+        ANDB RL5,#04H
+        JMPR cc_NE,L_E02D0
+        MOVB RL5,dtc_done_cp_3
+        ANDB RL5,#04H
+        JMPR cc_NE,L_E02D0
+        MOVB RL5,dtc_done_cp_4
+        ANDB RL5,#04H
+        JMPR cc_NE,L_E02D0
+        MOV R4,obd_rdy_support
+        AND R4,#DATA16 00400H
+        JMPR cc_NE,L_E02CE
+        MOV R4,obd_rdy_support
+        AND R4,#DATA16 00800H
+        JMPR cc_NE,L_E02CE
+        MOV R4,obd_rdy_support
+        AND R4,#DATA16 01000H
+        JMPR cc_NE,L_E02CE
+        MOV R4,obd_rdy_support
+        AND R4,#DATA16 02000H
+        JMPR cc_NE,L_E02CE
+        MOV R4,obd_rdy_support
+        AND R4,#DATA16 00040H
+        JMPR cc_EQ,L_E02D0
+L_E02CE:                 ; 0xe02ce
+        ORB RL6,#04H
+L_E02D0:                 ; 0xe02d0
+        MOVB [R9],RL6
+        MOVB RL7,#04H
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID03_FuelSystemStatus  (@0xe02d8) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x03 handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID03_FuelSystemStatus:
+        JNB lv_conf_mis.00H,L_E0326
+        JB lv_inh_int_puc_1.01H,L_E0302
+        JNB lv_lam_lim_1_err.0BH,L_E02EE
+        MOV R4,teg_dyn
+        CMP R4,DPP0:c_temp_min_ls_up
+        JMPR cc_C,L_E0302
+L_E02EE:                 ; 0xe02ee
+        JNB lv_lam_lim_1_err.06H,L_E0306
+        MOV R4,lam_bank_1_ls_up_vls_up
+        CMP R4,DPP0:c_vls_afr_min_diag
+        JMPR cc_C,L_E0302
+        CMP R4,DPP0:c_vls_afl_max_diag
+        JMPR cc_C,L_E0306
+L_E0302:                 ; 0xe0302
+        MOVB RL6,#01H
+        JMPR cc_UC,L_E0308
+L_E0306:                 ; 0xe0306
+        MOVB RL6,#00H
+L_E0308:                 ; 0xe0308
+        MOV R12,lam_bank_1_lam_up_lam_up_carrier
+        MOVBZ R13,RL6
+        CALLS 00EH,OBD_Scale_FuelSys
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB RL7,#02H
+        JMPA cc_UC,L_E0940
+L_E0326:                 ; 0xe0326
+        MOVB RL7,#DATA16 000FEH
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID04_CalcEngineLoad  (@0xe032e) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x04 handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID04_CalcEngineLoad:
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E0338
+        MOVB RL4,#00H
+        MOVB [R9],RL4
+        JMPR cc_UC,L_E0370
+L_E0338:                 ; 0xe0338
+        JNB lv_cam_err.02H,L_E0352
+        MOVB RL4,obd_ff_ctl
+        ANDB RL4,#02H
+        JMPR cc_NE,L_E034C
+        MOVB RL4,obd_ff_ctl
+        ANDB RL4,#04H
+        JMPR cc_EQ,L_E0352
+L_E034C:                 ; 0xe034c
+        MOVB RL4,#00H
+        MOVB [R9],RL4
+        JMPR cc_UC,L_E0370
+L_E0352:                 ; 0xe0352
+        JNB lv_cam_err.02H,L_E0366
+        MOVB RL4,obd_ff_ctl
+        ANDB RL4,#01H
+        JMPR cc_EQ,L_E0366
+        MOVB RL4,#DATA16 000FFH
+        MOVB [R9],RL4
+        JMPR cc_UC,L_E0370
+L_E0366:                 ; 0xe0366
+        MOV R12,maf_mes
+        CALLS 00EH,Tail_Div_Ratio_U8_Sat_89e
+        MOVB [R9],RL4
+L_E0370:                 ; 0xe0370
+        MOVB RL7,#01H
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID05_CoolantTemp  (@0xe0376) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x05 handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID05_CoolantTemp:
+        MOVBZ R12,tco_mes
+        CALLS 00EH,OBD_Scale_Temp
+        MOVB [R9],RL4
+        MOVB RL7,#01H
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID06_STFT_B1  (@0xe0386) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x06 handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID06_STFT_B1:
+        JNB lv_conf_mis.00H,L_E039A
+        MOV R12,lam_bank_1_lam_up_ti_lam
+        CALLS 00EH,OBD_Scale_FuelTrim
+        MOVB [R9],RL4
+        MOVB RL7,#01H
+        JMPA cc_UC,L_E0940
+L_E039A:                 ; 0xe039a
+        MOVB RL7,#DATA16 000FEH
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID07_LTFT_B1  (@0xe03a2) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x07 handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID07_LTFT_B1:
+        JNB lv_conf_mis.00H,L_E03B6
+        MOV R12,lam_bank_1_lam_up_ti_ad_fac_mmv
+        CALLS 00EH,OBD_Scale_FuelTrim
+        MOVB [R9],RL4
+        MOVB RL7,#01H
+        JMPA cc_UC,L_E0940
+L_E03B6:                 ; 0xe03b6
+        MOVB RL7,#DATA16 000FEH
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID0B_IntakeMAP_Unsupported  (@0xe03be) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x0B handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID0B_IntakeMAP_Unsupported:
+        MOVB RL7,#DATA16 000FEH
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID0C_EngineRPM  (@0xe03c6) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x0C handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID0C_EngineRPM:
+        MOV R12,R9
+        MOV R13,n_C93C
+        CALLS 00EH,OBD_Scale_RPM
+        MOVB RL7,#02H
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID0D_VehicleSpeed  (@0xe03d6) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x0D handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID0D_VehicleSpeed:
+        MOVB RL4,vs
+        MOVB [R9],RL4
+        MOVB RL7,#01H
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID0E_TimingAdvance  (@0xe03e2) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x0E handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID0E_TimingAdvance:
+        MOVB RL6,ign_cc_3
+        CMPB RL6,#DATA16 00017H
+        JMPR cc_NC,L_E03F0
+        MOVB RL6,#DATA16 00017H
+L_E03F0:                 ; 0xe03f0
+        MOVBZ R12,RL6
+        MOV R13,#DATA16 000C0H
+        CALLS 00FH,Ret_Const_fe0f
+        MOVBZ R13,RL4
+        MOV R12,#DATA16 00110H
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOVB [R9],RL4
+        MOVB RL7,#01H
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID0F_IntakeAirTemp  (@0xe040c) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x0F handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID0F_IntakeAirTemp:
+        MOVBZ R12,tia_mes
+        CALLS 00EH,OBD_Scale_Temp
+        MOVB [R9],RL4
+        MOVB RL7,#01H
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID10_MAF  (@0xe041c) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x10 handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID10_MAF:
+        MOV R12,maf_kgh_mes
+        MOV R13,#DATA16 000DEH
+        CALLS 00FH,Read_MulDiv_MD
+        MOV [R0+#04H],R4
+        SHR R4,#08H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB RL4,[R0+#04H]
+        MOVB [R9],RL4
+        MOVB RL7,#02H
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID11_ThrottlePos  (@0xe0440) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x11 handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID11_ThrottlePos:
+        MOVB [R9],tps_mes
+        MOVB RL7,#01H
+        JMPA cc_UC,L_E0940
+
+S_E0000 ENDS
+        END

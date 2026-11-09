@@ -1,0 +1,678 @@
+; asw/comm/comm_scan.a66
+; 0xDE73A-0xDED22  (1512 bytes, 12 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  BL_Copy_Blocks, BL_Scan_Validate_Blocks, BL_Validate_Setup, Compare_Array_Bytes, Elevated_Eeprom_Clear__Routine, Elevated_Write_Routine_prg_zone_wrapper
+PUBLIC  KWP_Set_Buffer, Nop_dec94, Reset_kwp_req_ptr_c98, Scan_Block_Bit0_Set, Scan_Block_NotErased, Scan_Block_NotErased_E73A
+EXTERN  Push_To_System_Stack:NEAR, xor_routine:NEAR
+
+S_DE73A SECTION CODE AT 0DE73AH
+
+; ======== Scan_Block_NotErased  (@0xde73a) ========
+Scan_Block_NotErased_E73A:
+        JMPR cc_UC,Scan_Block_NotErased
+L_DE73C:                 ; 0xde73c
+        ADD R12,#02H
+        SUB R14,#02H
+
+; ======== Scan_Block_NotErased  (@0xde740) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Scan_Block_NotErased:
+        EXTP R13, #01H
+        MOV R4,[R12]
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_NE,L_DE74E
+        CMP R14,#00H
+        JMPR cc_NE,L_DE73C
+L_DE74E:                 ; 0xde74e
+        MOV R4,R14
+        RETS
+
+; ======== Scan_Block_Bit0_Set  (@0xde752) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Scan_Block_Bit0_Set:
+        MOV R14,#00H
+        JMPR cc_UC,L_DE758
+L_DE756:                 ; 0xde756
+        ADD R14,#01H
+L_DE758:                 ; 0xde758
+        CMP R14,R13
+        JMPR cc_NC,L_DE768
+        MOV R4,R12
+        ADD R4,R14
+        MOVB RL5,[R4]
+        MOVBZ R4,RL5
+        AND R4,#01H
+        JMPR cc_NE,L_DE756
+L_DE768:                 ; 0xde768
+        MOV R4,R14
+        RETS
+
+; ======== BL_Scan_Validate_Blocks  (@0xde76c) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified): Flash/calibration BLOCK SCANNER+VALIDATOR: iterates param_4 blocks of 0x800,
+        ; verifies xor_routine checksum vs stored (block+0x7f6/0x7fe), checks program/erase markers
+        ; 0x383c/0x7c3e (block+0x7f2), selects newest-valid by version counters (f9a6..f9b8); sets per-block
+        ; status bits + DAT_00fd58 valid/newest flags. (Startup cal-block selection; GKFlasher-relevant.)
+        ; ------------------------------------------------------------
+BL_Scan_Validate_Blocks:
+        MOV [-R0],R15
+        MOV [-R0],R14
+        MOV [-R0],R13
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R6,R12
+        BCLR can_fd58.07H
+        MOV R7,#00H
+        JMPA cc_UC,L_DEADA
+L_DE784:                 ; 0xde784
+        MOV R4,R7
+        SHL R4,#0BH
+        MOV R5,#00H
+        MOV R8,[R0+#08H]
+        MOV R9,[R0+#0AH]
+        ADD R8,R4
+        ADDC R9,R5
+        MOV [-R0],R8
+        SHR R8,#0EH
+        SHL R9,#02H
+        OR R9,R8
+        MOV R8,[R0+]
+        AND R8,#DATA16 03FFFH
+        MOVB RL4,#00H
+        MOV R5,R6
+        ADD R5,R7
+        MOVB [R5],RL4
+        MOV R12,R8
+        MOV R13,R9
+        MOV R14,#DATA16 00800H
+        CALLS 00DH,Scan_Block_NotErased_E73A
+        CMP R4,#00H
+        JMPR cc_NE,L_DE7CA
+        MOV R4,R6
+        ADD R4,R7
+        MOVB RL5,[R4]
+        ORB RL5,#01H
+        MOVB [R4],RL5
+        JMPA cc_UC,L_DEAD8
+L_DE7CA:                 ; 0xde7ca
+        EXTP R9, #02H
+        MOV R4,[R8+#07F6H]
+        NOP
+        CMP R4,#DATA16 00010H
+        JMPR cc_ULE,L_DE826
+        EXTP R9, #02H
+        MOV R4,[R8+#07F6H]
+        NOP
+        CMP R4,#DATA16 007F2H
+        JMPR cc_UGT,L_DE826
+        MOV R12,R8
+        MOV R13,R9
+        EXTP R9, #02H
+        MOV R14,[R8+#07F6H]
+        NOP
+        CALLS 00DH,xor_routine
+        EXTP R9, #02H
+        MOV R5,[R8+#07FEH]
+        NOP
+        CMP R4,R5
+        JMPR cc_EQ,L_DE81C
+        EXTP R9, #02H
+        MOV R4,[R8+#0EH]
+        NOP
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_NE,L_DE826
+        MOV R4,R6
+        ADD R4,R7
+        MOVB RL5,[R4]
+        ORB RL5,#04H
+        MOVB [R4],RL5
+        JMPR cc_UC,L_DE826
+L_DE81C:                 ; 0xde81c
+        MOV R4,R6
+        ADD R4,R7
+        MOVB RL5,[R4]
+        ORB RL5,#02H
+        MOVB [R4],RL5
+L_DE826:                 ; 0xde826
+        EXTP R9, #02H
+        MOV R5,[R8+#02H]
+        MOV R4,[R8]
+        SUB R4,#DATA16 0FFFFH
+        SUBC R5,#DATA16 0FFFFH
+        JMPA cc_EQ,L_DEAAA
+        EXTP R9, #03H
+        MOV R4,[R8+#07F8H]
+        MOV R5,[R8+#07FAH]
+        NOP
+        SUB R4,#DATA16 0FFFFH
+        SUBC R5,#DATA16 0FFFFH
+        JMPA cc_EQ,L_DEAAA
+        EXTP R9, #03H
+        MOV R4,[R8+#07F8H]
+        MOV R5,[R8+#07FAH]
+        NOP
+        CPL R4
+        CPL R5
+        EXTP R9, #02H
+        MOV R11,[R8+#02H]
+        MOV R10,[R8]
+        SUB R10,R4
+        SUBC R11,R5
+        JMPR cc_NE,L_DE8F2
+        MOV R4,R6
+        ADD R4,R7
+        MOVB RL5,[R4]
+        ORB RL5,#DATA16 00008H
+        MOVB [R4],RL5
+        EXTP R9, #02H
+        MOV R5,[R8+#02H]
+        MOV R4,[R8]
+        SUB R4,bl_blk_addr_lo
+        SUBC R5,bl_blk_addr_hi
+        JMPR cc_ULE,L_DE8B0
+        EXTP R9, #02H
+        MOV R5,[R8+#02H]
+        MOV R4,[R8]
+        MOV bl_blk_addr_lo,R4
+        MOV bl_blk_addr_hi,R5
+        MOV R2,R6
+        ADD R2,R7
+        MOVB RL4,[R2]
+        MOVBZ R4,RL4
+        AND R4,#04H
+        JMPR cc_EQ,L_DE8AE
+        BSET can_fd58.03H
+        JMPR cc_UC,L_DE8B0
+L_DE8AE:                 ; 0xde8ae
+        BCLR can_fd58.03H
+L_DE8B0:                 ; 0xde8b0
+        MOV R4,R6
+        ADD R4,R7
+        MOVB RL5,[R4]
+        ANDB RL5,#02H
+        JMPA cc_EQ,L_DEA84
+        EXTP R9, #02H
+        MOV R5,[R8+#02H]
+        MOV R4,[R8]
+        SUB R4,bl_blk_cnt_lo
+        SUBC R5,bl_blk_cnt_hi
+        JMPA cc_ULE,L_DEA84
+        EXTP R9, #02H
+        MOV R5,[R8+#02H]
+        MOV R4,[R8]
+        MOV bl_blk_cnt_lo,R4
+        MOV bl_blk_cnt_hi,R5
+        EXTP #03H, #02H
+        MOV DPP0:bl_cur_addr_lo,R8
+        MOV DPP0:bl_cur_addr_hi,R9
+        BSET can_fd58.04H
+        JMPA cc_UC,L_DEA84
+L_DE8F2:                 ; 0xde8f2
+        MOV R4,bl_blk_hdr0
+        MOV R5,bl_blk_hdr1
+        ADD R4,#01H
+        ADDC R5,#00H
+        EXTP R9, #02H
+        MOV R11,[R8+#02H]
+        MOV R10,[R8]
+        SUB R10,R4
+        SUBC R11,R5
+        JMPR cc_EQ,L_DE92A
+        MOV R4,bl_blk_end0
+        MOV R5,bl_blk_end1
+        SUB R4,#01H
+        SUBC R5,#00H
+        CPL R4
+        CPL R5
+        EXTP R9, #02H
+        MOV R11,[R8+#02H]
+        MOV R10,[R8]
+        SUB R10,R4
+        SUBC R11,R5
+        JMPR cc_NE,L_DE9AA
+L_DE92A:                 ; 0xde92a
+        MOV R4,R6
+        ADD R4,R7
+        MOVB RL5,[R4]
+        ORB RL5,#DATA16 00010H
+        MOVB [R4],RL5
+        EXTP R9, #02H
+        MOV R5,[R8+#02H]
+        MOV R4,[R8]
+        SUB R4,bl_blk_addr_lo
+        SUBC R5,bl_blk_addr_hi
+        JMPR cc_ULE,L_DE96A
+        EXTP R9, #02H
+        MOV R5,[R8+#02H]
+        MOV R4,[R8]
+        MOV bl_blk_addr_lo,R4
+        MOV bl_blk_addr_hi,R5
+        MOV R2,R6
+        ADD R2,R7
+        MOVB RL4,[R2]
+        MOVBZ R4,RL4
+        AND R4,#04H
+        JMPR cc_EQ,L_DE968
+        BSET can_fd58.03H
+        JMPR cc_UC,L_DE96A
+L_DE968:                 ; 0xde968
+        BCLR can_fd58.03H
+L_DE96A:                 ; 0xde96a
+        MOV R4,R6
+        ADD R4,R7
+        MOVB RL5,[R4]
+        ANDB RL5,#02H
+        JMPA cc_EQ,L_DEA84
+        EXTP R9, #02H
+        MOV R5,[R8+#02H]
+        MOV R4,[R8]
+        SUB R4,bl_blk_cnt_lo
+        SUBC R5,bl_blk_cnt_hi
+        JMPA cc_ULE,L_DEA84
+        EXTP R9, #02H
+        MOV R5,[R8+#02H]
+        MOV R4,[R8]
+        MOV bl_blk_cnt_lo,R4
+        MOV bl_blk_cnt_hi,R5
+        EXTP #03H, #02H
+        MOV DPP0:bl_cur_addr_lo,R8
+        MOV DPP0:bl_cur_addr_hi,R9
+        BSET can_fd58.04H
+        JMPR cc_UC,L_DEA84
+L_DE9AA:                 ; 0xde9aa
+        EXTP R9, #03H
+        MOV R4,[R8+#07F8H]
+        MOV R5,[R8+#07FAH]
+        NOP
+        MOV R10,bl_blk_end0
+        MOV R11,bl_blk_end1
+        SUB R10,#01H
+        SUBC R11,#00H
+        SUB R4,R10
+        SUBC R5,R11
+        JMPR cc_EQ,L_DE9EA
+        EXTP R9, #03H
+        MOV R4,[R8+#07F8H]
+        MOV R5,[R8+#07FAH]
+        NOP
+        MOV R10,bl_blk_hdr0
+        MOV R11,bl_blk_hdr1
+        ADD R10,#01H
+        ADDC R11,#00H
+        CPL R10
+        CPL R11
+        SUB R4,R10
+        SUBC R5,R11
+        JMPR cc_NE,L_DEA84
+L_DE9EA:                 ; 0xde9ea
+        MOV R4,R6
+        ADD R4,R7
+        MOVB RL5,[R4]
+        ORB RL5,#DATA16 00020H
+        MOVB [R4],RL5
+        EXTP R9, #03H
+        MOV R4,[R8+#07F8H]
+        MOV R5,[R8+#07FAH]
+        NOP
+        CPL R4
+        CPL R5
+        SUB R4,bl_blk_addr_lo
+        SUBC R5,bl_blk_addr_hi
+        JMPR cc_ULE,L_DEA3A
+        EXTP R9, #03H
+        MOV R4,[R8+#07F8H]
+        MOV R5,[R8+#07FAH]
+        NOP
+        CPL R4
+        CPL R5
+        MOV bl_blk_addr_lo,R4
+        MOV bl_blk_addr_hi,R5
+        MOV R2,R6
+        ADD R2,R7
+        MOVB RL4,[R2]
+        MOVBZ R4,RL4
+        AND R4,#04H
+        JMPR cc_EQ,L_DEA38
+        BSET can_fd58.03H
+        JMPR cc_UC,L_DEA3A
+L_DEA38:                 ; 0xdea38
+        BCLR can_fd58.03H
+L_DEA3A:                 ; 0xdea3a
+        MOV R4,R6
+        ADD R4,R7
+        MOVB RL5,[R4]
+        ANDB RL5,#02H
+        JMPR cc_EQ,L_DEA84
+        EXTP R9, #03H
+        MOV R4,[R8+#07F8H]
+        MOV R5,[R8+#07FAH]
+        NOP
+        CPL R4
+        CPL R5
+        SUB R4,bl_blk_cnt_lo
+        SUBC R5,bl_blk_cnt_hi
+        JMPR cc_ULE,L_DEA84
+        EXTP R9, #03H
+        MOV R4,[R8+#07F8H]
+        MOV R5,[R8+#07FAH]
+        NOP
+        CPL R4
+        CPL R5
+        MOV bl_blk_cnt_lo,R4
+        MOV bl_blk_cnt_hi,R5
+        EXTP #03H, #02H
+        MOV DPP0:bl_cur_addr_lo,R8
+        MOV DPP0:bl_cur_addr_hi,R9
+        BSET can_fd58.04H
+L_DEA84:                 ; 0xdea84
+        EXTP R9, #02H
+        MOV R5,[R8+#02H]
+        MOV R4,[R8]
+        MOV bl_blk_hdr0,R4
+        MOV bl_blk_hdr1,R5
+        EXTP R9, #03H
+        MOV R4,[R8+#07F8H]
+        MOV R5,[R8+#07FAH]
+        NOP
+        MOV bl_blk_end0,R4
+        MOV bl_blk_end1,R5
+        JMPR cc_UC,L_DEAB6
+L_DEAAA:                 ; 0xdeaaa
+        MOV R4,R6
+        ADD R4,R7
+        MOVB RL5,[R4]
+        ORB RL5,#DATA16 00080H
+        MOVB [R4],RL5
+L_DEAB6:                 ; 0xdeab6
+        EXTP R9, #02H
+        MOV R4,[R8+#07F2H]
+        NOP
+        CMP R4,#DATA16 0383CH
+        JMPR cc_NE,L_DEAC8
+        BCLR can_fd58.07H
+        JMPR cc_UC,L_DEAD8
+L_DEAC8:                 ; 0xdeac8
+        EXTP R9, #02H
+        MOV R4,[R8+#07F2H]
+        NOP
+        CMP R4,#DATA16 07C3EH
+        JMPR cc_NE,L_DEAD8
+        BSET can_fd58.07H
+L_DEAD8:                 ; 0xdead8
+        ADD R7,#01H
+L_DEADA:                 ; 0xdeada
+        MOV R4,[R0+#0CH]
+        CMP R7,R4
+        JMPA cc_C,L_DE784
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        ADD R0,#06H
+        RETS
+
+; ======== BL_Validate_Setup  (@0xdeaf0) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+BL_Validate_Setup:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV R7,#DATA16 03800H
+        MOV R8,#01H
+        EXTP R8, #02H
+        MOV R5,[R7+#02H]
+        MOV R4,[R7]
+        MOV bl_blk_hdr0,R4
+        MOV bl_blk_hdr1,R5
+        EXTP R8, #03H
+        MOV R4,[R7+#07F8H]
+        MOV R5,[R7+#07FAH]
+        NOP
+        MOV bl_blk_end0,R4
+        MOV bl_blk_end1,R5
+        MOV R12,#DATA16 0F562H
+        MOV R13,#DATA16 04000H
+        MOV R14,#00H
+        MOV R15,#04H
+        CALLS 00DH,BL_Scan_Validate_Blocks
+        BMOV can_fd58.08H,can_fd58.07H
+        MOV R12,#DATA16 0F566H
+        MOV R13,#DATA16 06000H
+        MOV R14,#00H
+        MOV R15,#04H
+        CALLS 00DH,BL_Scan_Validate_Blocks
+        JB can_fd58.04H,L_DEBD8
+        MOV R9,#00H
+L_DEB4A:                 ; 0xdeb4a
+        MOVB RL4,[R9+#0F562H]
+        MOVBZ R4,RL4
+        AND R4,#02H
+        JMPR cc_EQ,L_DEB88
+        BSET can_fd58.04H
+        MOV R4,R9
+        SHL R4,#0BH
+        ADD R4,#DATA16 04000H
+        MOV R10,R4
+        MOV R11,R10
+        SHR R11,#0EH
+        AND R10,#DATA16 03FFFH
+        EXTP #03H, #02H
+        MOV DPP0:bl_cur_addr_lo,R10
+        MOV DPP0:bl_cur_addr_hi,R11
+        MOV R4,bl_blk_addr_lo
+        MOV R5,bl_blk_addr_hi
+        ADD R4,#01H
+        ADDC R5,#00H
+        MOV bl_blk_cnt_lo,R4
+        MOV bl_blk_cnt_hi,R5
+L_DEB88:                 ; 0xdeb88
+        ADD R9,#01H
+        CMP R9,#04H
+        JMPR cc_C,L_DEB4A
+        JB can_fd58.04H,L_DEBD8
+        MOV R9,#00H
+L_DEB94:                 ; 0xdeb94
+        MOVB RL4,[R9+#0F566H]
+        MOVBZ R4,RL4
+        AND R4,#02H
+        JMPR cc_EQ,L_DEBD2
+        BSET can_fd58.04H
+        MOV R4,R9
+        SHL R4,#0BH
+        ADD R4,#DATA16 06000H
+        MOV R10,R4
+        MOV R11,R10
+        SHR R11,#0EH
+        AND R10,#DATA16 03FFFH
+        EXTP #03H, #02H
+        MOV DPP0:bl_cur_addr_lo,R10
+        MOV DPP0:bl_cur_addr_hi,R11
+        MOV R4,bl_blk_addr_lo
+        MOV R5,bl_blk_addr_hi
+        ADD R4,#01H
+        ADDC R5,#00H
+        MOV bl_blk_cnt_lo,R4
+        MOV bl_blk_cnt_hi,R5
+L_DEBD2:                 ; 0xdebd2
+        ADD R9,#01H
+        CMP R9,#04H
+        JMPR cc_C,L_DEB94
+L_DEBD8:                 ; 0xdebd8
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== BL_Copy_Blocks  (@0xdebe0) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+BL_Copy_Blocks:
+        MOV [-R0],R15
+        MOV [-R0],R14
+        MOV [-R0],R13
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV R8,R12
+        MOV R9,#00H
+        JMPR cc_UC,L_DEC30
+L_DEBF0:                 ; 0xdebf0
+        MOVB RL4,#00H
+        MOV R5,R8
+        ADD R5,R9
+        MOVB [R5],RL4
+        MOV R4,R9
+        SHL R4,#0BH
+        MOV R5,#00H
+        MOV R12,[R0+#04H]
+        MOV R13,[R0+#06H]
+        ADD R12,R4
+        ADDC R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#DATA16 00800H
+        CALLS 00DH,Scan_Block_NotErased_E73A
+        CMP R4,#00H
+        JMPR cc_NE,L_DEC2E
+        MOV R4,R8
+        ADD R4,R9
+        MOVB RL5,[R4]
+        ORB RL5,#01H
+        MOVB [R4],RL5
+L_DEC2E:                 ; 0xdec2e
+        ADD R9,#01H
+L_DEC30:                 ; 0xdec30
+        MOV R4,[R0+#08H]
+        CMP R9,R4
+        JMPR cc_C,L_DEBF0
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        ADD R0,#06H
+        RETS
+
+; ======== Elevated_Write_Routine_prg_zone_wrapper  (@0xdec40) ========
+Elevated_Write_Routine_prg_zone_wrapper:
+        MOV [-R0],R15
+        MOV [-R0],R14
+        MOV [-R0],R13
+        MOV [-R0],R12
+        MOV bl_exec_addr_lo,R12
+        MOV bl_exec_addr_hi,R13
+        MOV bl_exec_src_ptr,R14
+        MOV bl_exec_len,R15
+        EXTP #00H, #02H
+        MOV R4,kwp_286
+        MOV R5,kwp_288
+        CALLS 00CH,Push_To_System_Stack
+        JB bl_mode_status_flags.07H,L_DEC6E
+        BSET can_fd58.03H
+L_DEC6E:                 ; 0xdec6e
+        ADD R0,#DATA16 00008H
+        RETS
+
+; ======== Elevated_Eeprom_Clear?_Routine  (@0xdec74) ========
+Elevated_Eeprom_Clear__Routine:
+        MOV [-R0],R13
+        MOV [-R0],R12
+        MOV bl_exec_addr_lo,R12
+        MOV bl_exec_addr_hi,R13
+        EXTP #00H, #02H
+        MOV R4,ccp_282
+        MOV R5,ccp_284
+        CALLS 00CH,Push_To_System_Stack
+        ADD R0,#04H
+        RETS
+
+; ======== Nop_dec94  (@0xdec94) ========
+Nop_dec94:
+        RETS
+        RETS
+
+; ======== Reset_kwp_req_ptr_c98  (@0xdec98) ========
+Reset_kwp_req_ptr_c98:
+        MOV R4,#DATA16 0E559H
+        MOV kwp_req_ptr,R4
+        MOV R5,#DATA16 0E559H
+        MOV kwp_buf_base,R5
+        MOV R2,#DATA16 000FFH
+        MOV kwp_buf_limit,R2
+        MOV kwp_prog_flags,ZEROS
+        RETS
+
+; ======== KWP_Set_Buffer  (@0xdecb6) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by bl_/kwp_ output signals): KWP request-buffer setup: kwp_req_ptr / kwp_buf_base /
+        ; kwp_buf_limit.
+        ; ------------------------------------------------------------
+KWP_Set_Buffer:
+        MOV R4,#DATA16 0E559H
+        MOV kwp_req_ptr,R4
+        MOV R5,#DATA16 0E559H
+        MOV kwp_buf_base,R5
+        MOV R2,#DATA16 000FFH
+        MOV kwp_buf_limit,R2
+        MOV R4,#00H
+        MOV R5,#00H
+        MOV kwp_req_arg0,R4
+        MOV kwp_req_arg1,R5
+        MOV kwp_prog_flags,ZEROS
+        MOV R12,#00H
+        CALLS 008H,CommObj_ClearPendingFlagByHandle
+        MOV R12,#01H
+        CALLS 008H,CommObj_ClearPendingFlagByHandle
+        MOV R12,#02H
+        CALLS 008H,CommObj_ClearPendingFlagByHandle
+        RETS
+
+; ======== Compare_Array_Bytes  (@0xdecf2) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Compare_Array_Bytes:
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOVB RL7,#01H
+        MOVB RL6,#00H
+        JMPR cc_UC,L_DED14
+L_DECFC:                 ; 0xdecfc
+        MOVBZ R4,RL6
+        MOV R5,R13
+        ADD R5,R4
+        MOVB RL4,[R5]
+        MOVBZ R5,RL6
+        MOV R2,R14
+        ADD R2,R5
+        CMPB RL4,[R2]
+        JMPR cc_EQ,L_DED12
+        MOVB RL7,#00H
+        JMPR cc_UC,L_DED1A
+L_DED12:                 ; 0xded12
+        ADDB RL6,#01H
+L_DED14:                 ; 0xded14
+        MOV R4,R12
+        CMPB RL6,RL4
+        JMPR cc_C,L_DECFC
+L_DED1A:                 ; 0xded1a
+        MOVB RL4,RL7
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        RETS
+
+S_DE73A ENDS
+        END

@@ -1,0 +1,84 @@
+; asw/teg/teg_min.a66
+; 0xC06DC-0xC077A  (158 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_teg_max_iga                        EQU  090764H
+c_teg_max_iga_hys                    EQU  090766H
+
+PUBLIC  Calc_IGA_Min_TEG, Calc_TEG_Dyn_Hys, Reset_iga_min_teg_6dc
+EXTERN  Get_IP_Byte_2D_Table_DWord_YWord:NEAR, Get_IP_Word_2D_Table_DWord_YByte:NEAR, sub_r12_13_ret_r4:NEAR
+
+S_C06DC SECTION CODE AT 0C06DCH
+
+; ======== Reset_iga_min_teg_6dc  (@0xc06dc) ========
+Reset_iga_min_teg_6dc:
+        MOVB iga_min_teg,ZEROS
+        MOVB iga_dif_min_teg,ONES
+        MOVB iga_dif_min_teg_bas,ONES
+        MOV teg_dyn_hys,ZEROS
+        RETS
+
+; ======== Calc_TEG_Dyn_Hys  (@0xc06ee) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS31, verified): Catalyst heating coordination (teg_dyn_hys)
+        ; ------------------------------------------------------------
+Calc_TEG_Dyn_Hys:
+        JB lv_pl.04H,L_C0734
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_C0734
+        MOV R4,teg_dyn_hys
+        CMP R4,DPP0:c_teg_max_iga
+        JMPR cc_ULE,L_C071C
+        MOV R5,teg_dyn
+        ADD R5,DPP0:c_teg_max_iga_hys
+        MOV teg_dyn_hys,R5
+        CMP R5,#DATA16 07FF0H
+        JMPR cc_ULE,L_C0724
+        MOV R4,#DATA16 07FF0H
+        MOV teg_dyn_hys,R4
+        JMPR cc_UC,L_C0724
+L_C071C:                 ; 0xc071c
+        MOV R4,teg_dyn
+        MOV teg_dyn_hys,R4
+L_C0724:                 ; 0xc0724
+        MOV R12,#DATA16 049CEH
+        MOV R13,teg_dyn_hys
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YWord
+        MOVB iga_dif_min_teg_bas,RL4
+L_C0734:                 ; 0xc0734
+        RETS
+
+; ======== Calc_IGA_Min_TEG  (@0xc0736) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by iga/igc/td output signals): Min ignition advance for exhaust-temp protection:
+        ; iga_min_teg / iga_dif_min_teg / eff_iga_min_teg.
+        ; ------------------------------------------------------------
+Calc_IGA_Min_TEG:
+        JNB lv_ast.06H,L_C0778
+        JB lv_pl.04H,L_C0778
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_C0778
+        MOVB RL4,iga_dif_min
+        CMPB RL4,iga_dif_min_teg_bas
+        JMPR cc_NC,L_C0752
+        MOVB RL4,iga_dif_min
+        JMPR cc_UC,L_C0756
+L_C0752:                 ; 0xc0752
+        MOVB RL4,iga_dif_min_teg_bas
+L_C0756:                 ; 0xc0756
+        MOVB iga_dif_min_teg,RL4
+        MOVBZ R12,iga_ref_cor
+        MOVBZ R13,RL4
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB iga_min_teg,RL4
+        MOV R12,#DATA16 049D6H
+        MOVBZ R13,iga_dif_min_teg
+        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        MOV eff_iga_min_teg,R4
+L_C0778:                 ; 0xc0778
+        RETS
+
+S_C06DC ENDS
+        END

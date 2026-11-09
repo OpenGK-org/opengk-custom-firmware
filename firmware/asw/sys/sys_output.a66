@@ -1,0 +1,211 @@
+; asw/sys/sys_output.a66
+; 0xA5230-0xA53A0  (368 bytes, 12 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Compare_Buffers_Eq, Diag_Output_Stage, Init_CC5_Output, Nop_a535e, Output_CC5_P2_5_Enable, Reset_CC13IC_27e
+PUBLIC  Reset_CC29IC_2b4, Reset_CC30IC_24e, Reset_Dfd62_338, Reset_ODP2_262, Reset_ODP7_230, Set_Output_CC29
+
+S_A5230 SECTION CODE AT 0A5230H
+
+; ======== Reset_ODP7_230  (@0xa5230) ========
+Reset_ODP7_230:
+        EXTR #01H
+        BCLR ODP7.06H
+        BCLR DP7.06H
+        MOV R4,R12
+        MOVB g_f5eb,RL4
+        MOVB RL5,#01H
+        MOVB g_f5ea,RL5
+        EXTR #01H
+        BFLDL 0F18CH,#0FFH,#053H
+        BFLDH CCM7_FF28,#0FH,#0AH
+        RETS
+
+; ======== Reset_CC30IC_24e  (@0xa524e) ========
+Reset_CC30IC_24e:
+        EXTR #01H
+        BFLDL 0F18CH,#0FFH,#00H
+        BFLDH CCM7_FF28,#0FH,#00H
+        MOVB g_f5ed,ZEROS
+        MOVB capcom_9,ZEROS
+        RETS
+
+; ======== Reset_ODP2_262  (@0xa5262) ========
+Reset_ODP2_262:
+        EXTR #01H
+        BCLR ODP2.0DH
+        BCLR DP2.0DH
+        MOV R4,R12
+        MOVB g_f5ef,RL4
+        MOVB RL5,#01H
+        MOVB g_f5ee,RL5
+        BFLDL 0FF92H,#0FFH,#052H
+        BFLDL 0FF58H,#0F0H,#0A0H
+        RETS
+
+; ======== Reset_CC13IC_27e  (@0xa527e) ========
+Reset_CC13IC_27e:
+        BFLDL 0FF92H,#0FFH,#00H
+        BFLDL 0FF58H,#0F0H,#00H
+        MOVB g_f5f1,ZEROS
+        MOVB capcom_10,ZEROS
+        RETS
+
+; ======== Set_Output_CC29  (@0xa5290) ========
+        ; ------------------------------------------------------------
+        ; Seg-A ISR helper (verified by SFR/CCP usage): CAPCOM2 CC29 output setup (CC29/CCM7/T8-based compare,
+        ; P7.5).
+        ; ------------------------------------------------------------
+Set_Output_CC29:
+        EXTR #01H
+        BFLDL 0F184H,#0FFH,#00H
+        BFLDL 0FF28H,#0F0H,#00H
+        MOV R4,R12
+        MOVB capcom_5,RL4
+        ATOMIC #04H
+        BCLR P7.05H
+        MOV CC29,T8_F052
+        BFLDL 0FF28H,#0F0H,#0D0H
+        EXTR #01H
+        BFLDL 0FF84H,#0FFH,#0D0H
+        RETS
+
+; ======== Reset_CC29IC_2b4  (@0xa52b4) ========
+Reset_CC29IC_2b4:
+        EXTR #01H
+        BFLDL 0F184H,#0FFH,#00H
+        BFLDL 0FF28H,#0F0H,#00H
+        BSET P7.05H
+        EXTR #01H
+        BCLR ODP7.05H
+        BSET DP7.05H
+        MOVB capcom_5,ZEROS
+        RETS
+
+; ======== Init_CC5_Output  (@0xa52cc) ========
+        ; ------------------------------------------------------------
+        ; Seg-A ISR helper (verified by SFR/CCP usage): CC5 output init (CC5/CCM1/P2.5) + fill angle/time
+        ; table DAT_00f60c.
+        ; ------------------------------------------------------------
+Init_CC5_Output:
+        MOV CC5,#DATA16 00FFFH
+        BFLDL 0FF82H,#0FFH,#059H
+        BFLDL 0FF54H,#0F0H,#050H
+        MOV R12,#00H
+L_A52DA:                 ; 0xa52da
+        MOV R4,R12
+        SHL R4,#04H
+        SUB R4,R12
+        SHL R4,#01H
+        ADD R4,#DATA16 00016H
+        MOVB [R12+#0F60CH],RL4
+        MOV R4,R12
+        SHL R4,#04H
+        SUB R4,R12
+        SHL R4,#01H
+        ADD R4,#DATA16 0001DH
+        MOVB [R12+#0F610H],RL4
+        ADD R12,#01H
+        CMP R12,#04H
+        JMPR cc_C,L_A52DA
+        RETS
+
+; ======== Output_CC5_P2_5_Enable  (@0xa5302) ========
+        ; ?Output_CC5_P2_5_Enable: arms CAPCOM channel CC5 (CCM1 |= 0xf0 mode, CC5IC enabled) and configures
+        ; P2.5 as push-pull output driven low (ODP2 & ~0x20, P2 & ~0x20, DP2 | 0x20). Single-channel
+        ; actuator/output enable; exact load on P2.5 not yet identified.
+Output_CC5_P2_5_Enable:
+        BFLDL 0FF82H,#0FFH,#00H
+        BFLDL 0FF54H,#0F0H,#00H
+        EXTR #01H
+        BCLR ODP2.05H
+        BCLR P2.05H
+        BSET DP2.05H
+        RETS
+
+; ======== Diag_Output_Stage  (@0xa5314) ========
+        ; ------------------------------------------------------------
+        ; Output-stage feedback diagnosis: DAT_00fd62 / fdaa (output short/open detection) + PSW result.
+        ; ------------------------------------------------------------
+Diag_Output_Stage:
+        JB capcom_12.07H,L_A531C
+        JNB sched_flags2.08H,L_A5328
+L_A531C:                 ; 0xa531c
+        BCLR sched_flags2.09H
+        BSET sched_flags2.07H
+        BMOV PSW.06H,sched_flags2.08H
+        BCLR capcom_12.07H
+        RETS
+L_A5328:                 ; 0xa5328
+        JB sched_flags2.09H,L_A5336
+        BSET sched_flags2.09H
+        JB sched_flags2.0AH,L_A5336
+        BSET sched_flags2.0AH
+        BCLR sched_flags2.07H
+L_A5336:                 ; 0xa5336
+        RETS
+
+; ======== Reset_Dfd62_338  (@0xa5338) ========
+Reset_Dfd62_338:
+        BCLR sched_flags2.09H
+        BCLR sched_flags2.0AH
+        MOVB RL4,#DATA16 00050H
+        MOVB capcom_0,RL4
+        MOVB capcom_1,ZEROS
+        MOVB capcom_2,ZEROS
+        MOVB capcom_3,ZEROS
+        MOVB capcom_4,ZEROS
+        BSET capcom_12.0FH
+        EXTR #01H
+        BFLDL 0F196H,#080H,#080H
+        RETS
+
+; ======== Nop_a535e  (@0xa535e) ========
+Nop_a535e:
+        MOV [R12],R14
+        MOV R4,R14
+        SUB R4,#DATA16 06393H
+        MOV [R13],R4
+        RETS
+
+; ======== Compare_Buffers_Eq  (@0xa536a) ========
+        ; ------------------------------------------------------------
+        ; Seg-A ISR helper (verified by SFR/CCP usage): Compare two RAM words with offset 0x6393; set/clear
+        ; PSW.Z accordingly (validation helper).
+        ; ------------------------------------------------------------
+Compare_Buffers_Eq:
+        MOV R4,[R12]
+        MOV R5,[R13]
+        ADD R5,#DATA16 06393H
+        CMP R4,R5
+        JMPR cc_NE,L_A537A
+        BCLR PSW.06H
+        RETS
+L_A537A:                 ; 0xa537a
+        BSET PSW.06H
+        RETS
+        MOV R4,R14
+        MOVB [R12],RL4
+        MOV R4,R14
+        SUBB RL4,#DATA16 00093H
+        MOVB [R13],RL4
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa538a [dpp]  W:{-}  R:{-}
+        ; ------------------------------------------------------------
+        RETS
+        MOVB RL4,[R12]
+        MOVB RL5,[R13]
+        ADDB RL5,#DATA16 00093H
+        CMPB RL4,RL5
+        JMPR cc_NE,L_A539C
+        BCLR PSW.06H
+        RETS
+L_A539C:                 ; 0xa539c
+        BSET PSW.06H
+        RETS
+
+S_A5230 ENDS
+        END

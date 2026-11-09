@@ -1,0 +1,236 @@
+; asw/seg/seg_er.a66
+; 0xD4900-0xD4AD6  (470 bytes, 7 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_accout_dly_er                      EQU  09049EH
+c_crk_dif_max_er                     EQU  0904EEH
+c_tps_grd_dly_er                     EQU  0907AEH
+ldp_tps__tps_grd_max_er             EQU  090F4BH
+ip_tps_grd_max_er__tps               EQU  096B06H
+
+PUBLIC  Calc_ER_Seg_Ad, Calc_ER_Seg_Nr, Calc_ER_Thd_Adapt, Calc_Mis_Ctr_Voltage, Calc_Mis_FadeOut_TPS, Dec_Dc3b8
+PUBLIC  Lookup_Dc3b5_TqAddCh
+EXTERN  Calc_CtrlModule_Voltage:NEAR, Calc_ER_Av_Seg:NEAR, Calc_ER_Thd_Adapt_2:NEAR, Calc_IV_Off_ER:NEAR
+EXTERN  Calc_Mis_Detect_Cond:NEAR, Calc_Mis_Rate_Err:NEAR, Diag_DTC_dd496:NEAR, Diag_IV_Misfire:NEAR
+EXTERN  Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_3D_Table_DWord_XWord_YByte:NEAR, Get_IP_Byte_Y_Axis:NEAR
+
+S_D4900 SECTION CODE AT 0D4900H
+
+; ======== Calc_ER_Thd_Adapt  (@0xd4900) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by obd2/er output signals): Roughness detection-threshold adaptation factor
+        ; fac_thd_ad_er.
+        ; ------------------------------------------------------------
+Calc_ER_Thd_Adapt:
+        MOV R12,#00H
+L_D4902:                 ; 0xd4902
+        MOV R4,#00H
+        MOV R5,R12
+        SHL R5,#01H
+        MOV [R5+#0F818H],R4
+        CMPI1 R12,#03H
+        JMPR cc_SLT,L_D4902
+        BCLR lv_iga_dif_max_er.00H
+        BSET lv_iga_dif_max_er.03H
+        BCLR lv_act_diagcps.0EH
+        MOV R4,DPP0:c_crk_dif_max_er
+        SHL R4,#04H
+        MOV fac_thd_ad_er,R4
+        RETS
+
+; ======== Calc_ER_Seg_Ad  (@0xd4922) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by obd2/er output signals): Per-segment roughness adaptation seg_ad_mmv_0 +
+        ; lv_iga_dif_max_er.
+        ; ------------------------------------------------------------
+Calc_ER_Seg_Ad:
+        MOVB RL4,#09H
+        MOVB mis_segt_inh,RL4
+        MOV seg_ad_mmv_0_,ZEROS
+        MOV R4,fac_thd_ad_er
+        JMPR cc_NE,L_D4934
+        BSET lv_iga_dif_max_er.00H
+L_D4934:                 ; 0xd4934
+        MOVB RL4,#0FH
+        MOVB mis_er_cfg,RL4
+        BSET lv_iga_dif_max_er.03H
+        BCLR lv_act_diagcps.0EH
+        RETS
+
+; ======== Calc_ER_Seg_Nr  (@0xd4940) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by obd2/er output signals): Roughness segment counter seg_nr_er.
+        ; ------------------------------------------------------------
+Calc_ER_Seg_Nr:
+        MOVB RL4,mis_segt_inh
+        JMPR cc_EQ,L_D494C
+        SUBB RL4,#01H
+        MOVB mis_segt_inh,RL4
+L_D494C:                 ; 0xd494c
+        MOVB RL4,g_c250
+        MOVB seg_nr_er,RL4
+        MOVBZ R4,RL4
+        MOV R5,#01H
+        SHL R5,R4
+        MOVB mis_er_cyl_bit,RL5
+        MOVBZ R4,seg_nr_er
+        SHL R4,#01H
+        MOV R5,[R4+#0D078H]
+        MOV mis_crank_seg,R5
+        MOVBZ R4,seg_nr_er
+        SHL R4,#01H
+        MOV R2,[R4+#0D080H]
+        MOV mis_maf_in,R2
+        MOV R4,n_C93C
+        MOVBZ R2,seg_nr_er
+        SHL R2,#01H
+        MOV [R2+#0D078H],R4
+        MOV R4,maf_word
+        MOVBZ R5,seg_nr_er
+        SHL R5,#01H
+        MOV [R5+#0D080H],R4
+        CALLA cc_UC,Calc_Mis_Detect_Cond
+        CALLA cc_UC,Calc_ER_Av_Seg
+        CALLA cc_UC,Diag_IV_Misfire
+        CALLS 00BH,Calc_Mis_Rate_Err
+        CALLA cc_UC,Calc_IV_Off_ER
+        MOVB RL4,seg_nr_er
+        JMPR cc_NE,L_D49BA
+        CALLA cc_UC,Calc_ER_Thd_Adapt_2
+        CALLS 00BH,Diag_DTC_dd496
+        BCLR lv_iga_dif_max_er.03H
+L_D49BA:                 ; 0xd49ba
+        MOV R4,seg_t_mes
+        MOVBZ R5,seg_nr_er
+        SHL R5,#01H
+        MOV [R5+#0D066H],R4
+        MOVBZ R4,prev_state_iv
+        MOVBZ R5,mis_er_cyl_bit
+        AND R4,R5
+        JMPR cc_EQ,L_D49DE
+        MOVB RL4,mis_er_cyl_bit
+        ORB mis_er_cfg,RL4
+        RETS
+L_D49DE:                 ; 0xd49de
+        MOVB RL4,mis_er_cyl_bit
+        CPLB RL4
+        ANDB mis_er_cfg,RL4
+        RETS
+
+; ======== Lookup_Dc3b5_TqAddCh  (@0xd49ea) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Lookup_Dc3b5_TqAddCh:
+        JNB abs_def.04H,L_D4A08
+        MOV R12,#DATA16 05088H
+        MOVBZ R13,tco
+        MOV R14,tq_add_ch
+        ADD R14,#DATA16 08000H
+        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YByte
+        MOVB g_c3b5,RL4
+        RETS
+L_D4A08:                 ; 0xd4a08
+        MOV R12,#DATA16 0507CH
+        MOVBZ R13,tco
+        MOV R14,tq_add_ch
+        ADD R14,#DATA16 08000H
+        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YByte
+        MOVB g_c3b5,RL4
+        RETS
+
+; ======== Calc_Mis_FadeOut_TPS  (@0xd4a22) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): Misfire detection fade out conditions (TPS gradient)
+        ; ------------------------------------------------------------
+Calc_Mis_FadeOut_TPS:
+        MOV [-R0],R9
+        MOV R9,mis_maf_dif_dly
+        JMPR cc_EQ,L_D4A2C
+        SUB R9,#01H
+L_D4A2C:                 ; 0xd4a2c
+        MOV R12,#DATA16 POF ldp_tps__tps_grd_max_er
+        MOV R13,#DATA16 PAG ldp_tps__tps_grd_max_er
+        MOVBZ R14,tps
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_tps_grd_max_er__tps
+        MOV R13,#DATA16 PAG ip_tps_grd_max_er__tps
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        CMPB RL4,lv_tps_f4b6
+        JMPR cc_NC,L_D4A58
+        CMP R9,DPP0:c_tps_grd_dly_er
+        JMPR cc_NC,L_D4A58
+        MOV R9,DPP0:c_tps_grd_dly_er
+L_D4A58:                 ; 0xd4a58
+        BCMP state_out_fault.0EH,lv_iga_dif_max_er.01H
+        JMPR cc_NN,L_D4A6C
+        BMOV lv_iga_dif_max_er.01H,state_out_fault.0EH
+        CMP R9,DPP0:c_accout_dly_er
+        JMPR cc_NC,L_D4A6C
+        MOV R9,DPP0:c_accout_dly_er
+L_D4A6C:                 ; 0xd4a6c
+        MOV mis_maf_dif_dly,R9
+        MOV R9,[R0+]
+        RETS
+
+; ======== Dec_Dc3b8  (@0xd4a74) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Dec_Dc3b8:
+        MOVB RL4,g_c3b8
+        JMPR cc_EQ,L_D4A80
+        SUBB RL4,#01H
+        MOVB g_c3b8,RL4
+L_D4A80:                 ; 0xd4a80
+        RETS
+
+; ======== Calc_Mis_Ctr_Voltage  (@0xd4a82) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Calc_Mis_Ctr_Voltage:
+        MOV [-R0],R6
+        MOVB RL6,#00H
+L_D4A86:                 ; 0xd4a86
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R5,[R4+#0D096H]
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R2,[R4+#0D09EH]
+        MOV R4,R2
+        SHL R4,#03H
+        ADD R4,R2
+        ADD R4,R5
+        MOV R5,#00H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R10,#0AH
+        MOV R11,#00H
+        MOV R4,R12
+        MOV R5,R13
+        CALLS 00DH,Calc_CtrlModule_Voltage
+        MOV R12,R4
+        MOV R13,R5
+        MOV R4,R12
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        MOV [R5+#0D09EH],R4
+        MOV R4,#00H
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        MOV [R5+#0D096H],R4
+        ADDB RL6,#01H
+        CMPB RL6,#04H
+        JMPR cc_C,L_D4A86
+        MOV ctr_mis_tot_dc,ZEROS
+        MOV R6,[R0+]
+        RETS
+
+S_D4900 ENDS
+        END

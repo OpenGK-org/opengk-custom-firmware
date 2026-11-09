@@ -1,0 +1,317 @@
+; asw/diagcp/diagcp_cp_2.a66
+; 0xD3690-0xD391C  (652 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_fac_ti_diagcp                      EQU  0901B8H
+c_iv_cp                              EQU  090588H
+ldp_diagcp_vol__diagcp_vol_cor                  EQU  0980B1H
+ldp_tam_ip_fac_tam_amp_diagcp              EQU  0980EDH
+ldp_dtp__diagcp_mdl_dtp                  EQU  0982A0H
+ldp_diagcp_ar__fac_sqrt_diagcp_ar              EQU  098318H
+ldp_amp_ip_fac_tam_amp_diagcp              EQU  098342H
+ldp_amp__sqrt_amp                        EQU  09842EH
+ip_diagcp_mdl_dtp                    EQU  098608H
+ip_sqrt_amp                          EQU  098AE8H
+ip_diagcp_vol_cor                    EQU  0990B4H
+ip_fac_sqrt_diagcp_ar                EQU  0991FCH
+ip_fac_tam_amp_diagcp                EQU  099210H
+
+PUBLIC  Calc_DiagCP_Dtp, Calc_DiagCP_Scale, DiagCP_Calc_ClMmv, DiagCP_Calc_Vol, Lookup_DiagCP_Vol
+EXTERN  Div_U32_U16_Round32:NEAR, Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_3D_Table:NEAR, Get_IP_Byte_Y_Axis:NEAR
+EXTERN  Get_IP_Word_2D_Table:NEAR, Get_IP_Word_X_Axis:NEAR, Get_IP_Word_Y_Axis:NEAR, MulAdd_U32_Sat:NEAR
+EXTERN  Mul_Frac_Sat_x2:NEAR, Mul_S16_S32:NEAR, Mul_Shift_U16_Sat32:NEAR, Sat_Add_S32:NEAR
+EXTERN  Sat_Sub_S16_v2:NEAR, mul32:NEAR, multipied_r12_r13_UGT_r14_rets_r4:NEAR
+
+S_D3690 SECTION CODE AT 0D3690H
+
+; ======== Calc_DiagCP_Dtp  (@0xd3690) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Calc_DiagCP_Dtp:
+        MOV [-R0],R15
+        MOV [-R0],R14
+        MOV [-R0],R13
+        MOV [-R0],R12
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R12,#DATA16 POF ldp_dtp__diagcp_mdl_dtp
+        MOV R13,#DATA16 PAG ldp_dtp__diagcp_mdl_dtp
+        MOV R14,[R0+#08H]
+        ADD R14,#DATA16 08000H
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_diagcp_mdl_dtp
+        MOV R13,#DATA16 PAG ip_diagcp_mdl_dtp
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV R9,R4
+        ADD R9,#DATA16 08000H
+        CMP R9,#00H
+        JMPR cc_SGE,L_D36D4
+        MOVB RL6,#01H
+        MOV R4,R9
+        NEG R4
+        MOV R9,R4
+        JMPR cc_UC,L_D36D6
+L_D36D4:                 ; 0xd36d4
+        MOVB RL6,#00H
+L_D36D6:                 ; 0xd36d6
+        MOV R12,tot_sum_dtp
+        SUB R12,#01H
+        MOV R13,[R0+#0AH]
+        SHL R13,#01H
+        CALLS 00FH,Sat_Sub_S16_v2
+        MOV R12,R4
+        MOV R13,R9
+        CALLS 00FH,Mul_S16_S32
+        MOV R7,R4
+        MOV R8,R5
+        CMPB RL6,#01H
+        JMPR cc_NE,L_D3704
+        MOV R4,R7
+        MOV R5,R8
+        NEG R4
+        ADDC R5,#00H
+        NEG R5
+        MOV R7,R4
+        MOV R8,R5
+L_D3704:                 ; 0xd3704
+        MOV R12,[R0+#0CH]
+        MOV R13,[R0+#0EH]
+        MOV R14,R7
+        MOV R15,R8
+        CALLS 00FH,Sat_Add_S32
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        ADD R0,#DATA16 00008H
+        RET
+
+; ======== Calc_DiagCP_Scale  (@0xd3722) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Calc_DiagCP_Scale:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R6,R12
+        MOV R7,R13
+        CMP R7,#DATA16 00FFFH
+        JMPR cc_SLT,L_D3746
+        JMPR cc_SGT,L_D373C
+        CMP R6,#DATA16 0FFFFH
+        JMPR cc_ULE,L_D3746
+L_D373C:                 ; 0xd373c
+        MOV R6,#DATA16 0FFFFH
+        MOV R7,#DATA16 00FFFH
+        JMPR cc_UC,L_D3758
+L_D3746:                 ; 0xd3746
+        CMP R7,#DATA16 0F000H
+        JMPR cc_SGT,L_D3758
+        JMPR cc_SLT,L_D3752
+        CMP R6,#00H
+        JMPR cc_NC,L_D3758
+L_D3752:                 ; 0xd3752
+        MOV R6,#00H
+        MOV R7,#DATA16 0F000H
+L_D3758:                 ; 0xd3758
+        CMP R7,#00H
+        JMPR cc_SGT,L_D3770
+        JMPR cc_SLT,L_D3762
+        CMP R6,#00H
+        JMPR cc_NC,L_D3770
+L_D3762:                 ; 0xd3762
+        MOV R4,R6
+        MOV R5,R7
+        NEG R4
+        ADDC R5,#00H
+        NEG R5
+        MOV R6,R4
+        MOV R7,R5
+L_D3770:                 ; 0xd3770
+        MOV R4,R6
+        SHL R6,#03H
+        SHL R7,#03H
+        SHR R4,#0DH
+        OR R7,R4
+        MOV R8,tot_sum_dtp
+        MOV R4,tot_sum_dtp
+        MULU R8,R4
+        MOV R9,MDH_FE0C
+        MOV R8,0FE0EH
+        MOV R12,R8
+        MOV R13,R9
+        MOV R14,R4
+        CALLS 00FH,MulAdd_U32_Sat
+        MOV R8,R4
+        MOV R9,R5
+        MOV R4,R9
+        SHR R8,#0BH
+        SHR R9,#0BH
+        SHL R4,#05H
+        OR R8,R4
+        MOV R12,R6
+        MOV R13,R7
+        MOV R14,R8
+        CALLS 00FH,Div_U32_U16_Round32
+        MOV R8,R4
+        MOV R9,R5
+        MOV R12,R8
+        MOV R13,R9
+        MOV R14,#05H
+        CALLS 00FH,Div_U32_U16_Round32
+        MOV R8,R4
+        MOV R9,R5
+        MOV R4,R8
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RET
+
+; ======== DiagCP_Calc_Vol  (@0xd37cc) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by cp/evap/dtp/diagcp output signals + DTC): EVAP leak volume estimate
+        ; diagcp_vol / diagcp_vol_cor.
+        ; ------------------------------------------------------------
+DiagCP_Calc_Vol:
+        MOV [-R0],R12
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOVB RL4,g_c396
+        CMPB RL4,#01H
+        JMPR cc_NE,L_D37E6
+        MOV R4,cp_vsdiag_lim
+        SHR R4,#08H
+        MOVB diagcp_vol,RL4
+L_D37E6:                 ; 0xd37e6
+        MOV R12,#DATA16 POF ldp_diagcp_vol__diagcp_vol_cor
+        MOV R13,#DATA16 PAG ldp_diagcp_vol__diagcp_vol_cor
+        MOVBZ R14,diagcp_vol
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_diagcp_vol_cor
+        MOV R13,#DATA16 PAG ip_diagcp_vol_cor
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB diagcp_vol_cor,RL4
+        MOVBZ R8,RL4
+        MOV R9,#00H
+        MOV R12,#DATA16 POF ldp_tam_ip_fac_tam_amp_diagcp
+        MOV R13,#DATA16 PAG ldp_tam_ip_fac_tam_amp_diagcp
+        MOVBZ R14,tam
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_amp_ip_fac_tam_amp_diagcp
+        MOV R13,#DATA16 PAG ldp_amp_ip_fac_tam_amp_diagcp
+        MOV R14,amp
+        CALLS 00FH,Get_IP_Word_X_Axis
+        MOV R12,#DATA16 POF ip_fac_tam_amp_diagcp
+        MOV R13,#DATA16 PAG ip_fac_tam_amp_diagcp
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB RL3,RL4
+        MOVBZ R4,RL3
+        MOV R5,#00H
+        MOV R10,R8
+        MOV R11,R9
+        CALLS 00DH,mul32
+        MOV R10,[R0+#06H]
+        MOV R11,#00H
+        CALLS 00DH,mul32
+        MOV R8,R4
+        MOV R9,R5
+        MOV R12,#DATA16 POF ldp_amp__sqrt_amp
+        MOV R13,#DATA16 PAG ldp_amp__sqrt_amp
+        MOV R14,amp
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_sqrt_amp
+        MOV R13,#DATA16 PAG ip_sqrt_amp
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV R7,R4
+        MOV R12,R8
+        MOV R13,R9
+        MOV R14,R7
+        CALLS 00FH,Div_U32_U16_Round32
+        MOV R8,R4
+        MOV R9,R5
+        CMP R9,#00H
+        JMPR cc_NE,L_D3886
+        CMP R8,#DATA16 0FFFFH
+L_D3886:                 ; 0xd3886
+        JMPR cc_ULE,L_D388E
+        MOV R7,#DATA16 0FFFFH
+        JMPR cc_UC,L_D3890
+L_D388E:                 ; 0xd388e
+        MOV R7,R8
+L_D3890:                 ; 0xd3890
+        MOV R4,R7
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        ADD R0,#02H
+        RET
+
+; ======== Lookup_DiagCP_Vol  (@0xd389c) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Lookup_DiagCP_Vol:
+        MOV [-R0],R12
+        MOV R12,#DATA16 POF ldp_diagcp_ar__fac_sqrt_diagcp_ar
+        MOV R13,#DATA16 PAG ldp_diagcp_ar__fac_sqrt_diagcp_ar
+        MOV R14,[R0]
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_fac_sqrt_diagcp_ar
+        MOV R13,#DATA16 PAG ip_fac_sqrt_diagcp_ar
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        ADD R0,#02H
+        RET
+
+; ======== DiagCP_Calc_ClMmv  (@0xd38bc) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by cp/evap/dtp/diagcp output signals + DTC): EVAP closed-loop model value
+        ; cl_mmv_diagcp + ti_add_ad_diagcp adaptation.
+        ; ------------------------------------------------------------
+DiagCP_Calc_ClMmv:
+        MOV [-R0],R9
+        JNB lv_act_diagcps.03H,L_D3910
+        JNB lv_fcut_fast.0AH,L_D38D8
+        MOV R12,cl_mmv_norm_purge_end
+        MOVBZ R13,DPP0:c_fac_ti_diagcp
+        CALLS 00FH,Mul_Frac_Sat_x2
+        MOV cl_mmv_diagcp,R4
+        JMPR cc_UC,L_D38E8
+L_D38D8:                 ; 0xd38d8
+        MOV R12,cl_mmv
+        MOVBZ R13,DPP0:c_fac_ti_diagcp
+        CALLS 00FH,Mul_Frac_Sat_x2
+        MOV cl_mmv_diagcp,R4
+L_D38E8:                 ; 0xd38e8
+        MOV R12,maf_cps_dly
+        MOV R13,cl_mmv_diagcp
+        MOV R14,#0DH
+        CALLS 00FH,Mul_Shift_U16_Sat32
+        MOV R9,R4
+        MOV R12,R9
+        SHR R12,#04H
+        MOV R13,DPP0:c_iv_cp
+        SHR R13,#05H
+        MOV R14,n_C93C
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV ti_add_ad_diagcp,R4
+        JMPR cc_UC,L_D3918
+L_D3910:                 ; 0xd3910
+        MOV cl_mmv_diagcp,ZEROS
+        MOV ti_add_ad_diagcp,ZEROS
+L_D3918:                 ; 0xd3918
+        MOV R9,[R0+]
+        RET
+
+S_D3690 ENDS
+        END

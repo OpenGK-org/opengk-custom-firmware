@@ -1,0 +1,264 @@
+; asw/vol.a66
+; 0xD0508-0xD0744  (572 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_tco_stnd                           EQU  09039EH
+c_tcyl_stnd                          EQU  0903A8H
+c_tia_stnd                           EQU  0903C1H
+c_v_lsh_up_ls_ready                  EQU  0903FEH
+lc_amp_inp_ena                       EQU  090451H
+c_tps_grd_ctl_stop_max               EQU  090906H
+c_tps_grd_ctl_stop_min               EQU  090908H
+ldp_n_32__crlc_eff_vol_cor          EQU  090AF2H
+ldpm_n_32__eff_vol_cor            EQU  090B00H
+ldp_maf_thr_ip_amp_dec                         EQU  09115CH
+ldpm_maf__eff_vol_cor                    EQU  09128AH
+ldpm_n_eff_vol                           EQU  09129CH
+ldpm_amp_ad__eff_vol_amp                      EQU  0912B6H
+ip_amp_dec                           EQU  091EFAH
+ip_eff_vol_ofs__n__vo                EQU  09249AH
+ip_eff_vol_ofs_amp__amp_ad           EQU  09255AH
+ip_eff_vol_slop__n__vo               EQU  092566H
+ip_eff_vol_slop_amp__amp_ad          EQU  092626H
+ip_crlc_eff_vol_cor__n_32            EQU  095535H
+ip_eff_tco_fac__n_32__maf            EQU  095541H
+ip_eff_tia_fac__n_32__maf            EQU  095581H
+ldpm_vo__eff_vol                          EQU  0982E6H
+
+PUBLIC  Calc_Prs_Up_Thr, Reset_eff_vol_slop_540, SetBits_lv_cp_set_close_508, Set_lv_cp_set_close_d050, Set_lv_cp_set_close_d052
+EXTERN  Calc_AMP_Mdl_Dif_I:NEAR, Div_Frac_U16_Q16:NEAR, Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_3D_Table:NEAR
+EXTERN  Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_2D_Table:NEAR, Get_IP_Word_3D_Table:NEAR, Get_IP_Word_X_Axis:NEAR
+EXTERN  Get_IP_Word_Y_Axis:NEAR, Interp_U16:NEAR, Mul_Q15_Sat:NEAR, Read_MD_Signed:NEAR
+EXTERN  Reset_ar_red_bas_thr_530:NEAR
+
+S_D0508 SECTION CODE AT 0D0508H
+
+; ======== SetBits_lv_cp_set_close_508  (@0xd0508) ========
+SetBits_lv_cp_set_close_508:
+        BSET lv_cp_set_close.0CH
+        RETS
+
+; ======== Set_lv_cp_set_close_d050  (@0xd050c) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Set_lv_cp_set_close_d050:
+        JNB lv_cp_set_close.0DH,L_D051A
+        MOV R4,#01H
+        MOV lv_cp_f95a,R4
+        BSET lv_cp_set_close.0BH
+        RETS
+L_D051A:                 ; 0xd051a
+        MOV R4,#0AH
+        MOV lv_cp_f958,R4
+        RETS
+
+; ======== Set_lv_cp_set_close_d052  (@0xd0522) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Set_lv_cp_set_close_d052:
+        MOVB RL4,lsh_up_bank_1_v_efc_lsh_up
+        CMPB RL4,DPP0:c_v_lsh_up_ls_ready
+        JMPR cc_ULE,L_D052E
+        BSET lv_cp_set_close.0DH
+L_D052E:                 ; 0xd052e
+        JNB lv_cp_set_close.0DH,L_D0538
+        MOV lv_cp_f98c,ZEROS
+        RETS
+L_D0538:                 ; 0xd0538
+        MOV R4,#01H
+        MOV lv_cp_f98c,R4
+        RETS
+
+; ======== Reset_eff_vol_slop_540  (@0xd0540) ========
+Reset_eff_vol_slop_540:
+        BSET lv_cp_set_close.0EH
+        MOV eff_vol_slop,ZEROS
+        MOV eff_vol_ofs,ZEROS
+        MOV eff_vol_cor,ZEROS
+        MOV eff_vol_cor_mmv,ZEROS
+        MOV prs_up_thr_max,ZEROS
+        BCLR lv_cp_set_close.0FH
+        BCLR lv_amp_ad_rst.00H
+        BCLR lv_amp_ad_rst.01H
+        BCLR lv_amp_ad_rst.02H
+        BCLR lv_amp_ad_rst.03H
+        BCLR lv_amp_ad_rst.04H
+        BCLR lv_amp_ad_rst.05H
+        BCLR lv_amp_ad_rst.06H
+        RETS
+
+; ======== Calc_Prs_Up_Thr  (@0xd0568) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by maf/tps output signals + DTC): Upstream-throttle pressure model prs_up_thr /
+        ; prs_up_thr_max.
+        ; ------------------------------------------------------------
+Calc_Prs_Up_Thr:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        JB lv_err_tps_det.04H,L_D057A
+        JB lv_cam_err.01H,L_D057A
+        JNB lv_cat_diag_inh_1.0FH,L_D0588
+L_D057A:                 ; 0xd057a
+        BSET lv_amp_ad_rst.03H
+        BSET lv_amp_ad_rst.04H
+        BSET lv_amp_ad_rst.02H
+        BSET lv_cp_set_close.0FH
+        BSET lv_amp_ad_rst.00H
+        BSET lv_amp_ad_rst.06H
+        JMPR cc_UC,L_D05B0
+L_D0588:                 ; 0xd0588
+        BCLR lv_amp_ad_rst.03H
+        BCLR lv_amp_ad_rst.04H
+        BCLR lv_amp_ad_rst.02H
+        BCLR lv_cp_set_close.0FH
+        JNB lv_err_maf_tps_ratio_2.00H,L_D0598
+        BSET lv_amp_ad_rst.06H
+        JMPR cc_UC,L_D059A
+L_D0598:                 ; 0xd0598
+        BCLR lv_amp_ad_rst.06H
+L_D059A:                 ; 0xd059a
+        MOV R4,tps_grd_sam
+        CMP R4,DPP0:c_tps_grd_ctl_stop_max
+        JMPR cc_SGT,L_D05AA
+        CMP R4,DPP0:c_tps_grd_ctl_stop_min
+        JMPR cc_SGE,L_D05AE
+L_D05AA:                 ; 0xd05aa
+        BSET lv_amp_ad_rst.00H
+        JMPR cc_UC,L_D05B0
+L_D05AE:                 ; 0xd05ae
+        BCLR lv_amp_ad_rst.00H
+L_D05B0:                 ; 0xd05b0
+        MOV R12,#DATA16 POF ldpm_n_32__eff_vol_cor
+        MOV R13,#DATA16 PAG ldpm_n_32__eff_vol_cor
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_maf__eff_vol_cor
+        MOV R13,#DATA16 PAG ldpm_maf__eff_vol_cor
+        MOV R14,maf_word
+        CALLS 00FH,Get_IP_Word_X_Axis
+        MOV R12,#DATA16 POF ip_eff_tia_fac__n_32__maf
+        MOV R13,#DATA16 PAG ip_eff_tia_fac__n_32__maf
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R13,RL4
+        MOVBZ R12,tia
+        MOVBZ R4,DPP0:c_tia_stnd
+        SUB R12,R4
+        CALLS 00FH,Read_MD_Signed
+        MOV R9,R4
+        MOV R12,#DATA16 POF ip_eff_tco_fac__n_32__maf
+        MOV R13,#DATA16 PAG ip_eff_tco_fac__n_32__maf
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R13,RL4
+        MOVBZ R12,tco
+        MOVBZ R4,DPP0:c_tco_stnd
+        SUB R12,R4
+        CALLS 00FH,Read_MD_Signed
+        ADD R9,R4
+        MOVBZ R4,DPP0:c_tcyl_stnd
+        ADD R4,#DATA16 0012CH
+        ADD R9,R4
+        CMP R9,#00H
+        JMPR cc_SLE,L_D061C
+        JMPR cc_UC,L_D061E
+L_D061C:                 ; 0xd061c
+        MOV R9,#00H
+L_D061E:                 ; 0xd061e
+        MOVBZ R12,DPP0:c_tcyl_stnd
+        ADD R12,#DATA16 0012CH
+        SHL R12,#04H
+        MOV R13,R9
+        SHL R13,#05H
+        CALLS 00FH,Div_Frac_U16_Q16
+        MOV eff_vol_cor,R4
+        MOV R5,eff_vol_cor_mmv
+        JMPR cc_EQ,L_D066C
+        MOV R12,#DATA16 POF ldp_n_32__crlc_eff_vol_cor
+        MOV R13,#DATA16 PAG ldp_n_32__crlc_eff_vol_cor
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_crlc_eff_vol_cor__n_32
+        MOV R13,#DATA16 PAG ip_crlc_eff_vol_cor__n_32
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVBZ R14,RL4
+        SHL R14,#08H
+        MOV R12,eff_vol_cor_mmv
+        MOV R13,eff_vol_cor
+        CALLS 00FH,Interp_U16
+        MOV eff_vol_cor_mmv,R4
+        JMPR cc_UC,L_D0674
+L_D066C:                 ; 0xd066c
+        MOV R4,eff_vol_cor
+        MOV eff_vol_cor_mmv,R4
+L_D0674:                 ; 0xd0674
+        MOV R12,#DATA16 POF ldpm_n_eff_vol
+        MOV R13,#DATA16 PAG ldpm_n_eff_vol
+        MOV R14,n_C93C
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ldpm_vo__eff_vol
+        MOV R13,#DATA16 PAG ldpm_vo__eff_vol
+        MOV R14,vo
+        CALLS 00FH,Get_IP_Word_X_Axis
+        MOV R12,#DATA16 POF ip_eff_vol_ofs__n__vo
+        MOV R13,#DATA16 PAG ip_eff_vol_ofs__n__vo
+        CALLS 00FH,Get_IP_Word_3D_Table
+        MOV R7,R4
+        MOV R12,#DATA16 POF ip_eff_vol_slop__n__vo
+        MOV R13,#DATA16 PAG ip_eff_vol_slop__n__vo
+        CALLS 00FH,Get_IP_Word_3D_Table
+        MOV R8,R4
+        MOV R12,#DATA16 POF ldpm_amp_ad__eff_vol_amp
+        MOV R13,#DATA16 PAG ldpm_amp_ad__eff_vol_amp
+        MOV R14,amp_ad
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_eff_vol_slop_amp__amp_ad
+        MOV R13,#DATA16 PAG ip_eff_vol_slop_amp__amp_ad
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV [-R0],R4
+        MOV R12,R8
+        MOV R13,eff_vol_cor_mmv
+        CALLS 00FH,Mul_Q15_Sat
+        MOV R12,R4
+        MOV R13,[R0+]
+        CALLS 00FH,Mul_Q15_Sat
+        MOV eff_vol_slop,R4
+        MOV R12,#DATA16 POF ip_eff_vol_ofs_amp__amp_ad
+        MOV R13,#DATA16 PAG ip_eff_vol_ofs_amp__amp_ad
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV R13,R4
+        MOV R12,R7
+        CALLS 00FH,Mul_Q15_Sat
+        MOV eff_vol_ofs,R4
+        MOVB RL4,DPP0:lc_amp_inp_ena
+        JMPR cc_EQ,L_D0708
+        MOV R7,amp_mdl
+        JMPR cc_UC,L_D070C
+L_D0708:                 ; 0xd0708
+        MOV R7,amp
+L_D070C:                 ; 0xd070c
+        MOV R12,#DATA16 POF ldp_maf_thr_ip_amp_dec
+        MOV R13,#DATA16 PAG ldp_maf_thr_ip_amp_dec
+        MOV R14,maf_thr
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_amp_dec
+        MOV R13,#DATA16 PAG ip_amp_dec
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV R5,R7
+        SUB R5,R4
+        MOV prs_up_thr,R5
+        MOV prs_up_thr_max,R5
+        CALLS 00CH,Reset_ar_red_bas_thr_530
+        CALLS 00CH,Calc_AMP_Mdl_Dif_I
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_D0508 ENDS
+        END

@@ -1,0 +1,191 @@
+; asw/vo.a66
+; 0xB373A-0xB38F2  (440 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_cam_ini_ex                         EQU  09012DH
+c_cam_ini_in                         EQU  09012EH
+c_cam_op_ex                          EQU  09012FH
+c_cam_op_in                          EQU  090130H
+c_vo_min                             EQU  09095CH
+ldpm_n_1_ivvt                           EQU  098220H
+ldpm_maf_ivvt_2_ivvt                    EQU  098286H
+ip_cam_sp_tco_2_pl_ivvt_in           EQU  098FE8H
+
+PUBLIC  Calc_VO_Sp, Calc_iga_bas_amp_cor, Set_iga_bas_amp_cor_73a
+EXTERN  Div_S32_S16_Round:NEAR, Get_IP_Byte_3D_Table:NEAR, Get_IP_Byte_3D_Table_DWord_XByte_YByte:NEAR, Get_IP_Byte_3D_Table_DWord_XWord_YByte:NEAR
+EXTERN  Get_IP_Word_2D_Table_DWord_YByte:NEAR, Get_IP_Word_X_Axis:NEAR, Get_IP_Word_Y_Axis:NEAR, MulDiv_S16_Sat_v2:NEAR
+
+S_B373A SECTION CODE AT 0B373AH
+
+; ======== Set_iga_bas_amp_cor_73a  (@0xb373a) ========
+Set_iga_bas_amp_cor_73a:
+        MOVB iga_bas_amp_cor,ZEROS
+        RETS
+
+; ======== Calc_iga_bas_amp_cor  (@0xb3740) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Calc_iga_bas_amp_cor:
+        JNB lv_ast.06H,L_B3766
+        JNB lv_err_tps_det.06H,L_B3762
+        MOV R12,#DATA16 0470CH
+        MOVBZ R13,n_32
+        MOV R14,amp
+        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YByte
+        SUBB RL4,#DATA16 00080H
+        MOVB iga_bas_amp_cor,RL4
+        RETS
+L_B3762:                 ; 0xb3762
+        MOVB iga_bas_amp_cor,ZEROS
+L_B3766:                 ; 0xb3766
+        RETS
+
+; ======== Calc_VO_Sp  (@0xb3768) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by dominant output signals): Volumetric-efficiency setpoint: vo_sp / vo_ratio /
+        ; vo_ini + iga base VVT correction.
+        ; ------------------------------------------------------------
+Calc_VO_Sp:
+        MOV [-R0],R9
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_B3772
+        JMPA cc_UC,L_B38EE
+L_B3772:                 ; 0xb3772
+        MOVBZ R4,DPP0:c_cam_op_in
+        MOVBZ R5,DPP0:c_cam_op_ex
+        ADD R4,R5
+        ASHR R4,#01H
+        ADD R4,#DATA16 000C8H
+        MOVBZ R5,DPP0:c_cam_ini_in
+        SUB R4,R5
+        MOVBZ R5,DPP0:c_cam_ini_ex
+        SUB R4,R5
+        MOV vo_ini,R4
+        MOV R12,#DATA16 POF ldpm_n_1_ivvt
+        MOV R13,#DATA16 PAG ldpm_n_1_ivvt
+        MOV R14,n_C93C
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ldpm_maf_ivvt_2_ivvt
+        MOV R13,#DATA16 PAG ldpm_maf_ivvt_2_ivvt
+        MOV R14,maf_ivvt
+        CALLS 00FH,Get_IP_Word_X_Axis
+        MOV R12,#DATA16 POF ip_cam_sp_tco_2_pl_ivvt_in
+        MOV R13,#DATA16 PAG ip_cam_sp_tco_2_pl_ivvt_in
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOVBZ R5,DPP0:c_cam_op_in
+        MOVBZ R2,DPP0:c_cam_op_ex
+        ADD R5,R2
+        ASHR R5,#01H
+        ADD R5,#DATA16 000C8H
+        SUB R5,R4
+        MOVBZ R4,DPP0:c_cam_ini_ex
+        SUB R5,R4
+        MOV vo_sp,R5
+        CMP R5,DPP0:c_vo_min
+        JMPR cc_SGE,L_B37F6
+        MOV R4,vo_iga
+        CMP R4,DPP0:c_vo_min
+        JMPR cc_SGE,L_B37F6
+        MOVB RL4,#DATA16 00080H
+        MOVB vo_ratio,RL4
+        JMPR cc_UC,L_B384A
+L_B37F6:                 ; 0xb37f6
+        MOV R4,vo_sp
+        CMP R4,DPP0:c_vo_min
+        JMPR cc_SGE,L_B3808
+        MOV R5,DPP0:c_vo_min
+        MOV vo_sp,R5
+L_B3808:                 ; 0xb3808
+        MOV R4,vo_iga
+        SUB R4,vo_sp
+        MOV R5,R4
+        ASHR R5,#0FH
+        MOV R12,R4
+        MOV R13,R5
+        MOV R4,R12
+        SHL R12,#0FH
+        SHL R13,#0FH
+        SHR R4,#01H
+        OR R13,R4
+        MOV R14,vo_ini
+        SUB R14,vo_sp
+        CALLS 00FH,Div_S32_S16_Round
+        MOV R9,R4
+        ASHR R9,#08H
+        MOV R4,#DATA16 00080H
+        SUB R4,R9
+        MOV R9,R4
+        CMP R9,#DATA16 000FFH
+        JMPR cc_SLE,L_B3844
+        MOV R9,#DATA16 000FFH
+L_B3844:                 ; 0xb3844
+        MOV R4,R9
+        MOVB vo_ratio,RL4
+L_B384A:                 ; 0xb384a
+        MOV R12,#DATA16 04724H
+        MOVBZ R13,vo_ratio
+        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        SUB R4,#DATA16 08000H
+        MOV [-R0],R4
+        MOV R12,#DATA16 04718H
+        MOVBZ R13,n_32
+        MOVBZ R14,lv_iga_cc2b
+        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XByte_YByte
+        SUBB RL4,#DATA16 00080H
+        MOVBS R12,RL4
+        MOV R14,#DATA16 00400H
+        MOV R13,[R0+]
+        CALLS 00FH,MulDiv_S16_Sat_v2
+        MOV R9,R4
+        CMP R9,#DATA16 0007FH
+        JMPR cc_SLE,L_B388A
+        MOV R4,#DATA16 0007FH
+        JMPR cc_UC,L_B3898
+L_B388A:                 ; 0xb388a
+        CMP R9,#DATA16 0FF80H
+        JMPR cc_SGE,L_B3896
+        MOV R4,#DATA16 0FF80H
+        JMPR cc_UC,L_B3898
+L_B3896:                 ; 0xb3896
+        MOV R4,R9
+L_B3898:                 ; 0xb3898
+        MOVB iga_bas_vvt_cor,RL4
+        MOV R12,#DATA16 04738H
+        MOVBZ R13,vo_ratio
+        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        SUB R4,#DATA16 08000H
+        MOV [-R0],R4
+        MOV R12,#DATA16 0472CH
+        MOVBZ R13,n_32
+        MOVBZ R14,lv_iga_cc2b
+        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XByte_YByte
+        SUBB RL4,#DATA16 00080H
+        MOVBS R12,RL4
+        MOV R14,#DATA16 00400H
+        MOV R13,[R0+]
+        CALLS 00FH,MulDiv_S16_Sat_v2
+        MOV R9,R4
+        CMP R9,#DATA16 0007FH
+        JMPR cc_SLE,L_B38DC
+        MOV R4,#DATA16 0007FH
+        JMPR cc_UC,L_B38EA
+L_B38DC:                 ; 0xb38dc
+        CMP R9,#DATA16 0FF80H
+        JMPR cc_SGE,L_B38E8
+        MOV R4,#DATA16 0FF80H
+        JMPR cc_UC,L_B38EA
+L_B38E8:                 ; 0xb38e8
+        MOV R4,R9
+L_B38EA:                 ; 0xb38ea
+        MOVB iga_ref_vvt_cor,RL4
+L_B38EE:                 ; 0xb38ee
+        MOV R9,[R0+]
+        RETS
+
+S_B373A ENDS
+        END

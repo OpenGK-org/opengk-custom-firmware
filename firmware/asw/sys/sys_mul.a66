@@ -1,0 +1,1369 @@
+; asw/sys/sys_mul.a66
+; 0xFE592-0xFED82  (2032 bytes, 70 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Abs_Diff_S16, Abs_Diff_U16, Abs_S16, Abs_S16_Safe, ArgMax_U16_Arr, Asr_S32
+PUBLIC  Clamp_S16, Clamp_S16_3arg, Clamp_S16_SignedLimit, Clamp_U16, Clamp_U16_v2, Div_U32_U16_Round32
+PUBLIC  Lsr_U32, Lsr_U32_Ovf, Max0_S16, Max_S16, Max_U16, Min_S16
+PUBLIC  Min_U16, MulAdd_U32_Sat, MulDiv_Round_S16, MulDiv_S16_PSW, MulDiv_S16_Sat, MulDiv_S16_Sat_v2
+PUBLIC  MulDiv_S16_c, Mul_Frac_Sat_x2, Mul_Frac_U16_Sat, Mul_Q14_Sat_S16, Mul_Q15_Sat, Mul_Q15_Sat_Signed
+PUBLIC  Mul_S16_Hi, Mul_S16_Hi_EAA0, Mul_S16_Q15_Round, Mul_S16_Q23, Mul_S16_Q7_Sat, Mul_S16_Q9_Sat
+PUBLIC  Mul_S16_S32, Mul_S16_Sat16, Mul_S8_Q7_Sat, Mul_Shift_S16, Mul_Shift_U16_Sat, Mul_Shift_U16_Sat32
+PUBLIC  Mul_U16_Hi, Mul_U16_Sat16, Mul_U16_SatByte, Ramp_Down_U16, Ramp_S16_Q5, Ramp_Toward_S16
+PUBLIC  Ramp_Toward_U16, Read_MD_Signed, Read_MulDiv_MD, Ret_Const_fe0f, SatNeg_To_7fff, Sat_HiByte_ff
+PUBLIC  Sat_S8, Sat_Sel_S16, Sat_Sub_S16, Sat_Sub_S16_Min, Sat_Sub_S16_v2, Sat_Sub_S32
+PUBLIC  Sat_Sub_S8, Sat_U16_IfOvf, Sel_Ovf_U16, Shl3_Sat_S16, Shl6_Sat_S16, SignByBit7_fe0f
+PUBLIC  Sub_Floor0_S16, sub_r12_13_ret_r4, sub_r12_r13_rets_r4, subtract_r12_r13_negate_if_not_rets_r4
+
+S_FE592 SECTION CODE AT 0FE592H
+
+; ======== MulDiv_S16_c  (@0xfe592) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib): Signed (p1*p2)/p3 with sign handling, saturate to
+        ; 0x8000.
+        ; ------------------------------------------------------------
+MulDiv_S16_c:
+        OR R14,R14
+        JMPR cc_EQ,L_FE5F4
+        BCMP R12.0FH,R14.0FH
+        JMPR cc_N,L_FE5C4
+        JMPR cc_NC,L_FE5A2
+        NEG R12
+        NEG R14
+L_FE5A2:                 ; 0xfe5a2
+        MULU R12,R13
+        DIVLU R14
+        JMPR cc_V,L_FE5BE
+        MOV R4,0FE0EH
+        SUB R14,MDH_FE0C
+        CMP R14,MDH_FE0C
+        JMPR cc_UGT,L_FE5B8
+        ADD R4,#01H
+L_FE5B8:                 ; 0xfe5b8
+        JB R4.0FH,L_FE5BE
+        RETS
+L_FE5BE:                 ; 0xfe5be
+        MOV R4,#DATA16 07FFFH
+        RETS
+L_FE5C4:                 ; 0xfe5c4
+        JNB R12.0FH,L_FE5CA
+        NEG R12
+L_FE5CA:                 ; 0xfe5ca
+        JNB R14.0FH,L_FE5D0
+        NEG R14
+L_FE5D0:                 ; 0xfe5d0
+        MULU R12,R13
+        DIVLU R14
+        JMPR cc_V,L_FE5EE
+        MOV R4,0FE0EH
+        SUB R14,MDH_FE0C
+        CMP R14,MDH_FE0C
+        JMPR cc_UGT,L_FE5E6
+        ADD R4,#01H
+L_FE5E6:                 ; 0xfe5e6
+        JB R4.0FH,L_FE5EE
+        NEG R4
+        RETS
+L_FE5EE:                 ; 0xfe5ee
+        MOV R4,#DATA16 08000H
+        RETS
+L_FE5F4:                 ; 0xfe5f4
+        OR R13,R13
+        JMPR cc_EQ,L_FE5BE
+        JB R12.0FH,L_FE5EE
+        JMPR cc_UC,L_FE5BE
+        RETS
+
+; ======== MulDiv_Round_S16  (@0xfe600) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+MulDiv_Round_S16:
+        OR R14,R14
+        JMPR cc_EQ,L_FE650
+        JNB R13.0FH,L_FE62E
+        NEG R13
+        MULU R12,R13
+        DIVLU R14
+        JMPR cc_V,L_FE628
+        MOV R4,0FE0EH
+        SUB R14,MDH_FE0C
+        CMP R14,MDH_FE0C
+        JMPR cc_UGT,L_FE620
+        ADD R4,#01H
+L_FE620:                 ; 0xfe620
+        JB R4.0FH,L_FE628
+        NEG R4
+        RETS
+L_FE628:                 ; 0xfe628
+        MOV R4,#DATA16 08000H
+        RETS
+L_FE62E:                 ; 0xfe62e
+        MULU R12,R13
+        DIVLU R14
+        JMPR cc_V,L_FE64A
+        MOV R4,0FE0EH
+        SUB R14,MDH_FE0C
+        CMP R14,MDH_FE0C
+        JMPR cc_UGT,L_FE644
+        ADD R4,#01H
+L_FE644:                 ; 0xfe644
+        JB R4.0FH,L_FE64A
+        RETS
+L_FE64A:                 ; 0xfe64a
+        MOV R4,#DATA16 07FFFH
+        RETS
+L_FE650:                 ; 0xfe650
+        OR R12,R12
+        JMPR cc_EQ,L_FE64A
+        JB R13.0FH,L_FE628
+        JMPR cc_UC,L_FE64A
+        RETS
+
+; ======== Div_U32_U16_Round32  (@0xfe65c) ========
+        ; u32 Div_U32_U16_Round32(u16 lo, u16 hi, u16 den): rounded unsigned 32/16 divide, returns 32-bit
+        ; quotient; 0xFFFFFFFF on overflow/div-by-0.
+Div_U32_U16_Round32:
+        MOV 0FE0EH,R13
+        DIVU R14
+        JMPR cc_V,L_FE686
+        MOV R5,0FE0EH
+        MOV 0FE0EH,R12
+        DIVLU R14
+        MOV R4,0FE0EH
+        SUB R14,MDH_FE0C
+        CMP R14,MDH_FE0C
+        JMPR cc_UGT,L_FE680
+        ADD R4,#01H
+        JMPR cc_C,L_FE682
+L_FE680:                 ; 0xfe680
+        RETS
+L_FE682:                 ; 0xfe682
+        ADD R5,#01H
+        JMPR cc_NC,L_FE680
+L_FE686:                 ; 0xfe686
+        MOV R4,#DATA16 0FFFFH
+        MOV R5,#DATA16 0FFFFH
+        RETS
+
+; ======== Clamp_S16_SignedLimit  (@0xfe690) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib): One-sided signed clamp: p2>=0 => upper limit, p2<0
+        ; => lower limit for p1.
+        ; ------------------------------------------------------------
+Clamp_S16_SignedLimit:
+        CMP R12,R13
+        JB R13.0FH,L_FE69C
+        JMPR cc_SGT,L_FE69E
+L_FE698:                 ; 0xfe698
+        MOV R4,R12
+        RETS
+L_FE69C:                 ; 0xfe69c
+        JMPR cc_SGE,L_FE698
+L_FE69E:                 ; 0xfe69e
+        MOV R4,R13
+        RETS
+
+; ======== Min_U16  (@0xfe6a2) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Min_U16:
+        CMP R12,R13
+        JMPR cc_ULE,L_FE6AA
+        MOV R4,R13
+        RETS
+L_FE6AA:                 ; 0xfe6aa
+        MOV R4,R12
+        RETS
+
+; ======== Clamp_S16  (@0xfe6ae) ========
+        ; Clamp_S16(value, lo, hi): returns value clamped to [lo, hi] (hi has priority if value>=hi).
+Clamp_S16:
+        CMP R12,R14
+        JMPR cc_SGE,L_FE6BA
+        CMP R12,R13
+        JMPR cc_SLT,L_FE6BE
+        MOV R4,R12
+        RETS
+L_FE6BA:                 ; 0xfe6ba
+        MOV R4,R14
+        RETS
+L_FE6BE:                 ; 0xfe6be
+        MOV R4,R13
+        RETS
+
+; ======== Ramp_Down_U16  (@0xfe6c2) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Ramp_Down_U16:
+        CMP R13,R12
+        JMPR cc_UGT,L_FE6CA
+L_FE6C6:                 ; 0xfe6c6
+        MOV R4,R12
+        RETS
+L_FE6CA:                 ; 0xfe6ca
+        MOV R4,R13
+        SUB R13,R12
+        CMP R13,R14
+        JMPR cc_ULE,L_FE6C6
+        SUB R4,R14
+        RETS
+
+; ======== Ramp_Toward_S16  (@0xfe6d6) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Ramp_Toward_S16:
+        MOV R5,R12
+        CMP R12,R13
+        JMPR cc_SGT,L_FE6E2
+        JMPR cc_SLT,L_FE6EE
+L_FE6DE:                 ; 0xfe6de
+        MOV R4,R5
+        RETS
+L_FE6E2:                 ; 0xfe6e2
+        SUB R12,R13
+        CMP R12,R14
+        JMPR cc_ULE,L_FE6DE
+        MOV R4,R13
+        ADD R4,R14
+        RETS
+L_FE6EE:                 ; 0xfe6ee
+        MOV R4,R13
+        SUB R13,R12
+        CMP R13,R14
+        JMPR cc_ULE,L_FE6DE
+        SUB R4,R14
+        RETS
+
+; ======== Clamp_U16  (@0xfe6fa) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Clamp_U16:
+        CMP R12,R14
+        JMPR cc_NC,L_FE706
+        CMP R12,R13
+        JMPR cc_C,L_FE70A
+        MOV R4,R12
+        RETS
+L_FE706:                 ; 0xfe706
+        MOV R4,R14
+        RETS
+L_FE70A:                 ; 0xfe70a
+        MOV R4,R13
+        RETS
+
+; ======== Max_U16  (@0xfe70e) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Max_U16:
+        CMP R12,R13
+        JMPR cc_ULE,L_FE716
+        MOV R4,R12
+        RETS
+L_FE716:                 ; 0xfe716
+        MOV R4,R13
+        RETS
+
+; ======== Min_S16  (@0xfe71a) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Min_S16:
+        CMP R12,R13
+        JMPR cc_SLE,L_FE722
+        MOV R4,R13
+        RETS
+L_FE722:                 ; 0xfe722
+        MOV R4,R12
+        RETS
+
+; ======== Clamp_S16_3arg  (@0xfe726) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Clamp_S16_3arg:
+        CMP R12,R14
+        JMPR cc_SGE,L_FE732
+        CMP R12,R13
+        JMPR cc_SLT,L_FE736
+        MOV R4,R12
+        RETS
+L_FE732:                 ; 0xfe732
+        MOV R4,R14
+        RETS
+L_FE736:                 ; 0xfe736
+        MOV R4,R13
+        RETS
+
+; ======== Clamp_U16_v2  (@0xfe73a) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Clamp_U16_v2:
+        CMP R12,R14
+        JMPR cc_NC,L_FE746
+        CMP R12,R13
+        JMPR cc_C,L_FE74A
+        MOV R4,R12
+        RETS
+L_FE746:                 ; 0xfe746
+        MOV R4,R14
+        RETS
+L_FE74A:                 ; 0xfe74a
+        MOV R4,R13
+        RETS
+
+; ======== Ramp_Toward_U16  (@0xfe74e) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Ramp_Toward_U16:
+        MOV R5,R12
+        CMP R12,R13
+        JMPR cc_UGT,L_FE75A
+        JMPR cc_C,L_FE766
+L_FE756:                 ; 0xfe756
+        MOV R4,R5
+        RETS
+L_FE75A:                 ; 0xfe75a
+        SUB R12,R13
+        CMP R12,R14
+        JMPR cc_ULE,L_FE756
+        MOV R4,R13
+        ADD R4,R14
+        RETS
+L_FE766:                 ; 0xfe766
+        MOV R4,R13
+        SUB R13,R12
+        CMP R13,R14
+        JMPR cc_ULE,L_FE756
+        SUB R4,R14
+        RETS
+
+; ======== Max_S16  (@0xfe772) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Max_S16:
+        CMP R12,R13
+        JMPR cc_SLE,L_FE77A
+        MOV R4,R12
+        RETS
+L_FE77A:                 ; 0xfe77a
+        MOV R4,R13
+        RETS
+
+; ======== Mul_S16_Q9_Sat  (@0xfe77e) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib): Signed fractional multiply (>>7, <<9 scaling),
+        ; saturating.
+        ; ------------------------------------------------------------
+Mul_S16_Q9_Sat:
+        JNB R12.0FH,L_FE7A2
+        NEG R12
+        MULU R12,R13
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        SHR R4,#07H
+        SHL R5,#09H
+        OR R4,R5
+        JB R4.0FH,L_FE79C
+        NEG R4
+        RETS
+L_FE79C:                 ; 0xfe79c
+        MOV R4,#DATA16 08000H
+        RETS
+L_FE7A2:                 ; 0xfe7a2
+        MULU R13,R12
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        SHR R4,#07H
+        SHL R5,#09H
+        OR R4,R5
+        JB R4.0FH,L_FE7B8
+        RETS
+L_FE7B8:                 ; 0xfe7b8
+        MOV R4,#DATA16 07FFFH
+        RETS
+
+; ======== Ramp_S16_Q5  (@0xfe7be) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib): Signed interpolate/ramp: p2 += (p1-p2)*p3>>5,
+        ; saturating byte.
+        ; ------------------------------------------------------------
+Ramp_S16_Q5:
+        SUB R12,R13
+        BCMP R12.0FH,R14.0FH
+        JMPR cc_N,L_FE7DC
+        MUL R12,R14
+        MOV R4,0FE0EH
+        SHR R4,#05H
+        ADD R4,R13
+        ORB RH4,RH4
+        JMPR cc_NE,L_FE7D6
+        RETS
+L_FE7D6:                 ; 0xfe7d6
+        MOVB RL4,#DATA16 000FFH
+        RETS
+L_FE7DC:                 ; 0xfe7dc
+        NEG R14
+        MUL R12,R14
+        MOV R4,0FE0EH
+        SHR R4,#05H
+        SUB R13,R4
+        JMPR cc_N,L_FE7EE
+        MOV R4,R13
+        RETS
+L_FE7EE:                 ; 0xfe7ee
+        MOVB RL4,#00H
+        RETS
+
+; ======== SignByBit7_fe0f  (@0xfe7f2) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib): Return +/- DAT_00fe0f per sign bit (0x80) of
+        ; param.
+        ; ------------------------------------------------------------
+SignByBit7_fe0f:
+        JNB R12.07H,L_FE802
+        NEG R12
+        MULU R12,R13
+        MOVB RL4,ign_cc_stat
+        NEGB RL4
+        RETS
+L_FE802:                 ; 0xfe802
+        MULU R12,R13
+        MOVB RL4,ign_cc_stat
+        RETS
+
+; ======== Mul_Q14_Sat_S16  (@0xfe80a) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Mul_Q14_Sat_S16:
+        MOV R5,#DATA16 04000H
+        MUL R12,R13
+        DIVL R5
+        JMPR cc_V,L_FE81A
+        MOV R4,0FE0EH
+        RETS
+L_FE81A:                 ; 0xfe81a
+        BCMP R12.0FH,R13.0FH
+        JMPR cc_N,L_FE826
+        MOV R4,#DATA16 07FFFH
+        RETS
+L_FE826:                 ; 0xfe826
+        MOV R4,#DATA16 08000H
+        RETS
+
+; ======== MulDiv_S16_Sat  (@0xfe82c) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+MulDiv_S16_Sat:
+        JNB R12.0FH,L_FE848
+        NEG R12
+        MULU R12,R13
+        DIVLU R14
+        JMPR cc_V,L_FE842
+        MOV R4,0FE0EH
+        JMPR cc_N,L_FE842
+        NEG R4
+        RETS
+L_FE842:                 ; 0xfe842
+        MOV R4,#DATA16 08000H
+        RETS
+L_FE848:                 ; 0xfe848
+        MULU R12,R13
+        DIVLU R14
+        JMPR cc_V,L_FE856
+        MOV R4,0FE0EH
+        JMPR cc_N,L_FE856
+        RETS
+L_FE856:                 ; 0xfe856
+        MOV R4,#DATA16 07FFFH
+        RETS
+
+; ======== Mul_Q15_Sat_Signed  (@0xfe85c) ========
+        ; Mul_Q15_Sat_Signed(a, b): signed Q15 fractional multiply with rounding + saturation. a*b>>16<<1,
+        ; round via bit15; saturates to 0x7fff/0x8000. Sign taken from a.
+Mul_Q15_Sat_Signed:
+        JNB R12.0FH,L_FE87E
+        NEG R12
+        MULU R12,R13
+        MOV R4,MDH_FE0C
+        SHL R4,#01H
+        JMPR cc_N,L_FE878
+        MOV R12,0FE0EH
+        BMOV R4.00H,R12.0FH
+        NEG R4
+        RETS
+L_FE878:                 ; 0xfe878
+        MOV R4,#DATA16 08000H
+        RETS
+L_FE87E:                 ; 0xfe87e
+        MULU R12,R13
+        MOV R4,MDH_FE0C
+        SHL R4,#01H
+        JMPR cc_N,L_FE892
+        MOV R12,0FE0EH
+        BMOV R4.00H,R12.0FH
+        RETS
+L_FE892:                 ; 0xfe892
+        MOV R4,#DATA16 07FFFH
+        RETS
+
+; ======== Mul_S16_Q7_Sat  (@0xfe898) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Mul_S16_Q7_Sat:
+        MULU R12,R13
+        MOV R4,0FE0EH
+        JMPR cc_N,L_FE8A4
+        SHR R4,#07H
+        RETS
+L_FE8A4:                 ; 0xfe8a4
+        MOVB RL4,#DATA16 000FFH
+        RETS
+
+; ======== Read_MulDiv_MD  (@0xfe8aa) ========
+        ; u16 Read_MulDiv_MD(void): returns the CPU multiply/divide result register pair (MDH high : MDL high
+        ; byte @0xFE0F). Read after a mul/div.
+Read_MulDiv_MD:
+        MULU R12,R13
+        MOVB RH4,MDH_FE0C
+        MOVB RL4,ign_cc_stat
+        RETS
+
+; ======== Mul_S16_S32  (@0xfe8b6) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Mul_S16_S32:
+        JNB R12.0FH,L_FE8D0
+        NEG R12
+        MULU R12,R13
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        CPL R4
+        CPL R5
+        ADD R4,#01H
+        ADDC R5,#00H
+        RETS
+L_FE8D0:                 ; 0xfe8d0
+        MULU R12,R13
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        RETS
+
+; ======== Mul_U16_Hi  (@0xfe8dc) ========
+        ; u16 Mul_U16_Hi(u16 a, u16 b): returns high word of unsigned 16x16 product ((a*b)>>16). Q16
+        ; fixed-point multiply high.
+Mul_U16_Hi:
+        MULU R12,R13
+        MOV R4,MDH_FE0C
+        RETS
+
+; ======== Mul_S16_Sat16  (@0xfe8e4) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Mul_S16_Sat16:
+        JB R12.0FH,L_FE900
+        MULU R12,R13
+        CMP MDH,#DATA16 00000H
+        JMPR cc_NE,L_FE8FA
+        MOV R4,0FE0EH
+        JB R4.0FH,L_FE8FA
+        RETS
+L_FE8FA:                 ; 0xfe8fa
+        MOV R4,#DATA16 07FFFH
+        RETS
+L_FE900:                 ; 0xfe900
+        NEG R12
+        MULU R12,R13
+        CMP MDH,#DATA16 00000H
+        JMPR cc_NE,L_FE916
+        MOV R4,0FE0EH
+        JB R4.0FH,L_FE916
+        NEG R4
+        RETS
+L_FE916:                 ; 0xfe916
+        MOV R4,#DATA16 08000H
+        RETS
+
+; ======== Mul_Q15_Sat  (@0xfe91c) ========
+        ; u16 Mul_Q15_Sat(u16 a, u16 b): Q15 multiply (a*b)>>15, saturates to 0xFFFF on overflow.
+Mul_Q15_Sat:
+        MULU R12,R13
+        MOV R4,MDH_FE0C
+        JMPR cc_N,L_FE930
+        SHL R4,#01H
+        MOV R12,0FE0EH
+        BMOV R4.00H,R12.0FH
+        RETS
+L_FE930:                 ; 0xfe930
+        MOV R4,#DATA16 0FFFFH
+        RETS
+
+; ======== Mul_U16_SatByte  (@0xfe936) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Mul_U16_SatByte:
+        MULU R12,R13
+        MOVB RL4,ign_cc_stat
+        JMPR cc_V,L_FE940
+        RETS
+L_FE940:                 ; 0xfe940
+        MOVB RL4,#DATA16 000FFH
+        RETS
+
+; ======== Mul_S16_Q15_Round  (@0xfe946) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib): Signed 16x16 fractional multiply with rounding
+        ; (Q15, 31-bit result).
+        ; ------------------------------------------------------------
+Mul_S16_Q15_Round:
+        MUL R12,R13
+        JMPR cc_N,L_FE962
+        MOV R4,MDH_FE0C
+        SHL R4,#01H
+        JMPR cc_N,L_FE95C
+        MOV R5,0FE0EH
+        BMOV R4.00H,R5.0FH
+        RETS
+L_FE95C:                 ; 0xfe95c
+        MOV R4,#DATA16 07FFFH
+        RETS
+L_FE962:                 ; 0xfe962
+        MOV R4,MDH_FE0C
+        SHL R4,#01H
+        MOV R5,0FE0EH
+        BMOV R4.00H,R5.0FH
+        AND R5,#DATA16 07FFFH
+        JMPR cc_EQ,L_FE978
+        ADD R4,#01H
+L_FE978:                 ; 0xfe978
+        RETS
+
+; ======== Mul_Shift_U16_Sat32  (@0xfe97a) ========
+        ; u32 Mul_Shift_U16_Sat32(u16 a, u16 b, short shift): ((a*b))>>shift, saturates to 0xFFFF; returns
+        ; 32-bit result. 32-bit variant of Mul_Shift_U16_Sat.
+Mul_Shift_U16_Sat32:
+        MULU R12,R13
+        MOV R5,MDH_FE0C
+        SHR R5,R14
+        JMPR cc_NE,L_FE996
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        SHR R4,R14
+        NEG R14
+        SHL R5,R14
+        OR R4,R5
+        RETS
+L_FE996:                 ; 0xfe996
+        MOV R4,#DATA16 0FFFFH
+        RETS
+
+; ======== Mul_S16_Hi  (@0xfe99c) ========
+        ; Mul_S16_Hi(a, b): signed*unsigned high-word multiply (a*b>>16), sign from a. Signed sibling of
+        ; Mul_U16_Hi.
+Mul_S16_Hi:
+        JNB R12.0FH,L_FE9AC
+        NEG R12
+        MULU R12,R13
+        MOV R4,MDH_FE0C
+        NEG R4
+        RETS
+L_FE9AC:                 ; 0xfe9ac
+        MULU R13,R12
+        MOV R4,MDH_FE0C
+        RETS
+
+; ======== Mul_S16_Q23  (@0xfe9b4) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib): Signed fractional multiply, >>0x17 scaling,
+        ; saturating.
+        ; ------------------------------------------------------------
+Mul_S16_Q23:
+        MUL R12,R13
+        MOV R5,MDH_FE0C
+        MOVB RH4,RL5
+        ASHR R5,#07H
+        JMPR cc_EQ,L_FE9C4
+        ADD R5,#01H
+        JMPR cc_NE,L_FE9CA
+L_FE9C4:                 ; 0xfe9c4
+        MOVB RL4,ign_cc_stat
+        RETS
+L_FE9CA:                 ; 0xfe9ca
+        MOV R4,#DATA16 07FFFH
+        SHL R5,#01H
+        ADDC R4,#00H
+        RETS
+
+; ======== Mul_U16_Sat16  (@0xfe9d4) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Mul_U16_Sat16:
+        MULU R12,R13
+        JMPR cc_V,L_FE9DE
+        MOV R4,0FE0EH
+        RETS
+L_FE9DE:                 ; 0xfe9de
+        MOV R4,#DATA16 0FFFFH
+        RETS
+
+; ======== MulDiv_S16_PSW  (@0xfe9e4) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib): Signed mul-div with PSW sign flag (32-bit
+        ; intermediate).
+        ; ------------------------------------------------------------
+MulDiv_S16_PSW:
+        BMOV PSW.06H,R13.0FH
+        JNB R13.0FH,L_FE9F4
+        CPL R12
+        CPL R13
+        ADD R12,#01H
+        ADDC R13,#00H
+L_FE9F4:                 ; 0xfe9f4
+        MULU R13,R14
+        CMP MDH,#DATA16 00000H
+        JMPR cc_NE,L_FEA1C
+        MOV R5,0FE0EH
+        MULU R12,R14
+        ADD R5,MDH_FE0C
+        JMPR cc_C,L_FEA1C
+        JMPR cc_N,L_FEA1C
+        MOV R4,0FE0EH
+        JNB PSW.06H,L_FEA30
+        CPL R4
+        CPL R5
+        ADD R4,#01H
+        ADDC R5,#00H
+        RETS
+L_FEA1C:                 ; 0xfea1c
+        JB PSW.06H,L_FEA2A
+        MOV R5,#DATA16 07FFFH
+        MOV R4,#DATA16 0FFFFH
+        RETS
+L_FEA2A:                 ; 0xfea2a
+        MOV R5,#DATA16 08000H
+        MOV R4,#00H
+L_FEA30:                 ; 0xfea30
+        RETS
+
+; ======== Mul_S8_Q7_Sat  (@0xfea32) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Mul_S8_Q7_Sat:
+        JNB R12.07H,L_FEA4E
+        NEG R12
+        MULU R12,R13
+        MOV R4,0FE0EH
+        SHR R4,#07H
+        JB R4.07H,L_FEA48
+        NEG R4
+        RETS
+L_FEA48:                 ; 0xfea48
+        MOVB RL4,#DATA16 00080H
+        RETS
+L_FEA4E:                 ; 0xfea4e
+        MULU R12,R13
+        MOV R4,0FE0EH
+        SHR R4,#07H
+        JB R4.07H,L_FEA5C
+        RETS
+L_FEA5C:                 ; 0xfea5c
+        MOVB RL4,#DATA16 0007FH
+        RETS
+
+; ======== Ret_Const_fe0f  (@0xfea62) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Ret_Const_fe0f:
+        MULU R12,R13
+        MOVB RL4,ign_cc_stat
+        RETS
+
+; ======== MulDiv_S16_Sat_v2  (@0xfea6a) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+MulDiv_S16_Sat_v2:
+        MUL R12,R13
+        DIVL R14
+        JMPR cc_V,L_FEA76
+        MOV R4,0FE0EH
+        RETS
+L_FEA76:                 ; 0xfea76
+        BCMP R12.0FH,R13.0FH
+        JMPR cc_N,L_FEA82
+        MOV R4,#DATA16 07FFFH
+        RETS
+L_FEA82:                 ; 0xfea82
+        MOV R4,#DATA16 08000H
+        RETS
+
+; ======== Mul_Frac_U16_Sat  (@0xfea88) ========
+        ; Mul_Frac_U16_Sat(a, b): fractional multiply a*b>>16; saturates to 0xffff if bits>24 set, else
+        ; returns CONCAT11(hi-byte, DAT_00fe0f). Non-x2 sibling of Mul_Frac_Sat_x2.
+Mul_Frac_U16_Sat:
+        MULU R12,R13
+        MOV R4,MDH_FE0C
+        MOVB RH4,RH4
+        JMPR cc_NE,L_FEA9A
+        MOVB RH4,RL4
+        MOVB RL4,ign_cc_stat
+        RETS
+L_FEA9A:                 ; 0xfea9a
+        MOV R4,#DATA16 0FFFFH
+        RETS
+
+; ======== Mul_S16_Hi  (@0xfeaa0) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Mul_S16_Hi_EAA0:
+        JNB R12.0FH,L_FEAB0
+        NEG R12
+        MULU R12,R13
+        MOV R4,MDH_FE0C
+        NEG R4
+        RETS
+L_FEAB0:                 ; 0xfeab0
+        MULU R13,R12
+        MOV R4,MDH_FE0C
+        RETS
+
+; ======== Mul_Frac_Sat_x2  (@0xfeab8) ========
+        ; Mul_Frac_Sat_x2(a, b): fractional multiply a*(b*2); saturates to 0xffff if bits>24 set, else returns
+        ; CONCAT11(hi-byte, DAT_00fe0f).
+Mul_Frac_Sat_x2:
+        SHL R13,#01H
+        MULU R12,R13
+        MOV R4,MDH_FE0C
+        MOVB RH4,RH4
+        JMPR cc_NE,L_FEACC
+        MOVB RH4,RL4
+        MOVB RL4,ign_cc_stat
+        RETS
+L_FEACC:                 ; 0xfeacc
+        MOV R4,#DATA16 0FFFFH
+        RETS
+
+; ======== Read_MD_Signed  (@0xfead2) ========
+        ; Read_MD_Signed(sign): returns CONCAT11(MDH, DAT_00fe0f) (prior mul/div result word), negated if sign
+        ; arg bit15 set. Signed variant of Read_MulDiv_MD.
+Read_MD_Signed:
+        JNB R12.0FH,L_FEAE6
+        NEG R12
+        MULU R12,R13
+        MOVB RL4,ign_cc_stat
+        MOVB RH4,MDH_FE0C
+        NEG R4
+        RETS
+L_FEAE6:                 ; 0xfeae6
+        MULU R13,R12
+        MOVB RH4,RL5
+        MOVB RL4,ign_cc_stat
+        MOVB RH4,MDH_FE0C
+        RETS
+
+; ======== MulAdd_U32_Sat  (@0xfeaf4) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+MulAdd_U32_Sat:
+        MULU R13,R14
+        CMP MDH,#DATA16 00000H
+        JMPR cc_NE,L_FEB0E
+        MOV R5,0FE0EH
+        MULU R12,R14
+        ADD R5,MDH_FE0C
+        JMPR cc_C,L_FEB0E
+        MOV R4,0FE0EH
+        RETS
+L_FEB0E:                 ; 0xfeb0e
+        MOV R5,#DATA16 0FFFFH
+        MOV R4,#DATA16 0FFFFH
+        RETS
+
+; ======== Shl3_Sat_S16  (@0xfeb18) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Shl3_Sat_S16:
+        CMP R12,#DATA16 0F000H
+        JMPR cc_SGE,L_FEB24
+        MOV R4,#DATA16 08000H
+        RETS
+L_FEB24:                 ; 0xfeb24
+        CMP R12,#DATA16 01000H
+        JMPR cc_SLT,L_FEB30
+        MOV R4,#DATA16 07FFFH
+        RETS
+L_FEB30:                 ; 0xfeb30
+        SHL R12,#03H
+        MOV R4,R12
+        RETS
+
+; ======== ArgMax_U16_Arr  (@0xfeb36) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+ArgMax_U16_Arr:
+        MOV R1,R12
+        MOV R5,#00H
+        MOV R4,R1
+L_FEB3C:                 ; 0xfeb3c
+        CMP R5,[R1]
+        JMPR cc_UGT,L_FEB44
+        MOV R5,[R1]
+        MOV R4,R1
+L_FEB44:                 ; 0xfeb44
+        ADD R1,#02H
+        SUB R13,#01H
+        CMP R13,#00H
+        JMPR cc_UGT,L_FEB3C
+        SUB R4,R12
+        SHR R4,#01H
+        RETS
+
+; ======== Mul_Shift_U16_Sat  (@0xfeb52) ========
+        ; u16 Mul_Shift_U16_Sat(u16 a, u16 b, short shift): (a*b)>>shift, saturates to 0xFFFF on overflow.
+        ; Returns 16-bit (low word).
+Mul_Shift_U16_Sat:
+        MULU R12,R13
+        MOV R4,0FE0EH
+        JMPR cc_NV,L_FEB74
+        MOV R5,MDH_FE0C
+        MOV R3,R5
+        SHR R5,R14
+        JMPR cc_NE,L_FEB6E
+        SHR R4,R14
+        NEG R14
+        SHL R3,R14
+        OR R4,R3
+        RETS
+L_FEB6E:                 ; 0xfeb6e
+        MOV R4,#DATA16 0FFFFH
+        RETS
+L_FEB74:                 ; 0xfeb74
+        SHR R4,R14
+        RETS
+
+; ======== Max0_S16  (@0xfeb78) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Max0_S16:
+        JB R12.0FH,L_FEB80
+        MOV R4,R12
+        RETS
+L_FEB80:                 ; 0xfeb80
+        MOV R4,#00H
+        RETS
+
+; ======== Lsr_U32  (@0xfeb84) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Lsr_U32:
+        MOV R5,R13
+        MOV R4,R12
+        AND R14,#DATA16 0000FH
+        JMPR cc_EQ,L_FEB98
+        SHR R5,R14
+        SHR R4,R14
+        NEG R14
+        SHL R13,R14
+        OR R4,R13
+L_FEB98:                 ; 0xfeb98
+        RETS
+
+; ======== Mul_Shift_S16  (@0xfeb9a) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Mul_Shift_S16:
+        JNB R12.0FH,L_FEBC8
+        NEG R12
+        MULU R12,R13
+        MOV R5,MDH_FE0C
+        SHR R5,R14
+        JMPR cc_NE,L_FEBC2
+        MOV R4,0FE0EH
+        SHR R4,R14
+        JMPR cc_N,L_FEBC2
+        NEG R14
+        MOV R5,MDH_FE0C
+        SHL R5,R14
+        JMPR cc_N,L_FEBC2
+        OR R4,R5
+        NEG R4
+        RETS
+L_FEBC2:                 ; 0xfebc2
+        MOV R4,#DATA16 08000H
+        RETS
+L_FEBC8:                 ; 0xfebc8
+        MULU R12,R13
+        MOV R5,MDH_FE0C
+        SHR R5,R14
+        JMPR cc_NE,L_FEBE8
+        MOV R4,0FE0EH
+        SHR R4,R14
+        JMPR cc_N,L_FEBE8
+        NEG R14
+        MOV R5,MDH_FE0C
+        SHL R5,R14
+        JMPR cc_N,L_FEBE8
+        OR R4,R5
+        RETS
+L_FEBE8:                 ; 0xfebe8
+        MOV R4,#DATA16 07FFFH
+        RETS
+
+; ======== Sat_Sel_S16  (@0xfebee) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib): Saturate-select: if p2==sign-extend(p1) return p1
+        ; else 0x7fff by sign.
+        ; ------------------------------------------------------------
+Sat_Sel_S16:
+        MOV R4,R12
+        ASHR R12,#0FH
+        CMP R13,R12
+        JMPR cc_NE,L_FEBF8
+        RETS
+L_FEBF8:                 ; 0xfebf8
+        MOV R4,#DATA16 07FFFH
+        SHL R13,#01H
+        ADDC R4,#00H
+        RETS
+
+; ======== Sat_U16_IfOvf  (@0xfec02) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signal): Saturate 32->16: returns low word if high word==0, else
+        ; saturates to 0/0xffff by sign. (Math-lib primitive, heavily used by LamCtl.)
+        ; ------------------------------------------------------------
+Sat_U16_IfOvf:
+        MOV R4,R13
+        JMPR cc_NE,L_FEC0A
+        MOV R4,R12
+        RETS
+L_FEC0A:                 ; 0xfec0a
+        ASHR R4,#0FH
+        CPL R4
+        RETS
+
+; ======== Abs_S16  (@0xfec10) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Abs_S16:
+        MOV R4,R12
+        JMPR cc_N,L_FEC16
+        RETS
+L_FEC16:                 ; 0xfec16
+        NEG R4
+        RETS
+
+; ======== Sel_Ovf_U16  (@0xfec1a) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib): Overflow select: p2==0 return p1 else 0xffff.
+        ; ------------------------------------------------------------
+Sel_Ovf_U16:
+        OR R13,R13
+        JMPR cc_NE,L_FEC22
+        MOV R4,R12
+        RETS
+L_FEC22:                 ; 0xfec22
+        MOV R4,#DATA16 0FFFFH
+        RETS
+
+; ======== Sat_S8  (@0xfec28) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Sat_S8:
+        MOV R4,R12
+        ASHR R12,#07H
+        JMPR cc_EQ,L_FEC32
+        ADD R12,#01H
+        JMPR cc_NE,L_FEC34
+L_FEC32:                 ; 0xfec32
+        RETS
+L_FEC34:                 ; 0xfec34
+        MOV R4,#DATA16 0007FH
+        SHL R12,#01H
+        ADDC R4,#00H
+        RETS
+
+; ======== Lsr_U32_Ovf  (@0xfec3e) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Lsr_U32_Ovf:
+        AND R14,#DATA16 0000FH
+        JMPR cc_EQ,L_FEC5C
+        MOV R5,R13
+        SHR R5,R14
+        JMPR cc_NE,L_FEC56
+        MOV R4,R12
+        SHR R4,R14
+        NEG R14
+        SHL R13,R14
+        OR R4,R13
+        RETS
+L_FEC56:                 ; 0xfec56
+        MOV R4,#DATA16 0FFFFH
+        RETS
+L_FEC5C:                 ; 0xfec5c
+        OR R13,R3
+        JMPR cc_NE,L_FEC56
+        MOV R4,R12
+        RETS
+
+; ======== Shl6_Sat_S16  (@0xfec64) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Shl6_Sat_S16:
+        MOV R4,R12
+        ASHR R12,#0AH
+        MOV R13,#00H
+        ADDC R12,R13
+        JMPR cc_NE,L_FEC72
+        SHL R4,#06H
+        RETS
+L_FEC72:                 ; 0xfec72
+        SHR R4,#0FH
+        ADD R4,#DATA16 07FFFH
+        RETS
+
+; ======== Sat_HiByte_ff  (@0xfec7a) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Sat_HiByte_ff:
+        MOV R4,R12
+        CMPB RH4,#00H
+        JMPR cc_NE,L_FEC82
+        RETS
+L_FEC82:                 ; 0xfec82
+        MOVB RL4,#DATA16 000FFH
+        RETS
+
+; ======== Asr_S32  (@0xfec88) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Asr_S32:
+        MOV R5,R13
+        MOV R4,R12
+        AND R14,#DATA16 0000FH
+        JMPR cc_EQ,L_FEC9C
+        ASHR R5,R14
+        SHR R4,R14
+        NEG R14
+        SHL R13,R14
+        OR R4,R13
+L_FEC9C:                 ; 0xfec9c
+        RETS
+
+; ======== SatNeg_To_7fff  (@0xfec9e) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+SatNeg_To_7fff:
+        JB R12.0FH,L_FECA6
+        MOV R4,R12
+        RETS
+L_FECA6:                 ; 0xfeca6
+        MOV R4,#DATA16 07FFFH
+        RETS
+
+; ======== Abs_S16_Safe  (@0xfecac) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Abs_S16_Safe:
+        MOV R4,R12
+        JMPR cc_NN,L_FECB6
+        JMPR cc_NET,L_FECB4
+        ADD R4,#01H
+L_FECB4:                 ; 0xfecb4
+        NEG R4
+L_FECB6:                 ; 0xfecb6
+        RETS
+
+; ======== Sat_Sub_S16_v2  (@0xfecb8) ========
+        ; short Sat_Sub_S16_v2(short a, short b): signed 16-bit saturating subtract (clamps to
+        ; +0x7FFF/-0x8000); variant of Sat_Sub_S16.
+Sat_Sub_S16_v2:
+        SUB R12,R13
+        JMPR cc_N,L_FECC8
+        JMPR cc_C,L_FECC2
+        MOV R4,R12
+        RETS
+L_FECC2:                 ; 0xfecc2
+        MOV R4,#DATA16 08000H
+        RETS
+L_FECC8:                 ; 0xfecc8
+        JMPR cc_NC,L_FECCE
+        MOV R4,R12
+        RETS
+L_FECCE:                 ; 0xfecce
+        MOV R4,#DATA16 07FFFH
+        RETS
+
+; ======== Sub_Floor0_S16  (@0xfecd4) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Sub_Floor0_S16:
+        SUB R12,R13
+        JB R13.0FH,L_FECE0
+        JMPR cc_C,L_FECE6
+        MOV R4,R12
+        RETS
+L_FECE0:                 ; 0xfece0
+        JMPR cc_NC,L_FECEA
+        MOV R4,R12
+        RETS
+L_FECE6:                 ; 0xfece6
+        MOV R4,#00H
+        RETS
+L_FECEA:                 ; 0xfecea
+        MOV R4,#DATA16 0FFFFH
+        RETS
+
+; ======== Sat_Sub_S16  (@0xfecf0) ========
+        ; short Sat_Sub_S16(short a, short b): signed 16-bit saturating subtract (clamps to +0x7FFF/-0x8000 on
+        ; overflow).
+Sat_Sub_S16:
+        MOV R4,R12
+        SUB R4,R13
+        JMPR cc_V,L_FECF8
+        RETS
+L_FECF8:                 ; 0xfecf8
+        ASHR R4,#0FH
+        ADD R4,#DATA16 08000H
+        RETS
+
+; ======== Abs_Diff_S16  (@0xfed00) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Abs_Diff_S16:
+        SUB R12,R13
+        JMPR cc_SGT,L_FED06
+        NEG R12
+L_FED06:                 ; 0xfed06
+        MOV R4,R12
+        RETS
+
+; ======== sub_r12_13_ret_r4  (@0xfed0a) ========
+sub_r12_13_ret_r4:
+        SUB R12,R13
+        JMPR cc_C,L_FED12
+        MOV R4,R12
+        RETS
+L_FED12:                 ; 0xfed12
+        MOVB RL4,#00H
+        RETS
+
+; ======== Abs_Diff_U16  (@0xfed16) ========
+        ; Abs_Diff_U16(a, b): returns |a-b|.
+Abs_Diff_U16:
+        SUB R12,R13
+        JMPR cc_NC,L_FED1C
+        NEG R12
+L_FED1C:                 ; 0xfed1c
+        MOV R4,R12
+        RETS
+
+; ======== sub_r12_r13_rets_r4  (@0xfed20) ========
+sub_r12_r13_rets_r4:
+        SUB R12,R13
+        JMPR cc_C,L_FED28
+        MOV R4,R12
+        RETS
+L_FED28:                 ; 0xfed28
+        MOV R4,#00H
+        RETS
+
+; ======== Sat_Sub_S8  (@0xfed2c) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Sat_Sub_S8:
+        SUB R12,R13
+        BCMP R12.08H,R12.07H
+        JMPR cc_N,L_FED38
+        MOV R4,R12
+        RETS
+L_FED38:                 ; 0xfed38
+        JB R12.08H,L_FED42
+        MOVB RL4,#DATA16 0007FH
+        RETS
+L_FED42:                 ; 0xfed42
+        MOVB RL4,#DATA16 00080H
+        RETS
+
+; ======== subtract_r12_r13_negate_if_not_rets_r4  (@0xfed48) ========
+subtract_r12_r13_negate_if_not_rets_r4:
+        SUB R12,R13
+        JMPR cc_NN,L_FED4E
+        NEG R12
+L_FED4E:                 ; 0xfed4e
+        MOV R4,R12
+        RETS
+
+; ======== Sat_Sub_S32  (@0xfed52) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Sat_Sub_S32:
+        SUB R12,R14
+        SUBC R13,R15
+        JMPR cc_V,L_FED5E
+        MOV R4,R12
+        MOV R5,R13
+        RETS
+L_FED5E:                 ; 0xfed5e
+        JMPR cc_NN,L_FED6A
+        MOV R5,#DATA16 07FFFH
+        MOV R4,#DATA16 0FFFFH
+        RETS
+L_FED6A:                 ; 0xfed6a
+        MOV R5,#DATA16 08000H
+        XOR R4,R4
+        RETS
+
+; ======== Sat_Sub_S16_Min  (@0xfed72) ========
+        ; Sat_Sub_S16_Min(a, b): signed a-b saturating to 0x8000 (min) on positive-overflow detect.
+Sat_Sub_S16_Min:
+        MOV R4,R12
+        SUB R4,R13
+        CMP R12,R4
+        JMPR cc_SLT,L_FED7C
+        RETS
+L_FED7C:                 ; 0xfed7c
+        MOV R4,#DATA16 08000H
+        RETS
+
+S_FE592 ENDS
+        END

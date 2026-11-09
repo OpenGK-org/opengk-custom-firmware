@@ -1,0 +1,207 @@
+; asw/fuel/fuel_flow.a66
+; 0xB18B2-0xB1A64  (434 bytes, 6 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_iv_cp                              EQU  090588H
+ldpm_maf_cyl_ip_rel_flow_inc_cp                     EQU  0914B4H
+ip_fuel_flow_lgrd_neg_cp__maf_cyl    EQU  0929DCH
+ip_fuel_flow_lgrd_pos_cp__maf_cyl    EQU  0929E8H
+
+PUBLIC  Calc_FuelFlow_Add_CP_3, Calc_FuelFlow_Add_CP_v2, Calc_FuelFlow_Lgrd, L_B19C6, Reset_fuel_flow_add_ad_cp_9be, Reset_fuel_flow_add_ad_cp_9e0
+PUBLIC  Reset_uVar1_980
+EXTERN  Add_r12_r13_Return_r4:NEAR, Get_IP_Word_2D_Table:NEAR, Get_IP_Word_Y_Axis:NEAR, Mul_Shift_U16_Sat32:NEAR
+EXTERN  Mul_U16_Hi:NEAR, multipied_r12_r13_UGT_r14_rets_r4:NEAR, sub_r12_r13_rets_r4:NEAR
+
+S_B18B2 SECTION CODE AT 0B18B2H
+
+; ======== Calc_FuelFlow_Add_CP_v2  (@0xb18b2) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tq/tqi output signals): Canister-purge fuel-flow additive adaptation
+        ; (variant/second path of 0xb1890).
+        ; ------------------------------------------------------------
+Calc_FuelFlow_Add_CP_v2:
+        MOV R4,cp_tra_state
+        CMP R4,#03H
+        JMPR cc_EQ,L_B18BE
+        CMP R4,#04H
+        JMPR cc_NE,L_B18F2
+L_B18BE:                 ; 0xb18be
+        MOV R12,cl_mmv_old
+        MOV R13,rel_flow_cps_old_min
+        CALLS 00FH,Mul_U16_Hi
+        MOV R8,R4
+        MOV R12,R8
+        MOV R13,maf_cyl
+        SHR R13,#01H
+        MOV R14,#04H
+        CALLS 00FH,Mul_Shift_U16_Sat32
+        MOV fuel_flow_add_ad_cp,R4
+        MOV R12,R8
+        MOV R13,maf_dly_mmv
+        SHR R13,#01H
+        MOV R14,#04H
+        CALLS 00FH,Mul_Shift_U16_Sat32
+        MOV fuel_flow_add_ad_dly,R4
+        JMPR cc_UC,L_B19C6
+L_B18F2:                 ; 0xb18f2
+        MOV R4,cp_tra_state
+        CMP R4,#05H
+        JMPR cc_EQ,L_B1908
+        CMP R4,#07H
+        JMPR cc_EQ,L_B1908
+        CMP R4,#06H
+        JMPR cc_EQ,L_B1908
+        CMP R4,#DATA16 00008H
+        JMPR cc_NE,L_B191C
+L_B1908:                 ; 0xb1908
+        MOV R12,maf_cps_dly
+        MOV R13,cl_mmv_di
+        MOV R14,#0DH
+        CALLS 00FH,Mul_Shift_U16_Sat32
+        MOV fuel_flow_add_ad_cp,R4
+        JMPR cc_UC,L_B19C6
+L_B191C:                 ; 0xb191c
+        MOV fuel_flow_add_ad_cp,ZEROS
+        MOV fuel_flow_add_ad_dly,ZEROS
+        JMPR cc_UC,L_B19C6
+
+; ======== Calc_FuelFlow_Add_CP_3  (@0xb1926) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signals): Canister-purge fuel-flow additive adaptation (third path).
+        ; ------------------------------------------------------------
+Calc_FuelFlow_Add_CP_3:
+        MOV R12,cl_mmv_old
+        MOV R13,rel_flow_cps_old_min
+        CALLS 00FH,Mul_U16_Hi
+        MOV R8,R4
+        MOV R12,R8
+        MOV R13,maf_cyl
+        SHR R13,#01H
+        MOV R14,#04H
+        CALLS 00FH,Mul_Shift_U16_Sat32
+        MOV R9,R4
+        MOV R12,R8
+        MOV R13,maf_dly_mmv
+        SHR R13,#01H
+        MOV R14,#04H
+        CALLS 00FH,Mul_Shift_U16_Sat32
+        MOV R8,R4
+        JNB lv_fcut_fast.06H,L_B1962
+        MOV fuel_flow_add_ad_cp,R9
+        MOV fuel_flow_add_ad_dly,R8
+        JMPR cc_UC,L_B19C6
+L_B1962:                 ; 0xb1962
+        MOV R12,R9
+        MOV R13,fuel_flow_add_ad_cp
+        CALLA cc_UC,Calc_FuelFlow_Lgrd
+        MOV fuel_flow_add_ad_cp,R4
+        MOV R12,R8
+        MOV R13,fuel_flow_add_ad_dly
+        CALLA cc_UC,Calc_FuelFlow_Lgrd
+        MOV fuel_flow_add_ad_dly,R4
+        JMPR cc_UC,L_B19C6
+
+; ======== Reset_uVar1_980  (@0xb1980) ========
+Reset_uVar1_980:
+        MOV R12,cl_mmv
+        MOV R13,maf_cps_dly
+        MOV R14,#0DH
+        CALLS 00FH,Mul_Shift_U16_Sat32
+        MOV R8,R4
+        MOV R12,R8
+        MOV R13,fuel_flow_add_ad_cp
+        CALLA cc_UC,Calc_FuelFlow_Lgrd
+        MOV fuel_flow_add_ad_cp,R4
+        MOV R12,cl_mmv
+        MOV R13,maf_cps_dly_2_mmv
+        MOV R14,#0DH
+        CALLS 00FH,Mul_Shift_U16_Sat32
+        MOV R8,R4
+        MOV R12,R8
+        MOV R13,fuel_flow_add_ad_dly
+        CALLA cc_UC,Calc_FuelFlow_Lgrd
+        MOV fuel_flow_add_ad_dly,R4
+        JMPR cc_UC,L_B19C6
+
+; ======== Reset_fuel_flow_add_ad_cp_9be  (@0xb19be) ========
+Reset_fuel_flow_add_ad_cp_9be:
+        MOV fuel_flow_add_ad_cp,ZEROS
+        MOV fuel_flow_add_ad_dly,ZEROS
+L_B19C6:                 ; 0xb19c6
+        MOV R12,fuel_flow_add_ad_cp
+        SHR R12,#04H
+        MOV R13,DPP0:c_iv_cp
+        SHR R13,#05H
+        MOV R14,n_C93C
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV ti_add_ad_cp_1,R4
+        JMPR cc_UC,L_B19EC
+
+; ======== Reset_fuel_flow_add_ad_cp_9e0  (@0xb19e0) ========
+Reset_fuel_flow_add_ad_cp_9e0:
+        MOV fuel_flow_add_ad_cp,ZEROS
+        MOV fuel_flow_add_ad_dly,ZEROS
+        MOV ti_add_ad_cp_1,ZEROS
+L_B19EC:                 ; 0xb19ec
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_FuelFlow_Lgrd  (@0xb19f2) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Calc_FuelFlow_Lgrd:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV R7,R12
+        MOV R8,R13
+        MOV R12,#DATA16 POF ldpm_maf_cyl_ip_rel_flow_inc_cp
+        MOV R13,#DATA16 PAG ldpm_maf_cyl_ip_rel_flow_inc_cp
+        MOV R14,maf_cyl
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_fuel_flow_lgrd_pos_cp__maf_cyl
+        MOV R13,#DATA16 PAG ip_fuel_flow_lgrd_pos_cp__maf_cyl
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV R9,R4
+        MOV R12,R7
+        MOV R13,R8
+        CALLS 00FH,sub_r12_r13_rets_r4
+        CMP R4,R9
+        JMPR cc_ULE,L_B1A32
+        MOV R12,R8
+        MOV R13,R9
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV R9,R4
+        JMPR cc_UC,L_B1A5A
+L_B1A32:                 ; 0xb1a32
+        MOV R12,#DATA16 POF ip_fuel_flow_lgrd_neg_cp__maf_cyl
+        MOV R13,#DATA16 PAG ip_fuel_flow_lgrd_neg_cp__maf_cyl
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV R9,R4
+        MOV R12,R8
+        MOV R13,R7
+        CALLS 00FH,sub_r12_r13_rets_r4
+        CMP R4,R9
+        JMPR cc_ULE,L_B1A58
+        MOV R12,R8
+        MOV R13,R9
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV R9,R4
+        JMPR cc_UC,L_B1A5A
+L_B1A58:                 ; 0xb1a58
+        MOV R9,R7
+L_B1A5A:                 ; 0xb1a5a
+        MOV R4,R9
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RET
+
+S_B18B2 ENDS
+        END

@@ -1,0 +1,111 @@
+; asw/sys/data_0xa2d00.a66
+; 0xA2D00-0xA2DDA  (218 bytes, 0 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_vb_min_jump                        EQU  090412H
+c_vb_min_obd1                        EQU  090417H
+c_vb_min_obd2                        EQU  090418H
+
+
+S_A2D00 SECTION CODE AT 0A2D00H
+        BCLR can_fd58.0EH
+        MOVB RL4,#03H
+        MOVB ctr_maf_rng,RL4
+        BCLR can_fd58.0DH
+        MOVB RL5,#08H
+        MOVB div_maf_avg,RL5
+        MOV maf_avg_acc,ZEROS
+        MOVB RL3,#08H
+        MOVB div_maf_avg2,RL3
+        MOV maf_avg2_acc,ZEROS
+        RETS
+        MOV R4,maf_avg2
+        SHR R4,#02H
+        MOVB vb,RL4
+        MOV R4,maf_avg
+        SHR R4,#02H
+        MOVB v_igk,RL4
+        MOVB RL5,lv_sched_diag_inh
+        ANDB RL5,#01H
+        JMPR cc_NE,L_A2D54
+        MOVB RL5,vb
+        CMPB RL5,DPP0:c_vb_min_jump
+        JMPR cc_UGT,L_A2D4C
+        CMPB RL4,DPP0:c_vb_min_jump
+        JMPR cc_ULE,L_A2D50
+L_A2D4C:                 ; 0xa2d4c
+        BSET can_fd58.0AH
+        JMPR cc_UC,L_A2D6E
+L_A2D50:                 ; 0xa2d50
+        BCLR can_fd58.0AH
+        JMPR cc_UC,L_A2D6E
+L_A2D54:                 ; 0xa2d54
+        MOVB RL4,vb
+        CMPB RL4,#DATA16 0000EH
+        JMPR cc_UGT,L_A2D68
+        MOVB RL5,v_igk
+        CMPB RL5,#DATA16 0000EH
+        JMPR cc_ULE,L_A2D6C
+L_A2D68:                 ; 0xa2d68
+        BSET can_fd58.0AH
+        JMPR cc_UC,L_A2D6E
+L_A2D6C:                 ; 0xa2d6c
+        BCLR can_fd58.0AH
+L_A2D6E:                 ; 0xa2d6e
+        JNB can_fd58.0EH,L_A2D7A
+        BCLR can_fd58.0BH
+        BCLR can_fd58.0CH
+        BCLR can_fd58.09H
+        RETS
+L_A2D7A:                 ; 0xa2d7a
+        MOVB RL4,lv_sched_diag_inh
+        ANDB RL4,#01H
+        JMPR cc_NE,L_A2DB8
+        MOVB RL4,vb
+        CMPB RL4,DPP0:c_vb_min_obd1
+        JMPR cc_C,L_A2D96
+        MOVB RL5,v_igk
+        CMPB RL5,DPP0:c_vb_min_obd1
+        JMPR cc_NC,L_A2D9A
+L_A2D96:                 ; 0xa2d96
+        BCLR can_fd58.0BH
+        JMPR cc_UC,L_A2D9C
+L_A2D9A:                 ; 0xa2d9a
+        BSET can_fd58.0BH
+L_A2D9C:                 ; 0xa2d9c
+        MOVB RL4,vb
+        CMPB RL4,DPP0:c_vb_min_obd2
+        JMPR cc_C,L_A2DB0
+        MOVB RL5,v_igk
+        CMPB RL5,DPP0:c_vb_min_obd2
+        JMPR cc_NC,L_A2DB4
+L_A2DB0:                 ; 0xa2db0
+        BCLR can_fd58.0CH
+        JMPR cc_UC,L_A2DD6
+L_A2DB4:                 ; 0xa2db4
+        BSET can_fd58.0CH
+        JMPR cc_UC,L_A2DD6
+L_A2DB8:                 ; 0xa2db8
+        MOVB RL4,vb
+        CMPB RL4,#DATA16 00009H
+        JMPR cc_C,L_A2DCC
+        MOVB RL5,v_igk
+        CMPB RL5,#DATA16 00009H
+        JMPR cc_NC,L_A2DD2
+L_A2DCC:                 ; 0xa2dcc
+        BCLR can_fd58.0BH
+        BCLR can_fd58.0CH
+        JMPR cc_UC,L_A2DD6
+L_A2DD2:                 ; 0xa2dd2
+        BSET can_fd58.0BH
+        BSET can_fd58.0CH
+L_A2DD6:                 ; 0xa2dd6
+        BSET can_fd58.09H
+        RETS
+
+S_A2D00 ENDS
+        END

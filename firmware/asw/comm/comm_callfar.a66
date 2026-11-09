@@ -1,0 +1,148 @@
+; asw/comm/comm_callfar.a66
+; 0xDED22-0xDEE52  (304 bytes, 9 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  KWP_Comms_Tick, KWP_Tx_Setup, Reset_kwp_req_ptr_e34, Tail_rt_callfar_via_r5r4_d22, Tail_rt_callfar_via_r5r4_d36, Tail_rt_callfar_via_r5r4_d4c
+PUBLIC  Tail_rt_callfar_via_r5r4_d7a, Tail_rt_callfar_via_r5r4_e06, Tail_rt_callfar_via_r5r4_e1a
+
+S_DED22 SECTION CODE AT 0DED22H
+
+; ======== Tail_rt_callfar_via_r5r4_d22  (@0xded22) ========
+Tail_rt_callfar_via_r5r4_d22:
+        MOV R12,#00H
+        EXTP #00H, #02H
+        MOV R4,g_222
+        MOV R5,g_224
+        CALLS 000H,rt_callfar_via_r5r4
+        RETS
+
+; ======== Tail_rt_callfar_via_r5r4_d36  (@0xded36) ========
+Tail_rt_callfar_via_r5r4_d36:
+        MOV R12,#00H
+        MOV R13,#00H
+        EXTP #00H, #02H
+        MOV R4,g_21e
+        MOV R5,g_220
+        CALLS 000H,rt_callfar_via_r5r4
+        RETS
+
+; ======== Tail_rt_callfar_via_r5r4_d4c  (@0xded4c) ========
+Tail_rt_callfar_via_r5r4_d4c:
+        MOV R12,#01H
+        EXTP #00H, #02H
+        MOV R4,g_226
+        MOV R5,g_228
+        CALLS 000H,rt_callfar_via_r5r4
+        RETS
+
+; ======== KWP_Tx_Setup  (@0xded60) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by bl_/kwp_ output signals): KWP transmit setup: kwp_commobj_handle_tx /
+        ; kwp_prog_flags.
+        ; ------------------------------------------------------------
+KWP_Tx_Setup:
+        MOVB kwp_commobj_handle_tx,ZEROS
+        BCLR kwp_prog_flags.07H
+        MOV R12,#01H
+        EXTP #00H, #02H
+        MOV R4,kwp_22a
+        MOV R5,kwp_22c
+        CALLS 000H,rt_callfar_via_r5r4
+        RETS
+
+; ======== Tail_rt_callfar_via_r5r4_d7a  (@0xded7a) ========
+Tail_rt_callfar_via_r5r4_d7a:
+        MOV R12,#01H
+        EXTP #00H, #02H
+        MOV R4,g_222
+        MOV R5,g_224
+        CALLS 000H,rt_callfar_via_r5r4
+        RETS
+
+; ======== KWP_Comms_Tick  (@0xded8e) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by bl_/kwp_ output signals): KWP comms tick: kwp_comms_flags / kwp_timing_counter / tx
+        ; handle.
+        ; ------------------------------------------------------------
+KWP_Comms_Tick:
+        MOV [-R0],R6
+        MOVB RL6,#00H
+        JB kwp_prog_flags.0EH,L_DED9E
+        JB kwp_prog_flags.09H,L_DED9E
+        JNB kwp_comms_flags.0BH,L_DEDA2
+L_DED9E:                 ; 0xded9e
+        MOVB RL6,#01H
+        JMPR cc_UC,L_DEDE6
+L_DEDA2:                 ; 0xdeda2
+        MOVB RL4,kwp_session_state
+        JMPR cc_EQ,L_DEDB0
+        MOVB RL4,kwp_session_state
+        ANDB RL4,#02H
+        JMPR cc_EQ,L_DEDE6
+L_DEDB0:                 ; 0xdedb0
+        MOV R12,#02H
+        MOV R13,#DATA16 0E558H
+        MOV R14,#DATA16 0E548H
+        MOV R15,kwp_buf_limit
+        CALLS 008H,CommObj_Tp_SubmitSegment
+        MOV R4,kwp_msg_len
+        CMP R4,#02H
+        JMPR cc_NE,L_DEDE6
+        MOVB RL4,bl_kwp_sid
+        CMPB RL4,#DATA16 0003EH
+        JMPR cc_NE,L_DEDE6
+        MOVB RL4,bl_kwp_subfn
+        CMPB RL4,#DATA16 00080H
+        JMPR cc_NE,L_DEDE6
+        MOVB RL6,#01H
+        BSET kwp_comms_flags.09H
+        MOV kwp_timing_counter,ZEROS
+L_DEDE6:                 ; 0xdede6
+        CMPB RL6,#00H
+        JMPR cc_NE,L_DEE02
+        MOVB kwp_commobj_handle_tx,ZEROS
+        BSET kwp_prog_flags.07H
+        MOV R12,#02H
+        EXTP #00H, #02H
+        MOV R4,kwp_22a
+        MOV R5,kwp_22c
+        CALLS 000H,rt_callfar_via_r5r4
+L_DEE02:                 ; 0xdee02
+        MOV R6,[R0+]
+        RETS
+
+; ======== Tail_rt_callfar_via_r5r4_e06  (@0xdee06) ========
+Tail_rt_callfar_via_r5r4_e06:
+        MOV R12,#02H
+        EXTP #00H, #02H
+        MOV R4,g_222
+        MOV R5,g_224
+        CALLS 000H,rt_callfar_via_r5r4
+        RETS
+
+; ======== Tail_rt_callfar_via_r5r4_e1a  (@0xdee1a) ========
+Tail_rt_callfar_via_r5r4_e1a:
+        MOV R12,#DATA16 02A4AH
+        MOV R13,#DATA16 00028H
+        EXTP #00H, #02H
+        MOV R4,g_22e
+        MOV R5,g_230
+        CALLS 000H,rt_callfar_via_r5r4
+        RETS
+
+; ======== Reset_kwp_req_ptr_e34  (@0xdee34) ========
+Reset_kwp_req_ptr_e34:
+        MOV R4,#DATA16 0E559H
+        MOV kwp_req_ptr,R4
+        MOV R5,#DATA16 0E559H
+        MOV kwp_buf_base,R5
+        MOV R2,#DATA16 000FFH
+        MOV kwp_buf_limit,R2
+        MOV bl_prog_comm_flags,ZEROS
+        RETS
+
+S_DED22 ENDS
+        END

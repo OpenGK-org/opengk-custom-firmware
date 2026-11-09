@@ -1,0 +1,1060 @@
+; asw/vs/vs_seq.a66
+; 0xC849E-0xC8E2E  (2448 bytes, 12 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_abc_inc_tia_plaus_diag             EQU  0900C4H
+c_abc_max_tia_plaus_diag             EQU  0900F9H
+c_gr_at                              EQU  0901CAH
+c_gr_mt                              EQU  0901CBH
+c_n_max_at                           EQU  0902A3H
+c_n_max_at_dt                        EQU  0902A4H
+c_n_max_crk_lih                      EQU  0902A6H
+c_n_max_gr                           EQU  0902A8H
+c_n_max_isa_err                      EQU  0902ABH
+c_n_max_mt                           EQU  0902ADH
+c_n_max_mt_dt                        EQU  0902AEH
+c_n_max_thd_min                      EQU  0902B1H
+c_n_max_tps_maf_err                  EQU  0902B2H
+c_n_max_vs_0                         EQU  0902B5H
+c_n_max_vs_err                       EQU  0902B6H
+c_t_dly_tco_sub                      EQU  09032EH
+c_t_vs_min_tia_plaus                 EQU  09035FH
+c_tco_diag                           EQU  09036FH
+c_tco_max_diag                       EQU  090379H
+c_tco_min_diag                       EQU  090386H
+c_tco_min_fl                         EQU  090389H
+c_tco_n_max_vs_0                     EQU  090394H
+c_tco_sub_bol_diag                   EQU  0903A0H
+c_tia_max_diag                       EQU  0903B7H
+c_tia_min_diag                       EQU  0903BCH
+c_tia_sub_bol_diag                   EQU  0903C2H
+c_tia_sub_tol_diag                   EQU  0903C3H
+c_vs_max_rr                          EQU  090430H
+c_vs_min_fl                          EQU  09043AH
+c_vs_min_rr                          EQU  090440H
+c_dly_er_rr                          EQU  09051CH
+c_t_efp                              EQU  0906E8H
+c_t_n_max_vs_0                       EQU  09071EH
+c_wheel_grd_crlc_rr                  EQU  09083AH
+sst_dk_kf_nmax_diag_1              EQU  090DA2H
+sst_utal_kf_tal                       EQU  090F29H
+ldp_vs_rr_ip_wheel_grd_mmv_thd        EQU  09100EH
+sst_utkw_kf_tkw                              EQU  09178EH
+ip_wheel_grd_mmv_thd__vs_rr          EQU  095000H
+ip_n_max_isa_err__tps                EQU  0960C1H
+ip_tco__vtco                         EQU  0965DCH
+ip_tia__vtia                         EQU  096ABAH
+
+PUBLIC  Acq_TIA_TCO_Inputs, Calc_TIA_TCO_Plaus, Calc_VS_RR, CylSeq_Cyl1, CylSeq_Cyl2, CylSeq_Cyl3
+PUBLIC  CylSeq_Cyl4, Diag_TPS_Det, EngSpeedLimit_Coord, Reset_n_max_thd_49e, Sched_TempDiag_Task, Set_Out_FuelReq_2
+EXTERN  Abs_Diff_U16:NEAR, Acq_TCO_Mes:NEAR, Acq_TIA_Mes:NEAR, Calc_TI_Pos_WallFilm:NEAR
+EXTERN  CylCalc_Group_1:NEAR, CylCalc_Group_2:NEAR, CylCalc_Group_3:NEAR, DTC_Update_Debounced:NEAR
+EXTERN  Div_Frac_U16_Q16:NEAR, Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_2D_Table:NEAR
+EXTERN  Get_IP_Word_Y_Axis:NEAR, Inc_Ctr_Wup_DTC_Clr:NEAR, Interp_U16:NEAR, Mul_Shift_U16_Sat32:NEAR
+EXTERN  Set_lv_act_aj:NEAR, Tail_f0ae180_90e:NEAR
+
+S_C849E SECTION CODE AT 0C849EH
+
+; ======== Reset_n_max_thd_49e  (@0xc849e) ========
+Reset_n_max_thd_49e:
+        MOV R4,#DATA16 01FE0H
+        MOV n_max_thd,R4
+        MOVB n_max_vs_0,ONES
+        BCLR lv_n_max_isa_err.01H
+        BCLR lv_n_max_isa_err.00H
+        BCLR lv_crk_tooth_err.0FH
+        BCLR lv_crk_tooth_err.0EH
+        BCLR lv_crk_tooth_err.0DH
+        BCLR lv_crk_tooth_err.0CH
+        RETS
+
+; ======== EngSpeedLimit_Coord  (@0xc84b8) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (ThetaII, verified): engine speed limit coordination: n_max_vs_0, c_n_max_gr by
+        ; gear/vehicle speed
+        ; (was FUN_0c84b8)
+        ; ------------------------------------------------------------
+EngSpeedLimit_Coord:
+        MOVB RL4,vs
+        JMPR cc_NE,L_C851A
+        JB lv_ct.00H,L_C851A
+        JB abs_def.02H,L_C851A
+        MOVB RL5,tco
+        CMPB RL5,DPP0:c_tco_n_max_vs_0
+        JMPR cc_ULE,L_C851A
+        MOVB RL3,n_32
+        CMPB RL3,DPP0:c_n_max_vs_0
+        JMPR cc_UGT,L_C84DE
+        JNB lv_crk_tooth_err.0CH,L_C851A
+L_C84DE:                 ; 0xc84de
+        JB lv_cam_err.05H,L_C851A
+        JB lv_cam_err.0CH,L_C851A
+        JB lv_cam_err.0DH,L_C851A
+        JB lv_cam_err.0EH,L_C851A
+        JB lv_lam_lim_1_err.00H,L_C851A
+        JB lv_lam_lim_1_err.01H,L_C851A
+        JB lv_cam_err.07H,L_C851A
+        JB lv_cam_err.08H,L_C851A
+        MOV R4,lv_vs_cdc4
+        CMP R4,DPP0:c_t_n_max_vs_0
+        JMPR cc_C,L_C8514
+        BSET lv_crk_tooth_err.0CH
+        MOVB RL4,DPP0:c_n_max_vs_0
+        MOVB n_max_vs_0,RL4
+        JMPR cc_UC,L_C8524
+L_C8514:                 ; 0xc8514
+        SUB lv_vs_cdc4,ONES
+        JMPR cc_UC,L_C8524
+L_C851A:                 ; 0xc851a
+        BCLR lv_crk_tooth_err.0CH
+        MOV lv_vs_cdc4,ZEROS
+        MOVB n_max_vs_0,ONES
+L_C8524:                 ; 0xc8524
+        JB lv_cam_err.07H,L_C8554
+        JB lv_cam_err.08H,L_C8554
+        JB abs_def.04H,L_C853A
+        MOVB RL4,gr_mt
+        CMPB RL4,DPP0:c_gr_mt
+        JMPR cc_NC,L_C8548
+L_C853A:                 ; 0xc853a
+        JNB abs_def.04H,L_C8554
+        MOVB RL4,gr_at
+        CMPB RL4,DPP0:c_gr_at
+        JMPR cc_C,L_C8554
+L_C8548:                 ; 0xc8548
+        MOVB RL4,DPP0:c_n_max_gr
+        MOVB lv_vs_c34a,RL4
+        BSET lv_crk_tooth_err.0DH
+        JMPR cc_UC,L_C855A
+L_C8554:                 ; 0xc8554
+        MOVB lv_vs_c34a,ONES
+        BCLR lv_crk_tooth_err.0DH
+L_C855A:                 ; 0xc855a
+        JB lv_cam_err.07H,L_C8562
+        JNB lv_cam_err.08H,L_C857C
+L_C8562:                 ; 0xc8562
+        JNB abs_def.04H,L_C8570
+        MOVB RL4,gr_at
+        CMPB RL4,DPP0:c_gr_at
+        JMPR cc_C,L_C857C
+L_C8570:                 ; 0xc8570
+        MOVB RL4,DPP0:c_n_max_vs_err
+        MOVB lv_vs_c34b,RL4
+        BSET lv_crk_tooth_err.0EH
+        JMPR cc_UC,L_C8582
+L_C857C:                 ; 0xc857c
+        MOVB lv_vs_c34b,ONES
+        BCLR lv_crk_tooth_err.0EH
+L_C8582:                 ; 0xc8582
+        JB lv_cam_err.00H,L_C858A
+        JNB lv_cam_err.01H,L_C859E
+L_C858A:                 ; 0xc858a
+        JB lv_cam_err.02H,L_C8592
+        JNB lv_cam_err.03H,L_C859E
+L_C8592:                 ; 0xc8592
+        MOVB RL4,DPP0:c_n_max_tps_maf_err
+        MOVB lv_vs_c34c,RL4
+        BSET lv_crk_tooth_err.0FH
+        JMPR cc_UC,L_C85A4
+L_C859E:                 ; 0xc859e
+        MOVB lv_vs_c34c,ONES
+        BCLR lv_crk_tooth_err.0FH
+L_C85A4:                 ; 0xc85a4
+        JNB lv_dur_igc_0_err.0DH,L_C85B0
+        MOVB RL4,g_d426
+        ANDB RL4,#02H
+        JMPR cc_NE,L_C85BC
+L_C85B0:                 ; 0xc85b0
+        JNB lv_dur_igc_0_err.0EH,L_C85F2
+        MOVB RL4,g_d434
+        ANDB RL4,#05H
+        JMPR cc_EQ,L_C85F2
+L_C85BC:                 ; 0xc85bc
+        BSET lv_n_max_isa_err.00H
+        JB lv_cam_err.00H,L_C85E8
+        JB lv_cam_err.01H,L_C85E8
+        MOV R12,#DATA16 POF sst_dk_kf_nmax_diag_1
+        MOV R13,#DATA16 PAG sst_dk_kf_nmax_diag_1
+        MOVBZ R14,tps
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_n_max_isa_err__tps
+        MOV R13,#DATA16 PAG ip_n_max_isa_err__tps
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB lv_vs_c34d,RL4
+        JMPR cc_UC,L_C85F8
+L_C85E8:                 ; 0xc85e8
+        MOVB RL4,DPP0:c_n_max_isa_err
+        MOVB lv_vs_c34d,RL4
+        JMPR cc_UC,L_C85F8
+L_C85F2:                 ; 0xc85f2
+        MOVB lv_vs_c34d,ONES
+        BCLR lv_n_max_isa_err.00H
+L_C85F8:                 ; 0xc85f8
+        MOVBZ R12,vs_max
+        SHL R12,#03H
+        MOVBZ R13,vs
+        SHL R13,#08H
+        CALLS 00FH,Div_Frac_U16_Q16
+        MOV vs_ratio,R4
+        MOV R12,n_C93C
+        MOV R13,R4
+        MOV R14,#0BH
+        CALLS 00FH,Mul_Shift_U16_Sat32
+        MOV n_max_vs_max,R4
+        CMP R4,#DATA16 01FE0H
+        JMPR cc_ULE,L_C862A
+        MOV R5,#DATA16 01FE0H
+        MOV n_max_vs_max,R5
+L_C862A:                 ; 0xc862a
+        MOV R4,vs_ratio
+        CMP R4,#DATA16 007FFH
+        JMPR cc_UGT,L_C867A
+        BSET lv_n_max_isa_err.01H
+        MOVB RL4,pat_inh_iv
+        CMPB RL4,#DATA16 00008H
+        JMPR cc_NE,L_C8654
+        JNB state_out_fault.0DH,L_C86A0
+        MOV R4,lv_vs_f984
+        JMPR cc_NE,L_C86A0
+        MOV R5,DPP0:c_t_efp
+        MOV lv_vs_f984,R5
+        JMPR cc_UC,L_C86A0
+L_C8654:                 ; 0xc8654
+        MOV lv_vs_f984,ZEROS
+        MOVB RL4,#DATA16 000FBH
+        ANDB state_fuel_req,RL4
+        MOVB RL4,state_fuel_req
+        JMPR cc_NE,L_C8670
+        BSET state_out_fault.0DH
+        JB state_out_req.04H,L_C86A0
+        BSET state_out_diag.0DH
+        JMPR cc_UC,L_C86A0
+L_C8670:                 ; 0xc8670
+        BCLR state_out_fault.0DH
+        JB state_out_req.04H,L_C86A0
+        BCLR state_out_diag.0DH
+        JMPR cc_UC,L_C86A0
+L_C867A:                 ; 0xc867a
+        BCLR lv_n_max_isa_err.01H
+        MOV lv_vs_f984,ZEROS
+        MOVB RL4,#DATA16 000FBH
+        ANDB state_fuel_req,RL4
+        MOVB RL4,state_fuel_req
+        JMPR cc_NE,L_C8698
+        BSET state_out_fault.0DH
+        JB state_out_req.04H,L_C86A0
+        BSET state_out_diag.0DH
+        JMPR cc_UC,L_C86A0
+L_C8698:                 ; 0xc8698
+        BCLR state_out_fault.0DH
+        JB state_out_req.04H,L_C86A0
+        BCLR state_out_diag.0DH
+L_C86A0:                 ; 0xc86a0
+        MOVB RL4,crank_tim_6
+        JMPR cc_NE,L_C86AC
+        MOVB lv_vs_c34e,ONES
+        JMPR cc_UC,L_C86B4
+L_C86AC:                 ; 0xc86ac
+        MOVB RL4,DPP0:c_n_max_crk_lih
+        MOVB lv_vs_c34e,RL4
+L_C86B4:                 ; 0xc86b4
+        JB lv_ch.06H,L_C86D0
+        JB abs_def.04H,L_C86C6
+        MOVB RL4,DPP0:c_n_max_mt
+        MOVB n_max_tm,RL4
+        JMPR cc_UC,L_C86E6
+L_C86C6:                 ; 0xc86c6
+        MOVB RL4,DPP0:c_n_max_at
+        MOVB n_max_tm,RL4
+        JMPR cc_UC,L_C86E6
+L_C86D0:                 ; 0xc86d0
+        JB abs_def.04H,L_C86DE
+        MOVB RL4,DPP0:c_n_max_mt_dt
+        MOVB n_max_tm,RL4
+        JMPR cc_UC,L_C86E6
+L_C86DE:                 ; 0xc86de
+        MOVB RL4,DPP0:c_n_max_at_dt
+        MOVB n_max_tm,RL4
+L_C86E6:                 ; 0xc86e6
+        MOVB RL4,n_max_vs_0
+        CMPB RL4,lv_vs_c34a
+        JMPR cc_NC,L_C86F6
+        MOVBZ R4,n_max_vs_0
+        JMPR cc_UC,L_C86FA
+L_C86F6:                 ; 0xc86f6
+        MOVBZ R4,lv_vs_c34a
+L_C86FA:                 ; 0xc86fa
+        MOV [-R0],R4
+        MOVB RL4,lv_vs_c34b
+        CMPB RL4,lv_vs_c34c
+        JMPR cc_NC,L_C870C
+        MOVBZ R4,lv_vs_c34b
+        JMPR cc_UC,L_C8710
+L_C870C:                 ; 0xc870c
+        MOVBZ R4,lv_vs_c34c
+L_C8710:                 ; 0xc8710
+        MOV R5,[R0+]
+        CMP R5,R4
+        JMPR cc_SGE,L_C872C
+        MOVB RL4,n_max_vs_0
+        CMPB RL4,lv_vs_c34a
+        JMPR cc_NC,L_C8726
+        MOVBZ R4,n_max_vs_0
+        JMPR cc_UC,L_C872A
+L_C8726:                 ; 0xc8726
+        MOVBZ R4,lv_vs_c34a
+L_C872A:                 ; 0xc872a
+        JMPR cc_UC,L_C8740
+L_C872C:                 ; 0xc872c
+        MOVB RL4,lv_vs_c34b
+        CMPB RL4,lv_vs_c34c
+        JMPR cc_NC,L_C873C
+        MOVBZ R4,lv_vs_c34b
+        JMPR cc_UC,L_C8740
+L_C873C:                 ; 0xc873c
+        MOVBZ R4,lv_vs_c34c
+L_C8740:                 ; 0xc8740
+        MOV [-R0],R4
+        MOV R4,n_max_vs_max
+        SHR R4,#05H
+        CMPB RL4,lv_vs_c34d
+        JMPR cc_ULE,L_C8754
+        MOVBZ R4,lv_vs_c34d
+        JMPR cc_UC,L_C875A
+L_C8754:                 ; 0xc8754
+        MOV R4,n_max_vs_max
+        SHR R4,#05H
+L_C875A:                 ; 0xc875a
+        MOV [-R0],R4
+        MOVB RL4,lv_vs_c34e
+        CMPB RL4,n_max_tm
+        JMPR cc_NC,L_C876C
+        MOVBZ R4,lv_vs_c34e
+        JMPR cc_UC,L_C8770
+L_C876C:                 ; 0xc876c
+        MOVBZ R4,n_max_tm
+L_C8770:                 ; 0xc8770
+        MOV R5,[R0+]
+        CMP R5,R4
+        JMPR cc_SGE,L_C8790
+        MOV R4,n_max_vs_max
+        SHR R4,#05H
+        CMPB RL4,lv_vs_c34d
+        JMPR cc_ULE,L_C8788
+        MOVBZ R4,lv_vs_c34d
+        JMPR cc_UC,L_C878E
+L_C8788:                 ; 0xc8788
+        MOV R4,n_max_vs_max
+        SHR R4,#05H
+L_C878E:                 ; 0xc878e
+        JMPR cc_UC,L_C87A4
+L_C8790:                 ; 0xc8790
+        MOVB RL4,lv_vs_c34e
+        CMPB RL4,n_max_tm
+        JMPR cc_NC,L_C87A0
+        MOVBZ R4,lv_vs_c34e
+        JMPR cc_UC,L_C87A4
+L_C87A0:                 ; 0xc87a0
+        MOVBZ R4,n_max_tm
+L_C87A4:                 ; 0xc87a4
+        MOV R5,[R0+]
+        CMP R5,R4
+        JMPR cc_SGE,L_C8806
+        MOVB RL4,n_max_vs_0
+        CMPB RL4,lv_vs_c34a
+        JMPR cc_NC,L_C87BA
+        MOVBZ R4,n_max_vs_0
+        JMPR cc_UC,L_C87BE
+L_C87BA:                 ; 0xc87ba
+        MOVBZ R4,lv_vs_c34a
+L_C87BE:                 ; 0xc87be
+        MOV [-R0],R4
+        MOVB RL4,lv_vs_c34b
+        CMPB RL4,lv_vs_c34c
+        JMPR cc_NC,L_C87D0
+        MOVBZ R4,lv_vs_c34b
+        JMPR cc_UC,L_C87D4
+L_C87D0:                 ; 0xc87d0
+        MOVBZ R4,lv_vs_c34c
+L_C87D4:                 ; 0xc87d4
+        MOV R5,[R0+]
+        CMP R5,R4
+        JMPR cc_SGE,L_C87F0
+        MOVB RL4,n_max_vs_0
+        CMPB RL4,lv_vs_c34a
+        JMPR cc_NC,L_C87EA
+        MOVBZ R4,n_max_vs_0
+        JMPR cc_UC,L_C87EE
+L_C87EA:                 ; 0xc87ea
+        MOVBZ R4,lv_vs_c34a
+L_C87EE:                 ; 0xc87ee
+        JMPR cc_UC,L_C8804
+L_C87F0:                 ; 0xc87f0
+        MOVB RL4,lv_vs_c34b
+        CMPB RL4,lv_vs_c34c
+        JMPR cc_NC,L_C8800
+        MOVBZ R4,lv_vs_c34b
+        JMPR cc_UC,L_C8804
+L_C8800:                 ; 0xc8800
+        MOVBZ R4,lv_vs_c34c
+L_C8804:                 ; 0xc8804
+        JMPR cc_UC,L_C8868
+L_C8806:                 ; 0xc8806
+        MOV R4,n_max_vs_max
+        SHR R4,#05H
+        CMPB RL4,lv_vs_c34d
+        JMPR cc_ULE,L_C8818
+        MOVBZ R4,lv_vs_c34d
+        JMPR cc_UC,L_C881E
+L_C8818:                 ; 0xc8818
+        MOV R4,n_max_vs_max
+        SHR R4,#05H
+L_C881E:                 ; 0xc881e
+        MOV [-R0],R4
+        MOVB RL4,lv_vs_c34e
+        CMPB RL4,n_max_tm
+        JMPR cc_NC,L_C8830
+        MOVBZ R4,lv_vs_c34e
+        JMPR cc_UC,L_C8834
+L_C8830:                 ; 0xc8830
+        MOVBZ R4,n_max_tm
+L_C8834:                 ; 0xc8834
+        MOV R5,[R0+]
+        CMP R5,R4
+        JMPR cc_SGE,L_C8854
+        MOV R4,n_max_vs_max
+        SHR R4,#05H
+        CMPB RL4,lv_vs_c34d
+        JMPR cc_ULE,L_C884C
+        MOVBZ R4,lv_vs_c34d
+        JMPR cc_UC,L_C8852
+L_C884C:                 ; 0xc884c
+        MOV R4,n_max_vs_max
+        SHR R4,#05H
+L_C8852:                 ; 0xc8852
+        JMPR cc_UC,L_C8868
+L_C8854:                 ; 0xc8854
+        MOVB RL4,lv_vs_c34e
+        CMPB RL4,n_max_tm
+        JMPR cc_NC,L_C8864
+        MOVBZ R4,lv_vs_c34e
+        JMPR cc_UC,L_C8868
+L_C8864:                 ; 0xc8864
+        MOVBZ R4,n_max_tm
+L_C8868:                 ; 0xc8868
+        MOVBZ R5,DPP0:c_n_max_thd_min
+        CMP R5,R4
+        JMPR cc_SLE,L_C8878
+        MOVBZ R4,DPP0:c_n_max_thd_min
+        JMPA cc_UC,L_C89FA
+L_C8878:                 ; 0xc8878
+        MOVB RL4,n_max_vs_0
+        CMPB RL4,lv_vs_c34a
+        JMPR cc_NC,L_C8888
+        MOVBZ R4,n_max_vs_0
+        JMPR cc_UC,L_C888C
+L_C8888:                 ; 0xc8888
+        MOVBZ R4,lv_vs_c34a
+L_C888C:                 ; 0xc888c
+        MOV [-R0],R4
+        MOVB RL4,lv_vs_c34b
+        CMPB RL4,lv_vs_c34c
+        JMPR cc_NC,L_C889E
+        MOVBZ R4,lv_vs_c34b
+        JMPR cc_UC,L_C88A2
+L_C889E:                 ; 0xc889e
+        MOVBZ R4,lv_vs_c34c
+L_C88A2:                 ; 0xc88a2
+        MOV R5,[R0+]
+        CMP R5,R4
+        JMPR cc_SGE,L_C88BE
+        MOVB RL4,n_max_vs_0
+        CMPB RL4,lv_vs_c34a
+        JMPR cc_NC,L_C88B8
+        MOVBZ R4,n_max_vs_0
+        JMPR cc_UC,L_C88BC
+L_C88B8:                 ; 0xc88b8
+        MOVBZ R4,lv_vs_c34a
+L_C88BC:                 ; 0xc88bc
+        JMPR cc_UC,L_C88D2
+L_C88BE:                 ; 0xc88be
+        MOVB RL4,lv_vs_c34b
+        CMPB RL4,lv_vs_c34c
+        JMPR cc_NC,L_C88CE
+        MOVBZ R4,lv_vs_c34b
+        JMPR cc_UC,L_C88D2
+L_C88CE:                 ; 0xc88ce
+        MOVBZ R4,lv_vs_c34c
+L_C88D2:                 ; 0xc88d2
+        MOV [-R0],R4
+        MOV R4,n_max_vs_max
+        SHR R4,#05H
+        CMPB RL4,lv_vs_c34d
+        JMPR cc_ULE,L_C88E6
+        MOVBZ R4,lv_vs_c34d
+        JMPR cc_UC,L_C88EC
+L_C88E6:                 ; 0xc88e6
+        MOV R4,n_max_vs_max
+        SHR R4,#05H
+L_C88EC:                 ; 0xc88ec
+        MOV [-R0],R4
+        MOVB RL4,lv_vs_c34e
+        CMPB RL4,n_max_tm
+        JMPR cc_NC,L_C88FE
+        MOVBZ R4,lv_vs_c34e
+        JMPR cc_UC,L_C8902
+L_C88FE:                 ; 0xc88fe
+        MOVBZ R4,n_max_tm
+L_C8902:                 ; 0xc8902
+        MOV R5,[R0+]
+        CMP R5,R4
+        JMPR cc_SGE,L_C8922
+        MOV R4,n_max_vs_max
+        SHR R4,#05H
+        CMPB RL4,lv_vs_c34d
+        JMPR cc_ULE,L_C891A
+        MOVBZ R4,lv_vs_c34d
+        JMPR cc_UC,L_C8920
+L_C891A:                 ; 0xc891a
+        MOV R4,n_max_vs_max
+        SHR R4,#05H
+L_C8920:                 ; 0xc8920
+        JMPR cc_UC,L_C8936
+L_C8922:                 ; 0xc8922
+        MOVB RL4,lv_vs_c34e
+        CMPB RL4,n_max_tm
+        JMPR cc_NC,L_C8932
+        MOVBZ R4,lv_vs_c34e
+        JMPR cc_UC,L_C8936
+L_C8932:                 ; 0xc8932
+        MOVBZ R4,n_max_tm
+L_C8936:                 ; 0xc8936
+        MOV R5,[R0+]
+        CMP R5,R4
+        JMPR cc_SGE,L_C8998
+        MOVB RL4,n_max_vs_0
+        CMPB RL4,lv_vs_c34a
+        JMPR cc_NC,L_C894C
+        MOVBZ R4,n_max_vs_0
+        JMPR cc_UC,L_C8950
+L_C894C:                 ; 0xc894c
+        MOVBZ R4,lv_vs_c34a
+L_C8950:                 ; 0xc8950
+        MOV [-R0],R4
+        MOVB RL4,lv_vs_c34b
+        CMPB RL4,lv_vs_c34c
+        JMPR cc_NC,L_C8962
+        MOVBZ R4,lv_vs_c34b
+        JMPR cc_UC,L_C8966
+L_C8962:                 ; 0xc8962
+        MOVBZ R4,lv_vs_c34c
+L_C8966:                 ; 0xc8966
+        MOV R5,[R0+]
+        CMP R5,R4
+        JMPR cc_SGE,L_C8982
+        MOVB RL4,n_max_vs_0
+        CMPB RL4,lv_vs_c34a
+        JMPR cc_NC,L_C897C
+        MOVBZ R4,n_max_vs_0
+        JMPR cc_UC,L_C8980
+L_C897C:                 ; 0xc897c
+        MOVBZ R4,lv_vs_c34a
+L_C8980:                 ; 0xc8980
+        JMPR cc_UC,L_C8996
+L_C8982:                 ; 0xc8982
+        MOVB RL4,lv_vs_c34b
+        CMPB RL4,lv_vs_c34c
+        JMPR cc_NC,L_C8992
+        MOVBZ R4,lv_vs_c34b
+        JMPR cc_UC,L_C8996
+L_C8992:                 ; 0xc8992
+        MOVBZ R4,lv_vs_c34c
+L_C8996:                 ; 0xc8996
+        JMPR cc_UC,L_C89FA
+L_C8998:                 ; 0xc8998
+        MOV R4,n_max_vs_max
+        SHR R4,#05H
+        CMPB RL4,lv_vs_c34d
+        JMPR cc_ULE,L_C89AA
+        MOVBZ R4,lv_vs_c34d
+        JMPR cc_UC,L_C89B0
+L_C89AA:                 ; 0xc89aa
+        MOV R4,n_max_vs_max
+        SHR R4,#05H
+L_C89B0:                 ; 0xc89b0
+        MOV [-R0],R4
+        MOVB RL4,lv_vs_c34e
+        CMPB RL4,n_max_tm
+        JMPR cc_NC,L_C89C2
+        MOVBZ R4,lv_vs_c34e
+        JMPR cc_UC,L_C89C6
+L_C89C2:                 ; 0xc89c2
+        MOVBZ R4,n_max_tm
+L_C89C6:                 ; 0xc89c6
+        MOV R5,[R0+]
+        CMP R5,R4
+        JMPR cc_SGE,L_C89E6
+        MOV R4,n_max_vs_max
+        SHR R4,#05H
+        CMPB RL4,lv_vs_c34d
+        JMPR cc_ULE,L_C89DE
+        MOVBZ R4,lv_vs_c34d
+        JMPR cc_UC,L_C89E4
+L_C89DE:                 ; 0xc89de
+        MOV R4,n_max_vs_max
+        SHR R4,#05H
+L_C89E4:                 ; 0xc89e4
+        JMPR cc_UC,L_C89FA
+L_C89E6:                 ; 0xc89e6
+        MOVB RL4,lv_vs_c34e
+        CMPB RL4,n_max_tm
+        JMPR cc_NC,L_C89F6
+        MOVBZ R4,lv_vs_c34e
+        JMPR cc_UC,L_C89FA
+L_C89F6:                 ; 0xc89f6
+        MOVBZ R4,n_max_tm
+L_C89FA:                 ; 0xc89fa
+        SHL R4,#05H
+        MOV n_max_thd,R4
+        RETS
+
+; ======== Set_Out_FuelReq_2  (@0xc8a02) ========
+        ; ------------------------------------------------------------
+        ; Digital-output-latch driver (fd94=request/fd96=state, fd98=feedback; CC5/P2.5=fuel-pump relay): Set
+        ; output-request latch bit 0x2000 (variant).
+        ; ------------------------------------------------------------
+Set_Out_FuelReq_2:
+        MOVB RL4,#04H
+        ORB state_fuel_req,RL4
+        MOVB RL4,state_fuel_req
+        JMPR cc_NE,L_C8A18
+        BSET state_out_fault.0DH
+        JB state_out_req.04H,L_C8A20
+        BSET state_out_diag.0DH
+        RETS
+L_C8A18:                 ; 0xc8a18
+        BCLR state_out_fault.0DH
+        JB state_out_req.04H,L_C8A20
+        BCLR state_out_diag.0DH
+L_C8A20:                 ; 0xc8a20
+        RETS
+
+; ======== Calc_VS_RR  (@0xc8a22) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (MS42, verified): vehicle speed from wheel segment times (vs_rr, seg_t_mes_rr,
+        ; c_vs_min/max_rr)
+        ; (was FUN_0c8a22)
+        ; ------------------------------------------------------------
+Calc_VS_RR:
+        MOV [-R0],R6
+        MOVB RL4,vs
+        JMPR cc_EQ,L_C8A38
+        JB lv_cam_err.08H,L_C8A38
+        JB lv_cam_err.07H,L_C8A38
+        MOVB vs_rr,RL4
+        JMPR cc_UC,L_C8A3C
+L_C8A38:                 ; 0xc8a38
+        MOVB vs_rr,ZEROS
+L_C8A3C:                 ; 0xc8a3c
+        MOVB RL4,vs_rr
+        CMPB RL4,DPP0:c_vs_min_rr
+        JMPA cc_ULE,L_C8BAA
+        CMPB RL4,DPP0:c_vs_max_rr
+        JMPA cc_NC,L_C8BAA
+        MOV R12,#DATA16 POF ldp_vs_rr_ip_wheel_grd_mmv_thd
+        MOV R13,#DATA16 PAG ldp_vs_rr_ip_wheel_grd_mmv_thd
+        MOVBZ R14,RL4
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_wheel_grd_mmv_thd__vs_rr
+        MOV R13,#DATA16 PAG ip_wheel_grd_mmv_thd__vs_rr
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV wheel_grd_mmv_thd,R4
+        MOV R5,p_vs_meas
+        MOV R2,[R5+#06H]
+        MOVB RL6,[R2]
+        JMPA cc_UC,L_C8BA0
+L_C8A7C:                 ; 0xc8a7c
+        JB lv_n_max_isa_err.03H,L_C8A84
+        JMPA cc_UC,L_C8B90
+L_C8A84:                 ; 0xc8a84
+        MOV R4,p_vs_meas
+        MOV R5,[R4+#0AH]
+        MOVBZ R2,g_f4a3
+        SUB R2,#01H
+        AND R2,#DATA16 0000FH
+        SHL R2,#02H
+        ADD R5,R2
+        MOV R10,[R5+]
+        MOV R11,[R5]
+        MOV tmp32_lo,R10
+        MOV tmp32_hi,R11
+        MOV R5,[R4+#0AH]
+        MOVBZ R2,g_f4a3
+        SHL R2,#02H
+        ADD R5,R2
+        MOV R10,[R5+]
+        MOV R11,[R5]
+        MOV vs_div_num_lo,R10
+        MOV vs_div_num_hi,R11
+        MOV R5,tmp32_hi
+        JMPR cc_NE,L_C8ACE
+        MOV R5,tmp32_lo
+        MOV seg_t_mes_1_rr_bas,R5
+        JMPR cc_UC,L_C8AD2
+L_C8ACE:                 ; 0xc8ace
+        MOV seg_t_mes_1_rr_bas,ONES
+L_C8AD2:                 ; 0xc8ad2
+        MOV R4,vs_div_num_hi
+        JMPR cc_NE,L_C8AE2
+        MOV R4,vs_div_num_lo
+        MOV seg_t_mes_0_rr_bas,R4
+        JMPR cc_UC,L_C8AE6
+L_C8AE2:                 ; 0xc8ae2
+        MOV seg_t_mes_0_rr_bas,ONES
+L_C8AE6:                 ; 0xc8ae6
+        MOV R4,seg_t_mes_1_rr_bas
+        CMP R4,#DATA16 0BFFFH
+        JMPR cc_UGT,L_C8B0E
+        MOV R2,#DATA16 0AAAAH
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0FH
+        SHR R5,#0FH
+        SHL R2,#01H
+        OR R4,R2
+        MOV seg_t_mes_1_rr,R4
+        JMPR cc_UC,L_C8B12
+L_C8B0E:                 ; 0xc8b0e
+        MOV seg_t_mes_1_rr,ONES
+L_C8B12:                 ; 0xc8b12
+        MOV R4,seg_t_mes_0_rr_bas
+        CMP R4,#DATA16 0BFFFH
+        JMPR cc_UGT,L_C8B3A
+        MOV R2,#DATA16 0AAAAH
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0FH
+        SHR R5,#0FH
+        SHL R2,#01H
+        OR R4,R2
+        MOV seg_t_mes_0_rr,R4
+        JMPR cc_UC,L_C8B3E
+L_C8B3A:                 ; 0xc8b3a
+        MOV seg_t_mes_0_rr,ONES
+L_C8B3E:                 ; 0xc8b3e
+        MOV R4,seg_t_mes_0_rr
+        CMP R4,#DATA16 0F424H
+        JMPR cc_UGT,L_C8B92
+        MOV R5,seg_t_mes_1_rr
+        CMP R5,#DATA16 0F424H
+        JMPR cc_UGT,L_C8B92
+        MOV R12,R5
+        MOV R13,R4
+        CALLS 00FH,Abs_Diff_U16
+        MOV R12,R4
+        MOV R13,seg_t_mes_1_rr
+        CALLS 00FH,Div_Frac_U16_Q16
+        MOV wheel_grd,R4
+        MOV R12,wheel_grd_mmv
+        MOV R13,R4
+        MOV R14,DPP0:c_wheel_grd_crlc_rr
+        CALLS 00FH,Interp_U16
+        MOV wheel_grd_mmv,R4
+        CMP R4,wheel_grd_mmv_thd
+        JMPR cc_ULE,L_C8B92
+        SUBB sum_rr,ONES
+        MOV R5,DPP0:c_dly_er_rr
+        MOV g_f77a,R5
+        BSET lv_n_max_isa_err.02H
+        JMPR cc_UC,L_C8B92
+L_C8B90:                 ; 0xc8b90
+        BSET lv_n_max_isa_err.03H
+L_C8B92:                 ; 0xc8b92
+        MOVB RL4,g_f4a3
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0000FH
+        MOVB g_f4a3,RL4
+L_C8BA0:                 ; 0xc8ba0
+        CMPB RL6,g_f4a3
+        JMPA cc_NE,L_C8A7C
+        JMPR cc_UC,L_C8BC0
+L_C8BAA:                 ; 0xc8baa
+        MOV wheel_grd_mmv,ZEROS
+        MOV wheel_grd,ZEROS
+        BCLR lv_n_max_isa_err.03H
+        MOV R4,p_vs_meas
+        MOV R5,[R4+#06H]
+        MOVB g_f4a3,[R5]
+L_C8BC0:                 ; 0xc8bc0
+        JNB lv_n_max_isa_err.02H,L_C8BD4
+        MOV R4,g_f77a
+        JMPR cc_EQ,L_C8BD2
+        SUB R4,#01H
+        MOV g_f77a,R4
+        JMPR cc_UC,L_C8BD4
+L_C8BD2:                 ; 0xc8bd2
+        BCLR lv_n_max_isa_err.02H
+L_C8BD4:                 ; 0xc8bd4
+        MOV R6,[R0+]
+        RETS
+
+; ======== Diag_TPS_Det  (@0xc8bd8) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by maf/tps output signals + DTC): Throttle-sensor detection diagnosis
+        ; lv_err_tps_det.
+        ; ------------------------------------------------------------
+Diag_TPS_Det:
+        MOV [-R0],R9
+        MOV R9,g_fa80
+        AND R9,#DATA16 003FFH
+        MOV R4,R9
+        SHL R4,#06H
+        MOV v_tco_word,R4
+        ADD tco_adc_sum,R9
+        SUBB tco_adc_cnt,ONES
+        MOVB RL4,lv_cyl_f4af
+        CMPB RL4,#04H
+        JMPR cc_UGT,L_C8C74
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        ADD R4,#DATA16 04C7EH
+        MOV R4,[R4]
+        JMPI cc_UC,[R4]
+
+; ======== Sched_TempDiag_Task  (@0xc8c06) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tco/tia/crank output signals): Periodic temp-sensor + TPS task: runs
+        ; Acq_TCO_Mes/Acq_TIA and updates obd_sf / lv_err_tps_det / lv_pl.
+        ; ------------------------------------------------------------
+Sched_TempDiag_Task:
+        CALLA cc_UC,Acq_TCO_Mes
+        CALLA cc_UC,Acq_TIA_Mes
+        JB lv_err_tps_det.00H,L_C8C28
+        MOVB RL4,tco
+        CMPB RL4,DPP0:c_tco_min_fl
+        JMPR cc_NC,L_C8C26
+        MOVB RL5,vs
+        CMPB RL5,DPP0:c_vs_min_fl
+        JMPR cc_C,L_C8C28
+L_C8C26:                 ; 0xc8c26
+        BSET lv_err_tps_det.00H
+L_C8C28:                 ; 0xc8c28
+        JB lv_pl.0BH,L_C8C54
+        MOVB RL4,tco
+        CMPB RL4,#DATA16 0009FH
+        JMPR cc_ULE,L_C8C52
+        BSET obd_sf.01H
+        MOVBZ R4,RL4
+        MOVBZ R5,tco_st
+        ADD R5,#DATA16 0001CH
+        CMP R4,R5
+        JMPR cc_ULE,L_C8C54
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_C8C54
+        BSET lv_pl.0BH
+        CALLS 00EH,Inc_Ctr_Wup_DTC_Clr
+        JMPR cc_UC,L_C8C54
+L_C8C52:                 ; 0xc8c52
+        BSET obd_sf.00H
+L_C8C54:                 ; 0xc8c54
+        CALLS 00CH,Tail_f0ae180_90e
+        JMPR cc_UC,L_C8C74
+
+; ======== CylSeq_Cyl1  (@0xc8c5a) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+CylSeq_Cyl1:
+        CALLS 00CH,CylCalc_Group_1
+        JMPR cc_UC,L_C8C74
+
+; ======== CylSeq_Cyl2  (@0xc8c60) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+CylSeq_Cyl2:
+        CALLS 00CH,Set_lv_act_aj
+        JMPR cc_UC,L_C8C74
+
+; ======== CylSeq_Cyl3  (@0xc8c66) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+CylSeq_Cyl3:
+        CALLS 00DH,Calc_TI_Pos_WallFilm
+        CALLS 00CH,CylCalc_Group_2
+        JMPR cc_UC,L_C8C74
+
+; ======== CylSeq_Cyl4  (@0xc8c70) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+CylSeq_Cyl4:
+        CALLS 00CH,CylCalc_Group_3
+L_C8C74:                 ; 0xc8c74
+        SUBB lv_cyl_f4af,ONES
+        MOVB RL4,lv_cyl_f4af
+        CMPB RL4,#04H
+        JMPR cc_ULE,L_C8C84
+        MOVB lv_cyl_f4af,ZEROS
+L_C8C84:                 ; 0xc8c84
+        MOV R9,[R0+]
+        RETS
+
+; ======== Acq_TIA_TCO_Inputs  (@0xc8c88) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (MS42, verified): acquire intake-air temp (v_tia->tia_mes) and coolant temp (tco_mes) with
+        ; diag
+        ; (was FUN_0c8c88)
+        ; ------------------------------------------------------------
+Acq_TIA_TCO_Inputs:
+        BSET lv_n_max_isa_err.07H
+        BCLR lv_n_max_isa_err.0BH
+        MOV R4,lv_tco_fa86
+        AND R4,#DATA16 003FFH
+        SHR R4,#02H
+        MOVB v_tia,RL4
+        MOV R12,#DATA16 POF sst_utal_kf_tal
+        MOV R13,#DATA16 PAG sst_utal_kf_tal
+        MOVBZ R14,RL4
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_tia__vtia
+        MOV R13,#DATA16 PAG ip_tia__vtia
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB tia_mes,RL4
+        CMPB RL4,DPP0:c_tia_max_diag
+        JMPR cc_UGT,L_C8CCA
+        CMPB RL4,DPP0:c_tia_min_diag
+        JMPR cc_C,L_C8CCA
+        MOVB tia,RL4
+        JMPR cc_UC,L_C8CCC
+L_C8CCA:                 ; 0xc8cca
+        BSET lv_n_max_isa_err.08H
+L_C8CCC:                 ; 0xc8ccc
+        MOVB RL4,#01H
+        MOVB lv_tco_d16b,RL4
+        MOV R12,#DATA16 0D16AH
+        MOV R13,#DATA16 05320H
+        MOVBZ R14,DPP0:c_abc_inc_tia_plaus_diag
+        MOVBZ R15,DPP0:c_abc_max_tia_plaus_diag
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_cam_err.0BH,dtc_status_work.06H
+        MOVBZ R4,lv_tco_d174
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C8CFC
+        MOV R4,#DATA16 0F7FFH
+        AND dtc_grp_maf_dif,R4
+L_C8CFC:                 ; 0xc8cfc
+        BSET lv_n_max_isa_err.06H
+        MOV R4,g_fa80
+        AND R4,#DATA16 003FFH
+        SHL R4,#06H
+        MOV v_tco_word,R4
+        MOV tco_adc_sum,ZEROS
+        MOV R4,v_tco_word
+        MOV v_tco_fil,R4
+        MOVB tco_adc_cnt,ZEROS
+        MOV R12,#DATA16 POF sst_utkw_kf_tkw
+        MOV R13,#DATA16 PAG sst_utkw_kf_tkw
+        MOV R14,R4
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_tco__vtco
+        MOV R13,#DATA16 PAG ip_tco__vtco
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB tco_mes_z,RL4
+        MOVB tco_mes,RL4
+        CMPB RL4,DPP0:c_tco_max_diag
+        JMPR cc_UGT,L_C8D70
+        CMPB RL4,DPP0:c_tco_min_diag
+        JMPR cc_C,L_C8D70
+        JNB lv_n_max_isa_err.08H,L_C8D66
+        CMPB RL4,DPP0:c_tco_diag
+        JMPR cc_NC,L_C8D5E
+        MOVB RL5,DPP0:c_tia_sub_bol_diag
+        MOVB tia,RL5
+        JMPR cc_UC,L_C8D66
+L_C8D5E:                 ; 0xc8d5e
+        MOVB RL4,DPP0:c_tia_sub_tol_diag
+        MOVB tia,RL4
+L_C8D66:                 ; 0xc8d66
+        MOVB RL4,tco_mes
+        MOVB tco,RL4
+        JMPR cc_UC,L_C8D9A
+L_C8D70:                 ; 0xc8d70
+        JNB lv_n_max_isa_err.08H,L_C8D7C
+        MOVB RL4,DPP0:c_tia_sub_tol_diag
+        MOVB tia,RL4
+L_C8D7C:                 ; 0xc8d7c
+        JB lv_cam_err.0AH,L_C8D88
+        JB lv_cam_err.0BH,L_C8D88
+        JNB lv_n_max_isa_err.08H,L_C8D92
+L_C8D88:                 ; 0xc8d88
+        MOVB RL4,DPP0:c_tco_sub_bol_diag
+        MOVB tco,RL4
+        JMPR cc_UC,L_C8D9A
+L_C8D92:                 ; 0xc8d92
+        MOVB RL4,tia
+        MOVB tco,RL4
+L_C8D9A:                 ; 0xc8d9a
+        MOV tco_sub_dif_diag,ZEROS
+        MOVB tco_mes_dif_diag,ZEROS
+        CALLS 00CH,Diag_TPS_Det
+        CALLS 00CH,Diag_TPS_Det
+        CALLS 00CH,Diag_TPS_Det
+        CALLS 00CH,Diag_TPS_Det
+        CALLS 00CH,Diag_TPS_Det
+        RETS
+
+; ======== Calc_TIA_TCO_Plaus  (@0xc8db8) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tco/tia/crank output signals): Intake/coolant temp plausibility: tia_st,
+        ; tco_st, tia_max/min_tia_plaus_diag windows.
+        ; ------------------------------------------------------------
+Calc_TIA_TCO_Plaus:
+        MOVB RL4,tia
+        MOVB tia_st,RL4
+        MOVB tia_max_tia_plaus_diag,RL4
+        MOVB tia_min_tia_plaus_diag,RL4
+        MOVB RL5,tco
+        MOVB tco_st,RL5
+        MOVB tco_mes_max_diag,RL5
+        MOVB tco_mes_min_diag,RL5
+        MOVBZ R4,tco_st
+        SHL R4,#08H
+        MOV tco_sub_word,R4
+        MOV tco_sub_max_diag,R4
+        MOV tco_sub_min_diag,R4
+        MOVB RL4,DPP0:c_t_dly_tco_sub
+        MOVB t_dly_tco_sub,RL4
+        JB obd_sf.0DH,L_C8E02
+        BCLR lv_n_max_isa_err.09H
+        MOVB RL3,DPP0:c_t_vs_min_tia_plaus
+        MOVB lv_tco_c356,RL3
+        BCLR lv_n_max_isa_err.0AH
+L_C8E02:                 ; 0xc8e02
+        JB lv_cam_err.0CH,L_C8E2A
+        JB lv_cam_err.0DH,L_C8E2A
+        JB lv_cam_err.0EH,L_C8E2A
+        JB lv_lam_lim_1_err.00H,L_C8E2A
+        JNB lv_conf_mis.01H,L_C8E2A
+        JNB obd_sf.0DH,L_C8E24
+        JNB lv_inh_fsd_cp.09H,L_C8E24
+        MOV R4,state_th_diag
+        JMPR cc_NE,L_C8E2C
+L_C8E24:                 ; 0xc8e24
+        MOVB tco_sub_state,ZEROS
+        RETS
+L_C8E2A:                 ; 0xc8e2a
+        BSET lv_inh_fsd_cp.09H
+L_C8E2C:                 ; 0xc8e2c
+        RETS
+
+S_C849E ENDS
+        END

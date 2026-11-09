@@ -1,0 +1,312 @@
+; asw/dyw.a66
+; 0xB592E-0xB5BF8  (714 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_n_lam_dly_p_max                    EQU  0902A1H
+c_n_lam_dly_p_min                    EQU  0902A2H
+c_t_dly_n_maf_dyw                    EQU  090329H
+c_lam_mv_dyw                         EQU  090594H
+c_maf_crlc_dyw                       EQU  0905BAH
+c_maf_dyw                            EQU  0905C6H
+c_maf_int_min_dly                    EQU  0905D8H
+c_maf_int_min_dly_puc                EQU  0905DAH
+c_maf_int_min_dyw                    EQU  0905DCH
+c_maf_lam_dly_p_max                  EQU  0905F2H
+c_maf_lam_dly_p_min                  EQU  0905F4H
+c_n_crlc_dyw                         EQU  090630H
+c_n_dyw                              EQU  09063AH
+c_t_sum_t_dly_ad_done                EQU  090734H
+c_t_dly_i_max                        EQU  0908F4H
+c_t_dly_i_min                        EQU  0908F6H
+ldpm_n_32_ip_maf_lam_dly_xxx                        EQU  090D04H
+ldp_n_32_ip_vls_sp_dly              EQU  091004H
+ldp_maf_ip_vls_sp_dly              EQU  091009H
+ldp_maf_kgh_ip_crlc_dly_i             EQU  091202H
+ldp_maf_kgh_ip_fac_dly_p              EQU  091312H
+ldpm_vls_dif_dly_ip_t_dly_x                             EQU  091746H
+ip_maf_lam_dly_i_max__n              EQU  092E38H
+ip_maf_lam_dly_i_min__n              EQU  092E44H
+ip_t_dly_i__vls_dif_dly              EQU  093822H
+ip_t_dly_p__vls_dif_dly              EQU  09383AH
+ip_vls_sp_dly__n__maf                EQU  094FE0H
+ip_crlc_dly_i__maf_kgh               EQU  095527H
+ip_fac_dly_p__maf_kgh                EQU  095617H
+
+PUBLIC  Calc_DynWatch_DYW, Calc_Lam_Dly_PI, Calc_Lam_MV_Dyw, ClrBits_Dfd6a_afc, Reset_Dc744_92e
+EXTERN  Abs_Diff_S16:NEAR, Abs_Diff_U16:NEAR, Add_r12_r13_Return_r4:NEAR, Clamp_S16:NEAR
+EXTERN  Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_X_Axis:NEAR, Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_2D_Table:NEAR
+EXTERN  Get_IP_Word_3D_Table:NEAR, Get_IP_Word_Y_Axis:NEAR, Interp_U16:NEAR, Mul_S16_Hi:NEAR
+EXTERN  Mul_S16_S32:NEAR, Mul_U16_Hi:NEAR, Sat_Add_S32:NEAR
+
+S_B592E SECTION CODE AT 0B592EH
+
+; ======== Reset_Dc744_92e  (@0xb592e) ========
+Reset_Dc744_92e:
+        MOV lv_lam_c744,ZEROS
+        BCLR lv_cam_ad_di_ivvt.06H
+        RETS
+
+; ======== Calc_Lam_Dly_PI  (@0xb5936) ========
+        ; ------------------------------------------------------------
+        ; lam_bank_t field map (base=p_lam_bank1; bank1 inst ptr=0xc74c). Fields at base+off:
+        ; +00 lamb_sp  +0a ti_lam_dflt  +0c ti_lam_prev  +10 p_out
+        ; +12 lam_min  +14 lam_max  +16 lam_corr(vls)
+        ; +22 cyc_cnt  +23 cyc_cnt_ref  +26 cyc_cnt_latch
+        ; +28 t_dly_pos +2a t_dly_pos_tab +2c t_dly_neg +2e t_dly_neg_tab
+        ; +30/32 maf_snap_a/b  +34 phase(0=I,1=P,2=hold)
+        ; +36 t_lim_diag  +38 t_cps_close
+        ; +40 ti_lam(out)  +42 ti_lam_av  +44 ti_lam_mv_lpf  +48 maf_in  +62 in_62
+        ; NOTE: accessed as (base+off & 0x3fff)+0x90000 (C167 RAM window) - Ghidra struct typing
+        ; cannot self-name these; type lam_bank_t in /ems documents the layout.
+        ; ------------------------------------------------------------
+Calc_Lam_Dly_PI:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV R7,R12
+        MOV R8,[R7+#04CH]
+        JB state_lam_ctl2.02H,L_B594C
+        CMP R8,DPP0:c_maf_int_min_dly
+        JMPR cc_UGT,L_B595C
+L_B594C:                 ; 0xb594c
+        JB state_lam_ctl2.02H,L_B5954
+        JMPA cc_UC,L_B5ADC
+L_B5954:                 ; 0xb5954
+        CMP R8,DPP0:c_maf_int_min_dly_puc
+        JMPA cc_ULE,L_B5ADC
+L_B595C:                 ; 0xb595c
+        BSET state_lam_ctl2.00H
+        MOV R9,maf_word
+        MOV R12,#DATA16 POF ldp_n_32_ip_vls_sp_dly
+        MOV R13,#DATA16 PAG ldp_n_32_ip_vls_sp_dly
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_maf_ip_vls_sp_dly
+        MOV R13,#DATA16 PAG ldp_maf_ip_vls_sp_dly
+        MOVBZ R14,lv_iga_cc2b
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_vls_sp_dly__n__maf
+        MOV R13,#DATA16 PAG ip_vls_sp_dly__n__maf
+        CALLS 00FH,Get_IP_Word_3D_Table
+        MOV R5,[R7+#096H]
+        SUB R4,R5
+        MOV [R7+#04EH],R4
+        CMP R9,DPP0:c_maf_lam_dly_p_min
+        JMPR cc_ULE,L_B5A10
+        CMP R9,DPP0:c_maf_lam_dly_p_max
+        JMPR cc_NC,L_B5A10
+        MOVB RL4,n_32
+        CMPB RL4,DPP0:c_n_lam_dly_p_min
+        JMPR cc_ULE,L_B5A10
+        CMPB RL4,DPP0:c_n_lam_dly_p_max
+        JMPR cc_NC,L_B5A10
+        MOV R12,#DATA16 POF ldpm_vls_dif_dly_ip_t_dly_x
+        MOV R13,#DATA16 PAG ldpm_vls_dif_dly_ip_t_dly_x
+        MOV R14,[R7+#04EH]
+        ADD R14,#DATA16 003FFH
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_t_dly_p__vls_dif_dly
+        MOV R13,#DATA16 PAG ip_t_dly_p__vls_dif_dly
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV R8,R4
+        SUB R8,#DATA16 08000H
+        MOV R12,#DATA16 POF ldp_maf_kgh_ip_fac_dly_p
+        MOV R13,#DATA16 PAG ldp_maf_kgh_ip_fac_dly_p
+        MOV R14,maf_kgh
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_fac_dly_p__maf_kgh
+        MOV R13,#DATA16 PAG ip_fac_dly_p__maf_kgh
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVBZ R13,RL4
+        MOVB RL4,[R7+#056H]
+        MOVBZ R4,RL4
+        MUL R13,R4
+        MOV R13,0FE0EH
+        MOV R12,R8
+        CALLS 00FH,Mul_S16_Hi
+        MOV [R7+#050H],R4
+        JMPR cc_UC,L_B5A16
+L_B5A10:                 ; 0xb5a10
+        MOV R4,#00H
+        MOV [R7+#050H],R4
+L_B5A16:                 ; 0xb5a16
+        MOV R12,#DATA16 POF ldpm_n_32_ip_maf_lam_dly_xxx
+        MOV R13,#DATA16 PAG ldpm_n_32_ip_maf_lam_dly_xxx
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_maf_lam_dly_i_min__n
+        MOV R13,#DATA16 PAG ip_maf_lam_dly_i_min__n
+        CALLS 00FH,Get_IP_Word_2D_Table
+        CMP R4,R9
+        JMPR cc_NC,L_B5AF4
+        MOV R12,#DATA16 POF ip_maf_lam_dly_i_max__n
+        MOV R13,#DATA16 PAG ip_maf_lam_dly_i_max__n
+        CALLS 00FH,Get_IP_Word_2D_Table
+        CMP R4,R9
+        JMPR cc_ULE,L_B5AF4
+        MOV R12,#DATA16 POF ldp_maf_kgh_ip_crlc_dly_i
+        MOV R13,#DATA16 PAG ldp_maf_kgh_ip_crlc_dly_i
+        MOV R14,maf_kgh
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_crlc_dly_i__maf_kgh
+        MOV R13,#DATA16 PAG ip_crlc_dly_i__maf_kgh
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVBZ R8,RL4
+        MOV R12,#DATA16 POF ldpm_vls_dif_dly_ip_t_dly_x
+        MOV R13,#DATA16 PAG ldpm_vls_dif_dly_ip_t_dly_x
+        MOV R14,[R7+#04EH]
+        ADD R14,#DATA16 003FFH
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_t_dly_i__vls_dif_dly
+        MOV R13,#DATA16 PAG ip_t_dly_i__vls_dif_dly
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV R12,R4
+        SUB R12,#DATA16 08000H
+        MOV R13,R8
+        SHL R13,#08H
+        CALLS 00FH,Mul_S16_S32
+        MOV R14,R4
+        MOV R15,R5
+        MOV R12,[R7+#052H]
+        MOV R13,[R7+#054H]
+        CALLS 00FH,Sat_Add_S32
+        MOV [R7+#052H],R4
+        MOV [R7+#054H],R5
+        MOV R12,[R7+#054H]
+        MOV R13,DPP0:c_t_dly_i_min
+        MOV R14,DPP0:c_t_dly_i_max
+        CALLS 00FH,Clamp_S16
+        MOV [R7+#054H],R4
+        MOV R4,[R7+#04EH]
+        CMP R4,#00H
+        JMPR cc_SGT,L_B5AF4
+        JB lv_cam_ad_di_ivvt.09H,L_B5AF4
+        SUB lv_lam_c744,ONES
+        MOV R4,lv_lam_c744
+        CMP R4,DPP0:c_t_sum_t_dly_ad_done
+        JMPR cc_ULE,L_B5AF4
+        BSET lv_cam_ad_di_ivvt.06H
+        JMPR cc_UC,L_B5AF4
+L_B5ADC:                 ; 0xb5adc
+        MOV R12,maf_kgh
+        MOV R13,#DATA16 007FFH
+        CALLS 00FH,Mul_U16_Hi
+        MOV R13,R4
+        MOV R12,R8
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV [R7+#04CH],R4
+L_B5AF4:                 ; 0xb5af4
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RET
+
+; ======== ClrBits_Dfd6a_afc  (@0xb5afc) ========
+ClrBits_Dfd6a_afc:
+        MOV R4,#00H
+        MOV [R12+#050H],R4
+        BCLR state_lam_ctl2.00H
+        BCLR state_lam_ctl2.03H
+        RET
+
+; ======== Calc_DynWatch_DYW  (@0xb5b08) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (MS42, verified): steady-state detect: n/maf mean-value + c_n_dyw/c_maf_dyw bands -> dyw
+        ; stable flag
+        ; (was FUN_0b5b08)
+        ; ------------------------------------------------------------
+Calc_DynWatch_DYW:
+        JNB obd_sf.0DH,L_B5BBC
+        MOV R12,n_mmv_dyw
+        MOV R13,n_C93C
+        MOV R14,DPP0:c_n_crlc_dyw
+        CALLS 00FH,Interp_U16
+        MOV n_mmv_dyw,R4
+        MOV R12,n_C93C
+        MOV R13,R4
+        CALLS 00FH,Abs_Diff_U16
+        CMP R4,DPP0:c_n_dyw
+        JMPR cc_NC,L_B5B34
+        BSET lv_cam_ad_di_ivvt.08H
+        JMPR cc_UC,L_B5B3E
+L_B5B34:                 ; 0xb5b34
+        MOV R4,n_C93C
+        MOV n_mmv_dyw,R4
+        BCLR lv_cam_ad_di_ivvt.08H
+L_B5B3E:                 ; 0xb5b3e
+        MOV R12,maf_mmv_dyw
+        MOV R13,maf_word
+        MOV R14,DPP0:c_maf_crlc_dyw
+        CALLS 00FH,Interp_U16
+        MOV maf_mmv_dyw,R4
+        MOV R12,maf_word
+        MOV R13,R4
+        CALLS 00FH,Abs_Diff_U16
+        CMP R4,DPP0:c_maf_dyw
+        JMPR cc_C,L_B5B6C
+        MOV R4,maf_word
+        MOV maf_mmv_dyw,R4
+        BCLR lv_cam_ad_di_ivvt.08H
+L_B5B6C:                 ; 0xb5b6c
+        JNB lv_cam_ad_di_ivvt.08H,L_B5BB2
+        MOV R4,maf_int_dyw
+        CMP R4,DPP0:c_maf_int_min_dyw
+        JMPR cc_UGT,L_B5BCC
+        MOVB RL4,t_dly_n_maf_dyw
+        CMPB RL4,DPP0:c_t_dly_n_maf_dyw
+        JMPR cc_UGT,L_B5BCC
+        MOV R12,maf_kgh
+        MOV R13,#DATA16 00800H
+        CALLS 00FH,Mul_U16_Hi
+        MOV R13,R4
+        MOV R12,maf_int_dyw
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV maf_int_dyw,R4
+        MOVB RL4,t_dly_n_maf_dyw
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NC,L_B5BAE
+        ADDB RL4,#01H
+        MOVB t_dly_n_maf_dyw,RL4
+L_B5BAE:                 ; 0xb5bae
+        BCLR lv_cam_ad_di_ivvt.08H
+        RETS
+L_B5BB2:                 ; 0xb5bb2
+        MOV maf_int_dyw,ZEROS
+        MOVB t_dly_n_maf_dyw,ZEROS
+        RETS
+L_B5BBC:                 ; 0xb5bbc
+        MOV R4,n_C93C
+        MOV n_mmv_dyw,R4
+        MOV R5,maf_word
+        MOV maf_mmv_dyw,R5
+L_B5BCC:                 ; 0xb5bcc
+        RETS
+
+; ======== Calc_Lam_MV_Dyw  (@0xb5bce) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): Lambda Control Correction TI_LAM (c_lam_mv_dyw dynamic value)
+        ; ------------------------------------------------------------
+Calc_Lam_MV_Dyw:
+        MOV [-R0],R9
+        MOV R9,p_lam_bank1
+        MOV R12,[R9+#0EH]
+        MOV R13,[R9+#03AH]
+        CALLS 00FH,Abs_Diff_S16
+        CMP R4,DPP0:c_lam_mv_dyw
+        JMPR cc_NC,L_B5BEA
+        BSET state_lam_ctl.05H
+        JMPR cc_UC,L_B5BEC
+L_B5BEA:                 ; 0xb5bea
+        BCLR state_lam_ctl.05H
+L_B5BEC:                 ; 0xb5bec
+        MOV R4,[R9+#0EH]
+        MOV [R9+#03AH],R4
+        MOV R9,[R0+]
+        RETS
+
+S_B592E ENDS
+        END

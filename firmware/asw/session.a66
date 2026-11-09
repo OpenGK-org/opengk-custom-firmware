@@ -1,0 +1,213 @@
+; asw/session.a66
+; 0xDFD70-0xDFEE4  (372 bytes, 6 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Abs_S16_Simple, Add32_Carry, Calc_Timer_Delta, Read_DPP_Reg, call_to_RSW_from_prog_zone, mul32
+EXTERN  FuelPump_Out_Init:NEAR
+
+S_DFD70 SECTION CODE AT 0DFD70H
+
+; ======== call_to_RSW_from_prog_zone  (@0xdfd70) ========
+call_to_RSW_from_prog_zone:
+        MOV [-R0],R12                           ; HW (schematic): this maps RSW via ADDRSEL2 <-> chip-select ~CS2, which is pin 3 (P6.2/~CS2) = NC on the retail board. So the external RSW EEPROM is unpopulated, the window reads nothing, and the 4-byte signature check fails -> returns error. RSW external memory is a dev-only population. (Flash itself is external on ~CS0/~CS1: pins 1-2 FLASH OE/WE.)
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R6
+        MOVB RL6,#00H
+        MOVB RL4,bl_prog_session_state
+        JMPR cc_EQ,L_DFD84
+        CMPB RL4,#05H
+        JMPR cc_NE,L_DFDEE
+L_DFD84:                 ; 0xdfd84
+        MOV R8,ADDRSEL2_FE1A
+        MOV ADDRSEL2,#DATA16 00821H
+        MOV R9,#00H
+        JMPR cc_UC,L_DFD92
+L_DFD90:                 ; 0xdfd90
+        ADD R9,#01H
+L_DFD92:                 ; 0xdfd92
+        CMP R9,#04H
+        JMPR cc_NC,L_DFDB8
+        MOV R4,#DATA16 02014H
+        MOV R5,#DATA16 00008H
+        MOV R10,R9
+        MOV R11,#00H
+        ADD R4,R10
+        ADDC R5,R11
+        EXTS R5, #01H
+        MOVB RL3,[R4]
+        EXTP #028H, #02H
+        MOVB RL4,[R9+#02A62H]
+        NOP
+        CMPB RL3,RL4
+        JMPR cc_EQ,L_DFD90
+L_DFDB8:                 ; 0xdfdb8
+        CMP R9,#04H
+        JMPR cc_NE,L_DFDE6
+        CALLS 00DH,Calc_Timer_Delta
+        CMPB RL4,#00H
+        JMPR cc_NE,L_DFDE2
+        MOV ADDRSEL2_FE1A,R8
+        CALLS 00AH,FuelPump_Out_Init
+        BCLR PSW.0BH
+        MOV ADDRSEL2,#DATA16 00821H
+        MOV DPP0,DPP0_FE00
+        MOVB RL4,[R0+#06H]
+        MOVBZ R12,RL4
+        CALLS 008H,02018H
+        JMPR cc_UC,L_DFDE8
+L_DFDE2:                 ; 0xdfde2
+        MOVB RL6,#04H
+        JMPR cc_UC,L_DFDE8
+L_DFDE6:                 ; 0xdfde6
+        MOVB RL6,#02H
+L_DFDE8:                 ; 0xdfde8
+        MOV ADDRSEL2_FE1A,R8
+        JMPR cc_UC,L_DFDF0
+L_DFDEE:                 ; 0xdfdee
+        MOVB RL6,#01H
+L_DFDF0:                 ; 0xdfdf0
+        MOVB RL4,RL6
+        MOV R6,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        ADD R0,#02H
+        RETS
+
+; ======== Calc_Timer_Delta  (@0xdfdfc) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified): Free-running timer delta from registers _DAT_082004/082006.
+        ; ------------------------------------------------------------
+Calc_Timer_Delta:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R6
+        EXTP #020H, #02H
+        MOV R4,DPP0:082004H
+        MOV R5,DPP0:082006H
+        SUB R4,#DATA16 0FFFFH
+        SUBC R5,#DATA16 0FFFFH
+        JMPA cc_EQ,L_DFE8C
+        EXTP #020H, #02H
+        MOV R8,DPP0:082004H
+        MOV R9,DPP0:082006H
+        EXTP #020H, #01H
+        MOV R14,DPP0:082014H
+        JMPA cc_UC,L_DFE62
+L_DFE32:                 ; 0xdfe32
+        EXTS R9, #01H
+        MOVB RL4,[R8]
+        MOVBZ R12,RL4
+        MOV R13,#00H
+L_DFE3A:                 ; 0xdfe3a
+        MOV R4,R14
+        XOR R4,R12
+        AND R4,#01H
+        JMPR cc_EQ,L_DFE4E
+        MOV R4,R14
+        SHR R4,#01H
+        XOR R4,#DATA16 0A001H
+        MOV R14,R4
+        JMPR cc_UC,L_DFE50
+L_DFE4E:                 ; 0xdfe4e
+        SHR R14,#01H
+L_DFE50:                 ; 0xdfe50
+        ASHR R12,#01H
+        ADD R13,#01H
+        CMP R13,#DATA16 00008H
+        JMPR cc_C,L_DFE3A
+        ADD R8,#01H
+        ADDC R9,#00H
+        SRVWDT
+L_DFE62:                 ; 0xdfe62
+        EXTP #020H, #02H
+        MOV R4,DPP0:082008H
+        MOV R5,DPP0:08200AH
+        MOV R10,R8
+        MOV R11,R9
+        SUB R10,R4
+        SUBC R11,R5
+        JMPA cc_ULE,L_DFE32
+        EXTP #020H, #01H
+        CMP R14,DPP0:082000H
+        JMPR cc_NE,L_DFE88
+        MOVB RL6,#00H
+        JMPR cc_UC,L_DFE8E
+L_DFE88:                 ; 0xdfe88
+        MOVB RL6,#01H
+        JMPR cc_UC,L_DFE8E
+L_DFE8C:                 ; 0xdfe8c
+        MOVB RL6,#01H
+L_DFE8E:                 ; 0xdfe8e
+        MOVB RL4,RL6
+        MOV R6,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Abs_S16_Simple  (@0xdfe98) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified): Simple signed absolute value (no -0x8000 guard).
+        ; ------------------------------------------------------------
+Abs_S16_Simple:
+        CMP R12,#00H
+        JMPR cc_SGE,L_DFEA2
+        MOV R4,R12
+        NEG R4
+        JMPR cc_UC,L_DFEA4
+L_DFEA2:                 ; 0xdfea2
+        MOV R4,R12
+L_DFEA4:                 ; 0xdfea4
+        RETS
+
+; ======== Add32_Carry  (@0xdfea6) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Add32_Carry:
+        EXTS R5, #01H
+        MOV R10,[R4]
+        ADD R4,#02H
+        ADDC R5,#00H
+        EXTS R5, #01H
+        MOV R11,[R4]
+        RETS
+
+; ======== Read_DPP_Reg  (@0xdfeb4) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Read_DPP_Reg:
+        MOV R5,R4
+        AND R4,#DATA16 03FFFH
+        SHR R5,#0EH
+        SHL R5,#01H
+        MOV R5,[R5+#0FE00H]
+        RETS
+
+; ======== mul32  (@0xdfec4) ========
+        ; ------------------------------------------------------------
+        ; Compiler 32-bit multiply helper (r4:r5 * r10:r11 -> 32-bit). Used by SMARTRA_gen_challenge_lcg for
+        ; the LCG step.
+        ; ------------------------------------------------------------
+mul32:
+        OR R5,R5
+        JMPR cc_EQ,L_DFECE
+        MULU R5,R10
+        MOV R5,0FE0EH
+L_DFECE:                 ; 0xdfece
+        OR R11,R11
+        JMPR cc_EQ,L_DFED8
+        MULU R11,R4
+        ADD R5,0FE0EH
+L_DFED8:                 ; 0xdfed8
+        MULU R4,R10
+        ADD R5,MDH_FE0C
+        MOV R4,0FE0EH
+        RETS
+
+S_DFD70 ENDS
+        END

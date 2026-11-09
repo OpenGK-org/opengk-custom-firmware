@@ -1,0 +1,445 @@
+; asw/comm/comm_readiness.a66
+; 0xDAE6A-0xDB24E  (996 bytes, 7 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_maf_max                            EQU  09022EH
+c_temp_min_ls_up                     EQU  09077AH
+c_vls_afl_max_diag                   EQU  0907DAH
+c_vls_afr_min_diag                   EQU  0907E2H
+
+PUBLIC  Clear_Fault_Slot, Get_DTC_StatusBits, Nop_db00c, OBD_Readiness_Grp1, OBD_Readiness_Grp2, OBD_Readiness_Grp3
+PUBLIC  Reset_OBD_Readiness_Group
+EXTERN  Calc_Ready_DC_Ctr:NEAR, Div_Ratio_U8_Sat:NEAR, Div_U32_U16_Round32:NEAR, Init_Fault_Table_1:NEAR
+EXTERN  Init_Fault_Table_2:NEAR, Sel_Ovf_U16:NEAR
+
+S_DAE6A SECTION CODE AT 0DAE6AH
+
+; ======== Reset_OBD_Readiness_Group  (@0xdae6a) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Reset_OBD_Readiness_Group:
+        MOV [-R0],R9
+        MOV [-R0],R6
+        CALLS 00DH,Calc_Ready_DC_Ctr
+        CALLS 00DH,Init_Fault_Table_2
+        CALLS 00DH,Init_Fault_Table_1
+        CALLS 00DH,OBD_Readiness_Grp1
+        MOV R9,#DATA16 0D69AH
+        MOVB RL6,#00H
+L_DAE84:                 ; 0xdae84
+        MOVB RL4,#00H
+        MOVB [R9],RL4
+        ADD R9,#01H
+        ADDB RL6,#01H
+        CMPB RL6,#DATA16 00020H
+        JMPR cc_C,L_DAE84
+        MOV R9,#DATA16 0D6BAH
+        MOVB RL6,RL4
+L_DAE98:                 ; 0xdae98
+        MOVB RL4,#00H
+        MOVB [R9],RL4
+        ADD R9,#01H
+        ADDB RL6,#01H
+        CMPB RL6,#DATA16 00020H
+        JMPR cc_C,L_DAE98
+        MOV R9,#DATA16 0D6DAH
+        MOVB RL6,RL4
+L_DAEAC:                 ; 0xdaeac
+        MOVB RL4,#00H
+        MOVB [R9],RL4
+        ADD R9,#01H
+        ADDB RL6,#01H
+        CMPB RL6,#DATA16 00020H
+        JMPR cc_C,L_DAEAC
+        MOV R9,#DATA16 0D6FAH
+        MOVB RL6,RL4
+L_DAEC0:                 ; 0xdaec0
+        MOVB RL4,#00H
+        MOVB [R9],RL4
+        ADD R9,#01H
+        ADDB RL6,#01H
+        CMPB RL6,#DATA16 00010H
+        JMPR cc_C,L_DAEC0
+        MOVB RL6,RL4
+L_DAED0:                 ; 0xdaed0
+        MOVB RL4,#00H
+        MOVBZ R5,RL6
+        MOV R2,R5
+        SHL R2,#03H
+        SUB R2,R5
+        SHL R2,#01H
+        MOVB [R2+#0D0DAH],RL4
+        MOVBZ R5,RL6
+        MOV R2,R5
+        SHL R2,#03H
+        SUB R2,R5
+        SHL R2,#01H
+        MOVB [R2+#0D0DBH],RL4
+        MOVBZ R5,RL6
+        MOV R2,R5
+        SHL R2,#03H
+        SUB R2,R5
+        SHL R2,#01H
+        MOVB [R2+#0D0DCH],RL4
+        ADDB RL6,#01H
+        CMPB RL6,#DATA16 00066H
+        JMPR cc_C,L_DAED0
+        MOV R6,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Clear_Fault_Slot  (@0xdaf0a) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Clear_Fault_Slot:
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R7,R12
+        MOV R4,#DATA16 0D0DAH
+        MOVBZ R5,RL7
+        MOV R2,R5
+        SHL R2,#03H
+        SUB R2,R5
+        SHL R2,#01H
+        ADD R4,R2
+        MOVB RL5,[R4]
+        ANDB RL5,#DATA16 00073H
+        MOVB [R4],RL5
+        MOVB RL4,#00H
+        MOVBZ R5,RL7
+        MOV R2,R5
+        SHL R2,#03H
+        SUB R2,R5
+        SHL R2,#01H
+        MOVB [R2+#0D0DCH],RL4
+        CMPB RL7,obd_ff_mon_id
+        JMPR cc_NE,L_DAF42
+        CALLS 00DH,OBD_Readiness_Grp1
+L_DAF42:                 ; 0xdaf42
+        MOVBZ R4,RL7
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOVB RL5,[R4+#0522EH]
+        MOVBZ R5,RL5
+        AND R5,#DATA16 00060H
+        JMPR cc_EQ,L_DAFA8
+        MOVBZ R12,RL7
+        CALLS 00DH,Get_DTC_StatusBits
+        MOVB RL6,RL4
+        CMPB RL6,#04H
+        JMPR cc_NC,L_DAF92
+        MOV R12,#DATA16 0D69AH
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        ADD R12,R4
+        CALLS 00DH,Nop_db00c
+        MOV R12,#DATA16 0D6BAH
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        ADD R12,R4
+        CALLS 00DH,Nop_db00c
+        MOV R12,#DATA16 0D6DAH
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        ADD R12,R4
+        CALLS 00DH,Nop_db00c
+        JMPR cc_UC,L_DAFA8
+L_DAF92:                 ; 0xdaf92
+        SUBB RL6,#04H
+        MOVB RL4,RL6
+        CMPB RL4,#02H
+        JMPR cc_NC,L_DAFA8
+        MOV R12,#DATA16 0D6FAH
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        ADD R12,R4
+        CALLS 00DH,Nop_db00c
+L_DAFA8:                 ; 0xdafa8
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        RETS
+
+; ======== OBD_Readiness_Grp1  (@0xdafae) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by dtc/obd_sf signals): OBD monitor-readiness group 1 update (obd_sf bits).
+        ; ------------------------------------------------------------
+OBD_Readiness_Grp1:
+        MOV [-R0],R6
+        MOV R12,#DATA16 0D676H
+        MOVB RL6,#00H
+L_DAFB6:                 ; 0xdafb6
+        MOVB RL4,#00H
+        MOVB [R12],RL4
+        ADD R12,#01H
+        ADDB RL6,#01H
+        CMPB RL6,#DATA16 00024H
+        JMPR cc_C,L_DAFB6
+        BCLR obd_sf.04H
+        BCLR obd_sf.06H
+        MOV R6,[R0+]
+        RETS
+
+; ======== Get_DTC_StatusBits  (@0xdafcc) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Get_DTC_StatusBits:
+        MOV [-R0],R6
+        MOV R4,R12
+        MOVBZ R4,RL4
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOVB RL5,[R4+#0522EH]
+        MOVBZ R5,RL5
+        AND R5,#DATA16 00060H
+        JMPR cc_EQ,L_DB002
+        MOVB RL6,#00H
+        JMPR cc_UC,L_DAFEE
+L_DAFEC:                 ; 0xdafec
+        ADDB RL6,#01H
+L_DAFEE:                 ; 0xdafee
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#05AF2H]
+        MOV R4,R12
+        CMPB RL5,RL4
+        JMPR cc_EQ,L_DB006
+        CMPB RL6,#DATA16 000FFH
+        JMPR cc_NE,L_DAFEC
+        JMPR cc_UC,L_DB006
+L_DB002:                 ; 0xdb002
+        MOVB RL6,#DATA16 000FFH
+L_DB006:                 ; 0xdb006
+        MOVB RL4,RL6
+        MOV R6,[R0+]
+        RETS
+
+; ======== Nop_db00c  (@0xdb00c) ========
+Nop_db00c:
+        MOVB RL4,#00H
+        MOVB [R12],RL4
+        MOVB [R12+#01H],RL4
+        MOVB [R12+#02H],RL4
+        MOVB [R12+#03H],RL4
+        MOVB [R12+#04H],RL4
+        MOVB [R12+#06H],RL4
+        RETS
+
+; ======== OBD_Readiness_Grp2  (@0xdb026) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by dtc/obd_sf signals): OBD monitor-readiness group 2 update (obd_sf bits).
+        ; ------------------------------------------------------------
+OBD_Readiness_Grp2:
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R8,R12
+        JNB obd_sf.06H,L_DB036
+        JMPA cc_UC,L_DB216
+L_DB036:                 ; 0xdb036
+        MOV R4,R8
+        MOVBZ R4,RL4
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOVB RL5,[R4+#0522EH]
+        MOVBZ R5,RL5
+        AND R5,#DATA16 00060H
+        JMPR cc_NE,L_DB054
+        JB obd_sf.04H,L_DB0A2
+L_DB054:                 ; 0xdb054
+        MOV R4,R8
+        CMPB RL4,#DATA16 00058H
+        JMPR cc_NE,L_DB076
+        MOVB RL4,can_tcu_obd_status
+        MOVB obd_ff_src,RL4
+        MOVBZ R4,can_tcu_obd_status
+        AND R4,#DATA16 00010H
+        JMPR cc_EQ,L_DB072
+        BSET obd_sf.06H
+        JMPR cc_UC,L_DB09C
+L_DB072:                 ; 0xdb072
+        BCLR obd_sf.06H
+        JMPR cc_UC,L_DB09C
+L_DB076:                 ; 0xdb076
+        MOVB RL4,#01H
+        MOVB obd_ff_src,RL4
+        MOV R5,R8
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOVB RL5,[R4+#0522EH]
+        MOVBZ R5,RL5
+        AND R5,#DATA16 00060H
+        JMPR cc_EQ,L_DB09A
+        BSET obd_sf.06H
+        JMPR cc_UC,L_DB09C
+L_DB09A:                 ; 0xdb09a
+        BCLR obd_sf.06H
+L_DB09C:                 ; 0xdb09c
+        MOVB RL7,0FF1EH
+        JMPR cc_UC,L_DB0A6
+L_DB0A2:                 ; 0xdb0a2
+        MOVB RL7,0FF1CH
+L_DB0A6:                 ; 0xdb0a6
+        CMPB RL7,#00H
+        JMPA cc_EQ,L_DB216
+        JB lv_inh_int_puc_1.01H,L_DB0D2
+        JNB lv_lam_lim_1_err.0BH,L_DB0BE
+        MOV R4,teg_dyn
+        CMP R4,DPP0:c_temp_min_ls_up
+        JMPR cc_C,L_DB0D2
+L_DB0BE:                 ; 0xdb0be
+        JNB lv_lam_lim_1_err.06H,L_DB0D6
+        MOV R4,lam_bank_1_ls_up_vls_up
+        CMP R4,DPP0:c_vls_afr_min_diag
+        JMPR cc_C,L_DB0D2
+        CMP R4,DPP0:c_vls_afl_max_diag
+        JMPR cc_C,L_DB0D6
+L_DB0D2:                 ; 0xdb0d2
+        MOVB RL6,#01H
+        JMPR cc_UC,L_DB0D8
+L_DB0D6:                 ; 0xdb0d6
+        MOVB RL6,#00H
+L_DB0D8:                 ; 0xdb0d8
+        MOV R4,n_C93C
+        MOV obd_ff_rpm,R4
+        MOVB obd_ff_misc,ZEROS
+        MOVBZ R5,obd_ff_ctl
+        AND R5,#DATA16 00040H
+        JMPR cc_EQ,L_DB104
+        MOVB RL4,obd_ff_ctl
+        ANDB RL4,#02H
+        JMPR cc_NE,L_DB0FE
+        MOVB RL4,obd_ff_ctl
+        ANDB RL4,#04H
+        JMPR cc_EQ,L_DB104
+L_DB0FE:                 ; 0xdb0fe
+        MOVB obd_ff_load,ZEROS
+        JMPR cc_UC,L_DB12E
+L_DB104:                 ; 0xdb104
+        MOVBZ R4,obd_ff_ctl
+        AND R4,#DATA16 00040H
+        JMPR cc_EQ,L_DB11C
+        MOVB RL4,obd_ff_ctl
+        ANDB RL4,#01H
+        JMPR cc_EQ,L_DB11C
+        MOVB obd_ff_load,ONES
+        JMPR cc_UC,L_DB12E
+L_DB11C:                 ; 0xdb11c
+        MOV R12,maf_mes
+        MOVBZ R13,DPP0:c_maf_max
+        SHL R13,#08H
+        CALLS 00FH,Div_Ratio_U8_Sat
+        MOVB obd_ff_load,RL4
+L_DB12E:                 ; 0xdb12e
+        MOVBZ R4,obd_ff_ctl
+        AND R4,#DATA16 00040H
+        JMPR cc_EQ,L_DB14E
+        MOVB RL4,obd_ff_ctl
+        ANDB RL4,#02H
+        JMPR cc_NE,L_DB148
+        MOVB RL4,obd_ff_ctl
+        ANDB RL4,#04H
+        JMPR cc_EQ,L_DB14E
+L_DB148:                 ; 0xdb148
+        MOV obd_ff_maf_ratio,ZEROS
+        JMPR cc_UC,L_DB18A
+L_DB14E:                 ; 0xdb14e
+        MOVBZ R4,obd_ff_ctl
+        AND R4,#DATA16 00040H
+        JMPR cc_EQ,L_DB166
+        MOVB RL4,obd_ff_ctl
+        ANDB RL4,#01H
+        JMPR cc_EQ,L_DB166
+        MOV obd_ff_maf_ratio,ONES
+        JMPR cc_UC,L_DB18A
+L_DB166:                 ; 0xdb166
+        MOV R12,maf_word
+        MOV R13,#00H
+        MOV R4,R12
+        SHL R12,#08H
+        SHL R13,#08H
+        SHR R4,#08H
+        OR R13,R4
+        MOV R14,maf_max_cor
+        CALLS 00FH,Div_U32_U16_Round32
+        MOV R12,R4
+        MOV R13,R5
+        CALLS 00FH,Sel_Ovf_U16
+        MOV obd_ff_maf_ratio,R4
+L_DB18A:                 ; 0xdb18a
+        MOV R4,maf_kgh_mes
+        MOV obd_ff_maf,R4
+        MOV R5,t_ast_obd
+        MOV obd_ff_tast,R5
+        MOVB RL4,diagcp_vol
+        MOVB obd_ff_purge_vol,RL4
+        MOV R4,amp
+        MOV obd_ff_amp,R4
+        MOVB RL4,vb
+        MOVB obd_ff_vbat,RL4
+        MOV R4,tps_av
+        MOV obd_ff_tps,R4
+        MOVB RL4,tam
+        MOVB obd_ff_tam,RL4
+        MOV R4,lamb_sp
+        MOV obd_ff_lamb_sp,R4
+        MOVB RL4,tco_mes
+        MOVB obd_ff_tco,RL4
+        MOV R4,lam_bank_1_lam_up_ti_lam
+        MOV obd_ff_ti_lam,R4
+        MOVB RL4,vs
+        MOVB obd_ff_vs,RL4
+        MOV R4,lam_bank_1_lam_up_lam_up_carrier
+        MOV obd_ff_lam_carrier,R4
+        MOV R2,lam_bank_1_lam_up_ti_ad_fac_mmv
+        MOV obd_ff_lam_ad,R2
+        MOVB obd_ff_lam_ready,RL6
+        MOVB RL4,lv_iga_f5a9
+        MOVB obd_ff_iga,RL4
+        MOVB RL5,tia_mes
+        MOVB obd_ff_tia,RL5
+        MOVB RL3,tps_mes
+        MOVB obd_ff_tps_raw,RL3
+        MOV R2,R8
+        MOVB obd_ff_mon_id,RL2
+        BSET obd_sf.04H
+L_DB216:                 ; 0xdb216
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        RETS
+
+; ======== OBD_Readiness_Grp3  (@0xdb21e) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by dtc/obd_sf signals): OBD monitor-readiness group 3 update (obd_sf bits).
+        ; ------------------------------------------------------------
+OBD_Readiness_Grp3:
+        JB obd_sf.0DH,L_DB24C
+        BSET obd_sf.0DH
+        MOVB RL4,ready_dc_ctr
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_EQ,L_DB234
+        ADDB RL4,#01H
+        MOVB ready_dc_ctr,RL4
+L_DB234:                 ; 0xdb234
+        MOV R4,#DATA16 0FFFCH
+        AND obd_sf,R4
+        MOVB obd_d672,ZEROS
+        MOVB obd_d673,ZEROS
+        MOVB obd_d674,ZEROS
+        MOVB obd_d675,ZEROS
+L_DB24C:                 ; 0xdb24c
+        RETS
+
+S_DAE6A ENDS
+        END

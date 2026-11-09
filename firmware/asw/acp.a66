@@ -1,0 +1,235 @@
+; asw/acp.a66
+; 0xB1B34-0xB1D1A  (486 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_abc_inc_acp_diag                   EQU  09009FH
+c_abc_max_acp_diag                   EQU  0900D3H
+c_acp_1_cfa                          EQU  09010EH
+c_acp_2_cfa                          EQU  09010FH
+c_acp_3_cfa                          EQU  090110H
+c_acp_grd_max                        EQU  090111H
+c_acp_hys_1                          EQU  090112H
+c_acp_hys_2                          EQU  090113H
+c_acp_hys_3                          EQU  090114H
+c_conf_acp                           EQU  090147H
+c_acp_max_diag                       EQU  0904A2H
+c_acp_min_diag                       EQU  0904A4H
+
+PUBLIC  Calc_ACP, Calc_ACP_State, Diag_ACP_Sensor, Set_Conf_ACP
+EXTERN  DTC_Update_Debounced:NEAR, Get_IP_Byte_2D_Table_DWord_YWord:NEAR, sub_r12_13_ret_r4:NEAR
+
+S_B1B34 SECTION CODE AT 0B1B34H
+
+; ======== Set_Conf_ACP  (@0xb1b34) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): Variant and Version Coding (conf_acp)
+        ; ------------------------------------------------------------
+Set_Conf_ACP:
+        MOVB RL4,DPP0:c_conf_acp
+        CMPB RL4,#01H
+        JMPR cc_NE,L_B1B44
+        MOVB RL5,#01H
+        MOVB conf_acp,RL5
+        RETS
+L_B1B44:                 ; 0xb1b44
+        MOVB conf_acp,ZEROS
+        RETS
+
+; ======== Calc_ACP_State  (@0xb1b4a) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signals): A/C compressor/pressure state: state_acp + lv_fcut_fast.
+        ; ------------------------------------------------------------
+Calc_ACP_State:
+        MOVB RL4,conf_acp
+        JMPR cc_EQ,L_B1B56
+        MOVB state_acp,ZEROS
+        BSET lv_fcut_fast.05H
+L_B1B56:                 ; 0xb1b56
+        RETS
+
+; ======== Calc_ACP  (@0xb1b58) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (ThetaII, verified): A/C pressure acquisition acp=IP(v_acp_mes) + state_acp
+        ; (c_acp_1/2/3_cfa) + diag
+        ; (was FUN_0b1b58)
+        ; ------------------------------------------------------------
+Calc_ACP:
+        MOV [-R0],R6
+        MOVB RL4,conf_acp
+        JMPA cc_EQ,L_B1CB8
+        MOV R4,v_acp_mes
+        CMP R4,DPP0:c_acp_max_diag
+        JMPR cc_UGT,L_B1B82
+        CMP R4,DPP0:c_acp_min_diag
+        JMPR cc_C,L_B1B82
+        MOV R12,#DATA16 0469EH
+        MOV R13,R4
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YWord
+        MOVB acp,RL4
+        JMPR cc_UC,L_B1B86
+L_B1B82:                 ; 0xb1b82
+        MOVB acp,ZEROS
+L_B1B86:                 ; 0xb1b86
+        MOVB RL4,g_c21f
+        CMPB RL4,acp
+        JMPR cc_C,L_B1B9E
+        MOVBZ R12,RL4
+        MOVBZ R13,acp
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB RL6,RL4
+        JMPR cc_UC,L_B1BAC
+L_B1B9E:                 ; 0xb1b9e
+        MOVBZ R12,acp
+        MOVBZ R13,g_c21f
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB RL6,RL4
+L_B1BAC:                 ; 0xb1bac
+        JB lv_fcut_fast.05H,L_B1BC2
+        CMPB RL6,DPP0:c_acp_grd_max
+        JMPR cc_ULE,L_B1BC2
+        MOVB RL4,g_c21f
+        MOVB acp,RL4
+        BSET lv_fcut_fast.05H
+        JMPR cc_UC,L_B1BC4
+L_B1BC2:                 ; 0xb1bc2
+        BCLR lv_fcut_fast.05H
+L_B1BC4:                 ; 0xb1bc4
+        JNB lv_acp_err.05H,L_B1BCC
+        JMPA cc_UC,L_B1CAA
+L_B1BCC:                 ; 0xb1bcc
+        MOVB RL4,acp
+        CMPB RL4,DPP0:c_acp_2_cfa
+        JMPR cc_UGT,L_B1C4C
+        MOVB RL5,state_acp
+        CMPB RL5,#03H
+        JMPR cc_NE,L_B1BF8
+        MOVBZ R12,DPP0:c_acp_3_cfa
+        MOVBZ R13,DPP0:c_acp_hys_3
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL4,acp
+        JMPR cc_ULE,L_B1CB0
+        MOVB RL4,#02H
+        MOVB state_acp,RL4
+        JMPR cc_UC,L_B1CB0
+L_B1BF8:                 ; 0xb1bf8
+        MOVB RL4,state_acp
+        CMPB RL4,#01H
+        JMPR cc_NE,L_B1C18
+        MOVBZ R12,DPP0:c_acp_1_cfa
+        MOVBZ R13,DPP0:c_acp_hys_1
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL4,acp
+        JMPR cc_ULE,L_B1CB0
+        MOVB state_acp,ZEROS
+        JMPR cc_UC,L_B1CB0
+L_B1C18:                 ; 0xb1c18
+        MOVB RL4,state_acp
+        CMPB RL4,#02H
+        JMPR cc_NE,L_B1C3A
+        MOVBZ R12,DPP0:c_acp_2_cfa
+        MOVBZ R13,DPP0:c_acp_hys_2
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL4,acp
+        JMPR cc_ULE,L_B1CB0
+        MOVB RL4,#01H
+        MOVB state_acp,RL4
+        JMPR cc_UC,L_B1CB0
+L_B1C3A:                 ; 0xb1c3a
+        MOVB RL4,acp
+        CMPB RL4,DPP0:c_acp_1_cfa
+        JMPR cc_ULE,L_B1CB0
+        MOVB RL5,#01H
+        MOVB state_acp,RL5
+        JMPR cc_UC,L_B1CB0
+L_B1C4C:                 ; 0xb1c4c
+        MOVB RL4,state_acp
+        CMPB RL4,#01H
+        JMPR cc_NE,L_B1C5C
+        MOVB RL5,#02H
+        MOVB state_acp,RL5
+        JMPR cc_UC,L_B1CB0
+L_B1C5C:                 ; 0xb1c5c
+        MOVB RL4,state_acp
+        CMPB RL4,#02H
+        JMPR cc_NE,L_B1C76
+        MOVB RL5,acp
+        CMPB RL5,DPP0:c_acp_3_cfa
+        JMPR cc_ULE,L_B1CB0
+        MOVB RL3,#03H
+        MOVB state_acp,RL3
+        JMPR cc_UC,L_B1CB0
+L_B1C76:                 ; 0xb1c76
+        MOVB RL4,state_acp
+        CMPB RL4,#03H
+        JMPR cc_NE,L_B1C98
+        MOVBZ R12,DPP0:c_acp_3_cfa
+        MOVBZ R13,DPP0:c_acp_hys_3
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL4,acp
+        JMPR cc_ULE,L_B1CB0
+        MOVB RL4,#02H
+        MOVB state_acp,RL4
+        JMPR cc_UC,L_B1CB0
+L_B1C98:                 ; 0xb1c98
+        MOVB RL4,acp
+        CMPB RL4,DPP0:c_acp_1_cfa
+        JMPR cc_ULE,L_B1CB0
+        MOVB RL5,#01H
+        MOVB state_acp,RL5
+        JMPR cc_UC,L_B1CB0
+L_B1CAA:                 ; 0xb1caa
+        MOVB RL4,#03H
+        MOVB state_acp,RL4
+L_B1CB0:                 ; 0xb1cb0
+        MOVB RL4,acp
+        MOVB g_c21f,RL4
+L_B1CB8:                 ; 0xb1cb8
+        MOV R6,[R0+]
+        RETS
+
+; ======== Diag_ACP_Sensor  (@0xb1cbc) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (ThetaII, verified): A/C pressure sensor diagnosis: v_acp_mes vs c_acp_min/max_diag ->
+        ; lv_acp_err (DTC)
+        ; (was FUN_0b1cbc)
+        ; ------------------------------------------------------------
+Diag_ACP_Sensor:
+        MOVB RL4,conf_acp
+        JMPR cc_EQ,L_B1D18
+        MOV R4,v_acp_mes
+        CMP R4,DPP0:c_acp_min_diag
+        JMPR cc_NC,L_B1CD4
+        MOVB RL4,#02H
+        MOVB dtc_test_result,RL4
+        JMPR cc_UC,L_B1CE4
+L_B1CD4:                 ; 0xb1cd4
+        MOV R4,v_acp_mes
+        CMP R4,DPP0:c_acp_max_diag
+        JMPR cc_ULE,L_B1CE4
+        MOVB RL4,#01H
+        MOVB dtc_test_result,RL4
+L_B1CE4:                 ; 0xb1ce4
+        MOV R12,#DATA16 0D656H
+        MOV R13,#DATA16 05ADCH
+        MOVBZ R14,DPP0:c_abc_inc_acp_diag
+        MOVBZ R15,DPP0:c_abc_max_acp_diag
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_acp_err.05H,dtc_status_work.06H
+        MOVBZ R4,diag_d660
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_B1D0E
+        MOV R4,#DATA16 0FFDFH
+        AND diag_f86e,R4
+L_B1D0E:                 ; 0xb1d0e
+        JNB lv_acp_err.05H,L_B1D18
+        MOVB RL4,#03H
+        MOVB state_acp,RL4
+L_B1D18:                 ; 0xb1d18
+        RETS
+
+S_B1B34 ENDS
+        END

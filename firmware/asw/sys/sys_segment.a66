@@ -1,0 +1,300 @@
+; asw/sys/sys_segment.a66
+; 0xA8080-0xA8368  (744 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Acq_Crank_Segment, CC15INT_handler, CRINT_handler, Get_Status_Marker_a8350, T5INT_handler
+
+S_A8080 SECTION CODE AT 0A8080H
+
+; ======== Acq_Crank_Segment  (@0xa8080) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by imob/smartra output signals): Crank tooth/segment timing acquisition:
+        ; first_vld_tooth / stop_eng / seg_t_mes_bas (core speed sensing).
+        ; ------------------------------------------------------------
+Acq_Crank_Segment:
+        SCXT CP,#DATA16 0FBEAH
+        NOP
+        CMPB ZEROS,crank_tim_6
+        JMPA cc_NE,L_A81B6
+        MOV R0,R3
+        JB ccp_engine_flags.01H,L_A809E
+        BCLR T78CON.06H
+        BCLR T01CON.06H
+        EXTR #01H
+        DB      04AH
+
+        ; data @0xa809b (3 bytes)
+        DB      0B8H,02FH,07FH
+L_A809E:                 ; 0xa809e
+        BSET ccp_engine_flags.00H
+        JBC lv_err_com_resp_imob.0FH,L_A80D2
+        MOV CC15,T1_FE52
+        CMP T0,T7_F050
+        JMPR cc_ULE,L_A80B4
+        SUBB crank_tim_10,ONES
+        JMPR cc_UC,L_A80CC
+L_A80B4:                 ; 0xa80b4
+        SUB T0,0FF1EH
+        MOV R1,T0_FE50
+        NOP
+        CMP R1,T7_F050
+        JMPR cc_UGT,L_A80CC
+        SUBB crank_tim_9,ONES
+        SUB T0,0FF1EH
+L_A80CC:                 ; 0xa80cc
+        SUB T7_F050,ONES
+        JMPR cc_UC,L_A81A4
+L_A80D2:                 ; 0xa80d2
+        CMPB RH2,#02H
+        JMPR cc_ULE,L_A811E
+        MOV crank_tim_18,R2
+        EXTR #01H
+        BFLDL 0F170H,#0FFH,#00H
+        BFLDL 0FF68H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F194H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F196H,#0FFH,#00H
+        BFLDL 0FF66H,#0FFH,#00H
+        BFLDL 0FF6AH,#0FFH,#00H
+        BCLR T6CON.06H
+        BCLR T5CON.06H
+        BCLR T01CON.06H
+        BCLR T78CON.06H
+        MOVB first_vld_tooth,ZEROS
+        MOVB stop_eng,ONES
+        BCLR ccp_engine_flags.06H
+        MOV crank_tim_16,ONES
+        MOV crank_tim_17,ONES
+        BCLR lv_err_com_resp_imob.0EH
+        MOV crank_tim_27,ONES
+        MOV seg_t_mes_bas,ONES
+        JMPR cc_UC,L_A81A4
+L_A811E:                 ; 0xa811e
+        JNB ccp_engine_flags.01H,L_A81A4
+        CMP T0,T7_F050
+        JMPR cc_NC,L_A81A4
+        SUB T0,0FF1EH
+        SUBB crank_tim_9,ONES
+        JBC ccp_engine_flags.04H,L_A8146
+        CMP T0,T7_F050
+        BMOV ccp_engine_flags.04H,PSW.01H
+        JNB ccp_engine_flags.04H,L_A81A4
+        MOV R0,#DATA16 00016H
+        JMPR cc_UC,L_A81A4
+L_A8146:                 ; 0xa8146
+        CMP T0,T7_F050
+        JMPR cc_NC,L_A8194
+        SUBB crank_tim_9,ONES
+        EXTR #01H
+        BFLDL 0F170H,#0FFH,#00H
+        BFLDL 0FF68H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F194H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F196H,#0FFH,#00H
+        BFLDL 0FF66H,#0FFH,#00H
+        BFLDL 0FF6AH,#0FFH,#00H
+        BCLR T6CON.06H
+        BCLR T5CON.06H
+        BCLR T01CON.06H
+        BCLR T78CON.06H
+        MOVB first_vld_tooth,ZEROS
+        MOVB stop_eng,ONES
+        BCLR ccp_engine_flags.06H
+        MOV crank_tim_16,ONES
+        MOV crank_tim_17,ONES
+        BCLR lv_err_com_resp_imob.0EH
+        MOV crank_tim_27,ONES
+        MOV seg_t_mes_bas,ONES
+        JMPR cc_UC,L_A81A4
+L_A8194:                 ; 0xa8194
+        CMP R3,#DATA16 0002CH
+        JMPR cc_NC,L_A81A0
+        MOV R0,#DATA16 00016H
+        JMPR cc_UC,L_A81A4
+L_A81A0:                 ; 0xa81a0
+        SUB R0,#DATA16 00016H
+L_A81A4:                 ; 0xa81a4
+        ADD T6_FE48,R0
+        JB R0.0FH,L_A81D2
+        CMP T6,#DATA16 00000H
+        JMPR cc_SGE,L_A81D2
+        BSET T6IC.07H
+        JMPR cc_UC,L_A81D2
+L_A81B6:                 ; 0xa81b6
+        BCLR T6CON.06H
+        JNB ccp_engine_flags.05H,L_A81D2
+        BCLR ccp_engine_flags.05H
+        MOV CAPREL,crank_tim_20
+        MOV T6,CAPREL_FE4A
+        MOVBZ R10,crank_tim_11
+        OR R10,#00H
+        MOV PECC4_FEC8,R10
+        BSET T6CON.06H
+L_A81D2:                 ; 0xa81d2
+        POP CP
+        RETI
+
+; ======== CRINT_handler  (@0xa81d6) ========
+CRINT_handler:
+        SCXT CP,#DATA16 0FBEAH
+        JNB ccp_engine_flags.01H,L_A822E
+        BSET lv_err_com_resp_imob.0FH
+        ADDB RH2,#01H
+        CMPB RH2,#02H
+        JMPR cc_ULE,L_A8294
+        MOV crank_tim_18,R2
+        EXTR #01H
+        BFLDL 0F170H,#0FFH,#00H
+        BFLDL 0FF68H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F194H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F196H,#0FFH,#00H
+        BFLDL 0FF66H,#0FFH,#00H
+        BFLDL 0FF6AH,#0FFH,#00H
+        BCLR T6CON.06H
+        BCLR T5CON.06H
+        BCLR T01CON.06H
+        BCLR T78CON.06H
+        MOVB first_vld_tooth,ZEROS
+        MOVB stop_eng,ONES
+        BCLR ccp_engine_flags.06H
+        MOV crank_tim_16,ONES
+        MOV crank_tim_17,ONES
+        BCLR lv_err_com_resp_imob.0EH
+        MOV crank_tim_27,ONES
+        MOV seg_t_mes_bas,ONES
+        JMPR cc_UC,L_A8294
+L_A822E:                 ; 0xa822e
+        MOV R0,DSTP7_FCFE
+        MOV R1,[R0+#0FFFCH]
+        MOV R0,[R0+#0FFFEH]
+        SUB R0,R1
+        CMP R0,#DATA16 00016H
+        JMPR cc_NC,L_A8248
+        MOV R0,crank_tim_19
+        JMPR cc_UC,L_A824C
+L_A8248:                 ; 0xa8248
+        MOV crank_tim_19,R0
+L_A824C:                 ; 0xa824c
+        CMP R0,#DATA16 0186AH
+        JMPR cc_ULE,L_A8294
+        EXTR #01H
+        BFLDL 0F170H,#0FFH,#00H
+        BFLDL 0FF68H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F194H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F196H,#0FFH,#00H
+        BFLDL 0FF66H,#0FFH,#00H
+        BFLDL 0FF6AH,#0FFH,#00H
+        BCLR T6CON.06H
+        BCLR T5CON.06H
+        BCLR T01CON.06H
+        BCLR T78CON.06H
+        MOVB first_vld_tooth,ZEROS
+        MOVB stop_eng,ONES
+        BCLR ccp_engine_flags.06H
+        MOV crank_tim_16,ONES
+        MOV crank_tim_17,ONES
+        BCLR lv_err_com_resp_imob.0EH
+        MOV crank_tim_27,ONES
+        MOV seg_t_mes_bas,ONES
+L_A8294:                 ; 0xa8294
+        POP CP
+        RETI
+
+; ======== T5INT_handler  (@0xa8298) ========
+T5INT_handler:
+        SCXT CP,#DATA16 0F226H
+        SUB crank_tim_24,ONES
+        JBC ccp_engine_flags.02H,L_A831E
+        MOV R0,T7_F050
+        CMP R0,crank_tim_23
+        JMPR cc_NE,L_A831E
+        SUB crank_tim_22,ONES
+        CMPB ZEROS,syn_eng
+        JMPR cc_EQ,L_A82C8
+        CMPB ZEROS,crank_tim_6
+        JMPR cc_NE,L_A82C2
+        MOV R0,#00H
+        JMPR cc_UC,L_A82D4
+L_A82C2:                 ; 0xa82c2
+        MOV R0,#DATA16 00016H
+        JMPR cc_UC,L_A82D4
+L_A82C8:                 ; 0xa82c8
+        JNB ccp_engine_flags.06H,L_A82D0
+        MOV R0,#01H
+        JMPR cc_UC,L_A82D4
+L_A82D0:                 ; 0xa82d0
+        MOV R0,#DATA16 00016H
+L_A82D4:                 ; 0xa82d4
+        CMP R0,crank_tim_22
+        JMPR cc_NC,L_A8328
+        EXTR #01H
+        BFLDL 0F170H,#0FFH,#00H
+        BFLDL 0FF68H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F194H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F196H,#0FFH,#00H
+        BFLDL 0FF66H,#0FFH,#00H
+        BFLDL 0FF6AH,#0FFH,#00H
+        BCLR T6CON.06H
+        BCLR T5CON.06H
+        BCLR T01CON.06H
+        BCLR T78CON.06H
+        MOVB first_vld_tooth,ZEROS
+        MOVB stop_eng,ONES
+        BCLR ccp_engine_flags.06H
+        MOV crank_tim_16,ONES
+        MOV crank_tim_17,ONES
+        BCLR lv_err_com_resp_imob.0EH
+        MOV crank_tim_27,ONES
+        MOV seg_t_mes_bas,ONES
+        JMPR cc_UC,L_A8328
+L_A831E:                 ; 0xa831e
+        EXTR #01H
+        MOV crank_tim_23,T0
+        MOV crank_tim_22,ZEROS
+L_A8328:                 ; 0xa8328
+        POP CP
+        RETI
+
+; ======== CC15INT_handler  (@0xa832c) ========
+CC15INT_handler:
+        SCXT CP,#DATA16 0FBEAH
+        NOP
+        MOV R10,#DATA16 0FAB4H
+        MOV DSTP7_FCFE,R10
+        MOV R10,#DATA16 0FAD4H
+        MOV g_fab0,[R10]
+        ADD R10,#02H
+        MOV g_fab2,[R10]
+        MOV PECC7,#DATA16 00212H
+        POP CP
+        RETI
+
+; ======== Get_Status_Marker_a8350  (@0xa8350) ========
+        ; ------------------------------------------------------------
+        ; Seg-A helper (verified): Return status marker word (0x7370 / 0x7a3a) per DAT_00f5d1.
+        ; ------------------------------------------------------------
+Get_Status_Marker_a8350:
+        SCXT CP,#DATA16 0FBEAH
+        CMPB ZEROS,crank_tim_6
+        JMPR cc_EQ,L_A8360
+        MOV R4,#DATA16 07A3AH
+        JMPR cc_UC,L_A8364
+L_A8360:                 ; 0xa8360
+        MOV R4,#DATA16 07370H
+L_A8364:                 ; 0xa8364
+        POP CP
+        RETI
+
+S_A8080 ENDS
+        END

@@ -1,0 +1,406 @@
+; asw/ivvt/ivvt_freq.a66
+; 0xB01BA-0xB05D6  (1052 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+ldpm_vb_ivvtpwm                   EQU  098112H
+ldpm_tmag_ivvt_1_ivvt                        EQU  09814DH
+ip_frq_ivvthpwm                      EQU  09872CH
+ip_frq_ivvtpwm                       EQU  098734H
+ip_ivvthpwm                          EQU  098764H
+ip_fac_vb_ivvtpwm                    EQU  0992EAH
+
+PUBLIC  Calc_IVVT_HPWM_Freq, Calc_IVVT_PWM_Freq, Calc_IVVT_PWM_Freq_2, IVVT_OCV_Meas_2
+EXTERN  Div_S32_Signed:NEAR, Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_2D_Table_DWord_YByte:NEAR, Get_IP_Byte_X_Axis:NEAR
+EXTERN  Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_2D_Table:NEAR, Get_IP_Word_3D_Table:NEAR, Mul_S16_Q7_Sat:NEAR
+EXTERN  Sat_Add_S16_v2:NEAR, sub_r12_13_ret_r4:NEAR
+
+S_B01BA SECTION CODE AT 0B01BAH
+
+; ======== Calc_IVVT_PWM_Freq  (@0xb01ba) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by ivvt/cam output signals + DTC): OCV PWM frequency from Vbat: ivvthpwm_frq /
+        ; ivvtepwm_frq + fac_cor_ivvtpwm (magnet-temp comp).
+        ; ------------------------------------------------------------
+Calc_IVVT_PWM_Freq:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV R7,R12
+        MOV R8,p_ivvt_cam_m
+        MOV R9,p_ivvt_cam_s
+        MOV R4,#DATA16 08000H
+        MOV [R8+#0D6H],R4
+        MOV R12,#DATA16 POF ldpm_vb_ivvtpwm
+        MOV R13,#DATA16 PAG ldpm_vb_ivvtpwm
+        MOVBZ R14,vb
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_frq_ivvthpwm
+        MOV R13,#DATA16 PAG ip_frq_ivvthpwm
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV ivvthpwm_frq,R4
+        MOV R12,#DATA16 POF ip_frq_ivvtpwm
+        MOV R13,#DATA16 PAG ip_frq_ivvtpwm
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV ivvtepwm_frq,R4
+        MOV R12,#DATA16 045BEH
+        MOVBZ R13,tmag_ivvt
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        MOVBZ R4,RL4
+        MOV [-R0],R4
+        MOV R12,#DATA16 POF ip_fac_vb_ivvtpwm
+        MOV R13,#DATA16 PAG ip_fac_vb_ivvtpwm
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVBZ R12,RL4
+        MOV R13,[R0+]
+        CALLS 00FH,Mul_S16_Q7_Sat
+        MOVB fac_cor_ivvtpwm,RL4
+        MOV R4,[R7+#04H]
+        MOVB RL5,[R4]
+        MOVB [R9+#012H],RL5
+        MOV R4,[R7+#06H]
+        MOVB RL5,[R4]
+        MOVB [R9+#013H],RL5
+        CMP R9,#DATA16 0CBCAH
+        JMPR cc_NE,L_B0252
+        MOV R4,[R7+#04H]
+        MOVB RL5,[R4]
+        MOVBZ R4,RL5
+        SHL R4,#08H
+        MOV [R8+#0D4H],R4
+L_B0252:                 ; 0xb0252
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== IVVT_OCV_Meas_2  (@0xb025a) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IVVT_OCV_Meas_2:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R6,R12
+        MOV R7,p_ivvt_cam_m
+        MOV R8,p_ivvt_cam_s
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_B0274
+        JMPA cc_UC,L_B041A
+L_B0274:                 ; 0xb0274
+        MOV R4,state_ivvt
+        CMP R4,#02H
+        JMPR cc_NE,L_B0318
+        JNB lv_ct.0FH,L_B029A
+        MOV R5,[R6]
+        MOVB RL4,[R5]
+        MOVBZ R12,RL4
+        MOV R4,[R6+#02H]
+        MOVB RL5,[R4]
+        MOVBZ R13,RL5
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB RL5,[R8+#04H]
+        CMPB RL5,RL4
+        JMPR cc_ULE,L_B02AE
+L_B029A:                 ; 0xb029a
+        CMP R8,#DATA16 0CBCAH
+        JMPR cc_NE,L_B033A
+        MOVB RL4,[R8+#012H]
+        MOVBZ R4,RL4
+        SHL R4,#08H
+        MOV [R7+#0D4H],R4
+        JMPR cc_UC,L_B033A
+L_B02AE:                 ; 0xb02ae
+        MOV R12,#DATA16 POF ldpm_tmag_ivvt_1_ivvt
+        MOV R13,#DATA16 PAG ldpm_tmag_ivvt_1_ivvt
+        MOVBZ R14,tmag_ivvt
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_vb_ivvtpwm
+        MOV R13,#DATA16 PAG ldpm_vb_ivvtpwm
+        MOVBZ R14,vb
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R4,[R7+#0C0H]
+        MOVBZ R5,ip_idx
+        SHL R5,#01H
+        ADD R4,R5
+        MOV R9,[R4]
+        MOV R12,#DATA16 POF ip_ivvthpwm
+        MOV R13,#DATA16 PAG ip_ivvthpwm
+        CALLS 00FH,Get_IP_Word_3D_Table
+        MOV R12,R4
+        MOV R13,[R7+#0B4H]
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV R12,R4
+        MOV R4,[R6+#08H]
+        MOVB RL5,[R4]
+        MOVBS R13,RL5
+        SHL R13,#08H
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV R12,R4
+        MOV R13,R9
+        SUB R13,#DATA16 08000H
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV [R7+#0D4H],R4
+        MOV [R7+#0D6H],R9
+        JMPR cc_UC,L_B033A
+L_B0318:                 ; 0xb0318
+        MOVB RL4,[R7+#0EAH]
+        JMPR cc_NE,L_B0332
+        CMP R8,#DATA16 0CBCAH
+        JMPR cc_NE,L_B033A
+        MOVB RL4,[R8+#012H]
+        MOVBZ R4,RL4
+        SHL R4,#08H
+        MOV [R7+#0D4H],R4
+        JMPR cc_UC,L_B033A
+L_B0332:                 ; 0xb0332
+        MOV R4,[R7+#0ECH]
+        MOV [R7+#0D4H],R4
+L_B033A:                 ; 0xb033a
+        CMP R7,#DATA16 0CADAH
+        JMPR cc_NE,L_B041A
+        JB state_out_req.0BH,L_B041A
+        MOV R4,ivvthpwm_frq
+        CMP R4,ivvt_hpwm_frq_z
+        JMPR cc_EQ,L_B03BC
+        CMP R4,#05H
+        JMPR cc_C,L_B041A
+        MOV ivvt_hpwm_frq_z,R4
+        MOVB ivvt_hpwm_rdy,ZEROS
+        CMP R4,#DATA16 0016EH
+        JMPR cc_C,L_B037E
+        MOV R4,#DATA16 03600H
+        MOV R5,#DATA16 0016EH
+        MOV R10,ivvthpwm_frq
+        MOV R11,#00H
+        CALLS 00DH,Div_S32_Signed
+        SUB R4,#01H
+        MOV ivvt_hpwm_div,R4
+        MOVB ivvt_hpwm_rng,ZEROS
+        JMPR cc_UC,L_B039A
+L_B037E:                 ; 0xb037e
+        MOV R4,#DATA16 0B8D8H
+        MOV R5,#05H
+        MOV R10,ivvthpwm_frq
+        MOV R11,#00H
+        CALLS 00DH,Div_S32_Signed
+        SUB R4,#01H
+        MOV ivvt_hpwm_div,R4
+        MOVB RL4,#01H
+        MOVB ivvt_hpwm_rng,RL4
+L_B039A:                 ; 0xb039a
+        MOV R4,ivvt_hpwm_div
+        ADD R4,#01H
+        MOV R2,ivvt_in_1_struct_hpwm_ivvt_ivvtpwm
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV ivvt_hpwm_cmp_hold,R4
+        MOVB RL4,#01H
+        MOVB ivvt_hpwm_rdy,RL4
+        JMPR cc_UC,L_B041A
+L_B03BC:                 ; 0xb03bc
+        MOVB RL4,ivvt_hpwm_rdy
+        JMPR cc_EQ,L_B03DE
+        MOV R4,ivvt_hpwm_div
+        ADD R4,#01H
+        MOV R2,ivvt_in_1_struct_hpwm_ivvt_ivvtpwm
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV ivvt_hpwm_cmp_hold,R4
+        JMPR cc_UC,L_B041A
+L_B03DE:                 ; 0xb03de
+        MOVB RL4,hld_adj_ivvt_in_1
+        JMPR cc_EQ,L_B0400
+        MOV R4,ivvt_hpwm_div
+        ADD R4,#01H
+        MOV R2,ivvt_in_1_struct_hpwm_ivvt_ivvtpwm
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV PW3_FE36,R4
+        JMPR cc_UC,L_B041A
+L_B0400:                 ; 0xb0400
+        MOV R4,ivvt_hpwm_div
+        ADD R4,#01H
+        MOV R2,ivvt_in_1_struct_hpwm_ivvt_ivvtpwm
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV ivvt_hpwm_cmp,R4
+L_B041A:                 ; 0xb041a
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_IVVT_HPWM_Freq  (@0xb0424) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by ivvt/cam output signals + DTC): IVVT hold-PWM frequency ivvthpwm_frq update.
+        ; ------------------------------------------------------------
+Calc_IVVT_HPWM_Freq:
+        MOV R13,p_ivvt_cam_m
+        MOV R12,p_ivvt_cam_s
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_B0434
+        JMPA cc_UC,L_B0546
+L_B0434:                 ; 0xb0434
+        MOVB RL4,[R13+#0EAH]
+        JMPR cc_NE,L_B045E
+        JNB lv_act_cle_slv_ivvt.00H,L_B044A
+        MOVBZ R4,ivvtpwm_cle_slv
+        SHL R4,#08H
+        MOV [R13+#0D4H],R4
+        JMPR cc_UC,L_B0466
+L_B044A:                 ; 0xb044a
+        CMP R12,#DATA16 0CBCAH
+        JMPR cc_NE,L_B0466
+        MOVB RL4,[R12+#012H]
+        MOVBZ R4,RL4
+        SHL R4,#08H
+        MOV [R13+#0D4H],R4
+        JMPR cc_UC,L_B0466
+L_B045E:                 ; 0xb045e
+        MOV R4,[R13+#0ECH]
+        MOV [R13+#0D4H],R4
+L_B0466:                 ; 0xb0466
+        CMP R13,#DATA16 0CADAH
+        JMPR cc_NE,L_B0546
+        JB state_out_req.0BH,L_B0546
+        MOV R4,ivvthpwm_frq
+        CMP R4,ivvt_hpwm_frq_z
+        JMPR cc_EQ,L_B04E8
+        CMP R4,#05H
+        JMPR cc_C,L_B0546
+        MOV ivvt_hpwm_frq_z,R4
+        MOVB ivvt_hpwm_rdy,ZEROS
+        CMP R4,#DATA16 0016EH
+        JMPR cc_C,L_B04AA
+        MOV R4,#DATA16 03600H
+        MOV R5,#DATA16 0016EH
+        MOV R10,ivvthpwm_frq
+        MOV R11,#00H
+        CALLS 00DH,Div_S32_Signed
+        SUB R4,#01H
+        MOV ivvt_hpwm_div,R4
+        MOVB ivvt_hpwm_rng,ZEROS
+        JMPR cc_UC,L_B04C6
+L_B04AA:                 ; 0xb04aa
+        MOV R4,#DATA16 0B8D8H
+        MOV R5,#05H
+        MOV R10,ivvthpwm_frq
+        MOV R11,#00H
+        CALLS 00DH,Div_S32_Signed
+        SUB R4,#01H
+        MOV ivvt_hpwm_div,R4
+        MOVB RL4,#01H
+        MOVB ivvt_hpwm_rng,RL4
+L_B04C6:                 ; 0xb04c6
+        MOV R4,ivvt_hpwm_div
+        ADD R4,#01H
+        MOV R2,ivvt_in_1_struct_hpwm_ivvt_ivvtpwm
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV ivvt_hpwm_cmp_hold,R4
+        MOVB RL4,#01H
+        MOVB ivvt_hpwm_rdy,RL4
+        RETS
+L_B04E8:                 ; 0xb04e8
+        MOVB RL4,ivvt_hpwm_rdy
+        JMPR cc_EQ,L_B050A
+        MOV R4,ivvt_hpwm_div
+        ADD R4,#01H
+        MOV R2,ivvt_in_1_struct_hpwm_ivvt_ivvtpwm
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV ivvt_hpwm_cmp_hold,R4
+        RETS
+L_B050A:                 ; 0xb050a
+        MOVB RL4,hld_adj_ivvt_in_1
+        JMPR cc_EQ,L_B052C
+        MOV R4,ivvt_hpwm_div
+        ADD R4,#01H
+        MOV R2,ivvt_in_1_struct_hpwm_ivvt_ivvtpwm
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV PW3_FE36,R4
+        RETS
+L_B052C:                 ; 0xb052c
+        MOV R4,ivvt_hpwm_div
+        ADD R4,#01H
+        MOV R2,ivvt_in_1_struct_hpwm_ivvt_ivvtpwm
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV ivvt_hpwm_cmp,R4
+L_B0546:                 ; 0xb0546
+        RETS
+
+; ======== Calc_IVVT_PWM_Freq_2  (@0xb0548) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signals): OCV PWM frequency from Vbat (second path):
+        ; ivvthpwm_frq/ivvtepwm_frq/fac_cor_ivvtpwm.
+        ; ------------------------------------------------------------
+Calc_IVVT_PWM_Freq_2:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV R8,R12
+        MOV R9,p_ivvt_cam_s
+        MOV R12,#DATA16 POF ldpm_vb_ivvtpwm
+        MOV R13,#DATA16 PAG ldpm_vb_ivvtpwm
+        MOVBZ R14,vb
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_frq_ivvthpwm
+        MOV R13,#DATA16 PAG ip_frq_ivvthpwm
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV ivvthpwm_frq,R4
+        MOV R12,#DATA16 POF ip_frq_ivvtpwm
+        MOV R13,#DATA16 PAG ip_frq_ivvtpwm
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV ivvtepwm_frq,R4
+        MOV R12,#DATA16 045BEH
+        MOVBZ R13,tmag_ivvt
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        MOVBZ R4,RL4
+        MOV [-R0],R4
+        MOV R12,#DATA16 POF ip_fac_vb_ivvtpwm
+        MOV R13,#DATA16 PAG ip_fac_vb_ivvtpwm
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVBZ R12,RL4
+        MOV R13,[R0+]
+        CALLS 00FH,Mul_S16_Q7_Sat
+        MOVB fac_cor_ivvtpwm,RL4
+        MOVBZ R12,RL4
+        MOV R4,[R8+#04H]
+        MOVB RL5,[R4]
+        MOVBZ R13,RL5
+        CALLS 00FH,Mul_S16_Q7_Sat
+        MOVB [R9+#012H],RL4
+        MOVBZ R12,fac_cor_ivvtpwm
+        MOV R4,[R8+#06H]
+        MOVB RL5,[R4]
+        MOVBZ R13,RL5
+        CALLS 00FH,Mul_S16_Q7_Sat
+        MOVB [R9+#013H],RL4
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_B01BA ENDS
+        END

@@ -1,0 +1,83 @@
+; asw/aj/aj_cyl.a66
+; 0xC5914-0xC598A  (118 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_accout_tco_hys                     EQU  09010DH
+c_tco_5_cfa                          EQU  090368H
+ldp_tia_ip_maf_fac_tia                EQU  09817BH
+ip_maf_fac_tia__tia                  EQU  0993C0H
+
+PUBLIC  CylCalc_Group_1, CylCalc_Group_2, CylCalc_Group_3, Set_lv_act_aj
+EXTERN  Calc_Fac_IGA_Max_Knk:NEAR, Calc_IGA_TempFac:NEAR, Calc_Lamb_Ref_Add_TCO:NEAR, Calc_N_SP_IS_Base:NEAR
+EXTERN  Calc_WallFilm_Seg_2:NEAR, Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_Y_Axis:NEAR, Lookup_Dc3b5_TqAddCh:NEAR
+EXTERN  Lookup_Df389_Tia:NEAR, Reset_cVar1_bb2:NEAR, Reset_sVar1_7f6:NEAR, sub_r12_13_ret_r4:NEAR
+
+S_C5914 SECTION CODE AT 0C5914H
+
+; ======== CylCalc_Group_1  (@0xc5914) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+CylCalc_Group_1:
+        CALLS 00BH,Lookup_Df389_Tia
+        CALLS 00CH,Calc_Fac_IGA_Max_Knk
+        JNB lv_conf_mis.02H,L_C5924
+        CALLS 00DH,Lookup_Dc3b5_TqAddCh
+L_C5924:                 ; 0xc5924
+        RETS
+
+; ======== Set_lv_act_aj  (@0xc5926) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Set_lv_act_aj:
+        JB lv_act_aj.0FH,L_C5938
+        MOVB RL4,tco
+        CMPB RL4,DPP0:c_tco_5_cfa
+        JMPR cc_ULE,L_C594C
+        BSET lv_act_aj.0FH
+        RETS
+L_C5938:                 ; 0xc5938
+        MOVBZ R12,DPP0:c_tco_5_cfa
+        MOVBZ R13,DPP0:c_accout_tco_hys
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL4,tco
+        JMPR cc_ULE,L_C594C
+        BCLR lv_act_aj.0FH
+L_C594C:                 ; 0xc594c
+        RETS
+
+; ======== CylCalc_Group_2  (@0xc594e) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+CylCalc_Group_2:
+        CALLS 00CH,Calc_N_SP_IS_Base
+        CALLS 00AH,Calc_IGA_TempFac
+        CALLS 00BH,Reset_cVar1_bb2
+        CALLS 00BH,Reset_sVar1_7f6
+        CALLS 00BH,Calc_Lamb_Ref_Add_TCO
+        RETS
+
+; ======== CylCalc_Group_3  (@0xc5964) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+CylCalc_Group_3:
+        CALLS 00BH,Calc_WallFilm_Seg_2
+        MOV R12,#DATA16 POF ldp_tia_ip_maf_fac_tia
+        MOV R13,#DATA16 PAG ldp_tia_ip_maf_fac_tia
+        MOVBZ R14,tia
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_maf_fac_tia__tia
+        MOV R13,#DATA16 PAG ip_maf_fac_tia__tia
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB lv_cyl_f393,RL4
+        RETS
+
+S_C5914 ENDS
+        END

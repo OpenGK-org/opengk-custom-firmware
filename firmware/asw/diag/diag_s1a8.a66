@@ -1,0 +1,163 @@
+; asw/diag/diag_s1a8.a66
+; 0xD0896-0xD09F0  (346 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  NVM_Restore_s1a8, NVM_Save_s1a8, Tail_f0c400c_918
+EXTERN  Elevated_Write_Routine_prg_zone_wrapper:NEAR, Reset_Dcc92_06e:NEAR, Reset_amp_ad_00c:NEAR, Reset_ar_red_ad_add_048:NEAR
+EXTERN  xor_routine:NEAR
+
+S_D0896 SECTION CODE AT 0D0896H
+
+; ======== NVM_Restore_s1a8  (@0xd0896) ========
+        ; ------------------------------------------------------------
+        ; NVM adaptation I/O: restores <- validated NVM block (DAT_00f890 base) section; xor_routine checksum.
+        ; Section offset in name.
+        ; ------------------------------------------------------------
+NVM_Restore_s1a8:
+        JNB lv_pl.0CH,L_D08A0
+        MOVB RL4,conf_ad_rst
+        JMPR cc_NE,L_D090E
+L_D08A0:                 ; 0xd08a0
+        JB can_fd58.02H,L_D090E
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 001A8H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#06H
+        CALLS 00DH,xor_routine
+        MOV R10,diag_f890
+        MOV R11,diag_f892
+        EXTP R11, #02H
+        MOV R5,[R10+#01AEH]
+        NOP
+        CMP R5,R4
+        JMPR cc_NE,L_D090E
+        EXTP R11, #02H
+        MOV R4,[R10+#01A8H]
+        NOP
+        MOV amp_ad,R4
+        EXTP R11, #02H
+        MOV R5,[R10+#01AAH]
+        NOP
+        MOV ar_red_ad_add,R5
+        EXTP R11, #02H
+        MOV R2,[R10+#01ACH]
+        NOP
+        MOV ar_red_ad_fac,R2
+        JMPR cc_UC,L_D0912
+L_D090E:                 ; 0xd090e
+        CALLS 00DH,Tail_f0c400c_918
+L_D0912:                 ; 0xd0912
+        CALLS 00CH,Reset_Dcc92_06e
+        RETS
+
+; ======== Tail_f0c400c_918  (@0xd0918) ========
+Tail_f0c400c_918:
+        CALLS 00CH,Reset_amp_ad_00c
+        RETS
+
+; ======== NVM_Save_s1a8  (@0xd091e) ========
+        ; ------------------------------------------------------------
+        ; NVM adaptation I/O: saves RAM-> validated NVM block (DAT_00f890 base) section; xor_routine checksum.
+        ; Section offset in name.
+        ; ------------------------------------------------------------
+NVM_Save_s1a8:
+        SUB R0,#02H
+        CALLS 00CH,Reset_ar_red_ad_add_048
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 001A8H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0F728H
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 001AAH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0F722H
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 001ACH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0F724H
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 001A8H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#06H
+        CALLS 00DH,xor_routine
+        MOV [R0],R4
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 001AEH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,R0
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        ADD R0,#02H
+        RETS
+
+S_D0896 ENDS
+        END

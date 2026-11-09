@@ -1,0 +1,161 @@
+; asw/tq/tq_dif.a66
+; 0xAE28C-0xAE40A  (382 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_crlc_tq_dif_is_ad_acc              EQU  09016EH
+c_fac_tq_dif_is_ad                   EQU  090548H
+c_fac_tq_dif_is_ad_acc               EQU  09054AH
+c_fac_tq_dif_is_ad_acc_conv          EQU  09054CH
+c_fac_tq_dif_is_ad_conv              EQU  09054EH
+c_tq_dif_is_ad_acc_conv_max          EQU  090932H
+c_tq_dif_is_ad_acc_conv_min          EQU  090934H
+c_tq_dif_is_ad_acc_max               EQU  090936H
+c_tq_dif_is_ad_acc_min               EQU  090938H
+c_tq_dif_is_ad_conv_max              EQU  09093AH
+c_tq_dif_is_ad_conv_min              EQU  09093CH
+c_tq_dif_is_ad_max                   EQU  09093EH
+c_tq_dif_is_ad_min                   EQU  090940H
+
+PUBLIC  Calc_TQ_DIF_IS_AD, Reset_TQ_Dif_IS_Ad
+EXTERN  Clamp_S16:NEAR, Interp_S16:NEAR, Sat_Add_S32:NEAR, Sat_Sub_S32:NEAR
+EXTERN  mul32:NEAR
+
+S_AE28C SECTION CODE AT 0AE28CH
+
+; ======== Reset_TQ_Dif_IS_Ad  (@0xae28c) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS2000, verified): Adaptation Algorithm (tq_dif_is_ad reset)
+        ; ------------------------------------------------------------
+Reset_TQ_Dif_IS_Ad:
+        MOV tq_dif_is_ad_acc_conv_inter,ZEROS
+        MOV lv_tq_f6a4,ZEROS
+        MOV tq_dif_is_ad_acc_1_inter,ZEROS
+        MOV lv_tq_f6a0,ZEROS
+        MOV tq_dif_is_ad_acc,ZEROS
+        MOV tq_dif_is_ad_conv_inter,ZEROS
+        MOV lv_tq_f6a8,ZEROS
+        MOV tq_dif_is_ad_conv,ZEROS
+        MOV tq_dif_is_ad_inter,ZEROS
+        MOV lv_tq_f69c,ZEROS
+        MOV tq_dif_is_ad,ZEROS
+        RETS
+
+; ======== Calc_TQ_DIF_IS_AD  (@0xae2ba) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (ThetaII, verified): idle torque adaptation: tq_dif_is_ad/_conv/_acc clamped to
+        ; c_tq_dif_is_ad_*_min/max
+        ; (was FUN_0ae2ba)
+        ; ------------------------------------------------------------
+Calc_TQ_DIF_IS_AD:
+        MOV [-R0],R9
+        JB lv_ct.0AH,L_AE2C4
+        JMPA cc_UC,L_AE406
+L_AE2C4:                 ; 0xae2c4
+        JNB state_out_fault.0EH,L_AE374
+        JNB abs_def.02H,L_AE316
+        MOV R12,tq_dif_is_ad_acc_conv_inter
+        MOV R13,lv_tq_f6a4
+        MOV R4,tq_dif_i_is
+        MOV R5,R4
+        ASHR R5,#0FH
+        MOV R10,DPP0:c_fac_tq_dif_is_ad_acc_conv
+        MOV R11,#00H
+        CALLS 00DH,mul32
+        MOV R14,R4
+        MOV R15,R5
+        CALLS 00FH,Sat_Sub_S32
+        MOV tq_dif_is_ad_acc_conv_inter,R4
+        MOV lv_tq_f6a4,R5
+        MOV R12,lv_tq_f6a4
+        MOV R13,DPP0:c_tq_dif_is_ad_acc_conv_min
+        MOV R14,DPP0:c_tq_dif_is_ad_acc_conv_max
+        CALLS 00FH,Clamp_S16
+        MOV lv_tq_f6a4,R4
+        MOV R4,lv_tq_f6a4
+        MOV tq_dif_is_ad_acc_conv,R4
+        MOV R9,R4
+        JMPR cc_UC,L_AE35E
+L_AE316:                 ; 0xae316
+        MOV R12,tq_dif_is_ad_acc_1_inter
+        MOV R13,lv_tq_f6a0
+        MOV R4,tq_dif_i_is
+        MOV R5,R4
+        ASHR R5,#0FH
+        MOV R10,DPP0:c_fac_tq_dif_is_ad_acc
+        MOV R11,#00H
+        CALLS 00DH,mul32
+        MOV R14,R4
+        MOV R15,R5
+        CALLS 00FH,Sat_Sub_S32
+        MOV tq_dif_is_ad_acc_1_inter,R4
+        MOV lv_tq_f6a0,R5
+        MOV R12,lv_tq_f6a0
+        MOV R13,DPP0:c_tq_dif_is_ad_acc_min
+        MOV R14,DPP0:c_tq_dif_is_ad_acc_max
+        CALLS 00FH,Clamp_S16
+        MOV lv_tq_f6a0,R4
+        MOV R4,lv_tq_f6a0
+        MOV tq_dif_is_ad_acc_1,R4
+        MOV R9,R4
+L_AE35E:                 ; 0xae35e
+        MOV R12,tq_dif_is_ad_acc
+        MOV R13,R9
+        MOVBZ R14,DPP0:c_crlc_tq_dif_is_ad_acc
+        SHL R14,#08H
+        CALLS 00FH,Interp_S16
+        MOV tq_dif_is_ad_acc,R4
+        JMPR cc_UC,L_AE406
+L_AE374:                 ; 0xae374
+        JNB abs_def.02H,L_AE3C0
+        MOV R12,tq_dif_is_ad_conv_inter
+        MOV R13,lv_tq_f6a8
+        MOV R4,tq_dif_i_is
+        MOV R5,R4
+        ASHR R5,#0FH
+        MOV R10,DPP0:c_fac_tq_dif_is_ad_conv
+        MOV R11,#00H
+        CALLS 00DH,mul32
+        MOV R14,R4
+        MOV R15,R5
+        CALLS 00FH,Sat_Add_S32
+        MOV tq_dif_is_ad_conv_inter,R4
+        MOV lv_tq_f6a8,R5
+        MOV R12,lv_tq_f6a8
+        MOV R13,DPP0:c_tq_dif_is_ad_conv_min
+        MOV R14,DPP0:c_tq_dif_is_ad_conv_max
+        CALLS 00FH,Clamp_S16
+        MOV lv_tq_f6a8,R4
+        MOV R4,lv_tq_f6a8
+        MOV tq_dif_is_ad_conv,R4
+        JMPR cc_UC,L_AE406
+L_AE3C0:                 ; 0xae3c0
+        MOV R12,tq_dif_is_ad_inter
+        MOV R13,lv_tq_f69c
+        MOV R4,tq_dif_i_is
+        MOV R5,R4
+        ASHR R5,#0FH
+        MOV R10,DPP0:c_fac_tq_dif_is_ad
+        MOV R11,#00H
+        CALLS 00DH,mul32
+        MOV R14,R4
+        MOV R15,R5
+        CALLS 00FH,Sat_Sub_S32
+        MOV tq_dif_is_ad_inter,R4
+        MOV lv_tq_f69c,R5
+        MOV R12,lv_tq_f69c
+        MOV R13,DPP0:c_tq_dif_is_ad_min
+        MOV R14,DPP0:c_tq_dif_is_ad_max
+        CALLS 00FH,Clamp_S16
+        MOV lv_tq_f69c,R4
+        MOV R4,lv_tq_f69c
+        MOV tq_dif_is_ad,R4
+L_AE406:                 ; 0xae406
+        MOV R9,[R0+]
+        RETS
+
+S_AE28C ENDS
+        END

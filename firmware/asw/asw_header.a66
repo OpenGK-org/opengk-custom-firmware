@@ -1,0 +1,34 @@
+; asw/asw_header.a66
+; 0xA0000-0xA00AA  (170 bytes, 0 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+
+S_A0000 SECTION CODE AT 0A0000H
+
+        ; ------------------------------------------------------------
+        ; BL CRC: ECU-region descriptor (block count@+0x12, exp crc@+0x16, start/end@+0x14)
+        ; ------------------------------------------------------------
+        ; data @0xa0000 (78 bytes)
+        DB      090H,048H,024H,042H,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0EDH,0BBH,006H,000H,010H,002H,00AH,000H,0FFH,0FFH,00AH,000H,000H,000H,00BH,000H
+        DB      0FBH,0FFH,00BH,000H,000H,000H,00CH,000H,0FFH,0FFH,00CH,000H,000H,000H,00DH,000H
+        DB      0BBH,0FFH,00DH,000H,000H,000H,00EH,000H,00BH,05EH,00EH,000H,000H,0E2H,00FH,000H
+        DB      033H,0FFH,00FH,000H,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,000H,0FFH
+
+        ; ------------------------------------------------------------
+        ; ECU identification block: calibration/program part numbers, 'KR' region, Hyundai VIN template
+        ; (KMHD...). Read by the ReadEcuIdentification path. Data, not code.
+        ; ------------------------------------------------------------
+        ; data @0xa004e (92 bytes)
+        DB      04FH,050H,045H,04EH,047H,04BH,030H,031H,04FH,047H,030H,030H,030H,031H,04FH,050H
+        DB      045H,04EH,047H,04BH,030H,030H,030H,031H,02DH,02DH,031H,031H,031H,04FH,047H,030H
+        DB      030H,030H,030H,031H,030H,031H,031H,031H,031H,04FH,047H,030H,030H,030H,030H,031H
+        DB      030H,031H,031H,031H,031H,04FH,047H,030H,030H,030H,030H,031H,030H,031H,04BH,04DH
+        DB      048H,044H,078H,078H,078H,044H,078H,031H,055H,078H,078H,078H,078H,078H,078H,031H
+        DB      031H,031H,04FH,047H,030H,030H,030H,030H,031H,030H,031H,0FFH
+
+S_A0000 ENDS
+        END

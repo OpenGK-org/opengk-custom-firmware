@@ -1,0 +1,125 @@
+; asw/slv/slv_sid35.a66
+; 0xBFF28-0xC0000  (216 bytes, 6 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_toil_min_cle_slv_ivvt              EQU  0903CFH
+c_vb_max_cle_slv_ivvt                EQU  090406H
+c_vb_min_cle_slv_ivvt                EQU  09040FH
+sstm_tkw_1_5                      EQU  090B10H
+sstm_n_2_5                           EQU  09155CH
+ip_iga_st__n__tco_st                 EQU  095E25H
+
+PUBLIC  Calc_IGA_ST_FF28, Calc_IGA_St, Calc_lamb_sp, Calc_maf_sp, KWP_SID35_RequestUpload, Set_lv_diag_trip_avl_ivvt
+EXTERN  Div_Frac_U16_Q16:NEAR, Get_IP_Byte_3D_Table:NEAR, Get_IP_Byte_X_Axis:NEAR, Get_IP_Word_Y_Axis:NEAR
+
+S_BFF28 SECTION CODE AT 0BFF28H
+
+; ======== Calc_IGA_ST  (@0xbff28) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (MS42, verified): start ignition angle iga_st = IP_3D(n, tco)
+        ; (was FUN_0bff28)
+        ; ------------------------------------------------------------
+Calc_IGA_ST_FF28:
+        MOV R12,#DATA16 POF sstm_n_2_5
+        MOV R13,#DATA16 PAG sstm_n_2_5
+        MOV R14,n_C93C
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF sstm_tkw_1_5
+        MOV R13,#DATA16 PAG sstm_tkw_1_5
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_iga_st__n__tco_st
+        MOV R13,#DATA16 PAG ip_iga_st__n__tco_st
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB iga_st,RL4
+        RETS
+
+; ======== Calc_IGA_St  (@0xbff5a) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by iga/igc/td output signals): Start/cranking ignition advance iga_st.
+        ; ------------------------------------------------------------
+Calc_IGA_St:
+        JNB lv_pl.04H,L_BFF8E
+        MOV R12,#DATA16 POF sstm_n_2_5
+        MOV R13,#DATA16 PAG sstm_n_2_5
+        MOV R14,n_C93C
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF sstm_tkw_1_5
+        MOV R13,#DATA16 PAG sstm_tkw_1_5
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_iga_st__n__tco_st
+        MOV R13,#DATA16 PAG ip_iga_st__n__tco_st
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB iga_st,RL4
+L_BFF8E:                 ; 0xbff8e
+        RETS
+
+; ======== Set_lv_diag_trip_avl_ivvt  (@0xbff90) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Set_lv_diag_trip_avl_ivvt:
+        MOVB RL4,toil
+        CMPB RL4,DPP0:c_toil_min_cle_slv_ivvt
+        JMPR cc_ULE,L_BFFAE
+        MOVB RL5,vb
+        CMPB RL5,DPP0:c_vb_min_cle_slv_ivvt
+        JMPR cc_ULE,L_BFFAE
+        CMPB RL5,DPP0:c_vb_max_cle_slv_ivvt
+        JMPR cc_NC,L_BFFAE
+        BSET lv_diag_trip_avl_ivvt.0EH
+        RETS
+L_BFFAE:                 ; 0xbffae
+        BCLR lv_diag_trip_avl_ivvt.0EH
+        RETS
+
+; ======== Calc_maf_sp  (@0xbffb2) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Calc_maf_sp:
+        MOV R4,maf_sp_tqi
+        MOV maf_sp,R4
+        RETS
+
+; ======== Calc_lamb_sp  (@0xbffbc) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Calc_lamb_sp:
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_BFFE0
+        MOV R12,#DATA16 00040H
+        MOV R13,ti_fac_cor
+        CALLS 00FH,Div_Frac_U16_Q16
+        MOV lamb_sp,R4
+        CMP R4,#DATA16 07FFFH
+        JMPR cc_ULE,L_BFFE8
+        MOV R5,#DATA16 07FFFH
+        MOV lamb_sp,R5
+        JMPR cc_UC,L_BFFE8
+L_BFFE0:                 ; 0xbffe0
+        MOV R4,#DATA16 00400H
+        MOV lamb_sp,R4
+L_BFFE8:                 ; 0xbffe8
+        MOV R4,lamb_sp
+        MOV lamb_sp_z,R4
+        RETS
+
+; ======== KWP_SID35_RequestUpload  (@0xbfff2) ========
+        ; KWP2000 SID 0x35 RequestUpload - unconditionally returns NRC 0x11 (serviceNotSupported). Routed but
+        ; disabled on this ECU.
+KWP_SID35_RequestUpload:
+        MOVB RL4,#DATA16 00011H
+        MOVB kwp_nrc,RL4
+        RETS
+
+        ; data @0xbfffc (4 bytes)
+        DB      0FFH,0FFH,0FFH,0FFH
+
+S_BFF28 ENDS
+        END

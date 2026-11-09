@@ -1,0 +1,70 @@
+; asw/rt/rt_yword.a66
+; 0xFF806-0xFF888  (130 bytes, 1 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Get_IP_Word_2D_Table_DWord_YWord
+
+S_FF806 SECTION CODE AT 0FF806H
+
+; ======== Get_IP_Word_2D_Table_DWord_YWord  (@0xff806) ========
+Get_IP_Word_2D_Table_DWord_YWord:
+        MOV R10,[R12]
+        MOV R2,[R12+#04H]
+        MOV R5,[R12+#06H]
+        MOV R12,[R12+#02H]
+        MOV DPP0_FE00,R5
+        MOV R1,R2
+        ADD R1,[R2]
+        ADD R1,[R2+]
+        CMP R13,[R1]
+        JMPR cc_NC,L_FF87A
+        CMP R13,[R2]
+        JMPR cc_ULE,L_FF870
+L_FF826:                 ; 0xff826
+        SUB R1,#02H
+        CMP R13,[R1]
+        JMPR cc_C,L_FF826
+        JMPR cc_EQ,L_FF87A
+        SUB R13,[R1]
+        MOV MDH_FE0C,R13
+        XOR MDL,0FE0EH
+        MOV R4,[R1+#02H]
+        SUB R4,[R1]
+        DIVLU R4
+        MOV R13,0FE0EH
+        MOV DPP0,#DATA16 00024H
+        SUB R1,R2
+        ADD R1,R10
+        EXTP R12, #02H
+        MOV R4,[R1+]
+        MOV R5,[R1]
+        SUB R5,R4
+        JMPR cc_NC,L_FF864
+        NEG R5
+        MULU R5,R13
+        ADD MDL,0FE0EH
+        SUBC R4,MDH_FE0C
+        RETS
+L_FF864:                 ; 0xff864
+        MULU R5,R13
+        ADD MDL,0FE0EH
+        ADDC R4,MDH_FE0C
+        RETS
+L_FF870:                 ; 0xff870
+        EXTP R12, #01H
+        MOV R4,[R10]
+        MOV DPP0,#DATA16 00024H
+        RETS
+L_FF87A:                 ; 0xff87a
+        SUB R1,R2
+        ADD R1,R10
+        EXTP R12, #01H
+        MOV R4,[R1]
+        MOV DPP0,#DATA16 00024H
+        RETS
+
+S_FF806 ENDS
+        END

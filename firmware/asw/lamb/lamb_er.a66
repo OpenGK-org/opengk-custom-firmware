@@ -1,0 +1,196 @@
+; asw/lamb/lamb_er.a66
+; 0xADDAC-0xADF66  (442 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_lamb_er_ad_cor_dec                 EQU  090223H
+c_lamb_er_ad_cor_dly                 EQU  09059AH
+c_lamb_er_ad_bol                     EQU  0908CCH
+c_lamb_er_ad_tol                     EQU  0908CEH
+ldp_n_32_ip_lamb_er_ad_cor_fac   EQU  090CCDH
+ldp_tco_ip_lamb_er_ad_fac             EQU  090CD0H
+ldpm_er_std_av_lamb_er_ad                             EQU  0915D4H
+ldp_maf_ip_lamb_er_ad_cor_fac   EQU  0915DAH
+ip_lamb_er_ad_cor__er_std_av         EQU  092D6CH
+ip_lamb_er_ad_cor_fac__maf__n_32     EQU  092D70H
+ip_lamb_er_ad_cor_is__er_std_av      EQU  092D78H
+ip_lamb_er_ad_fac__tco               EQU  092D7CH
+
+PUBLIC  Calc_Lamb_ER_Adapt, Lookup_Lamb_ER_Ad_Fac, Reset_ti_er_ad_f4a, Set_ti_er_ad_f5c
+EXTERN  Div_Frac_U16_Q16:NEAR, Get_IP_Byte_X_Axis:NEAR, Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_2D_Table:NEAR
+EXTERN  Get_IP_Word_3D_Table:NEAR, Get_IP_Word_Y_Axis:NEAR, Mul_Q15_Sat_Signed:NEAR, Sat_Add_S16:NEAR
+EXTERN  Sub_Floor0_S16:NEAR, sub_r12_r13_rets_r4:NEAR
+
+S_ADDAC SECTION CODE AT 0ADDACH
+
+; ======== Calc_Lamb_ER_Adapt  (@0xaddac) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by dominant output signals): Lambda roughness adaptation: lamb_er_ad_add /
+        ; cor_dly_ctr / ti_er_ad.
+        ; ------------------------------------------------------------
+Calc_Lamb_ER_Adapt:
+        MOV [-R0],R9
+        JB lv_carb_err.0EH,L_ADDB6
+        JMPA cc_UC,L_ADF12
+L_ADDB6:                 ; 0xaddb6
+        JB lv_ct.09H,L_ADDC4
+        BSET lv_ct.09H
+        MOV R4,lamb_er_ad_mem
+        MOV lamb_er_ad_clc,R4
+L_ADDC4:                 ; 0xaddc4
+        MOV R4,lamb_er_ad_cor_dly_ctr
+        JMPR cc_NE,L_ADE1A
+        MOV R12,#DATA16 POF ldpm_er_std_av_lamb_er_ad
+        MOV R13,#DATA16 PAG ldpm_er_std_av_lamb_er_ad
+        MOV R14,er_std_av_sword_1_
+        ADD R14,#DATA16 08000H
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_ADDF6
+        MOV R12,#DATA16 POF ip_lamb_er_ad_cor_is__er_std_av
+        MOV R13,#DATA16 PAG ip_lamb_er_ad_cor_is__er_std_av
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV R9,R4
+        ADD R9,#DATA16 08000H
+        JMPR cc_UC,L_ADE08
+L_ADDF6:                 ; 0xaddf6
+        MOV R12,#DATA16 POF ip_lamb_er_ad_cor__er_std_av
+        MOV R13,#DATA16 PAG ip_lamb_er_ad_cor__er_std_av
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV R9,R4
+        ADD R9,#DATA16 08000H
+L_ADE08:                 ; 0xade08
+        CMP R9,#00H
+        JMPR cc_EQ,L_ADE2E
+        MOV lamb_er_ad_cor,R9
+        MOV R4,DPP0:c_lamb_er_ad_cor_dly
+        MOV lamb_er_ad_cor_dly_ctr,R4
+        JMPR cc_UC,L_ADE2E
+L_ADE1A:                 ; 0xade1a
+        MOV lamb_er_ad_cor,ZEROS
+        MOV R12,lamb_er_ad_cor_dly_ctr
+        MOVBZ R13,DPP0:c_lamb_er_ad_cor_dec
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV lamb_er_ad_cor_dly_ctr,R4
+L_ADE2E:                 ; 0xade2e
+        MOV R12,lamb_er_ad_clc
+        MOV R13,lv_lam_c572
+        CALLS 00FH,Mul_Q15_Sat_Signed
+        MOV R9,R4
+        CMP R9,DPP0:c_lamb_er_ad_bol
+        JMPR cc_SGT,L_ADE4A
+        MOV R4,lamb_er_ad_cor
+        CMP R4,#00H
+        JMPR cc_SLT,L_ADE58
+L_ADE4A:                 ; 0xade4a
+        CMP R9,DPP0:c_lamb_er_ad_tol
+        JMPR cc_SLT,L_ADE5E
+        MOV R4,lamb_er_ad_cor
+        CMP R4,#00H
+        JMPR cc_SLE,L_ADE5E
+L_ADE58:                 ; 0xade58
+        BSET lv_ct.08H
+        BCLR lv_ct.07H
+        JMPR cc_UC,L_ADEBA
+L_ADE5E:                 ; 0xade5e
+        BCLR lv_ct.08H
+        JB lv_err_tps_det.02H,L_ADEB8
+        JB lv_cdn_diag_maf_dif_ch_int.0DH,L_ADEB8
+        JB lv_ct.04H,L_ADEB8
+        JB lv_ct.01H,L_ADEB8
+        BSET lv_ct.07H
+        MOV R12,#DATA16 POF ldp_maf_ip_lamb_er_ad_cor_fac
+        MOV R13,#DATA16 PAG ldp_maf_ip_lamb_er_ad_cor_fac
+        MOV R14,maf_word
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ldp_n_32_ip_lamb_er_ad_cor_fac
+        MOV R13,#DATA16 PAG ldp_n_32_ip_lamb_er_ad_cor_fac
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_lamb_er_ad_cor_fac__maf__n_32
+        MOV R13,#DATA16 PAG ip_lamb_er_ad_cor_fac__maf__n_32
+        CALLS 00FH,Get_IP_Word_3D_Table
+        MOV R13,R4
+        MOV R12,lamb_er_ad_cor
+        CALLS 00FH,Mul_Q15_Sat_Signed
+        MOV R13,R4
+        MOV R12,lamb_er_ad_clc
+        CALLS 00FH,Sat_Add_S16
+        MOV lamb_er_ad_clc,R4
+        JMPR cc_UC,L_ADEBA
+L_ADEB8:                 ; 0xadeb8
+        BCLR lv_ct.07H
+L_ADEBA:                 ; 0xadeba
+        MOV R12,lamb_er_ad_clc
+        MOV R13,lv_lam_c572
+        CALLS 00FH,Mul_Q15_Sat_Signed
+        MOV lamb_er_ad_lim,R4
+        CMP R4,DPP0:c_lamb_er_ad_tol
+        JMPR cc_SLE,L_ADEDA
+        MOV R5,DPP0:c_lamb_er_ad_tol
+        MOV lamb_er_ad_add,R5
+        JMPR cc_UC,L_ADEF6
+L_ADEDA:                 ; 0xadeda
+        MOV R4,lamb_er_ad_lim
+        CMP R4,DPP0:c_lamb_er_ad_bol
+        JMPR cc_SGE,L_ADEEE
+        MOV R5,DPP0:c_lamb_er_ad_bol
+        MOV lamb_er_ad_add,R5
+        JMPR cc_UC,L_ADEF6
+L_ADEEE:                 ; 0xadeee
+        MOV R4,lamb_er_ad_lim
+        MOV lamb_er_ad_add,R4
+L_ADEF6:                 ; 0xadef6
+        MOV R12,#DATA16 01000H
+        MOV R13,lamb_er_ad_add
+        CALLS 00FH,Sub_Floor0_S16
+        MOV R13,R4
+        MOV R12,#DATA16 00800H
+        CALLS 00FH,Div_Frac_U16_Q16
+        MOV ti_er_ad,R4
+        JMPR cc_UC,L_ADF24
+L_ADF12:                 ; 0xadf12
+        BCLR lv_ct.09H
+        MOV R4,#DATA16 08000H
+        MOV ti_er_ad,R4
+        MOV lamb_er_ad_cor_dly_ctr,ZEROS
+        BCLR lv_ct.07H
+        BCLR lv_ct.08H
+L_ADF24:                 ; 0xadf24
+        MOV R9,[R0+]
+        RETS
+
+; ======== Lookup_Lamb_ER_Ad_Fac  (@0xadf28) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Lookup_Lamb_ER_Ad_Fac:
+        MOV R12,#DATA16 POF ldp_tco_ip_lamb_er_ad_fac
+        MOV R13,#DATA16 PAG ldp_tco_ip_lamb_er_ad_fac
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_lamb_er_ad_fac__tco
+        MOV R13,#DATA16 PAG ip_lamb_er_ad_fac__tco
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV lv_lam_c572,R4
+        RETS
+
+; ======== Reset_ti_er_ad_f4a  (@0xadf4a) ========
+Reset_ti_er_ad_f4a:
+        MOV R4,#DATA16 08000H
+        MOV ti_er_ad,R4
+        MOV lamb_er_ad_cor_dly_ctr,ZEROS
+        BCLR lv_ct.07H
+        BCLR lv_ct.08H
+        RETS
+
+; ======== Set_ti_er_ad_f5c  (@0xadf5c) ========
+Set_ti_er_ad_f5c:
+        MOV R4,#DATA16 08000H
+        MOV ti_er_ad,R4
+        RETS
+
+S_ADDAC ENDS
+        END

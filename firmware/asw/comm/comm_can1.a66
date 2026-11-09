@@ -1,0 +1,1181 @@
+; asw/comm/comm_can1.a66
+; 0xD6824-0xD74AA  (3206 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_cppwm_as                           EQU  090092H
+c_inh_iv_as                          EQU  090096H
+c_ti_as_0                            EQU  090098H
+c_ti_as_1                            EQU  090099H
+c_ti_as_2                            EQU  09009AH
+c_ti_as_3                            EQU  09009BH
+c_soi_as                             EQU  09009EH
+c_abc_inc_can_bus_off                EQU  0900A3H
+c_abc_inc_timeout_tcs1               EQU  0900C5H
+c_abc_inc_timeout_tcu1               EQU  0900C6H
+c_abc_max_can_bus_off                EQU  0900D7H
+c_abc_max_timeout_tcs1               EQU  0900FAH
+c_abc_max_timeout_tcu1               EQU  0900FBH
+c_max_timeout_tcs1                   EQU  090241H
+can_90242                            EQU  090242H
+c_max_timeout_tcu1                   EQU  090243H
+c_n_min_can_diag                     EQU  0902B8H
+c_t_dly_min_can_diag                 EQU  090328H
+c_tps_is_out                         EQU  0903E6H
+c_tps_max_can                        EQU  0903E7H
+c_tq_intv_rel_err_max                EQU  0903F5H
+c_tq_stnd                            EQU  0903F7H
+c_vb_min_can_diag                    EQU  09040EH
+lc_inh_msr                           EQU  090474H
+lc_tqi_msr_req_man                   EQU  09049AH
+c_tqi_msr_req_man                    EQU  0907C6H
+
+PUBLIC  CAN1_Init, CAN1_Periodic_Task, Calc_TI_AS
+EXTERN  Abs_Diff_S16:NEAR, CAN1_Rx_ReadObject:NEAR, CAN1_SetDefault_TcsSignals:NEAR, CAN1_SetDefault_TcuSignals:NEAR
+EXTERN  CAN1_SetDefault_WheelSpeeds:NEAR, CAN1_Tx_SendObject:NEAR, Clamp_U16_v2:NEAR, DTC_Update_Debounced:NEAR
+EXTERN  DTC_Update_Immediate:NEAR, Div_Ratio_U8_Sat:NEAR, OBD_Readiness_Grp2:NEAR, multipied_r12_r13_UGT_r14_rets_r4:NEAR
+EXTERN  sub_r12_13_ret_r4:NEAR
+
+S_D6824 SECTION CODE AT 0D6824H
+
+; ======== Calc_TI_AS  (@0xd6824) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signals): After-start injection time per cylinder: ti_as_0..3.
+        ; ------------------------------------------------------------
+Calc_TI_AS:
+        JB lv_asr_req.03H,L_D687E
+        MOVB RL4,DPP0:c_ti_as_0
+        MOVB ti_as_0_,RL4
+        MOVB RL5,DPP0:c_ti_as_1
+        MOVB ti_as_1_,RL5
+        MOVB RL3,DPP0:c_ti_as_2
+        MOVB ti_as_2_,RL3
+        MOVB RL2,DPP0:c_ti_as_3
+        MOVB ti_as_3_,RL2
+        MOVB RL1,DPP0:c_soi_as
+        MOVB soi_as,RL1
+        JB lv_maf_trim.09H,L_D687E
+        MOVB RL4,DPP0:c_inh_iv_as
+        MOVB inh_iv_as,RL4
+        JB lv_conf_mis.02H,L_D686E
+        ORB RL4,lv_iga_c2ea
+        ORB RL4,imob_c286
+        MOVB msk_inj_cyl_ok,RL4
+        JMPR cc_UC,L_D687E
+L_D686E:                 ; 0xd686e
+        MOVB RL4,inh_iv_as
+        ORB RL4,inh_iv_mis
+        ORB RL4,imob_c286
+        MOVB msk_inj_cyl_ok,RL4
+L_D687E:                 ; 0xd687e
+        JB lv_iga_dif_max_er.0FH,L_D688A
+        MOV R4,DPP0:c_cppwm_as
+        MOV cppwm_as,R4
+L_D688A:                 ; 0xd688a
+        RETS
+
+; ======== CAN1_Init  (@0xd688c) ========
+        ; CAN1_Init: powertrain/vehicle CAN (controller @0xEF00). Programs C1CSR/C1IR, bit timing
+        ; C1BTR=0x3601, global masks=0xFFFF, then loads all 15 message objects (16B each) from ROM template
+        ; @0x50b4 (DPP-windowed to 0x910b4), and defaults the received-signal variables via
+        ; CAN1_SetDefault_TcuSignals/TcsSignals/WheelSpeeds. NOTE: CAN2 @0xEE00 is the separate CCP/DAQ
+        ; controller.
+CAN1_Init:
+        MOV [-R0],R9                            ; HW (schematic + code): C167 TwinCAN part, two on-chip CAN nodes: CAN1=0xEF00 (this, powertrain), CAN2=0xEE00 (CCP/KWP diag). Retail board has ONE transceiver on P4.6=CAN_TxD(pin91)/P4.7=CAN_RxD(pin92); both nodes share it (same bitrate: C1BTR=0x3601 and C2BTR=0x2701 both = 12tq, prescaler/2). This node IS brought live (CAN1_Init clears INIT in C1CSR; called at startup 0xda6a4 + re-armed from CAN1_Periodic_Task). So powertrain + CCP + KWP all ride the single physical bus. Dev ECUs broke CAN2 out to its own connector; retail merges both onto one wire.
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV R4,#DATA16 00741H
+        MOV C1CSR,R4
+        MOV R4,#DATA16 00100H
+        MOV C1IR,R4
+        MOV R4,#DATA16 03601H
+        MOV C1BTR,R4
+        MOV C1GMS,ONES
+        MOV C1UGML,ONES
+        MOV C1LGML,ONES
+        MOV C1UMLM,ONES
+        MOV C1LMLM,ONES
+        MOV R8,#DATA16 0EF10H                   ; First CAN msg obj register
+        MOV R7,#DATA16 050B4H
+        MOV R9,#00H
+L_D68C8:                 ; 0xd68c8
+        MOV [R8],[R7]
+        ADD R8,#02H
+        ADD R7,#02H
+        ADD R9,#01H
+        CMP R9,#DATA16 00078H
+        JMPR cc_C,L_D68C8
+        MOVB C1CSR,ZEROS
+        MOVB RL4,DPP0:c_tq_stnd
+        MOVB tq_stnd,RL4
+        CALLS 00DH,CAN1_SetDefault_TcuSignals
+        CALLS 00DH,CAN1_SetDefault_TcsSignals
+        CALLS 00DH,CAN1_SetDefault_WheelSpeeds
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== CAN1_Periodic_Task  (@0xd68f6) ========
+        ; CAN1_Periodic_Task: periodic powertrain-CAN handler (CAN1 @0xEF00). Bus-off detect/recover
+        ; (CAN1_Init) + CAN-timeout DTCs, then: RX via CAN1_Rx_ReadObject -> parse @0xf83c: obj0=TCU (tar_gc
+        ; gear, tqi_tcu_can, toil_gb, n_tur_conv), obj2=TCS/ESP (tqi_asr_req/tqi_msr_req, arb C1AR3=0x602a),
+        ; obj1=ABS (wheel_fl/fr/rl/rr_tcs, arb C1AR2=0x3e). TX: fill 0xf832 then CAN1_Tx_SendObject(idx):
+        ; objD(DLC8) engine torque = flags,tqi_acor_can,n(RPM)<<2,tqi_can,tqfr_can,vs,ratio; objC(DLC7) engine
+        ; status = mux/alive,tco,maf_fac_alti_mmv,MIL flags,tps_can; objB(DLC4) fuel/ambient =
+        ; flags+amp_can,fco_word_1,vb; objA(DLC8) OBD readiness =
+        ; tia,state_dc_rbm,ctr_igk_cyc_rbm,ctr_cdn_obd_rbm.
+CAN1_Periodic_Task:
+        MOV [-R0],R9
+        MOV [-R0],R6
+        MOVB RL4,DPP0:c_tq_stnd
+        MOVB tq_stnd,RL4
+        JB lv_asr_act.06H,L_D690A
+        JNB lv_act_aj.09H,L_D6980
+L_D690A:                 ; 0xd690a
+        MOVB RL4,tqi_tcu_can
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_C,L_D6922
+        MOVB RL5,tqi_tcs_can
+        CMPB RL5,#DATA16 000FFH
+        JMPR cc_NC,L_D6976
+        JNB lv_conf_mis.03H,L_D6976
+L_D6922:                 ; 0xd6922
+        MOVB RL4,tqi_tcu_can
+        CMPB RL4,tqi_tcs_can
+        JMPR cc_NC,L_D6932
+        MOV R9,tqi_gs_req
+        JMPR cc_UC,L_D6936
+L_D6932:                 ; 0xd6932
+        MOV R9,tqi_asr_req
+L_D6936:                 ; 0xd6936
+        MOV R12,tqi_av
+        MOV R13,R9
+        CALLS 00FH,Abs_Diff_S16
+        MOV R12,R4
+        MOVBZ R4,tq_stnd
+        MOV R13,R4
+        SHL R13,#02H
+        ADD R13,R4
+        SHL R13,#06H
+        CALLS 00FH,Div_Ratio_U8_Sat
+        MOVB tq_intv_rel_err,RL4
+        CMPB RL4,DPP0:c_tq_intv_rel_err_max
+        JMPR cc_UGT,L_D6962
+        MOVB state_tq_intv,ZEROS
+        JMPR cc_UC,L_D698A
+L_D6962:                 ; 0xd6962
+        JNB lv_act_aj.09H,L_D696E
+        MOVB RL4,#01H
+        MOVB state_tq_intv,RL4
+        JMPR cc_UC,L_D698A
+L_D696E:                 ; 0xd696e
+        MOVB RL4,#02H
+        MOVB state_tq_intv,RL4
+        JMPR cc_UC,L_D698A
+L_D6976:                 ; 0xd6976
+        MOVB state_tq_intv,ZEROS
+        MOVB tq_intv_rel_err,ZEROS
+        JMPR cc_UC,L_D698A
+L_D6980:                 ; 0xd6980
+        MOVB RL4,#03H
+        MOVB state_tq_intv,RL4
+        MOVB tq_intv_rel_err,ONES
+L_D698A:                 ; 0xd698a
+        JNB abs_def.0FH,L_D6992
+        JNB abs_def.0EH,L_D69DA
+L_D6992:                 ; 0xd6992
+        JB lv_conf_mis.03H,L_D69A6
+        MOV R4,C1MCR3
+        AND R4,#DATA16 00300H
+        CMP R4,#DATA16 00200H
+        JMPR cc_NE,L_D69A6
+        BSET lv_conf_mis.03H
+L_D69A6:                 ; 0xd69a6
+        JB abs_def.04H,L_D69BC
+        MOV R4,C1MCR1
+        AND R4,#DATA16 00300H
+        CMP R4,#DATA16 00200H
+        JMPR cc_NE,L_D69BC
+        BSET lv_conf_mis.0AH
+        BSET abs_def.04H
+L_D69BC:                 ; 0xd69bc
+        JNB abs_def.0EH,L_D69CA
+        JNB lv_conf_mis.03H,L_D69DA
+        JNB abs_def.04H,L_D69DA
+        JMPR cc_UC,L_D69D8
+L_D69CA:                 ; 0xd69ca
+        MOV R4,ctr_wdt_service
+        CMP R4,#DATA16 003E8H
+        JMPR cc_C,L_D69DA
+        BSET abs_def.0FH
+        JMPR cc_UC,L_D69DA
+L_D69D8:                 ; 0xd69d8
+        BCLR abs_def.0EH
+L_D69DA:                 ; 0xd69da
+        JNB can_fd58.09H,L_D6A4A
+        MOVBZ R4,can1_sr
+        AND R4,#DATA16 00080H
+        JMPR cc_EQ,L_D6A06
+        JNB abs_def.00H,L_D69F4
+        CALLS 00DH,CAN1_Init
+        BCLR abs_def.00H
+        JMPR cc_UC,L_D69FE
+L_D69F4:                 ; 0xd69f4
+        BSET abs_def.00H
+        MOVB RL4,#DATA16 00041H
+        ANDB C1CSR,RL4
+L_D69FE:                 ; 0xd69fe
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        JMPR cc_UC,L_D6A10
+L_D6A06:                 ; 0xd6a06
+        JNB abs_def.00H,L_D6A10
+        CALLS 00DH,CAN1_Init
+        BCLR abs_def.00H
+L_D6A10:                 ; 0xd6a10
+        JNB lv_asr_req.0BH,L_D6A46
+        MOV R12,#DATA16 0D576H
+        MOV R13,#DATA16 0597CH
+        MOVBZ R14,DPP0:c_abc_inc_can_bus_off
+        MOVBZ R15,DPP0:c_abc_max_can_bus_off
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_can_bus_off_err.05H,dtc_status_work.06H
+        MOVBZ R4,can_d580
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D6A3E
+        MOV R4,#DATA16 0FFDFH
+        AND dtc_st_grp_can,R4
+L_D6A3E:                 ; 0xd6a3e
+        JNB lv_can_bus_off_err.05H,L_D6A4A
+        BSET lv_asr_req.0AH
+        JMPR cc_UC,L_D6A4A
+L_D6A46:                 ; 0xd6a46
+        MOVB dtc_test_result,ZEROS
+L_D6A4A:                 ; 0xd6a4a
+        JNB can_fd58.09H,L_D6A78
+        MOVB RL4,vb
+        CMPB RL4,DPP0:c_vb_min_can_diag
+        JMPR cc_C,L_D6A78
+        MOVB RL5,n_32
+        CMPB RL5,DPP0:c_n_min_can_diag
+        JMPR cc_ULE,L_D6A78
+        MOVB RL3,ctr_can_busoff
+        CMPB RL3,DPP0:c_t_dly_min_can_diag
+        JMPR cc_NC,L_D6A74
+        ADDB RL3,#01H
+        MOVB ctr_can_busoff,RL3
+        JMPR cc_UC,L_D6A7E
+L_D6A74:                 ; 0xd6a74
+        BSET lv_asr_req.0BH
+        JMPR cc_UC,L_D6A7E
+L_D6A78:                 ; 0xd6a78
+        MOVB ctr_can_busoff,ZEROS
+        BCLR lv_asr_req.0BH
+L_D6A7E:                 ; 0xd6a7e
+        MOVB RL4,lv_sched_diag_inh
+        ANDB RL4,#01H
+        JMPA cc_NE,L_D7004
+        JB abs_def.04H,L_D6A90
+        JMPA cc_UC,L_D6D5C
+L_D6A90:                 ; 0xd6a90
+        MOV R12,#00H
+        CALLS 00DH,CAN1_Rx_ReadObject
+        CMPB RL4,#00H
+        JMPA cc_NE,L_D6CCE
+        MOVB ctr_can_tcu_to,ZEROS
+        JNB lv_asr_req.0BH,L_D6AD2
+        JB kwp_prog_flags.08H,L_D6AD2
+        MOV R12,#DATA16 0D584H
+        MOV R13,#DATA16 05992H
+        MOVBZ R14,DPP0:c_abc_inc_timeout_tcu1
+        MOVBZ R15,DPP0:c_abc_max_timeout_tcu1
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_can_bus_off_err.06H,dtc_status_work.06H
+        MOVBZ R4,can_d58e
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D6AD2
+        MOV R4,#DATA16 0FFBFH
+        AND dtc_st_grp_can,R4
+L_D6AD2:                 ; 0xd6ad2
+        JNB lv_can_bus_off_err.06H,L_D6AE0
+        BSET lv_asr_req.0AH
+        CALLS 00DH,CAN1_SetDefault_TcuSignals
+        JMPA cc_UC,L_D6D5C
+L_D6AE0:                 ; 0xd6ae0
+        MOVB RL4,can_f83d
+        ANDB RL4,#07H
+        MOVB tar_gc,RL4
+        MOVB can_gear_tcu,RL4
+        CMPB RL4,#00H
+        JMPR cc_NE,L_D6AF6
+        BCLR abs_def.02H
+        JMPR cc_UC,L_D6AF8
+L_D6AF6:                 ; 0xd6af6
+        BSET abs_def.02H
+L_D6AF8:                 ; 0xd6af8
+        MOVB RL4,can_f83d
+        ANDB RL4,#DATA16 00008H
+        BMOVN PSW.06H,PSW.03H
+        BMOV lv_asr_req.05H,PSW.06H
+        BMOV abs_def.0BH,lv_asr_req.05H
+        MOVB RL4,can_f83d
+        ANDB RL4,#DATA16 00010H
+        BMOVN PSW.06H,PSW.03H
+        BMOV abs_def.06H,PSW.06H
+        MOVB RL4,can_f83d
+        ANDB RL4,#DATA16 00020H
+        BMOVN PSW.06H,PSW.03H
+        BMOV abs_def.07H,PSW.06H
+        MOVBZ R4,can_f83d
+        AND R4,#DATA16 000C0H
+        ASHR R4,#06H
+        MOVB swi_cc,RL4
+        MOVB RL5,can1_rx_b2
+        ANDB RL5,#DATA16 0000FH
+        MOVB g_sel_disp,RL5
+        MOVBZ R4,can1_rx_b2
+        AND R4,#DATA16 00030H
+        ASHR R4,#04H
+        MOVB f_tcu,RL4
+        JNB lv_conf_mis.04H,L_D6C1A
+        MOVB RL3,can1_rx_b3
+        ANDB RL3,#DATA16 0000FH
+        MOVB tcu_obd,RL3
+        MOVBZ R4,RL3
+        AND R4,#04H
+        JMPR cc_EQ,L_D6B72
+        MOVB RL4,#08H
+        ORB can_tcu_obd_status,RL4
+        JMPR cc_UC,L_D6B7A
+L_D6B72:                 ; 0xd6b72
+        MOVB RL4,#DATA16 000F7H
+        ANDB can_tcu_obd_status,RL4
+L_D6B7A:                 ; 0xd6b7a
+        MOVBZ R4,tcu_obd
+        AND R4,#DATA16 00008H
+        JMPR cc_EQ,L_D6B8E
+        MOVB RL4,#DATA16 00010H
+        ORB can_tcu_obd_status,RL4
+        JMPR cc_UC,L_D6B96
+L_D6B8E:                 ; 0xd6b8e
+        MOVB RL4,#DATA16 000EFH
+        ANDB can_tcu_obd_status,RL4
+L_D6B96:                 ; 0xd6b96
+        MOVB RL4,f_tcu
+        CMPB RL4,#03H
+        JMPR cc_NC,L_D6C38
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_D6BA6
+        CMPB RL4,#02H
+        JMPR cc_NE,L_D6BE6
+L_D6BA6:                 ; 0xd6ba6
+        MOVBZ R4,tcu_obd
+        AND R4,#04H
+        JMPR cc_EQ,L_D6BDE
+        MOVB RL4,#DATA16 00024H
+        MOVB can_d5aa,RL4
+        MOV R12,#DATA16 00058H
+        CALLS 00DH,OBD_Readiness_Grp2
+        MOV R4,#DATA16 0FEFFH
+        AND can_f85e,R4
+        MOVB RL4,#DATA16 00022H
+        ORB can_tcu_obd_status,RL4
+        MOVB RL4,#DATA16 000BFH
+        ANDB can_tcu_obd_status,RL4
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        JMPR cc_UC,L_D6BF6
+L_D6BDE:                 ; 0xd6bde
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        JMPR cc_UC,L_D6BF6
+L_D6BE6:                 ; 0xd6be6
+        MOVB RL4,#DATA16 00042H
+        ORB can_tcu_obd_status,RL4
+        MOVB RL4,#DATA16 000DFH
+        ANDB can_tcu_obd_status,RL4
+L_D6BF6:                 ; 0xd6bf6
+        MOV R12,#DATA16 0D5A0H
+        MOV R13,#DATA16 059BEH
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_can_bus_off_err.08H,dtc_status_work.06H
+        MOVBZ R4,can_d5aa
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D6C38
+        MOV R4,#DATA16 0FEFFH
+        AND dtc_st_grp_can,R4
+        JMPR cc_UC,L_D6C38
+L_D6C1A:                 ; 0xd6c1a
+        MOVB RL4,can1_rx_b3
+        ANDB RL4,#DATA16 0000FH
+        MOVB tcu_obd,RL4
+        MOVBZ R4,RL4
+        AND R4,#04H
+        JMPR cc_EQ,L_D6C34
+        MOVB RL4,#08H
+        MOVB can_tcu_obd_status,RL4
+        JMPR cc_UC,L_D6C38
+L_D6C34:                 ; 0xd6c34
+        MOVB can_tcu_obd_status,ZEROS
+L_D6C38:                 ; 0xd6c38
+        MOVB RL4,can1_rx_b3
+        ANDB RL4,#DATA16 00010H
+        BMOVN PSW.06H,PSW.03H
+        BMOV abs_def.03H,PSW.06H
+        BMOV abs_def.01H,abs_def.03H
+        MOVB RL4,can1_rx_b4
+        MOVB tqi_tcu_can,RL4
+        MOVBZ R12,RL4
+        MOVBZ R4,tq_stnd
+        MOV R13,R4
+        SHL R13,#02H
+        ADD R13,R4
+        SHL R13,#06H
+        MOV R14,#DATA16 00100H
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV can1_tq_scale_tmp,R4
+        CMP R4,#DATA16 07FFFH
+        JMPR cc_NC,L_D6C7A
+        MOV tqi_gs_req,R4
+        JMPR cc_UC,L_D6C82
+L_D6C7A:                 ; 0xd6c7a
+        MOV R4,#DATA16 07FFFH
+        MOV tqi_gs_req,R4
+L_D6C82:                 ; 0xd6c82
+        MOVB RL4,can1_rx_b5
+        MOVB toil_gb,RL4
+        MOVB RL5,can1_rx_b5
+        CMPB RL5,#DATA16 000FFH
+        JMPR cc_NE,L_D6C98
+        BSET lv_asr_req.08H
+        JMPR cc_UC,L_D6C9A
+L_D6C98:                 ; 0xd6c98
+        BCLR lv_asr_req.08H
+L_D6C9A:                 ; 0xd6c9a
+        MOVBZ R4,can1_rx_b7
+        SHL R4,#08H
+        MOV n_tur_conv,R4
+        MOVBZ R5,can1_rx_b6
+        ADD R5,n_tur_conv
+        SHR R5,#02H
+        MOV n_tur_conv,R5
+        MOVB RL4,can1_rx_b7
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NE,L_D6CCA
+        MOVB RL4,can1_rx_b6
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NE,L_D6CCA
+        BSET lv_asr_req.09H
+        JMPR cc_UC,L_D6D5C
+L_D6CCA:                 ; 0xd6cca
+        BCLR lv_asr_req.09H
+        JMPR cc_UC,L_D6D5C
+L_D6CCE:                 ; 0xd6cce
+        JNB lv_asr_req.0FH,L_D6D38
+        MOV R4,C1AR1
+        CMP R4,#DATA16 0E087H
+        JMPR cc_NE,L_D6D38
+        JNB lv_asr_req.0BH,L_D6D32
+        JB kwp_prog_flags.08H,L_D6D32
+        SUBB ctr_can_tcu_to,ONES
+        MOVB RL4,ctr_can_tcu_to
+        CMPB RL4,DPP0:c_max_timeout_tcu1
+        JMPR cc_C,L_D6D5C
+        MOVB RL5,#08H
+        MOVB dtc_test_result,RL5
+        MOV R12,#DATA16 0D584H
+        MOV R13,#DATA16 05992H
+        MOVBZ R14,DPP0:c_abc_inc_timeout_tcu1
+        MOVBZ R15,DPP0:c_abc_max_timeout_tcu1
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_can_bus_off_err.06H,dtc_status_work.06H
+        MOVBZ R4,can_d58e
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D6D22
+        MOV R4,#DATA16 0FFBFH
+        AND dtc_st_grp_can,R4
+L_D6D22:                 ; 0xd6d22
+        MOVB ctr_can_tcu_to,ZEROS
+        JNB lv_can_bus_off_err.06H,L_D6D5C
+        BSET lv_asr_req.0AH
+        CALLS 00DH,CAN1_SetDefault_TcuSignals
+        JMPR cc_UC,L_D6D5C
+L_D6D32:                 ; 0xd6d32
+        MOVB ctr_can_tcu_to,ZEROS
+        JMPR cc_UC,L_D6D5C
+L_D6D38:                 ; 0xd6d38
+        MOV R4,#DATA16 0E087H
+        MOV C1AR1,R4
+        MOV R5,#DATA16 0FF00H
+        AND C1MCFG1,R5
+        MOV R2,#DATA16 00080H
+        OR C1MCFG1,R2
+        MOV R2,ctr_wdt_service
+        CMP R2,#DATA16 0000DH
+        JMPR cc_C,L_D6D5C
+        BSET lv_asr_req.0FH
+L_D6D5C:                 ; 0xd6d5c
+        JB lv_conf_mis.03H,L_D6D64
+        JMPA cc_UC,L_D7004
+L_D6D64:                 ; 0xd6d64
+        MOV R12,#02H
+        CALLS 00DH,CAN1_Rx_ReadObject
+        CMPB RL4,#02H
+        JMPA cc_NE,L_D6EE2
+        MOVB ctr_can_tcs_to,ZEROS
+        MOVB ctr_can_tcs_arb_to,ZEROS
+        JNB lv_asr_req.0BH,L_D6DAA
+        JB kwp_prog_flags.08H,L_D6DAA
+        MOV R12,#DATA16 0D592H
+        MOV R13,#DATA16 059A8H
+        MOVBZ R14,DPP0:c_abc_inc_timeout_tcs1
+        MOVBZ R15,DPP0:c_abc_max_timeout_tcs1
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_can_bus_off_err.07H,dtc_status_work.06H
+        MOVBZ R4,can_d59c
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D6DAA
+        MOV R4,#DATA16 0FF7FH
+        AND dtc_st_grp_can,R4
+L_D6DAA:                 ; 0xd6daa
+        JNB lv_can_bus_off_err.07H,L_D6DB8
+        BSET lv_asr_req.0AH
+        CALLS 00DH,CAN1_SetDefault_TcsSignals
+        JMPA cc_UC,L_D6F80
+L_D6DB8:                 ; 0xd6db8
+        MOVBZ R4,can_f83d
+        MOV kwp_bitasm_scratch,R4
+        BMOV lv_asr_req.04H,kwp_bitasm_scratch.00H
+        BMOV abs_def.0DH,lv_asr_req.04H
+        BMOV abs_def.05H,kwp_bitasm_scratch.07H
+        MOVB RL4,DPP0:lc_inh_msr
+        JMPR cc_NE,L_D6DDC
+        BMOV lv_asr_req.07H,kwp_bitasm_scratch.01H
+        BMOV lv_asr_req.06H,lv_asr_req.07H
+        JMPR cc_UC,L_D6DE0
+L_D6DDC:                 ; 0xd6ddc
+        BCLR lv_asr_req.07H
+        BCLR lv_asr_req.06H
+L_D6DE0:                 ; 0xd6de0
+        MOVBZ R4,can1_rx_b2
+        MOV kwp_bitasm_scratch,R4
+        BMOV abs_def.0CH,kwp_bitasm_scratch.00H
+        MOVB RL4,can1_rx_b3
+        MOVB wheel,RL4
+        MOVB RL5,can1_rx_b4
+        MOVB tqi_tcs_can,RL5
+        MOVBZ R12,RL5
+        MOVBZ R4,tq_stnd
+        MOV R13,R4
+        SHL R13,#02H
+        ADD R13,R4
+        SHL R13,#06H
+        MOV R14,#DATA16 00100H
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV can1_tq_scale_tmp,R4
+        CMP R4,#DATA16 07FFFH
+        JMPR cc_NC,L_D6E22
+        MOV tqi_asr_req,R4
+        JMPR cc_UC,L_D6E2A
+L_D6E22:                 ; 0xd6e22
+        MOV R4,#DATA16 07FFFH
+        MOV tqi_asr_req,R4
+L_D6E2A:                 ; 0xd6e2a
+        MOVB RL4,DPP0:lc_tqi_msr_req_man
+        JMPR cc_NE,L_D6EA2
+        MOVB RL5,DPP0:lc_inh_msr
+        JMPR cc_NE,L_D6E6E
+        MOVB RL3,can1_rx_b5
+        MOVB tqi_msr_can,RL3
+        MOVBZ R12,RL3
+        MOVBZ R4,tq_stnd
+        MOV R13,R4
+        SHL R13,#02H
+        ADD R13,R4
+        SHL R13,#06H
+        MOV R14,#DATA16 00100H
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV can1_tq_scale_tmp,R4
+        CMP R4,#DATA16 07FFFH
+        JMPR cc_NC,L_D6E64
+        MOV tqi_msr_req,R4
+        JMPR cc_UC,L_D6EAA
+L_D6E64:                 ; 0xd6e64
+        MOV R4,#DATA16 07FFFH
+        MOV tqi_msr_req,R4
+        JMPR cc_UC,L_D6EAA
+L_D6E6E:                 ; 0xd6e6e
+        MOVB tqi_msr_can,ZEROS
+        MOV R12,#00H
+        MOVBZ R4,tq_stnd
+        MOV R13,R4
+        SHL R13,#02H
+        ADD R13,R4
+        SHL R13,#06H
+        MOV R14,#DATA16 00100H
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV can1_tq_scale_tmp,R4
+        CMP R4,#DATA16 07FFFH
+        JMPR cc_NC,L_D6E98
+        MOV tqi_msr_req,R4
+        JMPR cc_UC,L_D6EAA
+L_D6E98:                 ; 0xd6e98
+        MOV R4,#DATA16 07FFFH
+        MOV tqi_msr_req,R4
+        JMPR cc_UC,L_D6EAA
+L_D6EA2:                 ; 0xd6ea2
+        MOV R4,DPP0:c_tqi_msr_req_man
+        MOV tqi_msr_req,R4
+L_D6EAA:                 ; 0xd6eaa
+        MOVB RL4,can1_rx_b6
+        MOVB tqi_slw_tcs_can,RL4
+        MOVBZ R12,RL4
+        MOVBZ R4,tq_stnd
+        MOV R13,R4
+        SHL R13,#02H
+        ADD R13,R4
+        SHL R13,#06H
+        MOV R14,#DATA16 00100H
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV can1_tq_scale_tmp,R4
+        CMP R4,#DATA16 07FFFH
+        JMPR cc_NC,L_D6ED8
+        MOV tqi_asr_slw_req,R4
+        JMPR cc_UC,L_D6F80
+L_D6ED8:                 ; 0xd6ed8
+        MOV R4,#DATA16 07FFFH
+        MOV tqi_asr_slw_req,R4
+        JMPR cc_UC,L_D6F80
+L_D6EE2:                 ; 0xd6ee2
+        MOVB RL4,ctr_can_tcs_to
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NC,L_D6EF2
+        ADDB RL4,#01H
+        MOVB ctr_can_tcs_to,RL4
+L_D6EF2:                 ; 0xd6ef2
+        JNB lv_asr_req.0DH,L_D6F5C
+        MOV R4,C1AR3
+        CMP R4,#DATA16 0602AH
+        JMPR cc_NE,L_D6F5C
+        JNB lv_asr_req.0BH,L_D6F56
+        JB kwp_prog_flags.08H,L_D6F56
+        SUBB ctr_can_tcs_arb_to,ONES
+        MOVB RL4,ctr_can_tcs_arb_to
+        CMPB RL4,DPP0:c_max_timeout_tcs1
+        JMPR cc_C,L_D6F80
+        MOVB RL5,#08H
+        MOVB dtc_test_result,RL5
+        MOV R12,#DATA16 0D592H
+        MOV R13,#DATA16 059A8H
+        MOVBZ R14,DPP0:c_abc_inc_timeout_tcs1
+        MOVBZ R15,DPP0:c_abc_max_timeout_tcs1
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_can_bus_off_err.07H,dtc_status_work.06H
+        MOVBZ R4,can_d59c
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D6F46
+        MOV R4,#DATA16 0FF7FH
+        AND dtc_st_grp_can,R4
+L_D6F46:                 ; 0xd6f46
+        MOVB ctr_can_tcs_arb_to,ZEROS
+        JNB lv_can_bus_off_err.07H,L_D6F80
+        BSET lv_asr_req.0AH
+        CALLS 00DH,CAN1_SetDefault_TcsSignals
+        JMPR cc_UC,L_D6F80
+L_D6F56:                 ; 0xd6f56
+        MOVB ctr_can_tcs_arb_to,ZEROS
+        JMPR cc_UC,L_D6F80
+L_D6F5C:                 ; 0xd6f5c
+        MOV R4,#DATA16 0602AH
+        MOV C1AR3,R4
+        MOV R5,#DATA16 0FF00H
+        AND C1MCFG3,R5
+        MOV R2,#DATA16 00080H
+        OR C1MCFG3,R2
+        MOV R2,ctr_wdt_service
+        CMP R2,#DATA16 00031H
+        JMPR cc_C,L_D6F80
+        BSET lv_asr_req.0DH
+L_D6F80:                 ; 0xd6f80
+        MOV R12,#01H
+        CALLS 00DH,CAN1_Rx_ReadObject
+        CMPB RL4,#01H
+        JMPR cc_NE,L_D6FB0
+        MOVB ctr_can_abs_to,ZEROS
+        MOVB RL4,can_f83d
+        MOVB wheel_fl_tcs,RL4
+        MOVB RL5,can1_rx_b2
+        MOVB wheel_fr_tcs,RL5
+        MOVB RL3,can1_rx_b3
+        MOVB wheel_rl_tcs,RL3
+        MOVB RL2,can1_rx_b4
+        MOVB wheel_rr_tcs,RL2
+        JMPR cc_UC,L_D7004
+L_D6FB0:                 ; 0xd6fb0
+        JNB lv_asr_req.0EH,L_D6FE0
+        MOV R4,C1AR2
+        CMP R4,#DATA16 0003EH
+        JMPR cc_NE,L_D6FE0
+        JNB lv_asr_req.0BH,L_D6FDA
+        SUBB ctr_can_abs_to,ONES
+        MOVB RL4,ctr_can_abs_to
+        CMPB RL4,DPP0:can_90242
+        JMPR cc_C,L_D7004
+        MOVB ctr_can_abs_to,ZEROS
+        CALLS 00DH,CAN1_SetDefault_WheelSpeeds
+        JMPR cc_UC,L_D7004
+L_D6FDA:                 ; 0xd6fda
+        MOVB ctr_can_abs_to,ZEROS
+        JMPR cc_UC,L_D7004
+L_D6FE0:                 ; 0xd6fe0
+        MOV R4,#DATA16 0003EH
+        MOV C1AR2,R4
+        MOV R5,#DATA16 0FF00H
+        AND C1MCFG2,R5
+        MOV R2,#DATA16 00080H
+        OR C1MCFG2,R2
+        MOV R2,ctr_wdt_service
+        CMP R2,#DATA16 00031H
+        JMPR cc_C,L_D7004
+        BSET lv_asr_req.0EH
+L_D7004:                 ; 0xd7004
+        JB lv_asr_req.0CH,L_D700C
+        JMPA cc_UC,L_D748E
+L_D700C:                 ; 0xd700c
+        JNB kwp_prog_flags.08H,L_D7014
+        JMPA cc_UC,L_D749A
+L_D7014:                 ; 0xd7014
+        MOVB RL4,#DATA16 00088H
+        MOVB can1_tx_dlc,RL4
+        MOV kwp_bitasm_scratch,ZEROS
+        BMOV kwp_bitasm_scratch.00H,can_fd58.09H
+        BMOV kwp_bitasm_scratch.01H,lv_cam_err.05H
+        MOVB RL4,ctr_can_tcs_to
+        CMPB RL4,#DATA16 00032H
+        JMPR cc_NC,L_D7094
+        JB lv_asr_req.04H,L_D7050
+        JB lv_asr_req.07H,L_D7050
+        MOVB RL5,tqi_tcs_can
+        CMPB RL5,#DATA16 000FFH
+        JMPR cc_NE,L_D7050
+        MOVB RL3,tqi_msr_can
+        JMPR cc_NE,L_D7050
+        BSET kwp_bitasm_scratch.02H
+        BSET abs_def.0AH
+        JMPR cc_UC,L_D7098
+L_D7050:                 ; 0xd7050
+        JB lv_asr_req.04H,L_D7070
+        JNB lv_asr_req.07H,L_D7070
+        MOVB RL4,tqi_msr_can
+        CMPB RL4,#00H
+        JMPR cc_ULE,L_D7070
+        MOVB RL5,tqi_tcs_can
+        CPLB RL4
+        CMPB RL5,RL4
+        JMPR cc_NE,L_D7070
+        BSET kwp_bitasm_scratch.02H
+        BSET abs_def.0AH
+        JMPR cc_UC,L_D7098
+L_D7070:                 ; 0xd7070
+        JNB lv_asr_req.04H,L_D708E
+        JB lv_asr_req.07H,L_D708E
+        MOVB RL4,tqi_tcs_can
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NC,L_D708E
+        MOVB RL5,tqi_msr_can
+        JMPR cc_NE,L_D708E
+        BSET kwp_bitasm_scratch.02H
+        BSET abs_def.0AH
+        JMPR cc_UC,L_D7098
+L_D708E:                 ; 0xd708e
+        BCLR kwp_bitasm_scratch.02H
+        BCLR abs_def.0AH
+        JMPR cc_UC,L_D7098
+L_D7094:                 ; 0xd7094
+        BCLR kwp_bitasm_scratch.02H
+        BCLR abs_def.0AH
+L_D7098:                 ; 0xd7098
+        BMOV kwp_bitasm_scratch.03H,lv_pl.02H
+        MOVB RL4,state_tq_intv
+        JMPR cc_EQ,L_D70B0
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_D70B6
+        CMPB RL4,#02H
+        JMPR cc_EQ,L_D70BC
+        CMPB RL4,#03H
+        JMPR cc_EQ,L_D70C2
+        JMPR cc_UC,L_D70C8
+L_D70B0:                 ; 0xd70b0
+        BCLR kwp_bitasm_scratch.04H
+        BCLR kwp_bitasm_scratch.05H
+        JMPR cc_UC,L_D70CC
+L_D70B6:                 ; 0xd70b6
+        BSET kwp_bitasm_scratch.04H
+        BCLR kwp_bitasm_scratch.05H
+        JMPR cc_UC,L_D70CC
+L_D70BC:                 ; 0xd70bc
+        BCLR kwp_bitasm_scratch.04H
+        BSET kwp_bitasm_scratch.05H
+        JMPR cc_UC,L_D70CC
+L_D70C2:                 ; 0xd70c2
+        BSET kwp_bitasm_scratch.04H
+        BSET kwp_bitasm_scratch.05H
+        JMPR cc_UC,L_D70CC
+L_D70C8:                 ; 0xd70c8
+        BSET kwp_bitasm_scratch.04H
+        BSET kwp_bitasm_scratch.05H
+L_D70CC:                 ; 0xd70cc
+        BMOV kwp_bitasm_scratch.06H,state_out_fault.0EH
+        BCMP lv_cam_err.02H,lv_cam_err.03H
+        BMOV kwp_bitasm_scratch.07H,PSW.02H
+        MOVB RL4,kwp_bitasm_scratch
+        MOVB can1_tx_b0,RL4
+        MOV R4,tqi_av
+        CMP R4,#00H
+        JMPR cc_SLE,L_D7114
+        MOV R12,R4
+        MOV R13,#DATA16 00100H
+        MOVBZ R5,tq_stnd
+        MOV R14,R5
+        SHL R14,#02H
+        ADD R14,R5
+        SHL R14,#06H
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV can1_tq_scale_tmp,R4
+        CMP R4,#DATA16 000FFH
+        JMPR cc_NC,L_D710E
+        MOVB tqi_acor_can,RL4
+        JMPR cc_UC,L_D7118
+L_D710E:                 ; 0xd710e
+        MOVB tqi_acor_can,ONES
+        JMPR cc_UC,L_D7118
+L_D7114:                 ; 0xd7114
+        MOVB tqi_acor_can,ZEROS
+L_D7118:                 ; 0xd7118
+        MOVB RL4,tqi_acor_can
+        MOVB can1_tx_b1,RL4
+        MOV R4,n_C93C
+        CMP R4,#DATA16 03FFFH
+        JMPR cc_ULE,L_D7130
+        MOV R9,#DATA16 0FFFFH
+        JMPR cc_UC,L_D7136
+L_D7130:                 ; 0xd7130
+        MOV R9,n_C93C
+        SHL R9,#02H
+L_D7136:                 ; 0xd7136
+        MOV R4,R9
+        MOVB can_f835,RL4
+        MOV R4,R9
+        ASHR R4,#08H
+        MOVB can1_tx_b3,RL4
+        MOV R4,tqi_av_ems
+        CMP R4,#00H
+        JMPR cc_SLE,L_D7178
+        MOV R12,R4
+        MOV R13,#DATA16 00100H
+        MOVBZ R5,tq_stnd
+        MOV R14,R5
+        SHL R14,#02H
+        ADD R14,R5
+        SHL R14,#06H
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV can1_tq_scale_tmp,R4
+        CMP R4,#DATA16 000FFH
+        JMPR cc_NC,L_D7172
+        MOVB tqi_can,RL4
+        JMPR cc_UC,L_D717C
+L_D7172:                 ; 0xd7172
+        MOVB tqi_can,ONES
+        JMPR cc_UC,L_D717C
+L_D7178:                 ; 0xd7178
+        MOVB tqi_can,ZEROS
+L_D717C:                 ; 0xd717c
+        MOVB RL4,tqi_can
+        MOVB can1_tx_b4,RL4
+        MOV R4,tq_loss
+        NEG R4
+        CMP R4,#00H
+        JMPR cc_SLE,L_D71BE
+        MOV R12,tq_loss
+        NEG R12
+        MOV R13,#DATA16 00100H
+        MOVBZ R4,tq_stnd
+        MOV R14,R4
+        SHL R14,#02H
+        ADD R14,R4
+        SHL R14,#06H
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV can1_tq_scale_tmp,R4
+        CMP R4,#DATA16 000FFH
+        JMPR cc_NC,L_D71B8
+        MOVB tqfr_can,RL4
+        JMPR cc_UC,L_D71C2
+L_D71B8:                 ; 0xd71b8
+        MOVB tqfr_can,ONES
+        JMPR cc_UC,L_D71C2
+L_D71BE:                 ; 0xd71be
+        MOVB tqfr_can,ZEROS
+L_D71C2:                 ; 0xd71c2
+        MOVB RL4,tqfr_can
+        MOVB can1_tx_b5,RL4
+        JB lv_cam_err.07H,L_D71D2
+        JNB lv_cam_err.08H,L_D71D8
+L_D71D2:                 ; 0xd71d2
+        MOVB can_f839,ONES
+        JMPR cc_UC,L_D71E0
+L_D71D8:                 ; 0xd71d8
+        MOVB RL4,vs
+        MOVB can_f839,RL4
+L_D71E0:                 ; 0xd71e0
+        MOVB RL4,ratio_tqi_bas_max_stnd
+        MOVB can_ratio_tx,RL4
+        MOVB can1_tx_b7,RL4
+        MOV R12,#0DH
+        CALLS 00DH,CAN1_Tx_SendObject
+        MOVB RL4,#DATA16 00078H
+        MOVB can1_tx_dlc,RL4
+        MOVB RL4,can_statusmux_div
+        JMPR cc_NE,L_D72BA
+        MOVB RL5,can_statusmux_idx
+        JMPR cc_EQ,L_D7214
+        CMPB RL5,#01H
+        JMPR cc_EQ,L_D7228
+        CMPB RL5,#02H
+        JMPR cc_EQ,L_D724A
+        CMPB RL5,#03H
+        JMPR cc_EQ,L_D7290
+        JMPR cc_UC,L_D72A6
+L_D7214:                 ; 0xd7214
+        MOVB RL4,#DATA16 00011H
+        MOVB can_statusmux_byte,RL4
+        JNB can_fd58.09H,L_D72B2
+        MOVB RL5,#01H
+        MOVB can_statusmux_idx,RL5
+        JMPR cc_UC,L_D72B2
+L_D7228:                 ; 0xd7228
+        JNB abs_def.04H,L_D7236
+        MOVB RL4,#DATA16 00040H
+        MOVB can_statusmux_byte,RL4
+        JMPR cc_UC,L_D723E
+L_D7236:                 ; 0xd7236
+        MOVB RL4,#DATA16 0004FH
+        MOVB can_statusmux_byte,RL4
+L_D723E:                 ; 0xd723e
+        JNB can_fd58.09H,L_D72B2
+        MOVB RL4,#02H
+        MOVB can_statusmux_idx,RL4
+        JMPR cc_UC,L_D72B2
+L_D724A:                 ; 0xd724a
+        JNB lv_conf_mis.04H,L_D727C
+        MOV kwp_bitasm_scratch,ZEROS
+        BMOV kwp_bitasm_scratch.00H,lv_pl.0BH
+        BMOV kwp_bitasm_scratch.01H,obd_sf.0DH
+        BMOV kwp_bitasm_scratch.02H,obd_sf.0DH
+        JNB obd_sf.04H,L_D726E
+        MOVBZ R4,obd_ff_src
+        AND R4,#07H
+        SHL R4,#03H
+        OR kwp_bitasm_scratch,R4
+L_D726E:                 ; 0xd726e
+        MOVB RL4,kwp_bitasm_scratch
+        ORB RL4,#DATA16 00080H
+        MOVB can_statusmux_byte,RL4
+        JMPR cc_UC,L_D7284
+L_D727C:                 ; 0xd727c
+        MOVB RL4,#DATA16 00080H
+        MOVB can_statusmux_byte,RL4
+L_D7284:                 ; 0xd7284
+        JNB can_fd58.09H,L_D72B2
+        MOVB RL4,#03H
+        MOVB can_statusmux_idx,RL4
+        JMPR cc_UC,L_D72B2
+L_D7290:                 ; 0xd7290
+        MOVB RL4,tq_stnd
+        ORB RL4,#DATA16 000C0H
+        MOVB can_statusmux_byte,RL4
+        JNB can_fd58.09H,L_D72B2
+        MOVB can_statusmux_idx,ZEROS
+        JMPR cc_UC,L_D72B2
+L_D72A6:                 ; 0xd72a6
+        MOVB can_statusmux_idx,ZEROS
+        MOVB RL4,#DATA16 00011H
+        MOVB can_statusmux_byte,RL4
+L_D72B2:                 ; 0xd72b2
+        MOVB RL4,#07H
+        MOVB can_statusmux_div,RL4
+        JMPR cc_UC,L_D72BE
+L_D72BA:                 ; 0xd72ba
+        ADDB can_statusmux_div,ONES
+L_D72BE:                 ; 0xd72be
+        MOVB RL4,can_statusmux_byte
+        MOVB can1_tx_b0,RL4
+        JB lv_cam_err.0CH,L_D72D6
+        JB lv_cam_err.0DH,L_D72D6
+        JB lv_cam_err.0EH,L_D72D6
+        JNB lv_lam_lim_1_err.00H,L_D72DC
+L_D72D6:                 ; 0xd72d6
+        MOVB can1_tx_b1,ONES
+        JMPR cc_UC,L_D72E4
+L_D72DC:                 ; 0xd72dc
+        MOVB RL4,tco
+        MOVB can1_tx_b1,RL4
+L_D72E4:                 ; 0xd72e4
+        MOVB RL4,maf_fac_alti_mmv
+        MOVB can_f835,RL4
+        MOV kwp_bitasm_scratch,ZEROS
+        BMOV kwp_bitasm_scratch.00H,lv_pl.0CH
+        BMOV kwp_bitasm_scratch.01H,lv_cdn_diag_maf_dif_ch_int.0BH
+        MOVBZ R4,conf_mil_fmy_sam
+        SHL R4,#02H
+        OR kwp_bitasm_scratch,R4
+        MOVB RL4,kwp_bitasm_scratch
+        MOVB can1_tx_b3,RL4
+        MOVB RL4,0FF1CH
+        MOVB can1_tx_b4,RL4
+        JB lv_cam_err.00H,L_D731A
+        JNB lv_cam_err.01H,L_D7320
+L_D731A:                 ; 0xd731a
+        MOVB tps_can,ONES
+        JMPR cc_UC,L_D736C
+L_D7320:                 ; 0xd7320
+        MOVB RL4,tps
+        CMPB RL4,DPP0:c_tps_max_can
+        JMPR cc_C,L_D7334
+        MOVB RL5,#DATA16 000F5H
+        MOVB tps_can,RL5
+        JMPR cc_UC,L_D736C
+L_D7334:                 ; 0xd7334
+        JNB lv_ct.00H,L_D7342
+        MOVB RL4,#DATA16 00020H
+        MOVB tps_can,RL4
+        JMPR cc_UC,L_D736C
+L_D7342:                 ; 0xd7342
+        MOVBZ R12,tps
+        MOVBZ R13,DPP0:c_tps_is_out
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVBZ R12,RL4
+        MOV R4,#DATA16 000D5H
+        MULU R12,R4
+        MOV R12,0FE0EH
+        MOVBZ R13,DPP0:c_tps_max_can
+        SHL R13,#08H
+        CALLS 00FH,Div_Ratio_U8_Sat
+        ADDB RL4,#DATA16 00020H
+        MOVB tps_can,RL4
+L_D736C:                 ; 0xd736c
+        MOVB RL4,tps_can
+        MOVB can1_tx_b5,RL4
+        MOVB can_f839,ONES
+        MOV can1_tx_b7,ZEROS
+        MOV R12,#0CH
+        CALLS 00DH,CAN1_Tx_SendObject
+        MOVB RL4,#DATA16 00048H
+        MOVB can1_tx_dlc,RL4
+        MOVBZ R12,maf_fac_alti_mmv
+        MOV R13,#DATA16 0004DH
+        MOV R14,#DATA16 00085H
+        CALLS 00FH,Clamp_U16_v2
+        MOVB RL6,RL4
+        MOVBZ R4,RL6
+        MOV R5,R4
+        SHL R5,#05H
+        SUB R5,R4
+        SUB R5,#DATA16 00953H
+        MOV R4,#DATA16 00038H
+        MOV 0FE0EH,R5
+        DIV R4
+        MOV R5,0FE0EH
+        MOVB amp_can,RL5
+        MOVBZ R4,RL5
+        SHL R4,#03H
+        MOV kwp_bitasm_scratch,R4
+        JB lv_can_bus_off_err.05H,L_D73DA
+        MOV R4,obd_sf
+        AND R4,#DATA16 0C000H
+        JMPR cc_EQ,L_D73D6
+        BSET kwp_bitasm_scratch.01H
+        BSET abs_def.09H
+        JMPR cc_UC,L_D73DE
+L_D73D6:                 ; 0xd73d6
+        BCLR abs_def.09H
+        JMPR cc_UC,L_D73DE
+L_D73DA:                 ; 0xd73da
+        BSET kwp_bitasm_scratch.01H
+        BSET abs_def.09H
+L_D73DE:                 ; 0xd73de
+        JNB lv_conf_mis.08H,L_D73E8
+        BSET kwp_bitasm_scratch.02H
+        BSET abs_def.08H
+        JMPR cc_UC,L_D73EC
+L_D73E8:                 ; 0xd73e8
+        BCLR kwp_bitasm_scratch.02H
+        BCLR abs_def.08H
+L_D73EC:                 ; 0xd73ec
+        MOVB RL4,kwp_bitasm_scratch
+        MOVB can1_tx_b0,RL4
+        MOV R4,fco_word_1_
+        MOV can1_tx_b1,R4
+        MOVB RL4,vb
+        MOVB can1_tx_b3,RL4
+        MOVB can1_tx_b4,ZEROS
+        MOV can1_tx_b5,ZEROS
+        MOV can1_tx_b7,ZEROS
+        MOV R12,#0BH
+        CALLS 00DH,CAN1_Tx_SendObject
+        MOVB RL4,#DATA16 00088H
+        MOVB can1_tx_dlc,RL4
+        MOVB can1_tx_b0,ZEROS
+        MOVB can1_tx_b1,ZEROS
+        JNB lv_cam_err.0AH,L_D7430
+        MOVB can_f835,ONES
+        JMPR cc_UC,L_D7438
+L_D7430:                 ; 0xd7430
+        MOVB RL4,tia
+        MOVB can_f835,RL4
+L_D7438:                 ; 0xd7438
+        MOV kwp_bitasm_scratch,ZEROS
+        MOVB RL4,state_dc_rbm
+        ANDB RL4,#DATA16 0007FH
+        MOVBZ R4,RL4
+        MOV kwp_bitasm_scratch,R4
+        JNB lv_cat_diag_inh_1.0EH,L_D7456
+        MOV R4,#DATA16 00080H
+        OR kwp_bitasm_scratch,R4
+L_D7456:                 ; 0xd7456
+        MOVB RL4,kwp_bitasm_scratch
+        MOVB can1_tx_b3,RL4
+        MOVB RL4,ctr_igk_cyc_rbm
+        MOVB can1_tx_b4,RL4
+        MOV R4,ctr_igk_cyc_rbm
+        SHR R4,#08H
+        MOVB can1_tx_b5,RL4
+        MOVB RL4,ctr_cdn_obd_rbm
+        MOVB can_f839,RL4
+        MOV R4,ctr_cdn_obd_rbm
+        SHR R4,#08H
+        MOVB can1_tx_b7,RL4
+        MOV R12,#0AH
+        CALLS 00DH,CAN1_Tx_SendObject
+        CMPB RL4,#00H
+        JMPR cc_EQ,L_D749A
+        JMPR cc_UC,L_D749A
+L_D748E:                 ; 0xd748e
+        MOV R4,ctr_wdt_service
+        CMP R4,#DATA16 0000BH
+        JMPR cc_C,L_D749A
+        BSET lv_asr_req.0CH
+L_D749A:                 ; 0xd749a
+        JB lv_can_bus_off_err.05H,L_D74A4
+        JB lv_can_bus_off_err.06H,L_D74A4
+        BCLR lv_asr_req.0AH
+L_D74A4:                 ; 0xd74a4
+        MOV R6,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_D6824 ENDS
+        END

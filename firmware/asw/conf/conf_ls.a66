@@ -1,0 +1,102 @@
+; asw/conf/conf_ls.a66
+; 0xB5FA2-0xB6050  (174 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Reset_Dfd68_03e, Reset_LS_State_Group_1, Reset_LS_State_Group_2, Reset_LS_State_Group_3, Reset_LS_State_Group_4
+EXTERN  Calc_LSH_Down_Ctl:NEAR, Calc_LSH_Down_PWM:NEAR, Calc_LSH_Up_PWM:NEAR, Calc_LSH_Up_State:NEAR
+EXTERN  Calc_LS_Cur_Down:NEAR, Calc_LS_Cur_Down_2:NEAR, Calc_LS_Cur_Up:NEAR, Calc_LS_Cur_Up_2:NEAR
+EXTERN  Calc_Lam_Dly_CatFac:NEAR, Init_LS_Down:NEAR, Init_LS_Up_Struct:NEAR, Reset_Dc788_c76:NEAR
+EXTERN  Reset_Dc79e_8fa:NEAR, Reset_Dfd66_c88:NEAR, Reset_Dfd68_050:NEAR, Reset_Dfd6a_070:NEAR
+EXTERN  Reset_lam_bank_1_lam_up_ti_ad_ad_c6c:NEAR, Reset_temp_dif_lsh_down_obd2_08e:NEAR, Reset_temp_dif_lsh_up_obd2_66c:NEAR
+
+S_B5FA2 SECTION CODE AT 0B5FA2H
+
+; ======== Reset_LS_State_Group_1  (@0xb5fa2) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Reset_LS_State_Group_1:
+        MOVB RL4,conf_lam
+        JMPR cc_EQ,L_B5FC4
+        CALLS 00CH,Reset_Dfd66_c88
+        CALLS 00DH,Reset_Dfd6a_070
+        CALLS 00BH,Calc_LSH_Up_State
+        MOVB RL4,conf_cat_eff
+        CMPB RL4,#01H
+        JMPR cc_NE,L_B5FC4
+        CALLS 00BH,Reset_Dfd68_050
+        CALLS 00BH,Calc_LSH_Down_PWM
+L_B5FC4:                 ; 0xb5fc4
+        RETS
+
+; ======== Reset_LS_State_Group_2  (@0xb5fc6) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Reset_LS_State_Group_2:
+        MOVB RL4,conf_lam
+        JMPR cc_EQ,L_B5FFC
+        CALLS 00DH,Init_LS_Up_Struct
+        CALLS 00CH,Reset_Dc788_c76
+        CALLS 00BH,Calc_LSH_Up_PWM
+        CALLS 00DH,Reset_temp_dif_lsh_up_obd2_66c
+        CALLS 00BH,Calc_LS_Cur_Up
+        MOVB RL4,conf_cat_eff
+        CMPB RL4,#01H
+        JMPR cc_NE,L_B5FFC
+        CALLS 00BH,Calc_Lam_Dly_CatFac
+        CALLS 00BH,Init_LS_Down
+        CALLS 00BH,Calc_LSH_Down_Ctl
+        CALLS 00BH,Reset_temp_dif_lsh_down_obd2_08e
+        CALLS 00BH,Calc_LS_Cur_Down
+L_B5FFC:                 ; 0xb5ffc
+        RETS
+
+; ======== Reset_LS_State_Group_4  (@0xb5ffe) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Reset_LS_State_Group_4:
+        MOVB RL4,conf_lam
+        JMPR cc_EQ,L_B6014
+        CALLS 00CH,Reset_lam_bank_1_lam_up_ti_ad_ad_c6c
+        MOVB RL4,conf_cat_eff
+        CMPB RL4,#01H
+        JMPR cc_NE,L_B6014
+        CALLS 00BH,Reset_Dc79e_8fa
+L_B6014:                 ; 0xb6014
+        RETS
+
+; ======== Reset_LS_State_Group_3  (@0xb6016) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Reset_LS_State_Group_3:
+        MOVB RL4,conf_lam
+        JMPR cc_EQ,L_B603C
+        CALLS 00BH,Reset_Dfd68_03e
+        CALLS 00CH,Reset_Dfd66_c88
+        CALLS 00BH,Calc_LSH_Up_PWM
+        CALLS 00BH,Calc_LS_Cur_Up_2
+        MOVB RL4,conf_cat_eff
+        CMPB RL4,#01H
+        JMPR cc_NE,L_B603C
+        CALLS 00BH,Calc_LSH_Down_Ctl
+        CALLS 00BH,Calc_LS_Cur_Down_2
+L_B603C:                 ; 0xb603c
+        RETS
+
+; ======== Reset_Dfd68_03e  (@0xb603e) ========
+Reset_Dfd68_03e:
+        BCLR diag_fd68.00H
+        MOVB g_c244,ZEROS
+        BCLR lv_cam_ad_di_ivvt.0AH
+        MOV lam_bank_1_ls_down_struct_ls_down_carrier,ZEROS
+        MOV lv_lam_c744,ZEROS
+        RETS
+
+S_B5FA2 ENDS
+        END

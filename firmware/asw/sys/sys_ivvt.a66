@@ -1,0 +1,158 @@
+; asw/sys/sys_ivvt.a66
+; 0xAB32C-0xAB494  (360 bytes, 1 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  CC16INT_handler
+
+S_AB32C SECTION CODE AT 0AB32CH
+
+; ======== CC16INT_handler  (@0xab32c) ========
+CC16INT_handler:
+        SCXT CP,#DATA16 0FC3AH
+        NOP
+        BFLDL 0FF22H,#0FH,#00H
+        MOVBZ R0,ivvt_cc16_b
+        JMPR cc_EQ,L_AB408
+        MOVB ivvt_cc16_b,ZEROS
+        MOVBZ R0,ivvt_cc16_a
+        SHL R0,#01H
+        MOV R0,[R0+#065AEH]
+        JMPI cc_UC,[R0]
+        MOVBZ R0,hld_adj_ivvt_in_1
+        JMPA cc_NE,L_AB490
+        BCLR P7.03H
+        BSET PWMCON1.03H
+        BSET PWMCON0.03H
+        MOV PW3,ivvt_hpwm_cmp
+        MOV R0,CC16_FE60
+        JMPR cc_N,L_AB372
+        EXTR #02H
+        MOV R1,g_fbb2
+        JNB T8IC.07H,L_AB38A
+        ADD R1,#01H
+        JMPR cc_UC,L_AB38A
+L_AB372:                 ; 0xab372
+        MOV R1,g_fbb2
+        CMP ONES,T8_F052
+        JMPR cc_NN,L_AB38A
+        EXTR #02H
+        JNB T8IC.07H,L_AB384
+        JMPR cc_UC,L_AB38A
+L_AB384:                 ; 0xab384
+        MOV R1,g_fbb2
+        SUB R1,#01H
+L_AB38A:                 ; 0xab38a
+        MOV t_stop_adj_ivvt_in_1,R0
+        MOV ivvt_epwm_frq,R1
+        MOVB hld_adj_ivvt_in_1,ONES
+        JMPA cc_UC,L_AB490
+        ATOMIC #02H
+        BCLR PWMCON0.03H
+        MOV CC16,T8_F052
+        BCLR PWMCON1.03H
+        BCLR PWMCON0.0FH
+        MOV ivvt_hpwm_cmp,PW3
+        MOV R3,ivvt_epwm_duty
+        JMPR cc_NE,L_AB3BC
+        BSET P7.03H
+        MOV R1,ivvt_epwm_sum
+        MOV R2,0FF1CH
+        JMPR cc_UC,L_AB3E8
+L_AB3BC:                 ; 0xab3bc
+        BCLR P7.03H
+        CMP R3,#DATA16 0FF00H
+        JMPR cc_NE,L_AB3CE
+        MOV R1,ivvt_epwm_sum
+        MOV R2,0FF1CH
+        JMPR cc_UC,L_AB3E8
+L_AB3CE:                 ; 0xab3ce
+        MOV R2,ivvt_epwm_sum
+        MOV R4,ivvt_epwm_div
+        MOV R1,R3
+        MOV R0,R2
+        SUB R0,R1
+        JMPR cc_UGT,L_AB3E6
+        MOV R1,R2
+        MOV R2,0FF1CH
+        JMPR cc_UC,L_AB3E8
+L_AB3E6:                 ; 0xab3e6
+        MOV R2,R0
+L_AB3E8:                 ; 0xab3e8
+        MOV R0,CC16_FE60
+        ADD CC16_FE60,R1
+        BFLDL 0FF22H,#0FH,#0EH
+        NEG R0
+        ADD R0,T8_F052
+        CMP R0,R1
+        JMPR cc_C,L_AB490
+        EXTR #01H
+        BFLDL 0F160H,#0FFH,#0CEH
+        JMPR cc_UC,L_AB490
+        JMPR cc_UC,L_AB490
+L_AB408:                 ; 0xab408
+        CMP R2,0FF1CH
+        JMPR cc_EQ,L_AB44E
+        JNB P7.03H,L_AB418
+        BCLR P7.03H
+        MOV R1,R3
+        JMPR cc_UC,L_AB420
+L_AB418:                 ; 0xab418
+        BSET P7.03H
+        MOV R1,R3
+        NEG R1
+        ADD R1,R4
+L_AB420:                 ; 0xab420
+        MOV R0,R2
+        SUB R0,R1
+        JMPR cc_UGT,L_AB42E
+        MOV R1,R2
+        MOV R2,0FF1CH
+        JMPR cc_UC,L_AB430
+L_AB42E:                 ; 0xab42e
+        MOV R2,R0
+L_AB430:                 ; 0xab430
+        MOV R0,CC16_FE60
+        ADD CC16_FE60,R1
+        BFLDL 0FF22H,#0FH,#0EH
+        NEG R0
+        ADD R0,T8_F052
+        CMP R0,R1
+        JMPR cc_C,L_AB490
+        EXTR #01H
+        BFLDL 0F160H,#0FFH,#0CEH
+        JMPR cc_UC,L_AB490
+L_AB44E:                 ; 0xab44e
+        BCLR P7.03H
+        BSET PWMCON1.03H
+        BSET PWMCON0.03H
+        MOV PW3,ivvt_hpwm_cmp
+        MOV R0,CC16_FE60
+        JMPR cc_N,L_AB46C
+        EXTR #02H
+        MOV R1,g_fbb2
+        JNB T8IC.07H,L_AB484
+        ADD R1,#01H
+        JMPR cc_UC,L_AB484
+L_AB46C:                 ; 0xab46c
+        MOV R1,g_fbb2
+        CMP ONES,T8_F052
+        JMPR cc_NN,L_AB484
+        EXTR #02H
+        JNB T8IC.07H,L_AB47E
+        JMPR cc_UC,L_AB484
+L_AB47E:                 ; 0xab47e
+        MOV R1,g_fbb2
+        SUB R1,#01H
+L_AB484:                 ; 0xab484
+        MOV t_stop_adj_ivvt_in_1,R0
+        MOV ivvt_epwm_frq,R1
+        MOVB hld_adj_ivvt_in_1,ONES
+L_AB490:                 ; 0xab490
+        POP CP
+        RETI
+
+S_AB32C ENDS
+        END

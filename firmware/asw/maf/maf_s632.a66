@@ -1,0 +1,855 @@
+; asw/maf/maf_s632.a66
+; 0xDD862-0xDE082  (2080 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_fac_maf_trim_max                   EQU  0901AEH
+c_fac_maf_trim_min                   EQU  0901AFH
+c_max_pwm_cps                        EQU  09023EH
+c_max_pwm_isa                        EQU  09023FH
+c_max_pwm_ocv                        EQU  090240H
+c_min_pwm_cps                        EQU  090284H
+c_min_pwm_isa                        EQU  090285H
+c_min_pwm_ocv                        EQU  090286H
+lc_rst_maf_trim                      EQU  09048AH
+c_v_maf_trim_nom                     EQU  0907D6H
+
+PUBLIC  BL_Exit_ProgSession, Calc_MAF_Trim_EOL, Calc_MAF_Trim_State, NVM_Restore_s632, NVM_Save_s632
+EXTERN  Ctl_Ign_Output_CC6:NEAR, Div_Frac_U16_Q16:NEAR, Div_S32_Signed:NEAR, Elevated_Write_Routine_prg_zone_wrapper:NEAR
+EXTERN  FuelPump_Out_Init:NEAR, Mul_U16_Hi:NEAR, Set_Ign_Output_CC6:NEAR, sub_r12_r13_rets_r4:NEAR
+EXTERN  xor_routine:NEAR
+
+S_DD862 SECTION CODE AT 0DD862H
+
+; ======== NVM_Restore_s632  (@0xdd862) ========
+        ; ------------------------------------------------------------
+        ; NVM adaptation I/O: restores <- validated NVM block (DAT_00f890 base) section; xor_routine checksum.
+        ; Section offset in name.
+        ; ------------------------------------------------------------
+NVM_Restore_s632:
+        JB can_fd58.02H,L_DD8E2
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 00632H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#06H
+        CALLS 00DH,xor_routine
+        MOV R10,diag_f890
+        MOV R11,diag_f892
+        EXTP R11, #02H
+        MOV R5,[R10+#0638H]
+        NOP
+        CMP R5,R4
+        JMPR cc_NE,L_DD8E2
+        EXTP R11, #02H
+        MOVB RL4,[R10+#0632H]
+        NOP
+        CMPB RL4,#00H
+        BMOVN PSW.06H,PSW.03H
+        BMOV lv_maf_trim.07H,PSW.06H
+        EXTP R11, #02H
+        MOV R4,[R10+#0634H]
+        NOP
+        MOV v_maf_trim,R4
+        EXTP R11, #02H
+        MOVB RL4,[R10+#0636H]
+        NOP
+        MOVB fac_maf_trim,RL4
+        EXTP R11, #02H
+        MOVB RL5,[R10+#0633H]
+        NOP
+        MOVB state_maf_trim,RL5
+        RETS
+L_DD8E2:                 ; 0xdd8e2
+        BCLR lv_maf_trim.07H
+        MOV R4,DPP0:c_v_maf_trim_nom
+        MOV v_maf_trim,R4
+        MOVB RL4,#DATA16 00080H
+        MOVB fac_maf_trim,RL4
+        MOVB state_maf_trim,ONES
+        RETS
+
+; ======== NVM_Save_s632  (@0xdd8fa) ========
+        ; ------------------------------------------------------------
+        ; NVM adaptation I/O: saves RAM-> validated NVM block (DAT_00f890 base) section; xor_routine checksum.
+        ; Section offset in name.
+        ; ------------------------------------------------------------
+NVM_Save_s632:
+        SUB R0,#04H
+        MOVB RL4,#00H
+        BMOV R4.00H,lv_maf_trim.07H
+        MOVB [R0],RL4
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 00632H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,R0
+        MOV R15,#01H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 00634H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0D72CH
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 00636H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0C4F5H
+        MOV R15,#01H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 00633H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0C4F6H
+        MOV R15,#01H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 00632H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#06H
+        CALLS 00DH,xor_routine
+        MOV [R0+#02H],R4
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 00638H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#02H
+        ADD R14,R0
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        ADD R0,#04H
+        RETS
+
+; ======== Calc_MAF_Trim_EOL  (@0xdd9f8) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (ThetaII, verified): end-of-line MAF trim: fac_maf_trim from EOL v_maf_trim
+        ; (c_v_maf_trim_nom)
+        ; (was FUN_0dd9f8)
+        ; ------------------------------------------------------------
+Calc_MAF_Trim_EOL:
+        MOV [-R0],R9
+        MOV [-R0],R6
+        JNB lv_maf_trim.07H,L_DDA04
+        JMPA cc_UC,L_DDAF2
+L_DDA04:                 ; 0xdda04
+        EXTP #00H, #01H
+        MOVB RL4,lv_maf_3f28
+        JMPR cc_NE,L_DDA72
+        EXTP #00H, #01H
+        MOVB RL5,lv_maf_3f29
+        CMPB RL5,#DATA16 000FFH
+        JMPR cc_NE,L_DDA72
+        MOVB state_maf_trim,ZEROS
+        EXTP #00H, #02H
+        MOVBZ R4,lv_maf_3f2a
+        MOVBZ R5,lv_maf_3f2c
+        XOR R4,R5
+        CMP R4,#DATA16 000FFH
+        JMPR cc_NE,L_DDA6E
+        EXTP #00H, #02H
+        MOVBZ R4,lv_maf_3f2b
+        MOVBZ R5,lv_maf_3f2d
+        XOR R4,R5
+        CMP R4,#DATA16 000FFH
+        JMPR cc_NE,L_DDA6E
+        MOVB RL6,#01H
+        EXTP #00H, #02H
+        MOVBZ R9,lv_maf_3f2b
+        MOVBZ R4,lv_maf_3f2a
+        SHL R4,#08H
+        ADD R9,R4
+        CMP R9,#DATA16 003FFH
+        JMPR cc_UGT,L_DDA6A
+        CMP R9,#00H
+        JMPR cc_C,L_DDA6A
+        MOV v_maf_trim,R9
+        JMPR cc_UC,L_DDA78
+L_DDA6A:                 ; 0xdda6a
+        MOVB RL6,#00H
+        JMPR cc_UC,L_DDA78
+L_DDA6E:                 ; 0xdda6e
+        MOVB RL6,#00H
+        JMPR cc_UC,L_DDA78
+L_DDA72:                 ; 0xdda72
+        MOVB state_maf_trim,ONES
+        MOVB RL6,#00H
+L_DDA78:                 ; 0xdda78
+        MOVB RL4,state_maf_trim
+        JMPR cc_NE,L_DDAE2
+        CMPB RL6,#00H
+        JMPR cc_EQ,L_DDAE2
+        MOV R12,v_maf_trim
+        MOV R13,DPP0:c_v_maf_trim_nom
+        SHL R13,#01H
+        CALLS 00FH,Div_Frac_U16_Q16
+        MOV R13,R4
+        MOV R12,#DATA16 009FEH
+        CALLS 00FH,Mul_U16_Hi
+        MOV R9,R4
+        CMP R9,#DATA16 0047FH
+        JMPR cc_NC,L_DDAA8
+        MOV R9,#DATA16 0047FH
+        JMPR cc_UC,L_DDAB2
+L_DDAA8:                 ; 0xddaa8
+        CMP R9,#DATA16 0057EH
+        JMPR cc_ULE,L_DDAB2
+        MOV R9,#DATA16 0057EH
+L_DDAB2:                 ; 0xddab2
+        MOV R12,R9
+        MOV R13,#DATA16 0047FH
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOVB fac_maf_trim,RL4
+        CMPB RL4,DPP0:c_fac_maf_trim_max
+        JMPR cc_UGT,L_DDACC
+        CMPB RL4,DPP0:c_fac_maf_trim_min
+        JMPR cc_NC,L_DDAD0
+L_DDACC:                 ; 0xddacc
+        BSET lv_maf_trim.07H
+        JMPR cc_UC,L_DDAF2
+L_DDAD0:                 ; 0xddad0
+        MOV R4,DPP0:c_v_maf_trim_nom
+        MOV v_maf_trim,R4
+        MOVB RL4,#DATA16 00080H
+        MOVB fac_maf_trim,RL4
+        JMPR cc_UC,L_DDAF2
+L_DDAE2:                 ; 0xddae2
+        MOV R4,DPP0:c_v_maf_trim_nom
+        MOV v_maf_trim,R4
+        MOVB RL4,#DATA16 00080H
+        MOVB fac_maf_trim,RL4
+L_DDAF2:                 ; 0xddaf2
+        MOVB RL4,DPP0:lc_rst_maf_trim
+        JMPR cc_EQ,L_DDB08
+        MOV R4,DPP0:c_v_maf_trim_nom
+        MOV v_maf_trim,R4
+        MOVB RL4,#DATA16 00080H
+        MOVB fac_maf_trim,RL4
+L_DDB08:                 ; 0xddb08
+        MOV R6,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_MAF_Trim_State  (@0xddb0e) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by maf/tps output signals + DTC): MAF trim adaptation state lv_maf_trim +
+        ; maf/tps ratio error.
+        ; ------------------------------------------------------------
+Calc_MAF_Trim_State:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV R9,p_ivvt_cam_m
+        JB lv_maf_trim.08H,L_DDB1E
+        JMPA cc_UC,L_DE054
+L_DDB1E:                 ; 0xddb1e
+        JB can_fd58.09H,L_DDB36
+        MOV state_out_req,ZEROS
+        MOVB inh_iv_as,ZEROS
+        BCLR lv_maf_trim.09H
+        BCLR lv_maf_trim.0AH
+        BCLR lv_maf_trim.0BH
+        BCLR lv_maf_trim.0CH
+        BCLR lv_maf_trim.0DH
+        BCLR lv_maf_trim.0EH
+L_DDB36:                 ; 0xddb36
+        BCLR lv_maf_trim.08H
+        JNB state_out_req.00H,L_DDB66
+        BSET lv_maf_trim.08H
+        JNB state_out_act.07H,L_DDB4E
+        JB P6.06H,L_DDB4A
+        BSET P6.06H
+        JMPR cc_UC,L_DDB6A
+L_DDB4A:                 ; 0xddb4a
+        BCLR P6.06H
+        JMPR cc_UC,L_DDB6A
+L_DDB4E:                 ; 0xddb4e
+        MOV state_out_req,ZEROS
+        MOVB inh_iv_as,ZEROS
+        BCLR lv_maf_trim.09H
+        BCLR lv_maf_trim.0AH
+        BCLR lv_maf_trim.0BH
+        BCLR lv_maf_trim.0CH
+        BCLR lv_maf_trim.0DH
+        BCLR lv_maf_trim.0EH
+        BSET state_out_req.00H
+        JMPR cc_UC,L_DDB6A
+L_DDB66:                 ; 0xddb66
+        BMOVN P6.06H,can_fd9e.06H
+L_DDB6A:                 ; 0xddb6a
+        BMOV state_out_act.07H,state_out_req.00H
+        JNB state_out_req.06H,L_DDB80
+        BSET lv_maf_trim.08H
+        JNB state_out_diag.0CH,L_DDB7C
+        BCLR state_out_diag.0CH
+        JMPR cc_UC,L_DDB84
+L_DDB7C:                 ; 0xddb7c
+        BSET state_out_diag.0CH
+        JMPR cc_UC,L_DDB84
+L_DDB80:                 ; 0xddb80
+        BMOV state_out_diag.0CH,state_out_fault.0CH
+L_DDB84:                 ; 0xddb84
+        JNB lv_maf_trim.0DH,L_DDB8E
+        BSET lv_maf_trim.08H
+        BSET state_out_diag.0DH
+        JMPR cc_UC,L_DDBA4
+L_DDB8E:                 ; 0xddb8e
+        JNB lv_maf_trim.0EH,L_DDBA0
+        BSET lv_maf_trim.08H
+        JNB state_out_diag.0DH,L_DDB9C
+        BCLR state_out_diag.0DH
+        JMPR cc_UC,L_DDBA4
+L_DDB9C:                 ; 0xddb9c
+        BSET state_out_diag.0DH
+        JMPR cc_UC,L_DDBA4
+L_DDBA0:                 ; 0xddba0
+        BMOV state_out_diag.0DH,state_out_fault.0DH
+L_DDBA4:                 ; 0xddba4
+        JNB state_out_req.02H,L_DDBB6
+        BSET lv_maf_trim.08H
+        JNB state_out_diag.0EH,L_DDBB2
+        BCLR state_out_diag.0EH
+        JMPR cc_UC,L_DDBBA
+L_DDBB2:                 ; 0xddbb2
+        BSET state_out_diag.0EH
+        JMPR cc_UC,L_DDBBA
+L_DDBB6:                 ; 0xddbb6
+        BMOV state_out_diag.0EH,state_out_fault.0EH
+L_DDBBA:                 ; 0xddbba
+        JNB state_out_req.03H,L_DDBDE
+        BSET lv_maf_trim.08H
+        MOVB RL4,div_out_cps_diag
+        JMPR cc_NE,L_DDBD8
+        JNB state_out_diag.09H,L_DDBCE
+        BCLR state_out_diag.09H
+        JMPR cc_UC,L_DDBD0
+L_DDBCE:                 ; 0xddbce
+        BSET state_out_diag.09H
+L_DDBD0:                 ; 0xddbd0
+        MOVB RL4,#04H
+        MOVB div_out_cps_diag,RL4
+        JMPR cc_UC,L_DDBE6
+L_DDBD8:                 ; 0xddbd8
+        ADDB div_out_cps_diag,ONES
+        JMPR cc_UC,L_DDBE6
+L_DDBDE:                 ; 0xddbde
+        BMOV state_out_diag.09H,state_out_fault.09H
+        MOVB div_out_cps_diag,ZEROS
+L_DDBE6:                 ; 0xddbe6
+        JNB state_out_req.01H,L_DDC0A
+        BSET lv_maf_trim.08H
+        MOVB RL4,div_out_fan_diag
+        JMPR cc_NE,L_DDC04
+        JNB state_out_diag.0AH,L_DDBFA
+        BCLR state_out_diag.0AH
+        JMPR cc_UC,L_DDBFC
+L_DDBFA:                 ; 0xddbfa
+        BSET state_out_diag.0AH
+L_DDBFC:                 ; 0xddbfc
+        MOVB RL4,#04H
+        MOVB div_out_fan_diag,RL4
+        JMPR cc_UC,L_DDC12
+L_DDC04:                 ; 0xddc04
+        ADDB div_out_fan_diag,ONES
+        JMPR cc_UC,L_DDC12
+L_DDC0A:                 ; 0xddc0a
+        BMOV state_out_diag.0AH,state_out_fault.0AH
+        MOVB div_out_fan_diag,ZEROS
+L_DDC12:                 ; 0xddc12
+        JNB lv_maf_trim.09H,L_DDC24
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_DDC1E
+        BSET lv_maf_trim.08H
+        JMPR cc_UC,L_DDC24
+L_DDC1E:                 ; 0xddc1e
+        BCLR lv_maf_trim.09H
+        MOVB inh_iv_as,ZEROS
+L_DDC24:                 ; 0xddc24
+        JNB lv_conf_mis.02H,L_DDC3A
+        MOVB RL4,inh_iv_as
+        ORB RL4,inh_iv_mis
+        ORB RL4,imob_c286
+        MOVB msk_inj_cyl_ok,RL4
+        JMPR cc_UC,L_DDC4A
+L_DDC3A:                 ; 0xddc3a
+        MOVB RL4,inh_iv_as
+        ORB RL4,lv_iga_c2ea
+        ORB RL4,imob_c286
+        MOVB msk_inj_cyl_ok,RL4
+L_DDC4A:                 ; 0xddc4a
+        JNB lv_maf_trim.0AH,L_DDC5C
+        BSET lv_maf_trim.08H
+        MOV R12,#00H
+        MOV R13,td_bas
+        CALLS 00AH,Ctl_Ign_Output_CC6
+        JMPR cc_UC,L_DDC66
+L_DDC5C:                 ; 0xddc5c
+        JNB state_out_act.01H,L_DDC66
+        MOV R12,#00H
+        CALLS 00AH,Set_Ign_Output_CC6
+L_DDC66:                 ; 0xddc66
+        BMOV state_out_act.01H,lv_maf_trim.0AH
+        JNB lv_maf_trim.0BH,L_DDC7C
+        BSET lv_maf_trim.08H
+        MOV R12,#01H
+        MOV R13,td_bas
+        CALLS 00AH,Ctl_Ign_Output_CC6
+        JMPR cc_UC,L_DDC86
+L_DDC7C:                 ; 0xddc7c
+        JNB state_out_act.02H,L_DDC86
+        MOV R12,#01H
+        CALLS 00AH,Set_Ign_Output_CC6
+L_DDC86:                 ; 0xddc86
+        BMOV state_out_act.02H,lv_maf_trim.0BH
+        JNB state_out_req.07H,L_DDCBE
+        BSET lv_maf_trim.08H
+        JNB state_out_act.03H,L_DDC9A
+        MOVBZ R8,DPP0:c_min_pwm_isa
+        JMPR cc_UC,L_DDC9E
+L_DDC9A:                 ; 0xddc9a
+        MOVBZ R8,DPP0:c_max_pwm_isa
+L_DDC9E:                 ; 0xddc9e
+        MOV R4,PP1_F03A
+        ADD R4,#01H
+        MOV R2,R8
+        SHL R2,#08H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV PW1_FE32,R4
+        BXOR state_out_act.03H,ONES.00H
+        JMPR cc_UC,L_DDCFA
+L_DDCBE:                 ; 0xddcbe
+        JNB state_out_act.04H,L_DDCFA
+        JB state_out_req.07H,L_DDCE0
+        MOV R4,PP1_F03A
+        ADD R4,#01H
+        MOV R2,isapwm_isa
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV PW1_FE32,R4
+L_DDCE0:                 ; 0xddce0
+        MOV R4,PP0_F038
+        ADD R4,#01H
+        MOV R2,#00H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV PW0_FE30,R4
+        BCLR state_out_act.03H
+L_DDCFA:                 ; 0xddcfa
+        BMOV state_out_act.04H,state_out_req.07H
+        JB state_out_req.0BH,L_DDD06
+        JMPA cc_UC,L_DDDF4
+L_DDD06:                 ; 0xddd06
+        BSET lv_maf_trim.08H
+        JNB state_out_act.05H,L_DDD12
+        MOVBZ R8,DPP0:c_min_pwm_ocv
+        JMPR cc_UC,L_DDD16
+L_DDD12:                 ; 0xddd12
+        MOVBZ R8,DPP0:c_max_pwm_ocv
+L_DDD16:                 ; 0xddd16
+        MOV R4,ivvthpwm_frq
+        CMP R4,ivvt_hpwm_frq_z
+        JMPR cc_EQ,L_DDD8E
+        CMP R4,#05H
+        JMPR cc_C,L_DDDEC
+        MOV ivvt_hpwm_frq_z,R4
+        MOVB ivvt_hpwm_rdy,ZEROS
+        CMP R4,#DATA16 0016EH
+        JMPR cc_C,L_DDD50
+        MOV R4,#DATA16 03600H
+        MOV R5,#DATA16 0016EH
+        MOV R10,ivvthpwm_frq
+        MOV R11,#00H
+        CALLS 00DH,Div_S32_Signed
+        SUB R4,#01H
+        MOV ivvt_hpwm_div,R4
+        MOVB ivvt_hpwm_rng,ZEROS
+        JMPR cc_UC,L_DDD6C
+L_DDD50:                 ; 0xddd50
+        MOV R4,#DATA16 0B8D8H
+        MOV R5,#05H
+        MOV R10,ivvthpwm_frq
+        MOV R11,#00H
+        CALLS 00DH,Div_S32_Signed
+        SUB R4,#01H
+        MOV ivvt_hpwm_div,R4
+        MOVB RL4,#01H
+        MOVB ivvt_hpwm_rng,RL4
+L_DDD6C:                 ; 0xddd6c
+        MOV R4,ivvt_hpwm_div
+        ADD R4,#01H
+        MOV R2,R8
+        SHL R2,#08H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV ivvt_hpwm_cmp_hold,R4
+        MOVB RL4,#01H
+        MOVB ivvt_hpwm_rdy,RL4
+        JMPR cc_UC,L_DDDEC
+L_DDD8E:                 ; 0xddd8e
+        MOVB RL4,ivvt_hpwm_rdy
+        JMPR cc_EQ,L_DDDB0
+        MOV R4,ivvt_hpwm_div
+        ADD R4,#01H
+        MOV R2,R8
+        SHL R2,#08H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV ivvt_hpwm_cmp_hold,R4
+        JMPR cc_UC,L_DDDEC
+L_DDDB0:                 ; 0xdddb0
+        MOVB RL4,hld_adj_ivvt_in_1
+        JMPR cc_EQ,L_DDDD2
+        MOV R4,ivvt_hpwm_div
+        ADD R4,#01H
+        MOV R2,R8
+        SHL R2,#08H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV PW3_FE36,R4
+        JMPR cc_UC,L_DDDEC
+L_DDDD2:                 ; 0xdddd2
+        MOV R4,ivvt_hpwm_div
+        ADD R4,#01H
+        MOV R2,R8
+        SHL R2,#08H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV ivvt_hpwm_cmp,R4
+L_DDDEC:                 ; 0xdddec
+        BXOR state_out_act.05H,ONES.00H
+        JMPA cc_UC,L_DDEDE
+L_DDDF4:                 ; 0xdddf4
+        JB state_out_act.06H,L_DDDFC
+        JMPA cc_UC,L_DDEDE
+L_DDDFC:                 ; 0xdddfc
+        CMP R9,#DATA16 0CADAH
+        JMPR cc_NE,L_DDEDC
+        JB state_out_req.0BH,L_DDEDC
+        MOV R4,ivvthpwm_frq
+        CMP R4,ivvt_hpwm_frq_z
+        JMPR cc_EQ,L_DDE40
+        CMP R4,#05H
+        JMPR cc_C,L_DDEDC
+        MOV ivvt_hpwm_frq_z,R4
+        MOVB ivvt_hpwm_rdy,ZEROS
+        CMP R4,#DATA16 0016EH
+        JMPR cc_C,L_DDEA0
+        MOV R4,#DATA16 03600H
+        MOV R5,#DATA16 0016EH
+        MOV R10,ivvthpwm_frq
+        MOV R11,#00H
+        CALLS 00DH,Div_S32_Signed
+        SUB R4,#01H
+        MOV ivvt_hpwm_div,R4
+        MOVB ivvt_hpwm_rng,ZEROS
+        JMPR cc_UC,L_DDEBC
+L_DDE40:                 ; 0xdde40
+        MOVB RL4,ivvt_hpwm_rdy
+        JMPR cc_EQ,L_DDE62
+        MOV R4,ivvt_hpwm_div
+        ADD R4,#01H
+        MOV R2,ivvt_in_1_struct_hpwm_ivvt_ivvtpwm
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV ivvt_hpwm_cmp_hold,R4
+        JMPR cc_UC,L_DDEDC
+L_DDE62:                 ; 0xdde62
+        MOVB RL4,hld_adj_ivvt_in_1
+        JMPR cc_EQ,L_DDE84
+        MOV R4,ivvt_hpwm_div
+        ADD R4,#01H
+        MOV R2,ivvt_in_1_struct_hpwm_ivvt_ivvtpwm
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV PW3_FE36,R4
+        JMPR cc_UC,L_DDEDC
+L_DDE84:                 ; 0xdde84
+        MOV R4,ivvt_hpwm_div
+        ADD R4,#01H
+        MOV R2,ivvt_in_1_struct_hpwm_ivvt_ivvtpwm
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV ivvt_hpwm_cmp,R4
+        JMPR cc_UC,L_DDEDC
+L_DDEA0:                 ; 0xddea0
+        MOV R4,#DATA16 0B8D8H
+        MOV R5,#05H
+        MOV R10,ivvthpwm_frq
+        MOV R11,#00H
+        CALLS 00DH,Div_S32_Signed
+        SUB R4,#01H
+        MOV ivvt_hpwm_div,R4
+        MOVB RL4,#01H
+        MOVB ivvt_hpwm_rng,RL4
+L_DDEBC:                 ; 0xddebc
+        MOV R4,ivvt_hpwm_div
+        ADD R4,#01H
+        MOV R2,ivvt_in_1_struct_hpwm_ivvt_ivvtpwm
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV ivvt_hpwm_cmp_hold,R4
+        MOVB RL4,#01H
+        MOVB ivvt_hpwm_rdy,RL4
+L_DDEDC:                 ; 0xddedc
+        BCLR state_out_act.05H
+L_DDEDE:                 ; 0xddede
+        BMOV state_out_act.06H,state_out_req.0BH
+        JNB state_out_req.08H,L_DDF14
+        BSET lv_maf_trim.08H
+        JNB lv_maf_trim.0FH,L_DDEF2
+        MOVBZ R8,DPP0:c_min_pwm_cps
+        JMPR cc_UC,L_DDEF6
+L_DDEF2:                 ; 0xddef2
+        MOVBZ R8,DPP0:c_max_pwm_cps
+L_DDEF6:                 ; 0xddef6
+        MOV R4,cps_pwm_base
+        MOV R2,R8
+        SHL R2,#08H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV cps_pwm_cmp,R4
+        BXOR lv_maf_trim.0FH,ONES.00H
+        JMPR cc_UC,L_DDF38
+L_DDF14:                 ; 0xddf14
+        JNB state_out_act.00H,L_DDF38
+        JB state_out_req.08H,L_DDF36
+        MOV R4,cps_pwm_base
+        MOV R2,cppwm_cps
+        SHL R2,#01H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV cps_pwm_cmp,R4
+L_DDF36:                 ; 0xddf36
+        BCLR lv_maf_trim.0FH
+L_DDF38:                 ; 0xddf38
+        BMOV state_out_act.00H,state_out_req.08H
+        JNB lv_maf_trim.0CH,L_DDF48
+        BSET lv_maf_trim.08H
+        MOV R8,#DATA16 0FDF3H
+        JMPR cc_UC,L_DDF60
+L_DDF48:                 ; 0xddf48
+        JNB state_out_req.09H,L_DDF60
+        BSET lv_maf_trim.08H
+        JNB state_out_act.08H,L_DDF58
+        MOV R8,#DATA16 0020CH
+        JMPR cc_UC,L_DDF5C
+L_DDF58:                 ; 0xddf58
+        MOV R8,#DATA16 0FDF3H
+L_DDF5C:                 ; 0xddf5c
+        BXOR state_out_act.08H,ONES.00H
+L_DDF60:                 ; 0xddf60
+        JB state_out_req.09H,L_DDF68
+        JNB lv_maf_trim.0CH,L_DDF80
+L_DDF68:                 ; 0xddf68
+        MOV R4,maf_pwm_base
+        MOV R2,R8
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV lv_maf_f9da,R4
+        JMPR cc_UC,L_DDFC4
+L_DDF80:                 ; 0xddf80
+        JNB lv_err_maf_tps_ratio_2.05H,L_DDFA4
+        JB state_out_req.09H,L_DDFA0
+        MOV R4,maf_pwm_base
+        MOV R2,#DATA16 0FDF3H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV lv_maf_f9da,R4
+L_DDFA0:                 ; 0xddfa0
+        BSET lv_err_maf_tps_ratio_2.05H
+        JMPR cc_UC,L_DDFC2
+L_DDFA4:                 ; 0xddfa4
+        JB state_out_req.09H,L_DDFC0
+        MOV R4,maf_pwm_base
+        MOV R2,#DATA16 0020CH
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV lv_maf_f9da,R4
+L_DDFC0:                 ; 0xddfc0
+        BCLR lv_err_maf_tps_ratio_2.05H
+L_DDFC2:                 ; 0xddfc2
+        BCLR state_out_act.08H
+L_DDFC4:                 ; 0xddfc4
+        JNB state_out_req.0AH,L_DDFF2
+        BSET lv_maf_trim.08H
+        JNB state_out_act.09H,L_DDFD2
+        MOV R8,#00H
+        JMPR cc_UC,L_DDFD6
+L_DDFD2:                 ; 0xddfd2
+        MOV R8,#DATA16 0FF5CH
+L_DDFD6:                 ; 0xddfd6
+        MOV R4,imob_pwm_base
+        MOV R2,R8
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV imob_f9de,R4
+        BXOR state_out_act.09H,ONES.00H
+        JMPR cc_UC,L_DE038
+L_DDFF2:                 ; 0xddff2
+        JNB state_out_act.0AH,L_DE038
+        JNB lv_fmy_imob.08H,L_DE01A
+        JB state_out_req.0AH,L_DE016
+        MOV R4,imob_pwm_base
+        MOV R2,#DATA16 0FF5CH
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV imob_f9de,R4
+L_DE016:                 ; 0xde016
+        BSET lv_fmy_imob.08H
+        JMPR cc_UC,L_DE036
+L_DE01A:                 ; 0xde01a
+        JB state_out_req.0AH,L_DE034
+        MOV R4,imob_pwm_base
+        MOV R2,#00H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV imob_f9de,R4
+L_DE034:                 ; 0xde034
+        BCLR lv_fmy_imob.08H
+L_DE036:                 ; 0xde036
+        BCLR state_out_act.09H
+L_DE038:                 ; 0xde038
+        BMOV state_out_act.0AH,state_out_req.0AH
+        JNB lv_maf_trim.08H,L_DE044
+        JNB lv_maf_trim.09H,L_DE04E
+L_DE044:                 ; 0xde044
+        MOVB RL4,#DATA16 000FBH
+        ANDB lv_sched_diag_inh,RL4
+        JMPR cc_UC,L_DE054
+L_DE04E:                 ; 0xde04e
+        MOVB RL4,#04H
+        ORB lv_sched_diag_inh,RL4
+L_DE054:                 ; 0xde054
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== BL_Exit_ProgSession  (@0xde05a) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+BL_Exit_ProgSession:
+        MOVB RL4,bl_prog_session_state
+        JMPR cc_EQ,L_DE064
+        CMPB RL4,#05H
+        JMPR cc_NE,L_DE07A
+L_DE064:                 ; 0xde064
+        MOVB RL4,lv_sched_diag_inh
+        ANDB RL4,#02H
+        JMPR cc_NE,L_DE07A
+        MOVB kwp_e7c3,ZEROS
+        MOV ADDRSEL2,#DATA16 0FFF0H
+        CALLS 00AH,FuelPump_Out_Init
+        RETS
+L_DE07A:                 ; 0xde07a
+        MOVB RL4,#01H
+        MOVB kwp_e7c3,RL4
+        RETS
+
+S_DD862 ENDS
+        END

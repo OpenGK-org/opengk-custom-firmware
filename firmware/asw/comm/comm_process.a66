@@ -1,0 +1,716 @@
+; asw/comm/comm_process.a66
+; 0xA2DDA-0xA3424  (1610 bytes, 7 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  KWP_App_Process_Record_0a312c, KWP_App_Process_Record_0a316a, KWP_App_Process_Records_0a2ffc, KWP_App_Process_Records_0a31b0, KWP_ReadFreezeFrameRecord, KWP_SID12_ReadFreezeFrameData
+PUBLIC  KWP_SIDBA_MfgReadDTC
+EXTERN  Get_DTC_Record_2:NEAR, KWP_App_Read_DataBlock_By_RecordId:NEAR, KWP_ClearLearnedValues:NEAR, KWP_GetDTCRecordByStatus:NEAR
+EXTERN  KWP_OBD_Svc01_ReadPID:NEAR, KWP_OBD_Svc09_VehicleInfo:NEAR, KWP_ReadRecord_Fmt2:NEAR, KWP_ReadRecord_Single:NEAR
+EXTERN  OBD_Scale_FuelSys:NEAR, OBD_Scale_FuelTrim:NEAR, OBD_Scale_RPM:NEAR, OBD_Scale_Temp:NEAR
+EXTERN  Read_MulDiv_MD:NEAR, Ret_Const_fe0f:NEAR, sub_r12_r13_rets_r4:NEAR
+
+S_A2DDA SECTION CODE AT 0A2DDAH
+
+; ======== KWP_SIDBA_MfgReadDTC  (@0xa2dda) ========
+        ; KWP2000 SID 0xBA (Hyundai mfg-specific ReadDTC). msg_len must be 4. req[0]=0 selector,
+        ; req[1:2]=0x0000 or 0xFF00 group. Returns count + 3-byte DTC records via
+        ; KWP_GetDTCRecordByStatus(filter=3). NRC 0x79 bad len, 0x12 bad req, 0x31 out-of-range group.
+KWP_SIDBA_MfgReadDTC:
+        MOV [-R0],R7
+        MOV [-R0],R6
+        SUB R0,#02H
+        MOV R4,kwp_msg_len
+        CMP R4,#04H
+        JMPR cc_NE,L_A2E9E
+        MOVB kwp_nrc,ZEROS
+        MOV R4,kwp_req_ptr
+        MOVB RL5,[R4+#01H]
+        MOVB [R0+#01H],RL5
+        MOVB RL3,[R4+#02H]
+        MOVB [R0],RL3
+        MOV R5,[R0]
+        JMPR cc_EQ,L_A2E08
+        CMP R5,#DATA16 0FF00H
+        JMPR cc_NE,L_A2E82
+L_A2E08:                 ; 0xa2e08
+        MOV R4,kwp_req_ptr
+        MOVB RL5,[R4]
+        JMPR cc_NE,L_A2E78
+        MOV R12,R4
+        MOV R13,#03H
+        MOV R14,#DATA16 000FFH
+        CALLS 00DH,KWP_GetDTCRecordByStatus
+        MOVB RL7,RL4
+        CMPB RL7,#DATA16 000FFH
+        JMPR cc_EQ,L_A2E6E
+        MOV R4,kwp_req_ptr
+        SUB kwp_req_ptr,ONES
+        MOVB [R4],RL7
+        MOVB RL6,#00H
+        MOV R4,#02H
+        MOV kwp_msg_len,R4
+        JMPR cc_UC,inj_cc_36
+L_A2E38:                 ; 0xa2e38
+        MOV R12,kwp_req_ptr
+        MOV R13,#03H
+        MOVBZ R14,RL6
+        CALLS 00DH,KWP_GetDTCRecordByStatus
+        MOV R4,#03H
+        ADD kwp_req_ptr,R4
+        ADD kwp_msg_len,R4
+        ADDB RL6,#01H
+        ; ------------------------------------------------------------
+        ; inj-domain ISR timing cell (writers: CC3INT_Handler)
+        ; ------------------------------------------------------------
+inj_cc_36:               ; 0xa2e50
+        MOV R4,kwp_msg_len
+        ADD R4,#03H
+        CMP R4,kwp_buf_limit
+        JMPR cc_UGT,L_A2E60
+        CMPB RL6,RL7
+        JMPR cc_C,L_A2E38
+L_A2E60:                 ; 0xa2e60
+        MOV R4,kwp_buf_base
+        MOV kwp_req_ptr,R4
+        MOVB kwp_nrc,ZEROS
+        JMPR cc_UC,L_A2EA6
+L_A2E6E:                 ; 0xa2e6e
+        MOVB RL4,#DATA16 00012H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_A2EA6
+L_A2E78:                 ; 0xa2e78
+        MOVB RL4,#DATA16 00012H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_A2EA6
+L_A2E82:                 ; 0xa2e82
+        MOV R4,[R0]
+        AND R4,#DATA16 03FFFH
+        JMPR cc_EQ,L_A2E94
+        MOVB RL4,#DATA16 00012H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_A2EA6
+L_A2E94:                 ; 0xa2e94
+        MOVB RL4,#DATA16 00031H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_A2EA6
+L_A2E9E:                 ; 0xa2e9e
+        MOVB RL4,#DATA16 00079H
+        MOVB kwp_nrc,RL4
+L_A2EA6:                 ; 0xa2ea6
+        ADD R0,#02H
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        RETS
+
+; ======== KWP_SID12_ReadFreezeFrameData  (@0xa2eae) ========
+        ; KWP2000 SID 0x12 ReadFreezeFrameData. req[0]=record, req[1]=0 group selector, 0xFF=iterate all
+        ; frames. Uses KWP_ReadFreezeFrameRecord; flag DAT_00fd00&0x800 = iteration-in-progress.
+KWP_SID12_ReadFreezeFrameData:
+        MOV R4,kwp_msg_len
+        CMP R4,#03H
+        JMPA cc_NE,L_A2FF2
+        MOVB kwp_nrc,ZEROS
+        JNB kwp_comms_flags.0BH,L_A2ECE
+        MOV R4,kwp_req_ptr
+        ADD R4,#02H
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+        JMPR cc_UC,L_A2F00
+L_A2ECE:                 ; 0xa2ece
+        MOV R4,kwp_req_ptr
+        MOVB RL5,[R4+#01H]
+        JMPR cc_NE,L_A2EF8
+        MOVB RL5,[R4]
+        CMPB RL5,#DATA16 000FFH
+        JMPR cc_NE,L_A2EEC
+        MOVB RL4,#00H
+        MOV R5,kwp_req_ptr
+        MOVB [R5+#02H],RL4
+        JMPR cc_UC,L_A2F00
+L_A2EEC:                 ; 0xa2eec
+        MOV R4,kwp_req_ptr
+        MOVB RL5,[R4]
+        MOVB [R4+#02H],RL5
+        JMPR cc_UC,L_A2F00
+L_A2EF8:                 ; 0xa2ef8
+        MOVB RL4,#DATA16 00012H
+        MOVB kwp_nrc,RL4
+L_A2F00:                 ; 0xa2f00
+        MOVB RL4,kwp_nrc
+        JMPA cc_NE,L_A2FFA
+L_A2F08:                 ; 0xa2f08
+        MOV R12,kwp_req_ptr
+        ADD R12,#03H
+        MOV R4,kwp_req_ptr
+        MOVB RL5,[R4+#02H]
+        MOVBZ R13,RL5
+        CALLS 00AH,KWP_ReadFreezeFrameRecord
+        MOVB kwp_nrc,RL4
+        CMPB RL4,#DATA16 000FEH
+        JMPR cc_EQ,L_A2F2E
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_EQ,L_A2F38
+        JMPR cc_UC,L_A2F42
+L_A2F2E:                 ; 0xa2f2e
+        MOVB RL4,#DATA16 00022H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_A2F50
+L_A2F38:                 ; 0xa2f38
+        MOVB RL4,#DATA16 00011H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_A2F50
+L_A2F42:                 ; 0xa2f42
+        MOVBZ R4,kwp_nrc
+        ADD R4,#03H
+        MOV kwp_msg_len,R4
+        MOVB kwp_nrc,ZEROS
+L_A2F50:                 ; 0xa2f50
+        MOV R4,kwp_req_ptr
+        ADD R4,#02H
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+        MOV R4,kwp_req_ptr
+        MOVB RL5,[R4+#02H]
+        CMPB RL5,#01H
+        JMPR cc_NC,L_A2F7A
+        MOVB RL4,kwp_nrc
+        JMPR cc_EQ,L_A2F7A
+        MOV R4,kwp_req_ptr
+        MOVB RL5,[R4]
+        CMPB RL5,#DATA16 000FFH
+        JMPR cc_EQ,L_A2F08
+L_A2F7A:                 ; 0xa2f7a
+        MOV R4,kwp_req_ptr
+        MOVB RL5,[R4]
+        CMPB RL5,#DATA16 000FFH
+        JMPR cc_NE,L_A2F8A
+        BSET kwp_comms_flags.0BH
+        JMPR cc_UC,L_A2F8C
+L_A2F8A:                 ; 0xa2f8a
+        BCLR kwp_comms_flags.0BH
+L_A2F8C:                 ; 0xa2f8c
+        MOVB RL4,kwp_nrc
+        JMPR cc_NE,L_A2FE4
+        MOV R4,kwp_req_ptr
+        ADD R4,#02H
+        MOVB RL5,[R4]
+        SUBB RL5,#01H
+        MOVB [R4],RL5
+        MOV R4,kwp_req_ptr
+        MOVB RL5,[R4+#01H]
+        ADD R4,kwp_msg_len
+        MOVB [R4],RL5
+        MOV R4,kwp_req_ptr
+        MOVB RL5,[R4+#03H]
+        ADD R4,#01H
+        ADD R4,kwp_msg_len
+        MOVB [R4],RL5
+        MOV R4,kwp_req_ptr
+        MOVB RL5,[R4+#04H]
+        ADD R4,#02H
+        ADD R4,kwp_msg_len
+        MOVB [R4],RL5
+        MOV R4,kwp_req_ptr
+        MOVB RL5,[R4+#02H]
+        MOVB [R4+#04H],RL5
+        MOV R4,kwp_req_ptr
+        ADD R4,#04H
+        MOV kwp_buf_base,R4
+        RETS
+L_A2FE4:                 ; 0xa2fe4
+        BCLR kwp_comms_flags.0BH
+        MOV R4,kwp_msg_len
+        CMP R4,#03H
+        JMPR cc_EQ,L_A2FFA
+        BSET kwp_comms_flags.0AH
+        RETS
+L_A2FF2:                 ; 0xa2ff2
+        MOVB RL4,#DATA16 00079H
+        MOVB kwp_nrc,RL4
+L_A2FFA:                 ; 0xa2ffa
+        RETS
+
+; ======== KWP_App_Process_Records_0a2ffc  (@0xa2ffc) ========
+        ; OBD-II Mode 0x01/0x02 PID reader (record_fmt 1=current data, 2=freeze frame). Iterates requested
+        ; PIDs (msg_len-1), copies each into response and calls KWP_OBD_Svc01_ReadPID / _KWP_ReadRecord_Fmt2.
+        ; NRC 0x7F if no PID matched.
+KWP_App_Process_Records_0a2ffc:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOVB RL4,kwp_record_fmt
+        CMPB RL4,#01H
+        JMPR cc_NE,L_A301C
+        MOV R4,kwp_msg_len
+        CMP R4,#02H
+        JMPR cc_C,L_A301C
+        MOV R4,kwp_msg_len
+        CMP R4,#07H
+        JMPR cc_ULE,L_A303A
+L_A301C:                 ; 0xa301c
+        MOVB RL4,kwp_record_fmt
+        CMPB RL4,#02H
+        JMPA cc_NE,L_A3120
+        MOV R4,kwp_msg_len
+        CMP R4,#03H
+        JMPA cc_C,L_A3120
+        MOV R4,kwp_msg_len
+        CMP R4,#07H
+        JMPA cc_UGT,L_A3120
+L_A303A:                 ; 0xa303a
+        MOVB RL4,#DATA16 0007FH
+        MOVB kwp_nrc,RL4
+        MOVB RL5,kwp_record_fmt
+        CMPB RL5,#01H
+        JMPR cc_NE,L_A30A2
+        MOV R8,kwp_msg_len
+        SUB R8,#01H
+        MOV R4,kwp_req_ptr
+        ADD R4,R8
+        MOV R9,R4
+        MOV kwp_buf_base,R4
+        MOVB RL6,#00H
+        JMPR cc_UC,L_A308E
+L_A3060:                 ; 0xa3060
+        MOV R4,kwp_req_ptr
+        MOVBZ R5,RL6
+        ADD R4,R5
+        MOVB [R9],[R4]
+        MOV R12,R9
+        CALLS 00EH,KWP_OBD_Svc01_ReadPID
+        MOVB RL7,RL4
+        CMPB RL7,#DATA16 000FFH
+        JMPR cc_EQ,L_A307E
+        CMPB RL7,#DATA16 000FEH
+        JMPR cc_NE,L_A3082
+L_A307E:                 ; 0xa307e
+        SUB R9,#01H
+        JMPR cc_UC,L_A308A
+L_A3082:                 ; 0xa3082
+        MOVBZ R4,RL7
+        ADD R9,R4
+        MOVB kwp_nrc,ZEROS
+L_A308A:                 ; 0xa308a
+        ADD R9,#01H
+        ADDB RL6,#01H
+L_A308E:                 ; 0xa308e
+        MOVBZ R4,RL6
+        CMP R4,R8
+        JMPR cc_C,L_A3060
+        MOV R4,R9
+        SUB R4,kwp_buf_base
+        ADD R4,#01H
+        MOV kwp_msg_len,R4
+        JMPR cc_UC,L_A3112
+L_A30A2:                 ; 0xa30a2
+        MOV R8,kwp_msg_len
+        SUB R8,#01H
+        SHR R8,#01H
+        MOV R4,R8
+        SHL R4,#01H
+        MOV R5,kwp_req_ptr
+        ADD R5,R4
+        MOV R9,R5
+        MOV kwp_buf_base,R5
+        MOVB RL6,#00H
+        JMPR cc_UC,L_A3100
+L_A30BE:                 ; 0xa30be
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R5,kwp_req_ptr
+        ADD R5,R4
+        MOVB [R9],[R5]
+        MOV R4,kwp_req_ptr
+        ADD R4,#01H
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        ADD R4,R5
+        MOVB RL5,[R4]
+        MOVB [R9+#01H],RL5
+        MOV R12,R9
+        CALLS 00EH,KWP_ReadRecord_Fmt2
+        MOVB RL7,RL4
+        CMPB RL7,#DATA16 000FFH
+        JMPR cc_EQ,L_A30F0
+        CMPB RL7,#DATA16 000FEH
+        JMPR cc_NE,L_A30F4
+L_A30F0:                 ; 0xa30f0
+        SUB R9,#01H
+        JMPR cc_UC,L_A30FC
+L_A30F4:                 ; 0xa30f4
+        MOVBZ R4,RL7
+        ADD R9,R4
+        MOVB kwp_nrc,ZEROS
+L_A30FC:                 ; 0xa30fc
+        ADD R9,#01H
+        ADDB RL6,#01H
+L_A3100:                 ; 0xa3100
+        MOVBZ R4,RL6
+        CMP R4,R8
+        JMPR cc_C,L_A30BE
+        MOV R4,R9
+        SUB R4,kwp_buf_base
+        ADD R4,#01H
+        MOV kwp_msg_len,R4
+L_A3112:                 ; 0xa3112
+        MOVB RL4,kwp_nrc
+        CMPB RL4,#DATA16 0007FH
+        JMPR cc_NE,L_A3122
+        BSET kwp_comms_flags.0AH
+        JMPR cc_UC,L_A3122
+L_A3120:                 ; 0xa3120
+        BSET kwp_comms_flags.0AH
+L_A3122:                 ; 0xa3122
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== KWP_App_Process_Record_0a312c  (@0xa312c) ========
+KWP_App_Process_Record_0a312c:
+        MOV [-R0],R6
+        MOV R4,kwp_msg_len
+        CMP R4,#01H
+        JMPR cc_NE,L_A3164
+        MOV R12,kwp_req_ptr
+        MOVBZ R13,kwp_record_fmt
+        CALLS 00EH,KWP_ReadRecord_Single
+        MOVB RL6,RL4
+        CMPB RL6,#DATA16 000FFH
+        JMPR cc_NE,L_A314E
+        BSET kwp_comms_flags.0AH
+        JMPR cc_UC,L_A315A
+L_A314E:                 ; 0xa314e
+        MOVB kwp_nrc,ZEROS
+        MOVBZ R4,RL6
+        ADD R4,#01H
+        MOV kwp_msg_len,R4
+L_A315A:                 ; 0xa315a
+        MOV R4,kwp_buf_base
+        MOV kwp_req_ptr,R4
+        JMPR cc_UC,L_A3166
+L_A3164:                 ; 0xa3164
+        BSET kwp_comms_flags.0AH
+L_A3166:                 ; 0xa3166
+        MOV R6,[R0+]
+        RETS
+
+; ======== KWP_App_Process_Record_0a316a  (@0xa316a) ========
+KWP_App_Process_Record_0a316a:
+        MOV [-R0],R6
+        MOV R4,kwp_msg_len
+        CMP R4,#01H
+        JMPR cc_NE,L_A31AA
+        CALLS 00EH,KWP_ClearLearnedValues
+        MOVB RL6,RL4
+        CMPB RL6,#DATA16 000FDH
+        JMPR cc_EQ,L_A3188
+        CMPB RL6,#DATA16 000FFH
+        JMPR cc_EQ,L_A3192
+        JMPR cc_UC,L_A3196
+L_A3188:                 ; 0xa3188
+        MOVB RL4,#DATA16 00022H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_A31A0
+L_A3192:                 ; 0xa3192
+        BSET kwp_comms_flags.0AH
+        JMPR cc_UC,L_A31A0
+L_A3196:                 ; 0xa3196
+        MOV R4,#01H
+        MOV kwp_msg_len,R4
+        MOVB kwp_nrc,ZEROS
+L_A31A0:                 ; 0xa31a0
+        MOV R4,kwp_buf_base
+        MOV kwp_req_ptr,R4
+        JMPR cc_UC,L_A31AC
+L_A31AA:                 ; 0xa31aa
+        BSET kwp_comms_flags.0AH
+L_A31AC:                 ; 0xa31ac
+        MOV R6,[R0+]
+        RETS
+
+; ======== KWP_App_Process_Records_0a31b0  (@0xa31b0) ========
+        ; OBD-II Mode 0x06/0x09 reader. record_fmt 6 -> KWP_App_Read_DataBlock_By_RecordId (on-board test
+        ; results); else -> KWP_OBD_Svc09_VehicleInfo (VIN/CALID). Iterates record ids, NRC 0x7F if none
+        ; matched.
+KWP_App_Process_Records_0a31b0:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R4,kwp_msg_len
+        CMP R4,#02H
+        JMPR cc_C,L_A3298
+        MOV R4,kwp_msg_len
+        CMP R4,#07H
+        JMPR cc_UGT,L_A3298
+        MOVB RL4,#DATA16 0007FH
+        MOVB kwp_nrc,RL4
+        MOVB RL5,kwp_record_fmt
+        CMPB RL5,#06H
+        JMPR cc_NE,L_A3232
+        MOV R8,kwp_msg_len
+        SUB R8,#01H
+        MOV R4,kwp_req_ptr
+        ADD R4,R8
+        MOV R9,R4
+        MOV kwp_buf_base,R4
+        MOVB RL6,#00H
+        JMPR cc_UC,L_A321E
+L_A31EE:                 ; 0xa31ee
+        MOV R4,kwp_req_ptr
+        MOVBZ R5,RL6
+        ADD R4,R5
+        MOVB [R9],[R4]
+        MOV R12,R9
+        CALLS 00EH,KWP_App_Read_DataBlock_By_RecordId
+        MOVB RL7,RL4
+        CMPB RL7,#DATA16 000FFH
+        JMPR cc_EQ,L_A320C
+        CMPB RL7,#DATA16 000FEH
+        JMPR cc_NE,L_A3210
+L_A320C:                 ; 0xa320c
+        SUB R9,#01H
+        JMPR cc_UC,L_A321A
+L_A3210:                 ; 0xa3210
+        MOVBZ R4,RL7
+        SUB R4,#01H
+        ADD R9,R4
+        MOVB kwp_nrc,ZEROS
+L_A321A:                 ; 0xa321a
+        ADD R9,#01H
+        ADDB RL6,#01H
+L_A321E:                 ; 0xa321e
+        MOVBZ R4,RL6
+        CMP R4,R8
+        JMPR cc_C,L_A31EE
+        MOV R4,R9
+        SUB R4,kwp_buf_base
+        ADD R4,#01H
+        MOV kwp_msg_len,R4
+        JMPR cc_UC,L_A328A
+L_A3232:                 ; 0xa3232
+        MOV R8,kwp_msg_len
+        SUB R8,#01H
+        MOV R4,kwp_req_ptr
+        ADD R4,R8
+        MOV R9,R4
+        MOV kwp_buf_base,R4
+        MOVB RL6,#00H
+        JMPR cc_UC,L_A3278
+L_A3248:                 ; 0xa3248
+        MOV R4,kwp_req_ptr
+        MOVBZ R5,RL6
+        ADD R4,R5
+        MOVB [R9],[R4]
+        MOV R12,R9
+        CALLS 00EH,KWP_OBD_Svc09_VehicleInfo
+        MOVB RL7,RL4
+        CMPB RL7,#DATA16 000FFH
+        JMPR cc_EQ,L_A3266
+        CMPB RL7,#DATA16 000FEH
+        JMPR cc_NE,L_A326A
+L_A3266:                 ; 0xa3266
+        SUB R9,#01H
+        JMPR cc_UC,L_A3274
+L_A326A:                 ; 0xa326a
+        MOVBZ R4,RL7
+        SUB R4,#01H
+        ADD R9,R4
+        MOVB kwp_nrc,ZEROS
+L_A3274:                 ; 0xa3274
+        ADD R9,#01H
+        ADDB RL6,#01H
+L_A3278:                 ; 0xa3278
+        MOVBZ R4,RL6
+        CMP R4,R8
+        JMPR cc_C,L_A3248
+        MOV R4,R9
+        SUB R4,kwp_buf_base
+        ADD R4,#01H
+        MOV kwp_msg_len,R4
+L_A328A:                 ; 0xa328a
+        MOVB RL4,kwp_nrc
+        CMPB RL4,#DATA16 0007FH
+        JMPR cc_NE,L_A329A
+        BSET kwp_comms_flags.0AH
+        JMPR cc_UC,L_A329A
+L_A3298:                 ; 0xa3298
+        BSET kwp_comms_flags.0AH
+L_A329A:                 ; 0xa329a
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== KWP_ReadFreezeFrameRecord  (@0xa32a4) ========
+KWP_ReadFreezeFrameRecord:
+        MOV [-R0],R13
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R8,R12
+        JB lv_conf_mis.04H,L_A32B8
+        JMPA cc_UC,L_A3412
+L_A32B8:                 ; 0xa32b8
+        MOV R4,R13
+        CMPB RL4,#00H
+        JMPA cc_NE,L_A340C
+        JB obd_sf.04H,L_A32C8
+        JMPA cc_UC,L_A340C
+L_A32C8:                 ; 0xa32c8
+        MOVB RL4,obd_ff_mon_id
+        CMPB RL4,#DATA16 00058H
+        JMPR cc_EQ,L_A32F0
+        MOVBZ R12,RL4
+        CALLS 00DH,Get_DTC_Record_2
+        SHR R4,#08H
+        MOV R5,R8
+        ADD R8,#01H
+        MOVB [R5],RL4
+        MOVBZ R12,obd_ff_mon_id
+        CALLS 00DH,Get_DTC_Record_2
+        MOV R5,R8
+        ADD R8,#01H
+        MOVB [R5],RL4
+        JMPR cc_UC,L_A330E
+L_A32F0:                 ; 0xa32f0
+        MOV R12,#DATA16 00058H
+        CALLS 00DH,Get_DTC_Record_2
+        SHR R4,#08H
+        MOV R5,R8
+        ADD R8,#01H
+        MOVB [R5],RL4
+        MOV R12,#DATA16 00058H
+        CALLS 00DH,Get_DTC_Record_2
+        MOV R5,R8
+        ADD R8,#01H
+        MOVB [R5],RL4
+L_A330E:                 ; 0xa330e
+        MOV R12,R8
+        MOV R13,obd_ff_rpm
+        CALLS 00EH,OBD_Scale_RPM
+        ADD R8,#02H
+        MOV R4,R8
+        ADD R8,#01H
+        MOVB [R4],obd_ff_vs
+        MOV R4,R8
+        ADD R8,#01H
+        MOVB [R4],obd_ff_load
+        MOVBZ R12,obd_ff_tco
+        CALLS 00EH,OBD_Scale_Temp
+        MOV R5,R8
+        ADD R8,#01H
+        MOVB [R5],RL4
+        JNB lv_conf_mis.00H,L_A3384
+        MOV R12,obd_ff_lam_carrier
+        MOVBZ R13,obd_ff_lam_ready
+        CALLS 00EH,OBD_Scale_FuelSys
+        MOV R5,R8
+        ADD R8,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R8
+        ADD R8,#01H
+        MOVB [R5],RL4
+        MOV R12,obd_ff_ti_lam
+        CALLS 00EH,OBD_Scale_FuelTrim
+        MOV R5,R8
+        ADD R8,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R8
+        ADD R8,#01H
+        MOVB [R5],RL4
+        MOV R12,obd_ff_lam_ad
+        CALLS 00EH,OBD_Scale_FuelTrim
+        MOV R5,R8
+        ADD R8,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R8
+        ADD R8,#01H
+        MOVB [R5],RL4
+        JMPR cc_UC,L_A33AA
+L_A3384:                 ; 0xa3384
+        MOVB RL4,#00H
+        MOV R5,R8
+        ADD R8,#01H
+        MOVB [R5],RL4
+        MOV R5,R8
+        ADD R8,#01H
+        MOVB [R5],RL4
+        MOV R5,R8
+        ADD R8,#01H
+        MOVB [R5],RL4
+        MOV R5,R8
+        ADD R8,#01H
+        MOVB [R5],RL4
+        MOV R5,R8
+        ADD R8,#01H
+        MOVB [R5],RL4
+        MOV R5,R8
+        ADD R8,#01H
+        MOVB [R5],RL4
+L_A33AA:                 ; 0xa33aa
+        MOVB RL7,obd_ff_iga
+        CMPB RL7,#DATA16 00017H
+        JMPR cc_NC,L_A33B8
+        MOVB RL7,#DATA16 00017H
+L_A33B8:                 ; 0xa33b8
+        MOVBZ R12,RL7
+        MOV R13,#DATA16 000C0H
+        CALLS 00FH,Ret_Const_fe0f
+        MOVBZ R13,RL4
+        MOV R12,#DATA16 00110H
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV R5,R8
+        ADD R8,#01H
+        MOVB [R5],RL4
+        MOVBZ R12,obd_ff_tia
+        CALLS 00EH,OBD_Scale_Temp
+        MOV R5,R8
+        ADD R8,#01H
+        MOVB [R5],RL4
+        MOV R12,obd_ff_maf
+        MOV R13,#DATA16 000DEH
+        CALLS 00FH,Read_MulDiv_MD
+        MOV R9,R4
+        SHR R4,#08H
+        MOV R5,R8
+        ADD R8,#01H
+        MOVB [R5],RL4
+        MOV R4,R9
+        MOV R5,R8
+        ADD R8,#01H
+        MOVB [R5],RL4
+        MOV R4,R8
+        ADD R8,#01H
+        MOVB [R4],obd_ff_tps_raw
+        MOVB RL6,#DATA16 00012H
+        JMPR cc_UC,L_A3416
+L_A340C:                 ; 0xa340c
+        MOVB RL6,#DATA16 000FEH
+        JMPR cc_UC,L_A3416
+L_A3412:                 ; 0xa3412
+        MOVB RL6,#DATA16 000FFH
+L_A3416:                 ; 0xa3416
+        MOVB RL4,RL6
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        ADD R0,#02H
+        RETS
+
+S_A2DDA ENDS
+        END

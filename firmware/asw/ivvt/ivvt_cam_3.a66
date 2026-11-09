@@ -1,0 +1,256 @@
+; asw/ivvt/ivvt_cam_3.a66
+; 0xC1DEC-0xC2026  (570 bytes, 9 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+lc_ena_dly_mes_clc_ivvt              EQU  09045DH
+
+PUBLIC  IVVT_CamSp_Group, IVVT_Diag_Group, IVVT_MesStep_Start, IVVT_MesStep_Tick, IVVT_Reset_CamSp, IVVT_Rev_Clc_Tick
+PUBLIC  IVVT_Save_CamDif, IVVT_Task_Group_1, IVVT_Task_Group_2
+EXTERN  Calc_Cam_Dif:NEAR, Calc_Cam_Sp_AFL:NEAR, Calc_Cam_Sp_Add:NEAR, Calc_Cam_Sp_Add_2:NEAR
+EXTERN  Calc_Cam_Sp_Clc:NEAR, Calc_Cam_Sp_Ctl:NEAR, Calc_IVVT_CamAd_Hold:NEAR, Calc_IVVT_CamAd_Pos:NEAR
+EXTERN  Calc_IVVT_CamSp_Add:NEAR, Calc_IVVT_CamSp_Clc_2:NEAR, Calc_IVVT_CamSp_Fac:NEAR, Calc_IVVT_Delay:NEAR
+EXTERN  Calc_IVVT_HPWM_Adapt:NEAR, Calc_IVVT_HPWM_Base:NEAR, Calc_IVVT_HPWM_Freq:NEAR, Calc_IVVT_PWM_Freq:NEAR
+EXTERN  Calc_IVVT_PWM_Freq_2:NEAR, Calc_RBM_CamDif_IVVT:NEAR, Calc_TMag_IVVT:NEAR, Calc_TMag_IVVT_Slv:NEAR
+EXTERN  Calc_fac_vvt_1:NEAR, Ctl_IVVT_OCV_PWM:NEAR, Diag_DTC_dd610:NEAR, Diag_IVVT_CamDif_Inci:NEAR
+EXTERN  Diag_IVVT_Elec_Slv:NEAR, Diag_IVVT_Mec_Eval:NEAR, Diag_IVVT_ShortTrip:NEAR, Get_Byte_2D_Table_DWord_YByte:NEAR
+EXTERN  IVVT_CamAd_State:NEAR, IVVT_CamMeas_Dispatch:NEAR, IVVT_MesStep_a:NEAR, IVVT_MesStep_b:NEAR
+EXTERN  IVVT_MesStep_c:NEAR, IVVT_MesStep_d:NEAR, IVVT_MesStep_e:NEAR, IVVT_OCV_CleanSlv:NEAR
+EXTERN  IVVT_OCV_Meas_1:NEAR, IVVT_OCV_Meas_2:NEAR, IVVT_Set_Inhibit:NEAR, IVVT_Set_RamPtr_1:NEAR
+EXTERN  IVVT_Set_RamPtr_2:NEAR, IVVT_Set_RamPtr_3:NEAR, IVVT_Set_RamPtrs:NEAR, IVVT_State_Transition:NEAR
+EXTERN  Nop_aef6c:NEAR, Nop_b4872:NEAR, Nop_c1650:NEAR, Nop_c1652:NEAR
+EXTERN  Reset_sVar1_874:NEAR, Reset_state_ivvt_4c0:NEAR, Reset_uVar1_4a2:NEAR, Set_IVVT_PWM_State:NEAR
+EXTERN  Set_Idx_Cam_Ad:NEAR, Set_cam_dif_int_save_ivvt_in_1_07e:NEAR, Set_ctr_cyc_cle_slv_ivvt_f22:NEAR, Set_lv_cam_ad_avl_nvmy_ivvt:NEAR
+EXTERN  Snapshot_MAF_IVVT:NEAR
+
+S_C1DEC SECTION CODE AT 0C1DECH
+
+; ======== IVVT_Task_Group_1  (@0xc1dec) ========
+        ; ------------------------------------------------------------
+        ; See ivvt_cam_t (/ems). Sets p_ivvt_cam_m=0xcada, p_ivvt_cam_s=0xcbca then runs per-cam workers.
+        ; Fields via (base+off & 0x3fff)+0x90000.
+        ; ------------------------------------------------------------
+IVVT_Task_Group_1:
+        CALLS 00AH,IVVT_Set_Inhibit
+        CALLS 00BH,Calc_TMag_IVVT
+        CALLS 00CH,Diag_IVVT_CamDif_Inci
+        CALLS 00AH,Set_ctr_cyc_cle_slv_ivvt_f22
+        CALLS 00BH,Calc_Cam_Sp_Add
+        CALLS 00AH,Calc_Cam_Sp_Clc
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_C1E46
+        MOV R4,#DATA16 0CBCAH
+        MOV p_ivvt_cam_s,R4
+        MOV R5,#DATA16 0CADAH
+        MOV p_ivvt_cam_m,R5
+        CALLS 00BH,IVVT_MesStep_d
+        CALLS 00AH,IVVT_MesStep_c
+        CALLS 00AH,IVVT_MesStep_a
+        MOV R12,#DATA16 04574H
+        CALLS 00AH,Nop_aef6c
+        MOV R12,#DATA16 045B4H
+        CALLS 00BH,Calc_IVVT_PWM_Freq
+        CALLS 00BH,IVVT_Set_RamPtr_2
+        MOV R12,#DATA16 04778H
+        CALLS 00BH,Set_Idx_Cam_Ad
+        CALLS 00BH,IVVT_Set_RamPtr_3
+L_C1E46:                 ; 0xc1e46
+        RETS
+
+; ======== IVVT_CamSp_Group  (@0xc1e48) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IVVT_CamSp_Group:
+        CALLS 00AH,Reset_uVar1_4a2
+        CALLS 00BH,Nop_b4872
+        CALLS 00BH,Calc_IVVT_CamSp_Add
+        RETS
+
+; ======== IVVT_Reset_CamSp  (@0xc1e56) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IVVT_Reset_CamSp:
+        MOVB ctr_rev_clc_ivvt,ZEROS
+        MOV t_dly_mes_ivvt,ZEROS
+        CALLS 00AH,Reset_state_ivvt_4c0
+        CALLS 00AH,Calc_IVVT_CamSp_Clc_2
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_C1E8C
+        MOV R4,#DATA16 0CBCAH
+        MOV p_ivvt_cam_s,R4
+        MOV R5,#DATA16 0CADAH
+        MOV p_ivvt_cam_m,R5
+        CALLS 00BH,IVVT_MesStep_e
+        CALLS 00AH,Set_IVVT_PWM_State
+        CALLS 00AH,IVVT_MesStep_b
+        CALLS 00BH,Reset_sVar1_874
+L_C1E8C:                 ; 0xc1e8c
+        RETS
+
+; ======== IVVT_Save_CamDif  (@0xc1e8e) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IVVT_Save_CamDif:
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_C1EB0
+        MOV R4,#DATA16 0CBCAH
+        MOV p_ivvt_cam_s,R4
+        MOV R5,#DATA16 0CADAH
+        MOV p_ivvt_cam_m,R5
+        CALLS 00BH,IVVT_Set_RamPtr_1
+        MOV R12,#DATA16 04778H
+        CALLS 00BH,IVVT_Set_RamPtrs
+L_C1EB0:                 ; 0xc1eb0
+        CALLS 00BH,Set_cam_dif_int_save_ivvt_in_1_07e
+        RETS
+
+; ======== IVVT_Task_Group_2  (@0xc1eb6) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IVVT_Task_Group_2:
+        CALLS 00AH,Calc_IVVT_CamSp_Fac
+        CALLS 00AH,Calc_IVVT_HPWM_Base
+        CALLS 00BH,Calc_TMag_IVVT_Slv
+        CALLS 00CH,Nop_c1652
+        CALLS 00CH,Calc_RBM_CamDif_IVVT
+        RETS
+
+; ======== IVVT_MesStep_Tick  (@0xc1ecc) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+IVVT_MesStep_Tick:
+        SUB t_dly_mes_ivvt,ONES
+        CALLS 00AH,IVVT_OCV_CleanSlv
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_C1EEE
+        MOV R4,#DATA16 0CBCAH
+        MOV p_ivvt_cam_s,R4
+        MOV R5,#DATA16 0CADAH
+        MOV p_ivvt_cam_m,R5
+        CALLS 00BH,Calc_IVVT_HPWM_Freq
+L_C1EEE:                 ; 0xc1eee
+        RETS
+
+; ======== IVVT_Diag_Group  (@0xc1ef0) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IVVT_Diag_Group:
+        CALLS 00CH,Diag_IVVT_Mec_Eval
+        CALLS 00CH,Diag_IVVT_Elec_Slv
+        CALLS 00CH,Nop_c1650
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_C1F22
+        MOV R4,#DATA16 0CADAH
+        MOV p_ivvt_cam_m,R4
+        MOV R12,#DATA16 04794H
+        CALLS 00BH,Diag_DTC_dd610
+        MOV R4,#DATA16 0CBCAH
+        MOV p_ivvt_cam_s,R4
+        MOV R12,#DATA16 045B4H
+        CALLS 00BH,Calc_IVVT_PWM_Freq_2
+L_C1F22:                 ; 0xc1f22
+        RETS
+
+; ======== IVVT_Rev_Clc_Tick  (@0xc1f24) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by ivvt/cam output signals + DTC): Per-rev IVVT clc tick: ctr_rev_clc_ivvt
+        ; counter -> sets lv_cam_ad_avl_nvmy_ivvt when due; triggers cam-ad NVM.
+        ; ------------------------------------------------------------
+IVVT_Rev_Clc_Tick:
+        SUBB ctr_rev_clc_ivvt,ONES
+        MOV R12,#DATA16 04A12H
+        MOVBZ R13,n_32
+        CALLS 00FH,Get_Byte_2D_Table_DWord_YByte
+        CMPB RL4,ctr_rev_clc_ivvt
+        JMPR cc_UGT,L_C1F42
+        BSET lv_cam_ad_avl_nvmy_ivvt.04H
+        MOVB ctr_rev_clc_ivvt,ZEROS
+        JMPR cc_UC,L_C1F44
+L_C1F42:                 ; 0xc1f42
+        BCLR lv_cam_ad_avl_nvmy_ivvt.04H
+L_C1F44:                 ; 0xc1f44
+        JNB lv_cam_ad_avl_nvmy_ivvt.04H,L_C1F4C
+        CALLS 00CH,Snapshot_MAF_IVVT
+L_C1F4C:                 ; 0xc1f4c
+        CALLS 00AH,IVVT_State_Transition
+        JNB lv_cam_ad_avl_nvmy_ivvt.04H,L_C1F68
+        CALLS 00BH,Calc_Cam_Sp_AFL
+        CALLS 00BH,Calc_Cam_Sp_Add_2
+        CALLS 00AH,Calc_Cam_Sp_Ctl
+        CALLS 00BH,Calc_IVVT_Delay
+        CALLS 00CH,Calc_Cam_Dif
+L_C1F68:                 ; 0xc1f68
+        CALLS 00CH,Diag_IVVT_ShortTrip
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_C1F8A
+        MOV R4,#DATA16 0CBCAH
+        MOV p_ivvt_cam_s,R4
+        MOV R5,#DATA16 0CADAH
+        MOV p_ivvt_cam_m,R5
+        MOV R12,#DATA16 04794H
+        CALLS 00BH,IVVT_CamMeas_Dispatch
+L_C1F8A:                 ; 0xc1f8a
+        MOV R4,state_ivvt
+        CMP R4,#03H
+        JMPR cc_NE,L_C1FCA
+        JNB lv_diag_trip_avl_ivvt.0FH,L_C1FCA
+        MOVB RL4,#DATA16 00042H
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_C1FCA
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_C1FCA:                 ; 0xc1fca
+        RETS
+
+; ======== IVVT_MesStep_Start  (@0xc1fcc) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IVVT_MesStep_Start:
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_C2024
+        MOV R4,#DATA16 0CBCAH
+        MOV p_ivvt_cam_s,R4
+        MOV R5,#DATA16 0CADAH
+        MOV p_ivvt_cam_m,R5
+        MOV R12,#DATA16 04778H
+        CALLS 00BH,Calc_IVVT_CamAd_Pos
+        CALLS 00CH,Set_lv_cam_ad_avl_nvmy_ivvt
+        MOV R12,#DATA16 04588H
+        CALLS 00AH,Ctl_IVVT_OCV_PWM
+        MOV R12,#DATA16 0454CH
+        CALLS 00AH,Calc_IVVT_CamAd_Hold
+        MOV R12,#DATA16 04574H
+        CALLS 00AH,Calc_IVVT_HPWM_Adapt
+        CALLS 00BH,IVVT_CamAd_State
+        MOV R12,#DATA16 045B4H
+        CALLS 00BH,IVVT_OCV_Meas_2
+        CALLS 00CH,Calc_fac_vvt_1
+        MOVB RL4,DPP0:lc_ena_dly_mes_clc_ivvt
+        JMPR cc_EQ,L_C2024
+        MOV R12,#DATA16 045B0H
+        CALLS 00BH,IVVT_OCV_Meas_1
+L_C2024:                 ; 0xc2024
+        RETS
+
+S_C1DEC ENDS
+        END

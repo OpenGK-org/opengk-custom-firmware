@@ -1,0 +1,200 @@
+; asw/sys/sys_adcint.a66
+; 0xA8368-0xA8536  (462 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  ADCINT_handler, CC10INT_handler, CC17INT_handler, CC22INT_handler
+
+S_A8368 SECTION CODE AT 0A8368H
+
+; ======== ADCINT_handler  (@0xa8368) ========
+ADCINT_handler:
+        SCXT CP,#DATA16 0FC00H
+        BCLR ADCON.07H
+        MOV R0,ADDAT_FEA0
+        SHR R0,#0BH
+        BCLR R0.00H
+        JNB lv_err_com_resp_imob.0BH,L_A83BA
+        BCLR lv_err_com_resp_imob.0BH
+        CMPB RL0,#DATA16 0000EH
+        JMPR cc_NE,L_A83BA
+        ATOMIC #02H
+        MOVBZ R1,capcom_6
+        MOVB capcom_6,ZEROS
+L_A838C:                 ; 0xa838c
+        CMP R1,#00H
+        JMPR cc_EQ,L_A83BA
+        PRIOR R2,R1
+        NEG R2
+        ADD R2,#DATA16 0000FH
+        MOV R3,#01H
+        SHL R3,R2
+        XOR R1,R3
+        SHL R2,#01H
+        MOV R3,ADDAT_FEA0
+        AND R3,#DATA16 003FFH
+        MOV [R2+#0FAFEH],R3
+        SHR R2,#01H
+        MOVB RL3,[R2+#0F5E2H]
+        ADDB RL3,#01H
+        MOVB [R2+#0F5E2H],RL3
+        JMPR cc_UC,L_A838C
+L_A83BA:                 ; 0xa83ba
+        ADD R0,#DATA16 0FA6AH
+        MOV [R0],ADDAT_FEA0
+        JNB lv_err_com_resp_imob.0AH,L_A83EA
+        MOV R1,capcom_11
+        AND R1,#DATA16 05800H
+        PRIOR R0,R1
+        MOV R1,#DATA16 07FFFH
+        ROR R1,R0
+        AND R1,#DATA16 05800H
+        AND capcom_11,R1
+        BMOVN lv_err_com_resp_imob.0AH,PSW.03H
+        BSET lv_err_com_resp_imob.0BH
+        MOVB RL0,[R0+#064AEH]
+        JMPR cc_UC,L_A83FC
+L_A83EA:                 ; 0xa83ea
+        MOVBZ R0,adc_ch_sel
+        JMPR cc_NE,L_A83F4
+        BSET lv_err_com_resp_imob.09H
+        JMPR cc_UC,L_A8406
+L_A83F4:                 ; 0xa83f4
+        MOVB RL0,[R0+#064A1H]
+        ADDB adc_ch_sel,ONES
+L_A83FC:                 ; 0xa83fc
+        OR R0,#DATA16 00080H
+        MOV ADCON_FFA0,R0
+        BCLR lv_err_com_resp_imob.09H
+L_A8406:                 ; 0xa8406
+        POP CP
+        RETI
+
+; ======== CC10INT_handler  (@0xa840a) ========
+CC10INT_handler:
+        SCXT CP,#DATA16 0FC08H
+        NOP
+        EXTR #01H
+        BFLDL 0F162H,#040H,#00H
+        BFLDL 0FF22H,#0F0H,#00H
+        MOV R0,T8_F052
+        ADD R0,#DATA16 0101DH
+        MOV CC17_FE62,R0
+        EXTR #01H
+        BFLDL 0F162H,#0FFH,#048H
+        BFLDL 0FF22H,#0F0H,#0E0H
+        BCLR P3.0CH
+        BCLR lv_err_com_resp_imob.04H
+        POP CP
+        RETI
+
+; ======== CC17INT_handler  (@0xa8438) ========
+CC17INT_handler:
+        SCXT CP,#DATA16 0FC0AH
+        NOP
+        JNBS lv_err_com_resp_imob.04H,L_A844C
+        EXTR #01H
+        BFLDL 0F162H,#040H,#00H
+        BCLR P2.09H
+        JMPR cc_UC,L_A8470
+L_A844C:                 ; 0xa844c
+        BFLDL 0FF22H,#0F0H,#00H
+        MOV R0,T8_F052
+        ADD R0,#06H
+        MOV CC17_FE62,R0
+        BFLDL 0FF22H,#0F0H,#0E0H
+        BSET P3.0CH
+        BSET P2.09H
+        CMP CC17,T8_F052
+        JMPR cc_EQ,L_A846A
+        JMPR cc_NN,L_A8470
+L_A846A:                 ; 0xa846a
+        EXTR #01H
+        BFLDL 0F162H,#080H,#080H
+L_A8470:                 ; 0xa8470
+        POP CP
+        RETI
+
+; ======== CC22INT_handler  (@0xa8474) ========
+CC22INT_handler:
+        SCXT CP,#DATA16 0FC0CH
+        NOP
+        BFLDH CCM5_FF24,#0FH,#00H
+        MOVB RL0,capcom_7
+        MOVB RH0,RL0
+        ANDB RL0,#0FFH
+        JMPR cc_EQ,L_A84A2
+        ORB capcom_6,RL0
+        MOV R1,#DATA16 01000H
+        ATOMIC #02H
+        OR capcom_11,R1
+        BSET lv_err_com_resp_imob.0AH
+        ATOMIC #02H
+        JNB lv_err_com_resp_imob.09H,L_A84A2
+        BSET ADCIC.07H
+L_A84A2:                 ; 0xa84a2
+        MOV R0,#00H
+        MOVB capcom_7,RL0
+        MOVB capcom_8,ONES
+L_A84AC:                 ; 0xa84ac
+        MOVB RL1,[R0+#04500H]
+        MOVB RH1,[R0+#0F5DEH]
+        ADDB RL1,RH1
+        MOVB RH1,#00H
+        CMP R1,#DATA16 00078H
+        JMPR cc_ULE,L_A84C2
+        SUB R1,#DATA16 00078H
+L_A84C2:                 ; 0xa84c2
+        SUB R1,CC22_FE6C
+        JMPR cc_EQ,L_A84EE
+        CMP R1,#00H
+        JMPR cc_SGE,L_A84D0
+        ADD R1,#DATA16 00078H
+L_A84D0:                 ; 0xa84d0
+        CMPB RL1,capcom_8
+        JMPR cc_UGT,L_A84EE
+        JMPR cc_C,L_A84E2
+        MOV R2,#01H
+        SHL R2,R0
+        ORB capcom_7,RL2
+        JMPR cc_UC,L_A84EE
+L_A84E2:                 ; 0xa84e2
+        MOV R2,#01H
+        SHL R2,R0
+        MOVB capcom_7,RL2
+        MOVB capcom_8,RL1
+L_A84EE:                 ; 0xa84ee
+        CMPI1 R0,#03H
+        JMPR cc_C,L_A84AC
+        BFLDH CCM5_FF24,#0FH,#06H
+        CMPB ONES,capcom_8
+        JMPR cc_NE,L_A8504
+        MOVB RL2,#0FH
+        MOVB capcom_7,RL2
+        JMPR cc_UC,L_A8532
+L_A8504:                 ; 0xa8504
+        MOV R1,CC22_FE6C
+        MOVBZ R0,capcom_8
+        ADD CC22_FE6C,R0
+        CMP CC22,#DATA16 00078H
+        JMPR cc_ULE,L_A851A
+        SUB CC22,#DATA16 00078H
+L_A851A:                 ; 0xa851a
+        SUB R1,T7_F050
+        NEG R1
+        CMP R1,#00H
+        JMPR cc_SGE,L_A8528
+        ADD R1,#DATA16 00078H
+L_A8528:                 ; 0xa8528
+        CMP R1,R0
+        JMPR cc_C,L_A8532
+        EXTR #01H
+        BFLDL 0F16CH,#080H,#080H
+L_A8532:                 ; 0xa8532
+        POP CP
+        RETI
+
+S_A8368 ENDS
+        END

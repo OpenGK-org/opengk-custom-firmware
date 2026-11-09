@@ -1,0 +1,366 @@
+; asw/imob/imob_warn.a66
+; 0xBD732-0xBDA48  (790 bytes, 7 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_dly_secu_2_imob                    EQU  090197H
+c_dly_secu_a_imob                    EQU  090198H
+c_ign_dly_imob                       EQU  0901E4H
+c_key_fast_max1_imob                 EQU  090200H
+c_key_fast_max2_imob                 EQU  090201H
+c_key_fast_min2_imob                 EQU  090202H
+c_max_ack_imob                       EQU  09023AH
+c_max_dly_act_imob                   EQU  09023BH
+
+PUBLIC  Imob_DTC_update_comms, Imob_Ign_Delay, Imob_SetFmy_2, Imob_Update_WarnLamp, Imob_WarnLamp_Dly, SMARTRA_auth_begin
+PUBLIC  SMARTRA_auth_post_update
+EXTERN  DTC_Update_Immediate:NEAR
+
+S_BD732 SECTION CODE AT 0BD732H
+
+; ======== Imob_DTC_update_comms  (@0xbd732) ========
+        ; Immobilizer comms DTC updater. Derives dtc_test_result from lv_fmy_imob / imob_bw fault bits
+        ; (0x20->1, imob_bw&0x800->4, 0x10/0x4000->8) and logs DTC 0xD530 (SMARTRA comms-line fault) via
+        ; DTC_Update_Immediate.
+Imob_DTC_update_comms:
+        JNB lv_fmy_imob.05H,L_BD73C
+        MOVB RL4,#01H
+        MOVB dtc_test_result,RL4
+L_BD73C:                 ; 0xbd73c
+        JNB imob_bw.0BH,L_BD746
+        MOVB RL4,#04H
+        MOVB dtc_test_result,RL4
+L_BD746:                 ; 0xbd746
+        JB lv_fmy_imob.04H,L_BD74E
+        JNB lv_fmy_imob.0EH,L_BD754
+L_BD74E:                 ; 0xbd74e
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+L_BD754:                 ; 0xbd754
+        MOV R12,#DATA16 0D530H
+        MOV R13,#DATA16 0590EH
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_can_bus_off_err.00H,dtc_status_work.06H
+        MOVBZ R4,imob_d53a
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BD776
+        MOV R4,#DATA16 0FFFEH
+        AND dtc_st_grp_can,R4
+L_BD776:                 ; 0xbd776
+        RETS
+
+; ======== SMARTRA_auth_begin  (@0xbd778) ========
+        ; Immobilizer auth (re)start. Resets ans_err_com_imob/key_state_imob, loads activity timers
+        ; (c_max_dly_act_imob -> DAT_00c291, c_max_ack_imob), clears key work bytes c28b..c28e, sets
+        ; smartra_proto_step=1 and initial smartra_cmd. Entry to the SMARTRA handshake each key-on. Gated on
+        ; lv_conf_mis&0x100.
+SMARTRA_auth_begin:
+        JB lv_conf_mis.08H,L_BD780
+        JMPA cc_UC,L_BD84E
+L_BD780:                 ; 0xbd780
+        MOVB RL4,imob_sdr_ctr
+        CMPB RL4,#01H
+        JMPR cc_NE,L_BD79E
+        MOVB RL5,imob_c295
+        MOVB imob_c296,RL5
+        BSET lv_er_carb_b4.00H
+        BCLR lv_fmy_imob.0FH
+        MOVB imob_c297,ZEROS
+        MOVB imob_c295,ZEROS
+        JMPR cc_UC,L_BD7A2
+L_BD79E:                 ; 0xbd79e
+        MOVB diag_c283,ZEROS
+L_BD7A2:                 ; 0xbd7a2
+        JNB lv_fmy_imob.01H,L_BD7A8
+        BCLR imob_bw.02H
+L_BD7A8:                 ; 0xbd7a8
+        MOVB RL4,DPP0:c_dly_secu_a_imob
+        MOVB imob_c298,RL4
+        BCLR lv_fmy_imob.0DH
+        JB lv_ecu_err.0FH,L_BD7BE
+        JB imob_bw.0BH,L_BD7BE
+        JNB lv_im_acin.03H,L_BD7C8
+L_BD7BE:                 ; 0xbd7be
+        JB lv_fmy_imob.0CH,L_BD7C8
+        JB imob_bw.02H,L_BD7C8
+        BSET imob_bw.09H
+L_BD7C8:                 ; 0xbd7c8
+        MOV R4,imob_ca44
+        CMP R4,#00H
+        JMPR cc_ULE,L_BD7D6
+        MOV R5,#01H
+        MOV g_f974,R5
+L_BD7D6:                 ; 0xbd7d6
+        MOVB RL4,imob_data_ram_state_imob
+        CMPB RL4,#02H
+        JMPR cc_NE,L_BD7F6
+        MOVB RL5,imob_c292
+        JMPR cc_EQ,L_BD7F6
+        CMPB RL5,DPP0:c_key_fast_min2_imob
+        JMPR cc_ULE,L_BD7F2
+        CMPB RL5,DPP0:c_key_fast_max2_imob
+        JMPR cc_NC,L_BD7F2
+        BSET lv_fmy_imob.09H
+L_BD7F2:                 ; 0xbd7f2
+        MOVB imob_c292,ZEROS
+L_BD7F6:                 ; 0xbd7f6
+        BCLR lv_fmy_imob.0AH
+        MOVB ans_err_com_imob,ZEROS
+        BCLR lv_fmy_imob.0BH
+        MOVB RL4,DPP0:c_max_ack_imob
+        MOVB imob_c28f,RL4
+        MOVB imob_new_key0,ZEROS
+        MOVB imob_new_key1,ZEROS
+        MOVB imob_new_key2,ZEROS
+        MOVB imob_new_key3,ZEROS
+        BCLR lv_fmy_imob.00H
+        BCLR lv_carb_err.0FH
+        MOVB RL5,imob_ca2a
+        CMPB RL5,#01H
+        JMPR cc_NE,L_BD834
+        MOV R12,#00H
+        CALLS 00BH,Imob_Update_WarnLamp
+        MOVB imob_ca2a,ZEROS
+        MOVB smartra_cmd,ZEROS
+        BSET imob_bw.08H
+        JMPR cc_UC,L_BD83C
+L_BD834:                 ; 0xbd834
+        MOVB RL4,#01H
+        MOVB smartra_cmd,RL4
+        BCLR imob_bw.0AH
+L_BD83C:                 ; 0xbd83c
+        MOVB key_state_imob,ZEROS
+        MOVB RL4,#01H
+        MOVB smartra_proto_step,RL4
+        MOVB RL5,DPP0:c_max_dly_act_imob
+        MOVB imob_resp_ready,RL5
+L_BD84E:                 ; 0xbd84e
+        RETS
+
+; ======== SMARTRA_auth_post_update  (@0xbd850) ========
+        ; Immobilizer post-auth bookkeeping. Updates SDR event counters (imob_data_ram_ctr_sdr_1..4), drives
+        ; the warn lamp (Imob_Update_WarnLamp), applies the fast-key timing window (c_key_fast_max1/2_imob),
+        ; sets security-delay/limp bits in imob_bw and cleans up lv_fmy_imob. Runs after an auth attempt
+        ; resolves. Gated on lv_conf_mis&0x100.
+SMARTRA_auth_post_update:
+        JNB lv_conf_mis.08H,L_BD8FA
+        MOVB RL4,imob_c295
+        MOVB imob_c297,RL4
+        BSET lv_fmy_imob.0FH
+        BCLR lv_er_carb_b4.00H
+        MOVB imob_c296,ZEROS
+        MOVB imob_c295,ZEROS
+        BCLR imob_bw.04H
+        BCLR lv_fmy_imob.09H
+        MOVB RL5,imob_data_ram_state_imob
+        CMPB RL5,#02H
+        JMPR cc_NE,L_BD8A4
+        MOVB RL3,imob_ca2a
+        JMPR cc_NE,L_BD8A4
+        MOVB RL2,imob_c292
+        CMPB RL2,DPP0:c_key_fast_max1_imob
+        JMPR cc_UGT,L_BD8A0
+        MOVB imob_c292,ZEROS
+        MOVBZ R12,DPP0:c_key_fast_max2_imob
+        MOV R4,#0AH
+        MOV 0FE0EH,R12
+        DIVU R4
+        MOV R12,0FE0EH
+        ADD R12,#02H
+        CALLS 00BH,Imob_Update_WarnLamp
+        JMPR cc_UC,L_BD8A4
+L_BD8A0:                 ; 0xbd8a0
+        MOVB imob_c292,ONES
+L_BD8A4:                 ; 0xbd8a4
+        JNB imob_bw.08H,L_BD8B2
+        MOVB RL4,smartra_cmd
+        JMPR cc_NE,L_BD8B2
+        SUB imob_data_ram_ctr_sdr_1_imob,ONES
+L_BD8B2:                 ; 0xbd8b2
+        MOVB RL4,ans_err_com_imob
+        JMPR cc_EQ,L_BD8BC
+        SUB imob_data_ram_ctr_sdr_2_imob,ONES
+L_BD8BC:                 ; 0xbd8bc
+        SUB imob_data_ram_ctr_sdr_3_imob,ONES
+        MOVB RL4,key_state_imob
+        CMPB RL4,#02H
+        JMPR cc_NE,L_BD8D0
+        JNB lv_fmy_imob.00H,L_BD8D0
+        SUB imob_data_ram_ctr_sdr_4_imob,ONES
+L_BD8D0:                 ; 0xbd8d0
+        BCLR lv_fmy_imob.0CH
+        MOVB RL4,imob_data_ram_state_imob
+        CMPB RL4,#01H
+        JMPR cc_NE,L_BD8F6
+        JNB imob_bw.01H,L_BD8F6
+        MOVB RL5,imob_ca2a
+        JMPR cc_NE,L_BD8F6
+        BSET imob_bw.02H
+        MOVB imob_c290,ZEROS
+        MOVBZ R12,DPP0:c_dly_secu_2_imob
+        ADD R12,#02H
+        CALLS 00BH,Imob_Update_WarnLamp
+        JMPR cc_UC,L_BD8F8
+L_BD8F6:                 ; 0xbd8f6
+        BSET imob_bw.08H
+L_BD8F8:                 ; 0xbd8f8
+        BCLR lv_fmy_imob.0DH
+L_BD8FA:                 ; 0xbd8fa
+        RETS
+
+; ======== Imob_Update_WarnLamp  (@0xbd8fc) ========
+        ; Imob_Update_WarnLamp(code): immobilizer warning-lamp/block-word state. code==0 clears imob_bw bit3
+        ; and (if lv_fmy_imob bit3 set) decrements pwl_dly_ctr and clears the flag. code!=0 latches max(code)
+        ; into DAT_00ca46, sets imob_bw bit3, and on rising edge increments pwl_dly_ctr (warn-lamp delay
+        ; counter).
+Imob_Update_WarnLamp:
+        CMP R12,#00H
+        JMPR cc_ULE,L_BD918
+        CMP R12,lv_lam_ca46
+        JMPR cc_ULE,L_BD90A
+        MOV lv_lam_ca46,R12
+L_BD90A:                 ; 0xbd90a
+        BSET imob_bw.03H
+        JB lv_fmy_imob.03H,L_BD92C
+        SUBB pwl_dly_ctr,ONES
+        BSET lv_fmy_imob.03H
+        RETS
+L_BD918:                 ; 0xbd918
+        BCLR imob_bw.03H
+        JNB lv_fmy_imob.03H,L_BD92C
+        MOVB RL4,pwl_dly_ctr
+        JMPR cc_EQ,L_BD92A
+        SUBB RL4,#01H
+        MOVB pwl_dly_ctr,RL4
+L_BD92A:                 ; 0xbd92a
+        BCLR lv_fmy_imob.03H
+L_BD92C:                 ; 0xbd92c
+        RETS
+
+; ======== Imob_WarnLamp_Dly  (@0xbd92e) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Imob_WarnLamp_Dly:
+        MOV R4,lv_lam_ca46
+        JMPR cc_NE,L_BD93C
+        MOV R12,#00H
+        CALLS 00BH,Imob_Update_WarnLamp
+        RETS
+L_BD93C:                 ; 0xbd93c
+        ADD lv_lam_ca46,ONES
+        RETS
+
+; ======== Imob_SetFmy_2  (@0xbd942) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by imob/smartra output signals): Set immobilizer family/learn flag lv_fmy_imob
+        ; (variant).
+        ; ------------------------------------------------------------
+Imob_SetFmy_2:
+        MOV R4,imob_ca44
+        CMP R4,#00H
+        JMPR cc_ULE,L_BD9C2
+        JNB can_fd58.09H,L_BD9C2
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_BD9C2
+        JNB lv_fmy_imob.06H,L_BD998
+        AND R4,#01H
+        JMPR cc_EQ,L_BD978
+        JB state_out_req.0AH,L_BD974
+        MOV R4,imob_pwm_base
+        MOV R2,#00H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV imob_f9de,R4
+L_BD974:                 ; 0xbd974
+        BCLR lv_fmy_imob.08H
+        JMPR cc_UC,L_BD9B6
+L_BD978:                 ; 0xbd978
+        JB state_out_req.0AH,L_BD994
+        MOV R4,imob_pwm_base
+        MOV R2,#DATA16 0FF5CH
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV imob_f9de,R4
+L_BD994:                 ; 0xbd994
+        BSET lv_fmy_imob.08H
+        JMPR cc_UC,L_BD9B6
+L_BD998:                 ; 0xbd998
+        JB state_out_req.0AH,L_BD9B4
+        MOV R4,imob_pwm_base
+        MOV R2,#DATA16 0FF5CH
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV imob_f9de,R4
+L_BD9B4:                 ; 0xbd9b4
+        BSET lv_fmy_imob.08H
+L_BD9B6:                 ; 0xbd9b6
+        ADD imob_ca44,ONES
+        MOV R4,#05H
+        MOV g_f974,R4
+        RETS
+L_BD9C2:                 ; 0xbd9c2
+        JB state_out_req.0AH,L_BD9DC
+        MOV R4,imob_pwm_base
+        MOV R2,#00H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV imob_f9de,R4
+L_BD9DC:                 ; 0xbd9dc
+        BCLR lv_fmy_imob.08H
+        RETS
+
+; ======== Imob_Ign_Delay  (@0xbd9e0) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Imob_Ign_Delay:
+        MOV R4,#01H
+        MOV lv_imob_init_done,R4
+        JNB imob_bw.08H,L_BDA32
+        MOVB RL4,#0FH
+        MOVB imob_c286,RL4
+        JNB lv_conf_mis.02H,L_BDA06
+        MOVB RL5,inh_iv_as
+        ORB RL5,inh_iv_mis
+        ORB RL5,#DATA16 0000FH
+        MOVB msk_inj_cyl_ok,RL5
+        JMPR cc_UC,L_BDA16
+L_BDA06:                 ; 0xbda06
+        MOVB RL4,inh_iv_as
+        ORB RL4,lv_iga_c2ea
+        ORB RL4,#DATA16 0000FH
+        MOVB msk_inj_cyl_ok,RL4
+L_BDA16:                 ; 0xbda16
+        MOVB RL4,t_ign_dly_imob
+        JMPR cc_NE,L_BDA2C
+        MOVB RL5,imob_data_ram_state_imob
+        CMPB RL5,#03H
+        JMPR cc_EQ,L_BDA46
+        MOVB RL3,#02H
+        ORB lv_sched_diag_inh,RL3
+        RETS
+L_BDA2C:                 ; 0xbda2c
+        ADDB t_ign_dly_imob,ONES
+        RETS
+L_BDA32:                 ; 0xbda32
+        MOVB RL4,DPP0:c_ign_dly_imob
+        MOVB t_ign_dly_imob,RL4
+        MOVB imob_c286,ZEROS
+        MOVB RL5,#DATA16 000FDH
+        ANDB lv_sched_diag_inh,RL5
+L_BDA46:                 ; 0xbda46
+        RETS
+
+S_BD732 ENDS
+        END

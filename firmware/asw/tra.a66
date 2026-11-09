@@ -1,0 +1,1044 @@
+; asw/tra.a66
+; 0xBA410-0xBAFD6  (3014 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_tco_min_t_tra                      EQU  090391H
+c_tia_max_t_tra                      EQU  0903B8H
+c_toil_mdl_ini                       EQU  0903CCH
+c_tps_min_t_tra                      EQU  0903F0H
+c_vs_max_t_tra                       EQU  090432H
+lc_tq_tra_inh                        EQU  090499H
+c_amp_min_t_tra                      EQU  0904BEH
+c_toil_mdl_crlc                      EQU  0907A8H
+c_tq_tra_thd_down_1                  EQU  09094CH
+c_tq_tra_thd_down_2                  EQU  09094EH
+c_tq_tra_thd_up_1                    EQU  090950H
+c_tq_tra_thd_up_2                    EQU  090952H
+c_n_grd_min_t_tra                    EQU  090974H
+c_n_grd_thd_neg                      EQU  090975H
+c_n_grd_thd_pos                      EQU  090976H
+ldpm_gr_at_2                        EQU  0909AEH
+ldpm_gr_mt_2                        EQU  0909B7H
+ldpm_n_110                          EQU  090E04H
+ldp_n_32__toil_mdl             EQU  090F3AH
+ldp_maf__toil_mdl             EQU  090F3FH
+ip_t_inc_tra_4_at                    EQU  09386AH
+ip_t_dec_tra_1_at                    EQU  0961B4H
+ip_t_dec_tra_1_mt                    EQU  0961F4H
+ip_t_dec_tra_2_at                    EQU  096234H
+ip_t_dec_tra_2_mt                    EQU  096274H
+ip_t_dec_tra_3_at                    EQU  0962B4H
+ip_t_dec_tra_3_mt                    EQU  0962F4H
+ip_t_dec_tra_is_at                   EQU  096334H
+ip_t_dec_tra_is_mt                   EQU  096374H
+ip_t_inc_tra_1_at                    EQU  0963C4H
+ip_t_inc_tra_1_mt                    EQU  096404H
+ip_t_inc_tra_2_at                    EQU  096444H
+ip_t_inc_tra_2_mt                    EQU  096484H
+ip_t_inc_tra_3_at                    EQU  0964C4H
+ip_t_inc_tra_3_mt                    EQU  096504H
+ip_t_inc_tra_is_at                   EQU  096544H
+ip_t_inc_tra_is_mt                   EQU  096584H
+ip_toil_mdl__n_32__maf               EQU  096AEAH
+
+PUBLIC  Calc_TOil_Model, Calc_TQ_Req_Tra, Calc_TQ_Tra_Ramp, Init_TOil_Model
+EXTERN  Div_S16_Round_Sat:NEAR, Get_IP_Byte_2D_Table_DWord_YByte:NEAR, Get_IP_Byte_3D_Table:NEAR, Get_IP_Byte_X_Axis:NEAR
+EXTERN  Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_3D_Table:NEAR, Interp_Lin_U32:NEAR, Read_MulDiv_MD:NEAR
+EXTERN  Ret_Const_fe0f:NEAR, Sat_Add_S16:NEAR, Sat_Add_U16:NEAR, Sat_Sub_S16:NEAR
+EXTERN  sub_r12_13_ret_r4:NEAR
+
+S_BA410 SECTION CODE AT 0BA410H
+
+; ======== Calc_TOil_Model  (@0xba410) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Calc_TOil_Model:
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_BA460
+        JB lv_pl.04H,L_BA460
+        MOV R12,#DATA16 POF ldp_n_32__toil_mdl
+        MOV R13,#DATA16 PAG ldp_n_32__toil_mdl
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_maf__toil_mdl
+        MOV R13,#DATA16 PAG ldp_maf__toil_mdl
+        MOVBZ R14,lv_iga_cc2b
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_toil_mdl__n_32__maf
+        MOV R13,#DATA16 PAG ip_toil_mdl__n_32__maf
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R14,RL4
+        SHL R14,#08H
+        MOV R12,g_c980
+        MOV R13,toil_mdl
+        MOV R15,DPP0:c_toil_mdl_crlc
+        CALLS 00FH,Interp_Lin_U32
+        MOV g_c980,R4
+        MOV toil_mdl,R5
+L_BA460:                 ; 0xba460
+        RETS
+
+; ======== Init_TOil_Model  (@0xba462) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Init_TOil_Model:
+        MOV [-R0],R6
+        MOV g_c980,ZEROS
+        MOV toil_mdl,ZEROS
+        MOVBZ R12,tco_st
+        MOV R13,#DATA16 000C0H
+        CALLS 00FH,Ret_Const_fe0f
+        MOVBZ R12,RL4
+        MOV R13,#08H
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB RL6,RL4
+        CMPB RL6,DPP0:c_toil_mdl_ini
+        JMPR cc_C,L_BA492
+        MOVB RL4,DPP0:c_toil_mdl_ini
+        MOVB toil_mdl_byte_3_,RL4
+        JMPR cc_UC,L_BA496
+L_BA492:                 ; 0xba492
+        MOVB toil_mdl_byte_3_,RL6
+L_BA496:                 ; 0xba496
+        MOV R6,[R0+]
+        RETS
+
+; ======== Calc_TQ_Req_Tra  (@0xba49a) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS2000, verified): Torque Transient (state machine driver)
+        ; ------------------------------------------------------------
+Calc_TQ_Req_Tra:
+        MOV [-R0],R9
+        MOV R4,tq_req_tra_state
+        JMPR cc_EQ,L_BA4B2
+        CMP R4,#01H
+        JMPA cc_EQ,L_BA5A4
+        CMP R4,#02H
+        JMPA cc_EQ,L_BA638
+        JMPA cc_UC,L_BA6CA
+L_BA4B2:                 ; 0xba4b2
+        MOV R4,tq_req_clu
+        CMP R4,tq_req_tra_clu
+        JMPA cc_EQ,L_BA6E2
+        MOVB RL4,DPP0:lc_tq_tra_inh
+        JMPR cc_NE,L_BA588
+        BSET lv_carb_err.00H
+        MOV R4,tq_req_clu
+        CMP R4,tq_req_tra_clu
+        JMPR cc_SLE,L_BA52C
+        MOV R5,tq_req_tra_clu
+        CMP R5,DPP0:c_tq_tra_thd_up_1
+        JMPR cc_SGE,L_BA4E2
+        MOV R2,#01H
+        MOV tq_range,R2
+        JMPR cc_UC,L_BA4FA
+L_BA4E2:                 ; 0xba4e2
+        MOV R4,tq_req_tra_clu
+        CMP R4,DPP0:c_tq_tra_thd_up_2
+        JMPR cc_SGE,L_BA4F4
+        MOV R5,#02H
+        MOV tq_range,R5
+        JMPR cc_UC,L_BA4FA
+L_BA4F4:                 ; 0xba4f4
+        MOV R4,#03H
+        MOV tq_range,R4
+L_BA4FA:                 ; 0xba4fa
+        MOV R4,#01H
+        MOV tq_req_tra_state,R4
+        CALLS 00BH,Calc_TQ_Tra_Ramp
+        MOV R4,tq_req_tra_clu
+        CMP R4,tq_req_clu
+        JMPA cc_SLT,L_BA6E2
+        MOV R5,tq_req_clu
+        MOV tq_req_tra_clu,R5
+        MOV R4,tq_req_clu
+        MOV tq_req_tra_old_clu,R4
+        BCLR lv_carb_err.01H
+        BCLR lv_carb_err.00H
+        MOV tq_req_tra_state,ZEROS
+        JMPA cc_UC,L_BA6E2
+L_BA52C:                 ; 0xba52c
+        MOV R4,tq_req_tra_clu
+        CMP R4,DPP0:c_tq_tra_thd_down_1
+        JMPR cc_SGE,L_BA53E
+        MOV R5,#01H
+        MOV tq_range,R5
+        JMPR cc_UC,L_BA556
+L_BA53E:                 ; 0xba53e
+        MOV R4,tq_req_tra_clu
+        CMP R4,DPP0:c_tq_tra_thd_down_2
+        JMPR cc_SGE,L_BA550
+        MOV R5,#02H
+        MOV tq_range,R5
+        JMPR cc_UC,L_BA556
+L_BA550:                 ; 0xba550
+        MOV R4,#03H
+        MOV tq_range,R4
+L_BA556:                 ; 0xba556
+        MOV R4,#02H
+        MOV tq_req_tra_state,R4
+        CALLS 00BH,Calc_TQ_Tra_Ramp
+        MOV R4,tq_req_tra_clu
+        CMP R4,tq_req_clu
+        JMPA cc_SGT,L_BA6E2
+        MOV R5,tq_req_clu
+        MOV tq_req_tra_clu,R5
+        MOV R4,tq_req_clu
+        MOV tq_req_tra_old_clu,R4
+        BCLR lv_carb_err.01H
+        BCLR lv_carb_err.00H
+        MOV tq_req_tra_state,ZEROS
+        JMPA cc_UC,L_BA6E2
+L_BA588:                 ; 0xba588
+        MOV R4,tq_req_clu
+        MOV tq_req_tra_clu,R4
+        MOV R5,tq_req_clu
+        MOV tq_req_tra_old_clu,R5
+        BCLR lv_carb_err.01H
+        BCLR lv_carb_err.00H
+        MOV tq_req_tra_state,ZEROS
+        JMPA cc_UC,L_BA6E2
+L_BA5A4:                 ; 0xba5a4
+        MOV R4,tq_req_clu
+        CMP R4,tq_req_tra_clu
+        JMPR cc_SGE,L_BA610
+        MOV R5,tq_req_tra_clu
+        MOV tq_req_tra_old_clu,R5
+        MOV R2,#02H
+        MOV tq_req_tra_state,R2
+        MOV R3,tq_req_tra_clu
+        CMP R3,DPP0:c_tq_tra_thd_down_1
+        JMPR cc_SGE,L_BA5CE
+        MOV R1,#01H
+        MOV tq_range,R1
+        JMPR cc_UC,L_BA5E6
+L_BA5CE:                 ; 0xba5ce
+        MOV R4,tq_req_tra_clu
+        CMP R4,DPP0:c_tq_tra_thd_down_2
+        JMPR cc_SGE,L_BA5E0
+        MOV R5,#02H
+        MOV tq_range,R5
+        JMPR cc_UC,L_BA5E6
+L_BA5E0:                 ; 0xba5e0
+        MOV R4,#03H
+        MOV tq_range,R4
+L_BA5E6:                 ; 0xba5e6
+        CALLS 00BH,Calc_TQ_Tra_Ramp
+        MOV R4,tq_req_tra_clu
+        CMP R4,tq_req_clu
+        JMPA cc_SGT,L_BA6E2
+        MOV R5,tq_req_clu
+        MOV tq_req_tra_clu,R5
+        MOV R4,tq_req_clu
+        MOV tq_req_tra_old_clu,R4
+        BCLR lv_carb_err.01H
+        BCLR lv_carb_err.00H
+        MOV tq_req_tra_state,ZEROS
+        JMPR cc_UC,L_BA6E2
+L_BA610:                 ; 0xba610
+        CALLS 00BH,Calc_TQ_Tra_Ramp
+        MOV R4,tq_req_tra_clu
+        CMP R4,tq_req_clu
+        JMPR cc_SLT,L_BA6E2
+        MOV R5,tq_req_clu
+        MOV tq_req_tra_clu,R5
+        MOV R4,tq_req_clu
+        MOV tq_req_tra_old_clu,R4
+        BCLR lv_carb_err.01H
+        BCLR lv_carb_err.00H
+        MOV tq_req_tra_state,ZEROS
+        JMPR cc_UC,L_BA6E2
+L_BA638:                 ; 0xba638
+        MOV R4,tq_req_clu
+        CMP R4,tq_req_tra_clu
+        JMPR cc_SLE,L_BA6A2
+        MOV R5,tq_req_tra_clu
+        MOV tq_req_tra_old_clu,R5
+        MOV R2,#01H
+        MOV tq_req_tra_state,R2
+        MOV R3,tq_req_tra_clu
+        CMP R3,DPP0:c_tq_tra_thd_up_1
+        JMPR cc_SGE,L_BA662
+        MOV R1,#01H
+        MOV tq_range,R1
+        JMPR cc_UC,L_BA67A
+L_BA662:                 ; 0xba662
+        MOV R4,tq_req_tra_clu
+        CMP R4,DPP0:c_tq_tra_thd_up_2
+        JMPR cc_SGE,L_BA674
+        MOV R5,#02H
+        MOV tq_range,R5
+        JMPR cc_UC,L_BA67A
+L_BA674:                 ; 0xba674
+        MOV R4,#03H
+        MOV tq_range,R4
+L_BA67A:                 ; 0xba67a
+        CALLS 00BH,Calc_TQ_Tra_Ramp
+        MOV R4,tq_req_tra_clu
+        CMP R4,tq_req_clu
+        JMPR cc_SLT,L_BA6E2
+        MOV R5,tq_req_clu
+        MOV tq_req_tra_clu,R5
+        MOV R4,tq_req_clu
+        MOV tq_req_tra_old_clu,R4
+        BCLR lv_carb_err.01H
+        BCLR lv_carb_err.00H
+        MOV tq_req_tra_state,ZEROS
+        JMPR cc_UC,L_BA6E2
+L_BA6A2:                 ; 0xba6a2
+        CALLS 00BH,Calc_TQ_Tra_Ramp
+        MOV R4,tq_req_tra_clu
+        CMP R4,tq_req_clu
+        JMPR cc_SGT,L_BA6E2
+        MOV R5,tq_req_clu
+        MOV tq_req_tra_clu,R5
+        MOV R4,tq_req_clu
+        MOV tq_req_tra_old_clu,R4
+        BCLR lv_carb_err.01H
+        BCLR lv_carb_err.00H
+        MOV tq_req_tra_state,ZEROS
+        JMPR cc_UC,L_BA6E2
+L_BA6CA:                 ; 0xba6ca
+        MOV R4,tq_req_clu
+        MOV tq_req_tra_clu,R4
+        MOV R5,tq_req_clu
+        MOV tq_req_tra_old_clu,R5
+        BCLR lv_carb_err.01H
+        BCLR lv_carb_err.00H
+        MOV tq_req_tra_state,ZEROS
+L_BA6E2:                 ; 0xba6e2
+        MOV R4,tq_loss
+        CMP R4,#00H
+        JMPR cc_SGE,L_BA6F2
+        MOV R12,tq_loss
+        NEG R12
+        JMPR cc_UC,L_BA6F6
+L_BA6F2:                 ; 0xba6f2
+        MOV R12,tq_loss
+L_BA6F6:                 ; 0xba6f6
+        MOV R13,tq_req_tra_clu
+        CALLS 00FH,Sat_Add_U16
+        MOV R9,R4
+        CMP R9,#00H
+        JMPR cc_SLE,L_BA708
+        MOV R4,R9
+        JMPR cc_UC,L_BA70A
+L_BA708:                 ; 0xba708
+        MOV R4,#00H
+L_BA70A:                 ; 0xba70a
+        MOV tqi_req_tra,R4
+        MOV R12,tq_req_clu
+        MOV R13,tq_req_tra_clu
+        CALLS 00FH,Sat_Sub_S16
+        MOV R9,R4
+        CMP R9,#00H
+        JMPR cc_SLE,L_BA724
+        MOV R4,R9
+        JMPR cc_UC,L_BA726
+L_BA724:                 ; 0xba724
+        MOV R4,#00H
+L_BA726:                 ; 0xba726
+        MOV tq_req_dif_tra,R4
+        BMOV lv_err_pres_mwss.0FH,lv_asr_act.03H
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_TQ_Tra_Ramp  (@0xba732) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS2000, verified): Torque Transient (ramp worker, t_tra)
+        ; ------------------------------------------------------------
+Calc_TQ_Tra_Ramp:
+        MOV [-R0],R9
+        MOV [-R0],R6
+        MOV R12,#DATA16 0486CH
+        MOVBZ R13,pv_av
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        MOVB RL6,RL4
+        MOV R4,tq_range
+        CMP R4,#01H
+        JMPR cc_EQ,L_BA75C
+        CMP R4,#02H
+        JMPA cc_EQ,L_BA9E8
+        CMP R4,#03H
+        JMPA cc_EQ,L_BADBA
+        JMPA cc_UC,L_BAFCA
+L_BA75C:                 ; 0xba75c
+        BCMP lv_cdn_diag_maf_dif_ch_int.0EH,lv_carb_err.02H
+        JMPR cc_NN,L_BA76E
+        BMOV lv_carb_err.02H,lv_cdn_diag_maf_dif_ch_int.0EH
+        MOV R4,tq_req_tra_clu
+        MOV tq_req_tra_old_clu,R4
+L_BA76E:                 ; 0xba76e
+        MOV R4,tq_req_tra_state
+        CMP R4,#01H
+        JMPA cc_NE,L_BA8C0
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_BA7E8
+        JNB abs_def.04H,L_BA7B4
+        MOV R12,#DATA16 POF ldpm_n_110
+        MOV R13,#DATA16 PAG ldpm_n_110
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_gr_at_2
+        MOV R13,#DATA16 PAG ldpm_gr_at_2
+        MOVBZ R14,gr_at
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_t_inc_tra_is_at
+        MOV R13,#DATA16 PAG ip_t_inc_tra_is_at
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV t_tra,R4
+        JMPR cc_UC,L_BA852
+L_BA7B4:                 ; 0xba7b4
+        MOV R12,#DATA16 POF ldpm_n_110
+        MOV R13,#DATA16 PAG ldpm_n_110
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_gr_mt_2
+        MOV R13,#DATA16 PAG ldpm_gr_mt_2
+        MOVBZ R14,gr_mt
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_t_inc_tra_is_mt
+        MOV R13,#DATA16 PAG ip_t_inc_tra_is_mt
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV t_tra,R4
+        JMPR cc_UC,L_BA852
+L_BA7E8:                 ; 0xba7e8
+        JNB abs_def.04H,L_BA820
+        MOV R12,#DATA16 POF ldpm_n_110
+        MOV R13,#DATA16 PAG ldpm_n_110
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_gr_at_2
+        MOV R13,#DATA16 PAG ldpm_gr_at_2
+        MOVBZ R14,gr_at
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_t_inc_tra_1_at
+        MOV R13,#DATA16 PAG ip_t_inc_tra_1_at
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV t_tra,R4
+        JMPR cc_UC,L_BA852
+L_BA820:                 ; 0xba820
+        MOV R12,#DATA16 POF ldpm_n_110
+        MOV R13,#DATA16 PAG ldpm_n_110
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_gr_mt_2
+        MOV R13,#DATA16 PAG ldpm_gr_mt_2
+        MOVBZ R14,gr_mt
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_t_inc_tra_1_mt
+        MOV R13,#DATA16 PAG ip_t_inc_tra_1_mt
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV t_tra,R4
+L_BA852:                 ; 0xba852
+        MOV R12,t_tra
+        MOVBZ R13,RL6
+        CALLS 00FH,Read_MulDiv_MD
+        MOV t_tra,R4
+        CMP R4,#00H
+        JMPR cc_EQ,L_BA8B4
+        MOV R12,tq_req_clu
+        MOV R13,tq_req_tra_old_clu
+        CALLS 00FH,Sat_Sub_S16
+        MOV R12,R4
+        MOV R13,t_tra
+        CALLS 00FH,Div_S16_Round_Sat
+        MOV st_tq_tra_ramp,R4
+        CMP R4,#01H
+        JMPR cc_SLE,L_BA888
+        MOV R9,st_tq_tra_ramp
+        JMPR cc_UC,L_BA88A
+L_BA888:                 ; 0xba888
+        MOV R9,#01H
+L_BA88A:                 ; 0xba88a
+        MOV R12,tq_req_tra_clu
+        MOV R13,R9
+        CALLS 00FH,Sat_Add_S16
+        MOV tq_req_tra_clu,R4
+        CMP R4,DPP0:c_tq_tra_thd_up_1
+        JMPA cc_SLT,L_BAFD0
+        MOV R5,DPP0:c_tq_tra_thd_up_1
+        MOV tq_req_tra_clu,R5
+        BCLR lv_carb_err.02H
+        MOV R4,#02H
+        MOV tq_range,R4
+        JMPA cc_UC,L_BAFD0
+L_BA8B4:                 ; 0xba8b4
+        MOV R4,tq_req_clu
+        MOV tq_req_tra_clu,R4
+        JMPA cc_UC,L_BAFD0
+L_BA8C0:                 ; 0xba8c0
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_BA930
+        JNB abs_def.04H,L_BA8FC
+        MOV R12,#DATA16 POF ldpm_n_110
+        MOV R13,#DATA16 PAG ldpm_n_110
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_gr_at_2
+        MOV R13,#DATA16 PAG ldpm_gr_at_2
+        MOVBZ R14,gr_at
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_t_dec_tra_is_at
+        MOV R13,#DATA16 PAG ip_t_dec_tra_is_at
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV t_tra,R4
+        JMPR cc_UC,L_BA99A
+L_BA8FC:                 ; 0xba8fc
+        MOV R12,#DATA16 POF ldpm_n_110
+        MOV R13,#DATA16 PAG ldpm_n_110
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_gr_mt_2
+        MOV R13,#DATA16 PAG ldpm_gr_mt_2
+        MOVBZ R14,gr_mt
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_t_dec_tra_is_mt
+        MOV R13,#DATA16 PAG ip_t_dec_tra_is_mt
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV t_tra,R4
+        JMPR cc_UC,L_BA99A
+L_BA930:                 ; 0xba930
+        JNB abs_def.04H,L_BA968
+        MOV R12,#DATA16 POF ldpm_n_110
+        MOV R13,#DATA16 PAG ldpm_n_110
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_gr_at_2
+        MOV R13,#DATA16 PAG ldpm_gr_at_2
+        MOVBZ R14,gr_at
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_t_dec_tra_1_at
+        MOV R13,#DATA16 PAG ip_t_dec_tra_1_at
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV t_tra,R4
+        JMPR cc_UC,L_BA99A
+L_BA968:                 ; 0xba968
+        MOV R12,#DATA16 POF ldpm_n_110
+        MOV R13,#DATA16 PAG ldpm_n_110
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_gr_mt_2
+        MOV R13,#DATA16 PAG ldpm_gr_mt_2
+        MOVBZ R14,gr_mt
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_t_dec_tra_1_mt
+        MOV R13,#DATA16 PAG ip_t_dec_tra_1_mt
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV t_tra,R4
+L_BA99A:                 ; 0xba99a
+        MOV R4,t_tra
+        JMPR cc_EQ,L_BA9DC
+        MOV R12,tq_req_clu
+        MOV R13,tq_req_tra_old_clu
+        CALLS 00FH,Sat_Sub_S16
+        MOV R12,R4
+        MOV R13,t_tra
+        CALLS 00FH,Div_S16_Round_Sat
+        MOV st_tq_tra_ramp,R4
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_SGE,L_BA9C6
+        MOV R9,st_tq_tra_ramp
+        JMPR cc_UC,L_BA9CA
+L_BA9C6:                 ; 0xba9c6
+        MOV R9,#DATA16 0FFFFH
+L_BA9CA:                 ; 0xba9ca
+        MOV R12,tq_req_tra_clu
+        MOV R13,R9
+        CALLS 00FH,Sat_Add_S16
+        MOV tq_req_tra_clu,R4
+        JMPA cc_UC,L_BAFD0
+L_BA9DC:                 ; 0xba9dc
+        MOV R4,tq_req_clu
+        MOV tq_req_tra_clu,R4
+        JMPA cc_UC,L_BAFD0
+L_BA9E8:                 ; 0xba9e8
+        MOV R4,tq_req_tra_state
+        CMP R4,#01H
+        JMPA cc_NE,L_BABDE
+        MOVB RL4,n_grd
+        CMPB RL4,DPP0:c_n_grd_thd_neg
+        JMPR cc_SGE,L_BAA0A
+        JB lv_carb_err.01H,L_BAA0A
+        BSET lv_carb_err.01H
+        MOV R4,tq_req_tra_clu
+        MOV tq_req_tra_old_clu,R4
+L_BAA0A:                 ; 0xbaa0a
+        JB lv_carb_err.01H,L_BAA12
+        JMPA cc_UC,L_BAB08
+L_BAA12:                 ; 0xbaa12
+        JNB abs_def.04H,L_BAA4A
+        MOV R12,#DATA16 POF ldpm_n_110
+        MOV R13,#DATA16 PAG ldpm_n_110
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_gr_at_2
+        MOV R13,#DATA16 PAG ldpm_gr_at_2
+        MOVBZ R14,gr_at
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_t_inc_tra_3_at
+        MOV R13,#DATA16 PAG ip_t_inc_tra_3_at
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV t_tra,R4
+        JMPR cc_UC,L_BAA7C
+L_BAA4A:                 ; 0xbaa4a
+        MOV R12,#DATA16 POF ldpm_n_110
+        MOV R13,#DATA16 PAG ldpm_n_110
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_gr_mt_2
+        MOV R13,#DATA16 PAG ldpm_gr_mt_2
+        MOVBZ R14,gr_mt
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_t_inc_tra_3_mt
+        MOV R13,#DATA16 PAG ip_t_inc_tra_3_mt
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV t_tra,R4
+L_BAA7C:                 ; 0xbaa7c
+        MOV R12,t_tra
+        MOVBZ R13,RL6
+        CALLS 00FH,Read_MulDiv_MD
+        MOV t_tra,R4
+        CMP R4,#00H
+        JMPR cc_EQ,L_BAAFC
+        MOV R5,tq_req_clu
+        CMP R5,DPP0:c_tq_tra_thd_up_2
+        JMPR cc_SLE,L_BAAB2
+        MOV R12,R5
+        MOV R13,tq_req_tra_old_clu
+        CALLS 00FH,Sat_Sub_S16
+        MOV R12,R4
+        MOV R13,t_tra
+        CALLS 00FH,Div_S16_Round_Sat
+        MOV st_tq_tra_ramp,R4
+        JMPR cc_UC,L_BAACC
+L_BAAB2:                 ; 0xbaab2
+        MOV R12,DPP0:c_tq_tra_thd_up_2
+        MOV R13,DPP0:c_tq_tra_thd_up_1
+        CALLS 00FH,Sat_Sub_S16
+        MOV R12,R4
+        MOV R13,t_tra
+        CALLS 00FH,Div_S16_Round_Sat
+        MOV st_tq_tra_ramp,R4
+L_BAACC:                 ; 0xbaacc
+        MOV R4,st_tq_tra_ramp
+        CMP R4,#01H
+        JMPR cc_SLE,L_BAADA
+        MOV R9,st_tq_tra_ramp
+        JMPR cc_UC,L_BAADC
+L_BAADA:                 ; 0xbaada
+        MOV R9,#01H
+L_BAADC:                 ; 0xbaadc
+        MOV R12,tq_req_tra_clu
+        MOV R13,R9
+        CALLS 00FH,Sat_Add_S16
+        MOV tq_req_tra_clu,R4
+        CMP R4,DPP0:c_tq_tra_thd_up_2
+        JMPA cc_SLT,L_BAFD0
+        MOV R5,#03H
+        MOV tq_range,R5
+        JMPA cc_UC,L_BAFD0
+L_BAAFC:                 ; 0xbaafc
+        MOV R4,tq_req_clu
+        MOV tq_req_tra_clu,R4
+        JMPA cc_UC,L_BAFD0
+L_BAB08:                 ; 0xbab08
+        JNB abs_def.04H,L_BAB40
+        MOV R12,#DATA16 POF ldpm_n_110
+        MOV R13,#DATA16 PAG ldpm_n_110
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_gr_at_2
+        MOV R13,#DATA16 PAG ldpm_gr_at_2
+        MOVBZ R14,gr_at
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_t_inc_tra_2_at
+        MOV R13,#DATA16 PAG ip_t_inc_tra_2_at
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV t_tra,R4
+        JMPR cc_UC,L_BAB72
+L_BAB40:                 ; 0xbab40
+        MOV R12,#DATA16 POF ldpm_n_110
+        MOV R13,#DATA16 PAG ldpm_n_110
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_gr_mt_2
+        MOV R13,#DATA16 PAG ldpm_gr_mt_2
+        MOVBZ R14,gr_mt
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_t_inc_tra_2_mt
+        MOV R13,#DATA16 PAG ip_t_inc_tra_2_mt
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV t_tra,R4
+L_BAB72:                 ; 0xbab72
+        MOV R12,t_tra
+        MOVBZ R13,RL6
+        CALLS 00FH,Read_MulDiv_MD
+        MOV t_tra,R4
+        CMP R4,#00H
+        JMPR cc_EQ,L_BABD2
+        MOV R12,DPP0:c_tq_tra_thd_up_2
+        MOV R13,DPP0:c_tq_tra_thd_up_1
+        CALLS 00FH,Sat_Sub_S16
+        MOV R12,R4
+        MOV R13,t_tra
+        CALLS 00FH,Div_S16_Round_Sat
+        MOV st_tq_tra_ramp,R4
+        CMP R4,#01H
+        JMPR cc_SLE,L_BABA8
+        MOV R9,st_tq_tra_ramp
+        JMPR cc_UC,L_BABAA
+L_BABA8:                 ; 0xbaba8
+        MOV R9,#01H
+L_BABAA:                 ; 0xbabaa
+        MOV R12,tq_req_tra_clu
+        MOV R13,R9
+        CALLS 00FH,Sat_Add_S16
+        MOV tq_req_tra_clu,R4
+        CMP R4,DPP0:c_tq_tra_thd_up_2
+        JMPA cc_SLT,L_BAFD0
+        MOV R5,DPP0:c_tq_tra_thd_up_2
+        MOV tq_req_tra_clu,R5
+        MOV R4,#03H
+        MOV tq_range,R4
+        JMPA cc_UC,L_BAFD0
+L_BABD2:                 ; 0xbabd2
+        MOV R4,tq_req_clu
+        MOV tq_req_tra_clu,R4
+        JMPA cc_UC,L_BAFD0
+L_BABDE:                 ; 0xbabde
+        MOVB RL4,n_grd
+        CMPB RL4,DPP0:c_n_grd_thd_pos
+        JMPR cc_SLE,L_BABF6
+        JB lv_carb_err.01H,L_BABF6
+        BSET lv_carb_err.01H
+        MOV R4,tq_req_tra_clu
+        MOV tq_req_tra_old_clu,R4
+L_BABF6:                 ; 0xbabf6
+        JB lv_carb_err.01H,L_BABFE
+        JMPA cc_UC,L_BACEC
+L_BABFE:                 ; 0xbabfe
+        JNB abs_def.04H,L_BAC36
+        MOV R12,#DATA16 POF ldpm_n_110
+        MOV R13,#DATA16 PAG ldpm_n_110
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_gr_at_2
+        MOV R13,#DATA16 PAG ldpm_gr_at_2
+        MOVBZ R14,gr_at
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_t_dec_tra_1_at
+        MOV R13,#DATA16 PAG ip_t_dec_tra_1_at
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV t_tra,R4
+        JMPR cc_UC,L_BAC68
+L_BAC36:                 ; 0xbac36
+        MOV R12,#DATA16 POF ldpm_n_110
+        MOV R13,#DATA16 PAG ldpm_n_110
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_gr_mt_2
+        MOV R13,#DATA16 PAG ldpm_gr_mt_2
+        MOVBZ R14,gr_mt
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_t_dec_tra_1_mt
+        MOV R13,#DATA16 PAG ip_t_dec_tra_1_mt
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV t_tra,R4
+L_BAC68:                 ; 0xbac68
+        MOV R4,t_tra
+        JMPR cc_EQ,L_BACE0
+        MOV R5,tq_req_clu
+        CMP R5,DPP0:c_tq_tra_thd_down_1
+        JMPR cc_SGE,L_BAC92
+        MOV R12,R5
+        MOV R13,tq_req_tra_old_clu
+        CALLS 00FH,Sat_Sub_S16
+        MOV R12,R4
+        MOV R13,t_tra
+        CALLS 00FH,Div_S16_Round_Sat
+        MOV st_tq_tra_ramp,R4
+        JMPR cc_UC,L_BACAC
+L_BAC92:                 ; 0xbac92
+        MOV R12,DPP0:c_tq_tra_thd_down_1
+        MOV R13,DPP0:c_tq_tra_thd_down_2
+        CALLS 00FH,Sat_Sub_S16
+        MOV R12,R4
+        MOV R13,t_tra
+        CALLS 00FH,Div_S16_Round_Sat
+        MOV st_tq_tra_ramp,R4
+L_BACAC:                 ; 0xbacac
+        MOV R4,st_tq_tra_ramp
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_SGE,L_BACBC
+        MOV R9,st_tq_tra_ramp
+        JMPR cc_UC,L_BACC0
+L_BACBC:                 ; 0xbacbc
+        MOV R9,#DATA16 0FFFFH
+L_BACC0:                 ; 0xbacc0
+        MOV R12,tq_req_tra_clu
+        MOV R13,R9
+        CALLS 00FH,Sat_Add_S16
+        MOV tq_req_tra_clu,R4
+        CMP R4,DPP0:c_tq_tra_thd_down_1
+        JMPA cc_SGE,L_BAFD0
+        MOV R5,#01H
+        MOV tq_range,R5
+        JMPA cc_UC,L_BAFD0
+L_BACE0:                 ; 0xbace0
+        MOV R4,tq_req_clu
+        MOV tq_req_tra_clu,R4
+        JMPA cc_UC,L_BAFD0
+L_BACEC:                 ; 0xbacec
+        JNB abs_def.04H,L_BAD24
+        MOV R12,#DATA16 POF ldpm_n_110
+        MOV R13,#DATA16 PAG ldpm_n_110
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_gr_at_2
+        MOV R13,#DATA16 PAG ldpm_gr_at_2
+        MOVBZ R14,gr_at
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_t_dec_tra_2_at
+        MOV R13,#DATA16 PAG ip_t_dec_tra_2_at
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV t_tra,R4
+        JMPR cc_UC,L_BAD56
+L_BAD24:                 ; 0xbad24
+        MOV R12,#DATA16 POF ldpm_n_110
+        MOV R13,#DATA16 PAG ldpm_n_110
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_gr_mt_2
+        MOV R13,#DATA16 PAG ldpm_gr_mt_2
+        MOVBZ R14,gr_mt
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_t_dec_tra_2_mt
+        MOV R13,#DATA16 PAG ip_t_dec_tra_2_mt
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV t_tra,R4
+L_BAD56:                 ; 0xbad56
+        MOV R4,t_tra
+        JMPR cc_EQ,L_BADAE
+        MOV R12,DPP0:c_tq_tra_thd_down_1
+        MOV R13,DPP0:c_tq_tra_thd_down_2
+        CALLS 00FH,Sat_Sub_S16
+        MOV R12,R4
+        MOV R13,t_tra
+        CALLS 00FH,Div_S16_Round_Sat
+        MOV st_tq_tra_ramp,R4
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_SGE,L_BAD82
+        MOV R9,st_tq_tra_ramp
+        JMPR cc_UC,L_BAD86
+L_BAD82:                 ; 0xbad82
+        MOV R9,#DATA16 0FFFFH
+L_BAD86:                 ; 0xbad86
+        MOV R12,tq_req_tra_clu
+        MOV R13,R9
+        CALLS 00FH,Sat_Add_S16
+        MOV tq_req_tra_clu,R4
+        CMP R4,DPP0:c_tq_tra_thd_down_1
+        JMPA cc_SGE,L_BAFD0
+        MOV R5,DPP0:c_tq_tra_thd_down_1
+        MOV tq_req_tra_clu,R5
+        MOV R4,#01H
+        MOV tq_range,R4
+        JMPA cc_UC,L_BAFD0
+L_BADAE:                 ; 0xbadae
+        MOV R4,tq_req_clu
+        MOV tq_req_tra_clu,R4
+        JMPA cc_UC,L_BAFD0
+L_BADBA:                 ; 0xbadba
+        MOV R4,tq_req_tra_state
+        CMP R4,#01H
+        JMPA cc_NE,L_BAF02
+        JNB abs_def.04H,L_BAE7E
+        MOVB RL4,vs
+        CMPB RL4,DPP0:c_vs_max_t_tra
+        JMPR cc_NC,L_BAE3E
+        MOVB RL5,gr_at
+        CMPB RL5,#01H
+        JMPR cc_NE,L_BAE3E
+        MOVB RL3,n_grd
+        CMPB RL3,DPP0:c_n_grd_min_t_tra
+        JMPR cc_SLE,L_BAE3E
+        MOVB RL2,tia
+        CMPB RL2,DPP0:c_tia_max_t_tra
+        JMPR cc_NC,L_BAE3E
+        MOVB RL1,tco
+        CMPB RL1,DPP0:c_tco_min_t_tra
+        JMPR cc_ULE,L_BAE3E
+        MOV R4,amp
+        CMP R4,DPP0:c_amp_min_t_tra
+        JMPR cc_ULE,L_BAE3E
+        MOVB RL4,tps
+        CMPB RL4,DPP0:c_tps_min_t_tra
+        JMPR cc_ULE,L_BAE3E
+        MOV R12,#DATA16 POF ldpm_n_110
+        MOV R13,#DATA16 PAG ldpm_n_110
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_gr_at_2
+        MOV R13,#DATA16 PAG ldpm_gr_at_2
+        MOVBZ R14,gr_at
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_t_inc_tra_4_at
+        MOV R13,#DATA16 PAG ip_t_inc_tra_4_at
+        CALLS 00FH,Get_IP_Word_3D_Table
+        MOV t_tra,R4
+        JMPR cc_UC,L_BAEBC
+L_BAE3E:                 ; 0xbae3e
+        MOV R12,#DATA16 POF ldpm_n_110
+        MOV R13,#DATA16 PAG ldpm_n_110
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_gr_at_2
+        MOV R13,#DATA16 PAG ldpm_gr_at_2
+        MOVBZ R14,gr_at
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_t_inc_tra_3_at
+        MOV R13,#DATA16 PAG ip_t_inc_tra_3_at
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV t_tra,R4
+        MOV R12,R4
+        MOVBZ R13,RL6
+        CALLS 00FH,Read_MulDiv_MD
+        MOV t_tra,R4
+        JMPR cc_UC,L_BAEBC
+L_BAE7E:                 ; 0xbae7e
+        MOV R12,#DATA16 POF ldpm_n_110
+        MOV R13,#DATA16 PAG ldpm_n_110
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_gr_mt_2
+        MOV R13,#DATA16 PAG ldpm_gr_mt_2
+        MOVBZ R14,gr_mt
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_t_inc_tra_3_mt
+        MOV R13,#DATA16 PAG ip_t_inc_tra_3_mt
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV t_tra,R4
+        MOV R12,R4
+        MOVBZ R13,RL6
+        CALLS 00FH,Read_MulDiv_MD
+        MOV t_tra,R4
+L_BAEBC:                 ; 0xbaebc
+        MOV R4,t_tra
+        JMPR cc_EQ,L_BAEF8
+        MOV R12,tq_req_clu
+        MOV R13,tq_req_tra_old_clu
+        CALLS 00FH,Sat_Sub_S16
+        MOV R12,R4
+        MOV R13,t_tra
+        CALLS 00FH,Div_S16_Round_Sat
+        MOV st_tq_tra_ramp,R4
+        CMP R4,#01H
+        JMPR cc_SLE,L_BAEE6
+        MOV R9,st_tq_tra_ramp
+        JMPR cc_UC,L_BAEE8
+L_BAEE6:                 ; 0xbaee6
+        MOV R9,#01H
+L_BAEE8:                 ; 0xbaee8
+        MOV R12,tq_req_tra_clu
+        MOV R13,R9
+        CALLS 00FH,Sat_Add_S16
+        MOV tq_req_tra_clu,R4
+        JMPR cc_UC,L_BAFD0
+L_BAEF8:                 ; 0xbaef8
+        MOV R4,tq_req_clu
+        MOV tq_req_tra_clu,R4
+        JMPR cc_UC,L_BAFD0
+L_BAF02:                 ; 0xbaf02
+        JNB abs_def.04H,L_BAF3A
+        MOV R12,#DATA16 POF ldpm_n_110
+        MOV R13,#DATA16 PAG ldpm_n_110
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_gr_at_2
+        MOV R13,#DATA16 PAG ldpm_gr_at_2
+        MOVBZ R14,gr_at
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_t_dec_tra_3_at
+        MOV R13,#DATA16 PAG ip_t_dec_tra_3_at
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV t_tra,R4
+        JMPR cc_UC,L_BAF6C
+L_BAF3A:                 ; 0xbaf3a
+        MOV R12,#DATA16 POF ldpm_n_110
+        MOV R13,#DATA16 PAG ldpm_n_110
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_gr_mt_2
+        MOV R13,#DATA16 PAG ldpm_gr_mt_2
+        MOVBZ R14,gr_mt
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_t_dec_tra_3_mt
+        MOV R13,#DATA16 PAG ip_t_dec_tra_3_mt
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV t_tra,R4
+L_BAF6C:                 ; 0xbaf6c
+        MOV R4,t_tra
+        JMPR cc_EQ,L_BAFC0
+        MOV R12,tq_req_clu
+        MOV R13,tq_req_tra_old_clu
+        CALLS 00FH,Sat_Sub_S16
+        MOV R12,R4
+        MOV R13,t_tra
+        CALLS 00FH,Div_S16_Round_Sat
+        MOV st_tq_tra_ramp,R4
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_SGE,L_BAF98
+        MOV R9,st_tq_tra_ramp
+        JMPR cc_UC,L_BAF9C
+L_BAF98:                 ; 0xbaf98
+        MOV R9,#DATA16 0FFFFH
+L_BAF9C:                 ; 0xbaf9c
+        MOV R12,tq_req_tra_clu
+        MOV R13,R9
+        CALLS 00FH,Sat_Add_S16
+        MOV tq_req_tra_clu,R4
+        CMP R4,DPP0:c_tq_tra_thd_down_2
+        JMPR cc_SGE,L_BAFD0
+        MOV R5,DPP0:c_tq_tra_thd_down_2
+        MOV tq_req_tra_clu,R5
+        MOV R4,#02H
+        MOV tq_range,R4
+        JMPR cc_UC,L_BAFD0
+L_BAFC0:                 ; 0xbafc0
+        MOV R4,tq_req_clu
+        MOV tq_req_tra_clu,R4
+        JMPR cc_UC,L_BAFD0
+L_BAFCA:                 ; 0xbafca
+        MOV R4,#01H
+        MOV tq_range,R4
+L_BAFD0:                 ; 0xbafd0
+        MOV R6,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_BA410 ENDS
+        END

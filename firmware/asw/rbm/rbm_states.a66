@@ -1,0 +1,129 @@
+; asw/rbm/rbm_states.a66
+; 0xCD772-0xCD8EA  (376 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+lc_inh_dc_rbm                        EQU  09046BH
+
+PUBLIC  Set_Cat_Diag_Inh_2, Snapshot_RBM_States
+
+S_CD772 SECTION CODE AT 0CD772H
+
+; ======== Snapshot_RBM_States  (@0xcd772) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Snapshot_RBM_States:
+        MOVB RL4,state_rbm_cat_diag
+        MOVB sn_rbm_cat_diag,RL4
+        MOVB RL5,state_rbm_vls_up_plaus
+        MOVB sn_rbm_vls_up_plaus,RL5
+        MOVB RL3,state_rbm_vls_up_frq
+        MOVB sn_rbm_vls_up_frq,RL3
+        MOVB RL2,state_rbm_leak_small
+        MOVB sn_rbm_leak_small,RL2
+        MOVB RL1,state_rbm_cam_dif_ivvt_in
+        MOVB sn_rbm_cam_dif_ivvt_in,RL1
+        MOVB RL4,state_rbm_lsh_up_obd2
+        MOVB sn_rbm_lsh_up_obd2,RL4
+        MOVB RL4,state_rbm_lsh_down_obd2
+        MOVB sn_rbm_lsh_down_obd2,RL4
+        MOVB RL4,state_rbm_tco_stuck
+        MOVB sn_rbm_tco_stuck,RL4
+        MOVB RL4,state_rbm_tco_plaus
+        MOVB sn_rbm_tco_plaus,RL4
+        MOVB RL4,state_rbm_th_det
+        MOVB sn_rbm_th_det,RL4
+        MOVB RL4,state_rbm_ls_down_swt
+        MOVB sn_rbm_ls_down_swt,RL4
+        MOVB RL4,state_rbm_vls_down_plaus
+        MOVB sn_rbm_vls_down_plaus,RL4
+        MOVB RL4,state_rbm_toil_stuck
+        MOVB sn_rbm_toil_stuck,RL4
+        MOVB RL4,state_rbm_cps_mecha
+        MOVB sn_rbm_cps_mecha,RL4
+        MOVB RL4,state_rbm_leak_large
+        MOVB sn_rbm_leak_large,RL4
+        MOVB RL4,state_rbm_dtp_noise
+        MOVB sn_rbm_dtp_noise,RL4
+        MOVB RL4,state_rbm_maf_dif_ch
+        MOVB sn_rbm_maf_dif_ch,RL4
+        MOVB RL4,state_rbm_tco_stuck_rng
+        MOVB sn_rbm_tco_stuck_rng,RL4
+        MOVB RL4,state_rbm_tia_plaus
+        MOVB sn_rbm_tia_plaus,RL4
+        RETS
+
+; ======== Set_Cat_Diag_Inh_2  (@0xcd80c) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by cp/cat_diag/isa output signals): Set catalyst-diag inhibit bit
+        ; lv_cat_diag_inh_1 (variant).
+        ; ------------------------------------------------------------
+Set_Cat_Diag_Inh_2:
+        JNB obd_sf.0DH,L_CD83C
+        JB lv_cat_diag_inh_1.0EH,L_CD83C
+        JB lv_cam_err.07H,L_CD83A
+        JB lv_cam_err.08H,L_CD83A
+        JB lv_cam_err.0AH,L_CD83A
+        JB lv_cam_err.0BH,L_CD83A
+        JB lv_cam_err.02H,L_CD83A
+        JB lv_cam_err.00H,L_CD83A
+        JB lv_amp_ad_rst.0FH,L_CD83A
+        JB lv_err_maf_tps_ratio_2.00H,L_CD83A
+        MOVB RL4,DPP0:lc_inh_dc_rbm
+        JMPR cc_EQ,L_CD83C
+L_CD83A:                 ; 0xcd83a
+        BSET lv_cat_diag_inh_1.0EH
+L_CD83C:                 ; 0xcd83c
+        MOVB RL4,lv_cat_c383
+        CMPB RL4,#DATA16 00009H
+        JMPR cc_C,L_CD8E4
+        MOVB lv_cat_c383,ZEROS
+        MOVB RL4,state_rbm_cat_diag
+        MOVB sn_rbm_cat_diag,RL4
+        MOVB RL5,state_rbm_vls_up_plaus
+        MOVB sn_rbm_vls_up_plaus,RL5
+        MOVB RL3,state_rbm_vls_up_frq
+        MOVB sn_rbm_vls_up_frq,RL3
+        MOVB RL2,state_rbm_leak_small
+        MOVB sn_rbm_leak_small,RL2
+        MOVB RL1,state_rbm_cam_dif_ivvt_in
+        MOVB sn_rbm_cam_dif_ivvt_in,RL1
+        MOVB RL4,state_rbm_lsh_up_obd2
+        MOVB sn_rbm_lsh_up_obd2,RL4
+        MOVB RL4,state_rbm_lsh_down_obd2
+        MOVB sn_rbm_lsh_down_obd2,RL4
+        MOVB RL4,state_rbm_tco_stuck
+        MOVB sn_rbm_tco_stuck,RL4
+        MOVB RL4,state_rbm_tco_plaus
+        MOVB sn_rbm_tco_plaus,RL4
+        MOVB RL4,state_rbm_th_det
+        MOVB sn_rbm_th_det,RL4
+        MOVB RL4,state_rbm_ls_down_swt
+        MOVB sn_rbm_ls_down_swt,RL4
+        MOVB RL4,state_rbm_vls_down_plaus
+        MOVB sn_rbm_vls_down_plaus,RL4
+        MOVB RL4,state_rbm_toil_stuck
+        MOVB sn_rbm_toil_stuck,RL4
+        MOVB RL4,state_rbm_cps_mecha
+        MOVB sn_rbm_cps_mecha,RL4
+        MOVB RL4,state_rbm_leak_large
+        MOVB sn_rbm_leak_large,RL4
+        MOVB RL4,state_rbm_dtp_noise
+        MOVB sn_rbm_dtp_noise,RL4
+        MOVB RL4,state_rbm_maf_dif_ch
+        MOVB sn_rbm_maf_dif_ch,RL4
+        MOVB RL4,state_rbm_tco_stuck_rng
+        MOVB sn_rbm_tco_stuck_rng,RL4
+        MOVB RL4,state_rbm_tia_plaus
+        MOVB sn_rbm_tia_plaus,RL4
+        RETS
+L_CD8E4:                 ; 0xcd8e4
+        SUBB lv_cat_c383,ONES
+        RETS
+
+S_CD772 ENDS
+        END

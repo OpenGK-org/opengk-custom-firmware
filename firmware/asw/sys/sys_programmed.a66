@@ -1,0 +1,131 @@
+; asw/sys/sys_programmed.a66
+; 0xA6D32-0xA6E34  (258 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  BL_Set_ExecMagic_Full_2, Check_VIN_Programmed, Is_Block_Erased, KWP_SID3B_WriteBlock90
+EXTERN  CC26INT_Imob_Reset:NEAR, Push_To_System_Stack:NEAR, Reset_ADCIC_4da:NEAR
+
+S_A6D32 SECTION CODE AT 0A6D32H
+
+; ======== Check_VIN_Programmed  (@0xa6d32) ========
+        ; ------------------------------------------------------------
+        ; Seg-A helper (verified): Check whether VIN block @0x3e1d is programmed vs erased (Is_Block_Erased);
+        ; fills DAT_00d72e.
+        ; ------------------------------------------------------------
+Check_VIN_Programmed:
+        MOV [-R0],R9
+        MOV R12,#DATA16 03E1DH
+        MOV R13,#DATA16 00000H
+        CALLS 00AH,Is_Block_Erased
+        JB PSW.06H,L_A6D4C
+        MOVB RL4,#04H
+        MOVB kwp_lid90_idx,RL4
+        JMPR cc_UC,L_A6D60
+L_A6D4C:                 ; 0xa6d4c
+        MOV R9,#00H
+L_A6D4E:                 ; 0xa6d4e
+        MOVB RL4,#DATA16 000FFH
+        MOVB [R9+#0D72EH],RL4
+        CMPI1 R9,#DATA16 00010H
+        JMPR cc_SLT,L_A6D4E
+        MOVB kwp_lid90_idx,ZEROS
+L_A6D60:                 ; 0xa6d60
+        MOV R9,[R0+]
+        RETS
+
+; ======== KWP_SID3B_WriteBlock90  (@0xa6d64) ========
+KWP_SID3B_WriteBlock90:
+        MOVB RL4,kwp_lid90_idx
+        CMPB RL4,#03H
+        JMPR cc_NC,L_A6D88
+        ADDB RL4,#01H
+        MOVB kwp_lid90_idx,RL4
+        MOV R13,#00H
+L_A6D74:                 ; 0xa6d74
+        MOV R4,R12
+        ADD R4,R13
+        MOVB RL5,[R4]
+        MOVB [R13+#0D72EH],RL5
+        CMPI1 R13,#DATA16 00010H
+        JMPR cc_SLT,L_A6D74
+        BSET PSW.06H
+        RETS
+L_A6D88:                 ; 0xa6d88
+        MOVB RL4,#04H
+        MOVB kwp_lid90_idx,RL4
+        BCLR PSW.06H
+        RETS
+
+; ======== BL_Set_ExecMagic_Full_2  (@0xa6d92) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by ccp_/bl_/cpu output signals): Write full bootloader-exec magic (second path).
+        ; ------------------------------------------------------------
+BL_Set_ExecMagic_Full_2:
+        MOVBZ R4,kwp_lid90_idx
+        CMP R4,#01H
+        JMPR cc_SLT,L_A6E0C
+        MOVB RL4,kwp_lid90_idx
+        CMPB RL4,#03H
+        JMPR cc_UGT,L_A6E0C
+        MOVB RL5,#DATA16 00053H
+        MOVB bl_exec_arm_magic,RL5
+        MOVB RL3,#DATA16 000ACH
+        MOVB bl_exec_magic_b1,RL3
+        MOVB RL2,#DATA16 000CAH
+        MOVB bl_exec_magic_b2,RL2
+        MOVB RL1,#DATA16 00035H
+        MOVB bl_exec_magic_b3,RL1
+        BCLR PSW.0BH
+        CALLS 00AH,Reset_ADCIC_4da
+        MOV R4,#DATA16 03E1DH
+        MOV R5,#DATA16 00000H
+        MOV bl_exec_addr_lo,R4
+        MOV bl_exec_addr_hi,R5
+        MOV R2,#DATA16 0D72EH
+        MOV bl_exec_src_ptr,R2
+        MOV R3,#DATA16 00011H
+        MOV bl_exec_len,R3
+        EXTP #00H, #02H
+        MOV R4,kwp_286
+        MOV R5,kwp_288
+        CALLS 00CH,Push_To_System_Stack
+        CALLS 00AH,CC26INT_Imob_Reset
+        MOVB bl_exec_magic_b3,ZEROS
+        MOVB bl_exec_magic_b2,ZEROS
+        MOVB bl_exec_magic_b1,ZEROS
+        MOVB bl_exec_arm_magic,ZEROS
+L_A6E0C:                 ; 0xa6e0c
+        RETS
+
+; ======== Is_Block_Erased  (@0xa6e0e) ========
+        ; ------------------------------------------------------------
+        ; Seg-A helper (verified): Check if a 17-byte (0x11) block is all-0xFF (erased); returns PSW.Z.
+        ; ------------------------------------------------------------
+Is_Block_Erased:
+        MOV R14,#00H
+        JMPR cc_UC,L_A6E16
+L_A6E12:                 ; 0xa6e12
+        ADD R14,#01H
+        ADD R12,#01H
+L_A6E16:                 ; 0xa6e16
+        CMP R14,#DATA16 00011H
+        JMPR cc_NC,L_A6E26
+        EXTP R13, #01H
+        MOVB RL4,[R12]
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_EQ,L_A6E12
+L_A6E26:                 ; 0xa6e26
+        CMP R14,#DATA16 00011H
+        JMPR cc_NE,L_A6E30
+        BSET PSW.06H
+        JMPR cc_UC,L_A6E32
+L_A6E30:                 ; 0xa6e30
+        BCLR PSW.06H
+L_A6E32:                 ; 0xa6e32
+        RETS
+
+S_A6D32 ENDS
+        END

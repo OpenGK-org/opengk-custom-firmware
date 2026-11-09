@@ -1,0 +1,360 @@
+; asw/isapwm.a66
+; 0xCD8EA-0xCDC6C  (898 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_abc_inc_isapwm_h                   EQU  0900AEH
+c_abc_inc_isapwm_l                   EQU  0900AFH
+c_abc_max_isapwm_h                   EQU  0900E3H
+c_abc_max_isapwm_l                   EQU  0900E4H
+c_cppwm_max_is_diag                  EQU  090158H
+c_maf_max_is_diag                    EQU  09022FH
+c_t_dly_isapwm_diag_1                EQU  090323H
+c_tco_max_is_diag                    EQU  09037AH
+c_tco_min_is_diag                    EQU  09038AH
+c_isapwm_isa_diag_1                  EQU  09057CH
+c_isapwm_isa_diag_2                  EQU  09057EH
+c_isapwm_isa_diag_3                  EQU  090580H
+c_isapwm_isa_diag_4                  EQU  090582H
+c_n_dif_max_diag                     EQU  090634H
+c_n_dif_min_diag                     EQU  090638H
+c_opg_av_lih_isa_1                   EQU  090662H
+c_opg_av_lih_isa_2                   EQU  090664H
+c_opg_av_lih_isa_3                   EQU  090666H
+c_opg_av_lih_isa_4                   EQU  090668H
+c_t_dly_isapwm_diag_2                EQU  0906DCH
+c_t_vs_min_is_diag                   EQU  09074AH
+
+PUBLIC  Calc_IGC_Dur_Fault, Calc_ISA_CatHeat, CanPurge_Set_Close, Diag_IGC_Dur
+EXTERN  Add_r12_r13_Return_r4:NEAR, DTC_Update_Debounced:NEAR, sub_r12_r13_rets_r4:NEAR
+
+S_CD8EA SECTION CODE AT 0CD8EAH
+
+; ======== Calc_IGC_Dur_Fault  (@0xcd8ea) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Calc_IGC_Dur_Fault:
+        JNB lv_dur_igc_0_err.0DH,L_CD8FA
+        MOVB RL4,g_d426
+        ANDB RL4,#DATA16 0000FH
+        MOVB g_f4c3,RL4
+L_CD8FA:                 ; 0xcd8fa
+        JNB lv_dur_igc_0_err.0EH,L_CD90A
+        MOVB RL4,g_d434
+        ANDB RL4,#DATA16 0000FH
+        MOVB g_f4c4,RL4
+L_CD90A:                 ; 0xcd90a
+        RETS
+        ; ------------------------------------------------------------
+        ; (unclassified) on-chip RAM global @0xcd90c  W:{-}  R:{-}
+        ; ------------------------------------------------------------
+        RETS
+
+; ======== Calc_ISA_CatHeat  (@0xcd90e) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by cp/cat_diag/isa output signals): Idle-air actuator for catalyst-heating:
+        ; isapwm_lih / opg_av_lih_isa (load-increase idle heating).
+        ; ------------------------------------------------------------
+Calc_ISA_CatHeat:
+        BCLR lv_cat_diag_inh_1.0FH
+        MOVB RL4,g_f4c3
+        JMPR cc_EQ,L_CD976
+        BSET lv_cat_diag_inh_1.0FH
+        MOVB RL5,g_f4c4
+        JMPR cc_EQ,L_CD94A
+        ANDB RL4,#02H
+        JMPR cc_EQ,L_CD938
+        ANDB RL5,#02H
+        JMPR cc_EQ,L_CD938
+        MOV R4,DPP0:c_isapwm_isa_diag_4
+        MOV isapwm_lih,R4
+        MOV R5,DPP0:c_opg_av_lih_isa_4
+        MOV opg_av_lih_isa,R5
+        RETS
+L_CD938:                 ; 0xcd938
+        MOV R4,DPP0:c_isapwm_isa_diag_2
+        MOV isapwm_lih,R4
+        MOV R5,DPP0:c_opg_av_lih_isa_2
+        MOV opg_av_lih_isa,R5
+        RETS
+L_CD94A:                 ; 0xcd94a
+        MOVBZ R4,g_f4c3
+        AND R4,#02H
+        JMPR cc_EQ,L_CD964
+        MOV R4,DPP0:c_isapwm_isa_diag_1
+        MOV isapwm_lih,R4
+        MOV R5,DPP0:c_opg_av_lih_isa_1
+        MOV opg_av_lih_isa,R5
+        RETS
+L_CD964:                 ; 0xcd964
+        MOV R4,DPP0:c_isapwm_isa_diag_3
+        MOV isapwm_lih,R4
+        MOV R5,DPP0:c_opg_av_lih_isa_3
+        MOV opg_av_lih_isa,R5
+        RETS
+L_CD976:                 ; 0xcd976
+        MOVB RL4,g_f4c4
+        JMPR cc_EQ,L_CD9A8
+        BSET lv_cat_diag_inh_1.0FH
+        MOVBZ R4,RL4
+        AND R4,#02H
+        JMPR cc_EQ,L_CD996
+        MOV R4,DPP0:c_isapwm_isa_diag_3
+        MOV isapwm_lih,R4
+        MOV R5,DPP0:c_opg_av_lih_isa_3
+        MOV opg_av_lih_isa,R5
+        RETS
+L_CD996:                 ; 0xcd996
+        MOV R4,DPP0:c_isapwm_isa_diag_4
+        MOV isapwm_lih,R4
+        MOV R5,DPP0:c_opg_av_lih_isa_4
+        MOV opg_av_lih_isa,R5
+        RETS
+L_CD9A8:                 ; 0xcd9a8
+        MOV isapwm_lih,ZEROS
+        MOV opg_av_lih_isa,ZEROS
+        RETS
+
+; ======== Diag_IGC_Dur  (@0xcd9b2) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by er_ad/mis/diag output signals + DTC): Ignition-duration/dwell diagnosis (DTC
+        ; 0xd450): lv_dur_igc_0_err / lv_ecu_err.
+        ; ------------------------------------------------------------
+Diag_IGC_Dur:
+        JNB lv_ct.00H,L_CD9D8
+        MOVB RL4,vs
+        JMPR cc_NE,L_CD9D8
+        MOV R4,t_vs_min_diag
+        CMP R4,DPP0:c_t_vs_min_is_diag
+        JMPR cc_NC,L_CD9D8
+        MOVB RL4,lv_iga_cf8e
+        CMPB RL4,DPP0:c_t_dly_isapwm_diag_1
+        JMPR cc_NC,L_CD9DC
+        ADDB RL4,#01H
+        MOVB lv_iga_cf8e,RL4
+        JMPR cc_UC,L_CD9DC
+L_CD9D8:                 ; 0xcd9d8
+        MOVB lv_iga_cf8e,ZEROS
+L_CD9DC:                 ; 0xcd9dc
+        JB can_fd58.0BH,L_CD9E4
+        JMPA cc_UC,L_CDBD8
+L_CD9E4:                 ; 0xcd9e4
+        JB can_fd58.09H,L_CD9EC
+        JMPA cc_UC,L_CDBD8
+L_CD9EC:                 ; 0xcd9ec
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_CD9F4
+        JMPA cc_UC,L_CDBD8
+L_CD9F4:                 ; 0xcd9f4
+        JNB lv_pl.04H,L_CD9FC
+        JMPA cc_UC,L_CDBD8
+L_CD9FC:                 ; 0xcd9fc
+        MOVB RL4,lv_iga_cf8e
+        CMPB RL4,DPP0:c_t_dly_isapwm_diag_1
+        JMPA cc_C,L_CDBD8
+        MOVB RL5,tco
+        CMPB RL5,DPP0:c_tco_min_is_diag
+        JMPA cc_ULE,L_CDBD8
+        CMPB RL5,DPP0:c_tco_max_is_diag
+        JMPA cc_NC,L_CDBD8
+        JNB lv_ast.01H,L_CDA24
+        JMPA cc_UC,L_CDBD8
+L_CDA24:                 ; 0xcda24
+        MOVB RL3,lv_iga_cc2b
+        CMPB RL3,DPP0:c_maf_max_is_diag
+        JMPA cc_NC,L_CDBD8
+        MOV R4,cppwm
+        SHR R4,#07H
+        MOVBZ R5,DPP0:c_cppwm_max_is_diag
+        CMP R4,R5
+        JMPA cc_NC,L_CDBD8
+        JNB lv_cam_err.02H,L_CDA48
+        JMPA cc_UC,L_CDBC2
+L_CDA48:                 ; 0xcda48
+        JNB lv_cps_err.05H,L_CDA50
+        JMPA cc_UC,L_CDBC2
+L_CDA50:                 ; 0xcda50
+        JNB lv_dur_igc_0_err.0DH,L_CDA58
+        JMPA cc_UC,L_CDBC2
+L_CDA58:                 ; 0xcda58
+        JNB lv_dur_igc_0_err.0EH,L_CDA60
+        JMPA cc_UC,L_CDBC2
+L_CDA60:                 ; 0xcda60
+        JNB lv_cam_err.03H,L_CDA68
+        JMPA cc_UC,L_CDBC2
+L_CDA68:                 ; 0xcda68
+        JNB lv_lam_lim_1_err.07H,L_CDA70
+        JMPA cc_UC,L_CDBC2
+L_CDA70:                 ; 0xcda70
+        JNB lv_cps_err.06H,L_CDA78
+        JMPA cc_UC,L_CDBC2
+L_CDA78:                 ; 0xcda78
+        JNB lv_cam_err.07H,L_CDA80
+        JMPA cc_UC,L_CDBC2
+L_CDA80:                 ; 0xcda80
+        JNB lv_cam_err.08H,L_CDA88
+        JMPA cc_UC,L_CDBC2
+L_CDA88:                 ; 0xcda88
+        JNB lv_cam_err.00H,L_CDA90
+        JMPA cc_UC,L_CDBC2
+L_CDA90:                 ; 0xcda90
+        JNB lv_cam_err.01H,L_CDA98
+        JMPA cc_UC,L_CDBC2
+L_CDA98:                 ; 0xcda98
+        JNB lv_lam_lim_1_err.03H,L_CDAA0
+        JMPA cc_UC,L_CDBC2
+L_CDAA0:                 ; 0xcdaa0
+        JNB lv_cps_err.04H,L_CDAA8
+        JMPA cc_UC,L_CDBC2
+L_CDAA8:                 ; 0xcdaa8
+        JNB lv_iga_tra_knk.0FH,L_CDAB0
+        JMPA cc_UC,L_CDBC2
+L_CDAB0:                 ; 0xcdab0
+        JNB lv_er_carb_b4.04H,L_CDAB8
+        JMPA cc_UC,L_CDBC2
+L_CDAB8:                 ; 0xcdab8
+        JNB lv_er_carb_b4.05H,L_CDAC0
+        JMPA cc_UC,L_CDBC2
+L_CDAC0:                 ; 0xcdac0
+        MOV R12,n_sp_is
+        MOV R13,DPP0:c_n_dif_max_diag
+        CALLS 00FH,Add_r12_r13_Return_r4
+        CMP R4,n_C93C
+        JMPR cc_NC,L_CDB14
+        MOV R4,t_dly_isapwm_diag
+        CMP R4,DPP0:c_t_dly_isapwm_diag_2
+        JMPR cc_C,L_CDB0E
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D450H
+        MOV R13,#DATA16 057AEH
+        MOVBZ R14,DPP0:c_abc_inc_isapwm_h
+        MOVBZ R15,DPP0:c_abc_max_isapwm_h
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_ecu_err.00H,dtc_status_work.06H
+        MOVBZ R4,lv_iga_d45a
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_CDBDC
+        MOV R4,#DATA16 0FFFEH
+        AND dtc_st_grp_ecu,R4
+        RETS
+L_CDB0E:                 ; 0xcdb0e
+        SUB t_dly_isapwm_diag,ONES
+        RETS
+L_CDB14:                 ; 0xcdb14
+        MOV R12,n_sp_is
+        MOV R13,DPP0:c_n_dif_min_diag
+        CALLS 00FH,sub_r12_r13_rets_r4
+        CMP R4,n_C93C
+        JMPR cc_ULE,L_CDB68
+        MOV R4,t_dly_isapwm_diag
+        CMP R4,DPP0:c_t_dly_isapwm_diag_2
+        JMPR cc_C,L_CDB62
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D442H
+        MOV R13,#DATA16 05798H
+        MOVBZ R14,DPP0:c_abc_inc_isapwm_l
+        MOVBZ R15,DPP0:c_abc_max_isapwm_l
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_dur_igc_0_err.0FH,dtc_status_work.06H
+        MOVBZ R4,lv_iga_d44c
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_CDBDC
+        MOV R4,#DATA16 07FFFH
+        AND dtc_st_grp_igc,R4
+        RETS
+L_CDB62:                 ; 0xcdb62
+        SUB t_dly_isapwm_diag,ONES
+        RETS
+L_CDB68:                 ; 0xcdb68
+        MOV t_dly_isapwm_diag,ZEROS
+        MOV R12,#DATA16 0D450H
+        MOV R13,#DATA16 057AEH
+        MOVBZ R14,DPP0:c_abc_inc_isapwm_h
+        MOVBZ R15,DPP0:c_abc_max_isapwm_h
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_ecu_err.00H,dtc_status_work.06H
+        MOVBZ R4,lv_iga_d45a
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_CDB96
+        MOV R4,#DATA16 0FFFEH
+        AND dtc_st_grp_ecu,R4
+L_CDB96:                 ; 0xcdb96
+        MOV R12,#DATA16 0D442H
+        MOV R13,#DATA16 05798H
+        MOVBZ R14,DPP0:c_abc_inc_isapwm_l
+        MOVBZ R15,DPP0:c_abc_max_isapwm_l
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_dur_igc_0_err.0FH,dtc_status_work.06H
+        MOVBZ R4,lv_iga_d44c
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_CDBDC
+        MOV R4,#DATA16 07FFFH
+        AND dtc_st_grp_igc,R4
+        RETS
+L_CDBC2:                 ; 0xcdbc2
+        MOV t_dly_isapwm_diag,ZEROS
+        MOV R4,#DATA16 0FFFEH
+        AND lv_iga_f878,R4
+        MOV R4,#DATA16 07FFFH
+        AND g_f876,R4
+        RETS
+L_CDBD8:                 ; 0xcdbd8
+        MOV t_dly_isapwm_diag,ZEROS
+L_CDBDC:                 ; 0xcdbdc
+        RETS
+
+; ======== CanPurge_Set_Close  (@0xcdbde) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by cp/cat_diag/isa output signals): Set purge-valve close request
+        ; lv_cp_set_close.
+        ; ------------------------------------------------------------
+CanPurge_Set_Close:
+        BCLR lv_cp_set_close.01H
+        JNB lv_dur_igc_0_err.00H,L_CDBE8
+        JMPA cc_UC,L_CDC64
+L_CDBE8:                 ; 0xcdbe8
+        JB lv_dur_igc_0_err.01H,L_CDC64
+        JB lv_dur_igc_0_err.02H,L_CDC64
+        JB lv_dur_igc_0_err.03H,L_CDC64
+        JB lv_dur_igc_0_err.04H,L_CDC64
+        JB lv_dur_igc_0_err.05H,L_CDC64
+        JB lv_dur_igc_0_err.06H,L_CDC64
+        JB lv_dur_igc_0_err.07H,L_CDC64
+        JB lv_cam_err.0CH,L_CDC64
+        JB lv_lam_lim_1_err.01H,L_CDC64
+        JB lv_cam_err.0DH,L_CDC64
+        JB lv_cam_err.0EH,L_CDC64
+        JB lv_lam_lim_1_err.00H,L_CDC64
+        JB lv_cam_err.07H,L_CDC64
+        JB lv_cam_err.08H,L_CDC64
+        JB lv_er_carb_b4.04H,L_CDC64
+        JB lv_cam_err.0AH,L_CDC64
+        JB lv_cam_err.0BH,L_CDC64
+        JB lv_cam_err.02H,L_CDC64
+        JB lv_cam_err.03H,L_CDC64
+        JB lv_cam_err.00H,L_CDC64
+        JB lv_cam_err.01H,L_CDC64
+        JB lv_dur_igc_0_err.0DH,L_CDC64
+        JB lv_dur_igc_0_err.0EH,L_CDC64
+        JB lv_ecu_err.01H,L_CDC64
+        JB lv_can_bus_off_err.06H,L_CDC64
+        JB lv_cps_err.05H,L_CDC64
+        JB lv_cps_err.06H,L_CDC64
+        JB lv_lam_lim_1_err.07H,L_CDC64
+        JB lv_lam_lim_1_err.03H,L_CDC64
+        JB lv_lam_lim_1_err.0BH,L_CDC64
+        JNB lv_lam_lim_1_err.0DH,L_CDC68
+L_CDC64:                 ; 0xcdc64
+        BSET lv_cp_set_close.00H
+        RETS
+L_CDC68:                 ; 0xcdc68
+        BCLR lv_cp_set_close.00H
+        RETS
+
+S_CD8EA ENDS
+        END

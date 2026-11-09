@@ -1,0 +1,113 @@
+; asw/pwl.a66
+; 0xC0BD2-0xC0C9E  (204 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_t_isa_open_dly                     EQU  090339H
+c_lgrd_isa_pwl                       EQU  0905A2H
+
+PUBLIC  Calc_ISA_PWL, Calc_ISA_PWL_State, Set_Df38d_c0e
+EXTERN  Add_r12_r13_Return_r4:NEAR, Calc_ISA_Opening_Sp:NEAR, sub_r12_r13_rets_r4:NEAR
+
+S_C0BD2 SECTION CODE AT 0C0BD2H
+
+; ======== Calc_ISA_PWL_State  (@0xc0bd2) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by idle/ISA output signals): ISA piecewise-linear opening transition manager:
+        ; advances lv_iga_tra_knk transition bits and pwl_dly_ctr delay counter (feeds Calc_ISA_PWL).
+        ; ------------------------------------------------------------
+Calc_ISA_PWL_State:
+        JB can_fd58.09H,L_C0BE0
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_C0BE0
+        MOV R4,DPP0:c_lgrd_isa_pwl
+        JMPR cc_NE,L_C0C04
+L_C0BE0:                 ; 0xc0be0
+        JNB lv_iga_tra_knk.06H,L_C0C08
+        BCLR lv_iga_tra_knk.06H
+        JNB lv_iga_tra_knk.07H,L_C0BF8
+        MOVB RL4,pwl_dly_ctr
+        JMPR cc_EQ,L_C0BF6
+        SUBB RL4,#01H
+        MOVB pwl_dly_ctr,RL4
+L_C0BF6:                 ; 0xc0bf6
+        BCLR lv_iga_tra_knk.07H
+L_C0BF8:                 ; 0xc0bf8
+        MOVB st_isa_pwl,ZEROS
+        BCLR lv_iga_tra_knk.08H
+        MOV lv_isc_f98e,ZEROS
+        JMPR cc_UC,L_C0C08
+L_C0C04:                 ; 0xc0c04
+        CALLS 00CH,Calc_ISA_PWL
+L_C0C08:                 ; 0xc0c08
+        CALLS 00CH,Calc_ISA_Opening_Sp
+        RETS
+
+; ======== Set_Df38d_c0e  (@0xc0c0e) ========
+Set_Df38d_c0e:
+        MOVB RL4,#03H
+        MOVB st_isa_pwl,RL4
+        RETS
+
+; ======== Calc_ISA_PWL  (@0xc0c16) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): Idle speed actuator PWL opening ramp (opg_sp_pwl_isa,
+        ; c_lgrd_isa_pwl)
+        ; ------------------------------------------------------------
+Calc_ISA_PWL:
+        JB lv_iga_tra_knk.06H,L_C0C40
+        BSET lv_iga_tra_knk.06H
+        MOV R4,opg_sp_isa
+        MOV opg_sp_pwl_isa,R4
+        MOVB RL4,DPP0:c_t_isa_open_dly
+        CMPB RL4,#00H
+        JMPR cc_ULE,L_C0C34
+        MOVBZ R4,RL4
+        MOV lv_isc_f98e,R4
+        JMPR cc_UC,L_C0C3A
+L_C0C34:                 ; 0xc0c34
+        MOVB RL4,#03H
+        MOVB st_isa_pwl,RL4
+L_C0C3A:                 ; 0xc0c3a
+        SUBB pwl_dly_ctr,ONES
+        BSET lv_iga_tra_knk.07H
+L_C0C40:                 ; 0xc0c40
+        MOVB RL4,st_isa_pwl
+        JMPR cc_EQ,L_C0C9C
+        JB lv_iga_tra_knk.08H,L_C0C80
+        MOV R12,opg_sp_pwl_isa
+        MOV R13,DPP0:c_lgrd_isa_pwl
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV opg_sp_pwl_isa,R4
+        CMP R4,#00H
+        JMPR cc_UGT,L_C0C9C
+        ADDB st_isa_pwl,ONES
+        MOVB RL4,st_isa_pwl
+        JMPR cc_EQ,L_C0C6C
+        BSET lv_iga_tra_knk.08H
+        RETS
+L_C0C6C:                 ; 0xc0c6c
+        JNB lv_iga_tra_knk.07H,L_C0C9C
+        MOVB RL4,pwl_dly_ctr
+        JMPR cc_EQ,L_C0C7C
+        SUBB RL4,#01H
+        MOVB pwl_dly_ctr,RL4
+L_C0C7C:                 ; 0xc0c7c
+        BCLR lv_iga_tra_knk.07H
+        RETS
+L_C0C80:                 ; 0xc0c80
+        MOV R12,opg_sp_pwl_isa
+        MOV R13,DPP0:c_lgrd_isa_pwl
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV opg_sp_pwl_isa,R4
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_C,L_C0C9C
+        ADDB st_isa_pwl,ONES
+        BCLR lv_iga_tra_knk.08H
+L_C0C9C:                 ; 0xc0c9c
+        RETS
+
+S_C0BD2 ENDS
+        END

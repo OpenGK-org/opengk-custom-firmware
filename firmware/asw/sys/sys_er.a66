@@ -1,0 +1,114 @@
+; asw/sys/sys_er.a66
+; 0xBC21E-0xBC2F0  (210 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_conf_imob                          EQU  09014EH
+c_tco_deac_ad_fuel                   EQU  09036EH
+c_tco_max_ad_fuel                    EQU  090377H
+c_tco_min_ad_fuel                    EQU  090381H
+c_tia_max_ad_fuel                    EQU  0903B6H
+c_tia_min_ad_fuel                    EQU  0903BAH
+c_amp_ad_min_ad_fuel                 EQU  0904AAH
+
+PUBLIC  Calc_Conf_Mis, Calc_ER_Adapt_Precond, Check_ER_Adapt_State
+
+S_BC21E SECTION CODE AT 0BC21EH
+
+; ======== Calc_ER_Adapt_Precond  (@0xbc21e) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Calc_ER_Adapt_Precond:
+        MOV R4,lam_bank_1_lam_up_lam_up_carrier
+        AND R4,#01H
+        JMPR cc_NE,L_BC2A8
+        MOVB RL4,tco_st
+        CMPB RL4,DPP0:c_tco_min_ad_fuel
+        JMPR cc_ULE,L_BC2A8
+        MOVB RL4,tco_st
+        CMPB RL4,DPP0:c_tco_max_ad_fuel
+        JMPR cc_NC,L_BC2A8
+        MOVB RL4,tia_st
+        CMPB RL4,DPP0:c_tia_min_ad_fuel
+        JMPR cc_ULE,L_BC2A8
+        MOVB RL4,tia_st
+        CMPB RL4,DPP0:c_tia_max_ad_fuel
+        JMPR cc_NC,L_BC2A8
+        MOVB RL4,tco
+        CMPB RL4,DPP0:c_tco_deac_ad_fuel
+        JMPR cc_NC,L_BC2A8
+        MOV R4,amp_ad
+        CMP R4,DPP0:c_amp_ad_min_ad_fuel
+        JMPR cc_ULE,L_BC2A8
+        JB lv_cam_err.0CH,L_BC2A8
+        JB lv_lam_lim_1_err.01H,L_BC2A8
+        JB lv_cam_err.0AH,L_BC2A8
+        JB lv_cam_err.02H,L_BC2A8
+        JB lv_cam_err.03H,L_BC2A8
+        JB lv_dur_igc_0_err.00H,L_BC2A8
+        JB lv_dur_igc_0_err.01H,L_BC2A8
+        JB lv_dur_igc_0_err.02H,L_BC2A8
+        JB lv_dur_igc_0_err.03H,L_BC2A8
+        JB lv_dur_igc_0_err.04H,L_BC2A8
+        JB lv_dur_igc_0_err.05H,L_BC2A8
+        JB lv_dur_igc_0_err.06H,L_BC2A8
+        JB lv_dur_igc_0_err.07H,L_BC2A8
+        JB lv_cps_err.05H,L_BC2A8
+        JB lv_er_carb_b4.04H,L_BC2A8
+        JNB lv_er_carb_b4.05H,L_BC2A4
+        JMPR cc_UC,L_BC2A8
+L_BC2A4:                 ; 0xbc2a4
+        BSET PSW.06H
+        JMPR cc_UC,L_BC2AA
+L_BC2A8:                 ; 0xbc2a8
+        BCLR PSW.06H
+L_BC2AA:                 ; 0xbc2aa
+        RETS
+
+; ======== Check_ER_Adapt_State  (@0xbc2ac) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Check_ER_Adapt_State:
+        MOVB RL4,er_ad_state
+        JMPR cc_EQ,L_BC2E0
+        MOVB RL4,er_ad_state
+        CMPB RL4,#03H
+        JMPR cc_NE,L_BC2C0
+        JB lv_carb_err.0BH,L_BC2C0
+        JMPR cc_UC,L_BC2E0
+L_BC2C0:                 ; 0xbc2c0
+        MOVB RL4,er_ad_state
+        CMPB RL4,#01H
+        JMPR cc_NE,L_BC2CE
+        JB lv_lam_fd2c.0FH,L_BC2CE
+        JMPR cc_UC,L_BC2E0
+L_BC2CE:                 ; 0xbc2ce
+        MOVB RL4,er_ad_state
+        CMPB RL4,#02H
+        JMPR cc_NE,L_BC2DC
+        JB lv_ch.04H,L_BC2DC
+        JMPR cc_UC,L_BC2E0
+L_BC2DC:                 ; 0xbc2dc
+        BSET PSW.06H
+        JMPR cc_UC,L_BC2E2
+L_BC2E0:                 ; 0xbc2e0
+        BCLR PSW.06H
+L_BC2E2:                 ; 0xbc2e2
+        RETS
+
+; ======== Calc_Conf_Mis  (@0xbc2e4) ========
+Calc_Conf_Mis:
+        MOVB RL4,DPP0:c_conf_imob
+        JMPR cc_NE,L_BC2EE
+        BSET lv_conf_mis.08H
+        BSET bl_mode_status_flags.04H
+L_BC2EE:                 ; 0xbc2ee
+        RETS
+
+S_BC21E ENDS
+        END

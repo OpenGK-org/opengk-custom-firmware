@@ -1,0 +1,271 @@
+; asw/rbm/rbm_tmp.a66
+; 0xB34E0-0xB373A  (602 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Calc_RBM_Ratio_Tmp, OBD_Mode09_CountItems, Reset_RBM_Ctrs
+EXTERN  multipied_r12_r13_UGT_r14_rets_r4:NEAR
+
+S_B34E0 SECTION CODE AT 0B34E0H
+
+; ======== OBD_Mode09_CountItems  (@0xb34e0) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+OBD_Mode09_CountItems:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R7,R12
+        MOV R8,R7
+        MOV R9,#00H
+L_B34EE:                 ; 0xb34ee
+        MOVB RL4,#00H
+        MOVB [R7],RL4
+        ADD R7,#01H
+        ADD R9,#01H
+        CMP R9,#DATA16 00020H
+        JMPR cc_C,L_B34EE
+        MOV R7,R8
+        MOV R4,ctr_cdn_obd_rbm
+        MOV obd_f6ae,R4
+        MOV R5,R7
+        ADD R7,#01H
+        MOVB [R5],obd_f6af
+        MOV R4,R7
+        ADD R7,#01H
+        MOVB [R4],obd_f6ae
+        MOV R4,ctr_igk_cyc_rbm
+        MOV obd_f6ae,R4
+        MOV R5,R7
+        ADD R7,#01H
+        MOVB [R5],obd_f6af
+        MOV R4,R7
+        ADD R7,#01H
+        MOVB [R4],obd_f6ae
+        MOV R12,#00H
+        MOV R13,R7
+        CALLS 00BH,Calc_RBM_Ratio_Tmp
+        ADD R7,#04H
+        ADD R7,#04H
+        MOV R12,#01H
+        MOV R13,R7
+        CALLS 00BH,Calc_RBM_Ratio_Tmp
+        ADD R7,#04H
+        ADD R7,#04H
+        MOV R12,#03H
+        MOV R13,R7
+        CALLS 00BH,Calc_RBM_Ratio_Tmp
+        ADD R7,#04H
+        ADD R7,#04H
+        MOV R12,#02H
+        MOV R13,R7
+        CALLS 00BH,Calc_RBM_Ratio_Tmp
+        MOVB RL6,#00H
+        MOVB RL4,RL6
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_RBM_Ratio_Tmp  (@0xb3568) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by state_rbm_/rate_rbm_ output signals): RBM temperature-bin ratio accumulator:
+        ; ratio_tmp_rbm / idx_tmp_rbm.
+        ; ------------------------------------------------------------
+Calc_RBM_Ratio_Tmp:
+        MOV [-R0],R13
+        MOV [-R0],R12
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        SUB R0,#04H
+        MOVB RL7,#00H
+        JMPR cc_UC,L_B357C
+L_B357A:                 ; 0xb357a
+        ADDB RL7,#01H
+L_B357C:                 ; 0xb357c
+        MOVBZ R4,RL7
+        SHL R4,#02H
+        MOVB RL5,[R4+#046C2H]
+        MOVB RL4,[R0+#0CH]
+        CMPB RL5,RL4
+        JMPR cc_EQ,L_B3594
+        MOVBZ R4,RL7
+        CMP R4,#DATA16 00013H
+        JMPR cc_C,L_B357A
+L_B3594:                 ; 0xb3594
+        MOVBZ R4,RL7
+        CMP R4,#DATA16 00013H
+        JMPA cc_NC,L_B36E0
+        MOVBZ R4,RL7
+        SHL R4,#02H
+        MOV R9,[R4+#046C0H]
+        MOV R4,[R9+#02H]
+        CMP R4,#00H
+        JMPR cc_ULE,L_B35C2
+        MOV R12,[R9]
+        MOV R13,#DATA16 02004H
+        MOV R14,[R9+#02H]
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV ratio_tmp_rbm,R4
+        JMPR cc_UC,L_B35C6
+L_B35C2:                 ; 0xb35c2
+        MOV ratio_tmp_rbm,ONES
+L_B35C6:                 ; 0xb35c6
+        MOVB idx_tmp_rbm,RL7
+        MOVB RL6,#01H
+        ADDB RL6,RL7
+        JMPR cc_UC,L_B3638
+L_B35D0:                 ; 0xb35d0
+        MOVBZ R4,RL6
+        SHL R4,#02H
+        MOVB RL5,[R4+#046C2H]
+        MOVB RL4,[R0+#0CH]
+        CMPB RL5,RL4
+        JMPR cc_NE,L_B3636
+        MOVBZ R4,RL6
+        SHL R4,#02H
+        MOV R9,[R4+#046C0H]
+        MOV R4,[R9+#02H]
+        CMP R4,#00H
+        JMPR cc_ULE,L_B3636
+        MOV R12,[R9]
+        MOV R13,#DATA16 02004H
+        MOV R14,[R9+#02H]
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV [R0+#02H],R4
+        CMP R4,ratio_tmp_rbm
+        JMPR cc_NC,L_B3612
+        MOV ratio_tmp_rbm,R4
+        MOVB idx_tmp_rbm,RL6
+        JMPR cc_UC,L_B3636
+L_B3612:                 ; 0xb3612
+        MOV R4,[R0+#02H]
+        CMP R4,ratio_tmp_rbm
+        JMPR cc_NE,L_B3636
+        MOVBZ R5,idx_tmp_rbm
+        SHL R5,#02H
+        MOV R2,[R5+#046C0H]
+        MOV R5,[R2+#02H]
+        MOV R2,[R9+#02H]
+        CMP R2,R5
+        JMPR cc_ULE,L_B3636
+        MOVB idx_tmp_rbm,RL6
+L_B3636:                 ; 0xb3636
+        ADDB RL6,#01H
+L_B3638:                 ; 0xb3638
+        MOVBZ R4,RL6
+        CMP R4,#DATA16 00013H
+        JMPR cc_C,L_B35D0
+        MOVBZ R4,idx_tmp_rbm
+        SHL R4,#02H
+        MOV R9,[R4+#046C0H]
+        MOV R4,ratio_tmp_rbm
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_EQ,L_B369E
+        MOV [R0],[R9]
+        MOVB RL4,[R0+#01H]
+        MOV R5,[R0+#0EH]
+        ADD R5,#01H
+        MOV [R0+#0EH],R5
+        SUB R5,#01H
+        MOVB [R5],RL4
+        MOV R4,[R0+#0EH]
+        ADD R4,#01H
+        MOV [R0+#0EH],R4
+        SUB R4,#01H
+        MOVB [R4],[R0]
+        MOV R4,[R9+#02H]
+        MOV [R0],R4
+        MOVB RL4,[R0+#01H]
+        MOV R5,[R0+#0EH]
+        ADD R5,#01H
+        MOV [R0+#0EH],R5
+        SUB R5,#01H
+        MOVB [R5],RL4
+        MOV R4,[R0+#0EH]
+        ADD R4,#01H
+        MOV [R0+#0EH],R4
+        SUB R4,#01H
+        MOVB [R4],[R0]
+        JMPR cc_UC,L_B36FA
+L_B369E:                 ; 0xb369e
+        MOV [R0],[R9]
+        MOVB RL4,[R0+#01H]
+        MOV R5,[R0+#0EH]
+        ADD R5,#01H
+        MOV [R0+#0EH],R5
+        SUB R5,#01H
+        MOVB [R5],RL4
+        MOV R4,[R0+#0EH]
+        ADD R4,#01H
+        MOV [R0+#0EH],R4
+        SUB R4,#01H
+        MOVB [R4],[R0]
+        MOVB RL4,#00H
+        MOV R5,[R0+#0EH]
+        ADD R5,#01H
+        MOV [R0+#0EH],R5
+        SUB R5,#01H
+        MOVB [R5],RL4
+        MOV R5,[R0+#0EH]
+        ADD R5,#01H
+        MOV [R0+#0EH],R5
+        SUB R5,#01H
+        MOVB [R5],RL4
+        JMPR cc_UC,L_B36FA
+L_B36E0:                 ; 0xb36e0
+        MOVB RL6,#00H
+L_B36E2:                 ; 0xb36e2
+        MOVB RL4,#00H
+        MOV R5,[R0+#0EH]
+        MOVB [R5],RL4
+        MOV R4,[R0+#0EH]
+        ADD R4,#01H
+        MOV [R0+#0EH],R4
+        ADDB RL6,#01H
+        CMPB RL6,#04H
+        JMPR cc_C,L_B36E2
+L_B36FA:                 ; 0xb36fa
+        MOV R8,#00H
+        MOV R4,R8
+        ADD R0,#04H
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        ADD R0,#04H
+        RETS
+
+; ======== Reset_RBM_Ctrs  (@0xb370c) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Reset_RBM_Ctrs:
+        MOV ctr_igk_cyc_rbm,ZEROS
+        MOV ctr_cdn_obd_rbm,ZEROS
+        MOV R12,#00H
+L_B3716:                 ; 0xb3716
+        MOV R4,#00H
+        MOV R5,R12
+        SHL R5,#02H
+        MOV R2,[R5+#046C0H]
+        MOV [R2+#02H],R4
+        MOV R5,R12
+        SHL R5,#02H
+        MOV R2,[R5+#046C0H]
+        MOV [R2],R4
+        ADD R12,#01H
+        CMP R12,#DATA16 00013H
+        JMPR cc_C,L_B3716
+        MOVB RL4,#00H
+        RETS
+
+S_B34E0 ENDS
+        END

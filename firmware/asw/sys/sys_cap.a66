@@ -1,0 +1,1837 @@
+; asw/sys/sys_cap.a66
+; 0xA9236-0xAA49E  (4712 bytes, 7 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  CC25INT_handler, CC8INT_handler, CapCom_CC0_Ch0_Drv, CapCom_CC1_Ch1_Drv, CapCom_CC2_Ch2_Drv, CapCom_CC3_Ch3_Drv_ImobGated
+PUBLIC  EngOut_Scheduler
+
+S_A9236 SECTION CODE AT 0A9236H
+
+; ======== CC25INT_handler  (@0xa9236) ========
+CC25INT_handler:
+        SCXT CP,#DATA16 0FC16H
+        BFLDH PSW_FF10,#0F0H,#070H
+        JMPI cc_UC,[R3]
+
+; ======== CapCom_CC0_Ch0_Drv  (@0xa9240) ========
+        ; CAPCOM output-compare channel driver, CHANNEL 0 (CC0/CC0IC, P2.0, accumulator DAT_00fa12->fa0a,
+        ; state byte DAT_00f59b, fd5a bits 0x40/0x80). One of a 4-channel near-identical cluster (per
+        ; cylinder/output): Ch0=0xa9240(CC0), Ch1=0xa9316(CC1,P2.1,fa14,f59c),
+        ; Ch2=0xa93ec(CC2,P2.2,fa16,f59d), Ch3=0xa94bc(CC3,P2.3,fa18,f59e). Each ends in RET -> GENUINE
+        ; independent functions (NOT tco_sub-style switch-arms), just unnamed. Named by unambiguous HW
+        ; channel. Schedules the next compare event (eoi/T0/T7 timing) and integrates/saturates the
+        ; per-channel accumulator.
+CapCom_CC0_Ch0_Drv:
+        MOVB RL1,eoi
+        ADDB RL1,#DATA16 0001EH
+        MOVB RL0,RL1
+        ADDB RL0,#DATA16 00046H
+        CMPB RL0,#DATA16 00078H
+        JMPR cc_ULE,L_A9258
+        SUBB RL0,#DATA16 00078H
+L_A9258:                 ; 0xa9258
+        MOVBZ CC25_FE72,RL0
+        MOVB RH0,#DATA16 00046H
+        SUBB RH0,T7_F050
+        NEGB RH0
+        CMPB RH0,#00H
+        JMPR cc_SGE,L_A926E
+        ADDB RH0,#DATA16 00078H
+L_A926E:                 ; 0xa926e
+        CMPB RH0,RL1
+        JMPR cc_C,L_A9276
+        EXTR #01H
+        BSET SSCTIC.07H
+L_A9276:                 ; 0xa9276
+        MOVB RL2,#0AH
+        CMPB RL2,inj_ic_cyl0
+        JMPR cc_EQ,L_A930E
+        MOVB RL2,#06H
+        CMPB RL2,inj_ic_cyl0
+        JMPR cc_EQ,L_A92BA
+        BFLDL 0FF52H,#0FH,#00H
+        BSET P2.00H
+        BCLR CC0IC.07H
+        MOVB RL2,#00H
+        MOVB inj_ic_cyl0,RL2
+        MOV CC0,#DATA16 0006EH
+        BFLDL 0FF52H,#0FH,#06H
+        MOVB RL0,#DATA16 00028H
+        MOVB RH0,#DATA16 00046H
+        SUBB RH0,T0_FE50
+        NEGB RH0
+        CMPB RH0,#00H
+        JMPR cc_SGE,L_A92B2
+        ADDB RH0,#DATA16 00078H
+L_A92B2:                 ; 0xa92b2
+        CMPB RH0,RL0
+        JMPR cc_C,L_A92C6
+        BSET CC0IC.07H
+        JMPR cc_UC,L_A92C6
+L_A92BA:                 ; 0xa92ba
+        JNBS state_mtv.06H,L_A92C6
+        BFLDL 0FF52H,#0FH,#00H
+        BSET P2.00H
+        BSET CC0IC.07H
+L_A92C6:                 ; 0xa92c6
+        MOV R0,inj_cc_7
+        JB state_mtv.07H,L_A92EA
+        MOVB RL2,prev_state_iv
+        JNB R2.00H,L_A92DC
+        SUB R0,ti_wf_sync0
+        JMPR cc_UC,L_A92E0
+L_A92DC:                 ; 0xa92dc
+        ADD R0,ti_wf_inc
+L_A92E0:                 ; 0xa92e0
+        JMPR cc_SLE,L_A92E4
+        MOV R0,#00H
+L_A92E4:                 ; 0xa92e4
+        MOV inj_cc_7,R0
+        JMPR cc_UC,L_A92FC
+L_A92EA:                 ; 0xa92ea
+        MOVB RL2,prev_state_iv
+        JB R2.00H,L_A92FC
+        ADD R0,ti_n_pos_rg
+        JMPR cc_NN,L_A92FC
+        MOV R0,#DATA16 07FFFH
+L_A92FC:                 ; 0xa92fc
+        MOV ti_dur_cyl0,R0
+        MOVBZ R2,prev_state_iv
+        BMOV R2.00H,state_mtv.07H
+        MOVB prev_state_iv,RL2
+        BCLR state_mtv.07H
+L_A930E:                 ; 0xa930e
+        MOV R3,#DATA16 09316H
+        JMPA cc_UC,L_A958E
+
+; ======== CapCom_CC1_Ch1_Drv  (@0xa9316) ========
+CapCom_CC1_Ch1_Drv:
+        MOVB RL1,eoi
+        ADDB RL1,#DATA16 0001EH
+        MOVB RL0,RL1
+        ADDB RL0,#DATA16 00064H
+        CMPB RL0,#DATA16 00078H
+        JMPR cc_ULE,L_A932E
+        SUBB RL0,#DATA16 00078H
+L_A932E:                 ; 0xa932e
+        MOVBZ CC25_FE72,RL0
+        MOVB RH0,#DATA16 00064H
+        SUBB RH0,T7_F050
+        NEGB RH0
+        CMPB RH0,#00H
+        JMPR cc_SGE,L_A9344
+        ADDB RH0,#DATA16 00078H
+L_A9344:                 ; 0xa9344
+        CMPB RH0,RL1
+        JMPR cc_C,L_A934C
+        EXTR #01H
+        BSET SSCTIC.07H
+L_A934C:                 ; 0xa934c
+        MOVB RL2,#0AH
+        CMPB RL2,inj_ic_cyl1
+        JMPR cc_EQ,L_A93E4
+        MOVB RL2,#06H
+        CMPB RL2,inj_ic_cyl1
+        JMPR cc_EQ,L_A9390
+        BFLDL 0FF52H,#0F0H,#00H
+        BSET P2.01H
+        BCLR CC1IC.07H
+        MOVB RL2,#00H
+        MOVB inj_ic_cyl1,RL2
+        MOV CC1,#DATA16 00014H
+        BFLDL 0FF52H,#0F0H,#060H
+        MOVB RL0,#DATA16 00028H
+        MOVB RH0,#DATA16 00064H
+        SUBB RH0,T0_FE50
+        NEGB RH0
+        CMPB RH0,#00H
+        JMPR cc_SGE,L_A9388
+        ADDB RH0,#DATA16 00078H
+L_A9388:                 ; 0xa9388
+        CMPB RH0,RL0
+        JMPR cc_C,L_A939C
+        BSET CC1IC.07H
+        JMPR cc_UC,L_A939C
+L_A9390:                 ; 0xa9390
+        JNBS state_mtv.09H,L_A939C
+        BFLDL 0FF52H,#0F0H,#00H
+        BSET P2.01H
+        BSET CC1IC.07H
+L_A939C:                 ; 0xa939c
+        MOV R0,inj_cc_8
+        JB state_mtv.0AH,L_A93C0
+        MOVB RL2,prev_state_iv
+        JNB R2.01H,L_A93B2
+        SUB R0,ti_wf_sync0
+        JMPR cc_UC,L_A93B6
+L_A93B2:                 ; 0xa93b2
+        ADD R0,ti_wf_inc
+L_A93B6:                 ; 0xa93b6
+        JMPR cc_SLE,L_A93BA
+        MOV R0,#00H
+L_A93BA:                 ; 0xa93ba
+        MOV inj_cc_8,R0
+        JMPR cc_UC,L_A93D2
+L_A93C0:                 ; 0xa93c0
+        MOVB RL2,prev_state_iv
+        JB R2.01H,L_A93D2
+        ADD R0,ti_n_pos_rg
+        JMPR cc_NN,L_A93D2
+        MOV R0,#DATA16 07FFFH
+L_A93D2:                 ; 0xa93d2
+        MOV ti_dur_cyl1,R0
+        MOVBZ R2,prev_state_iv
+        BMOV R2.01H,state_mtv.0AH
+        MOVB prev_state_iv,RL2
+        BCLR state_mtv.0AH
+L_A93E4:                 ; 0xa93e4
+        MOV R3,#DATA16 093ECH
+        JMPA cc_UC,L_A958E
+
+; ======== CapCom_CC2_Ch2_Drv  (@0xa93ec) ========
+CapCom_CC2_Ch2_Drv:
+        MOVB RL1,eoi
+        ADDB RL1,#DATA16 0001EH
+        MOVB RL0,RL1
+        ADDB RL0,#DATA16 0000AH
+        CMPB RL0,#DATA16 00078H
+        JMPR cc_ULE,L_A9404
+        SUBB RL0,#DATA16 00078H
+L_A9404:                 ; 0xa9404
+        MOVBZ CC25_FE72,RL0
+        MOVB RH0,#0AH
+        SUBB RH0,T7_F050
+        NEGB RH0
+        CMPB RH0,#00H
+        JMPR cc_SGE,L_A9418
+        ADDB RH0,#DATA16 00078H
+L_A9418:                 ; 0xa9418
+        CMPB RH0,RL1
+        JMPR cc_C,L_A9420
+        EXTR #01H
+        BSET SSCTIC.07H
+L_A9420:                 ; 0xa9420
+        MOVB RL2,#0AH
+        CMPB RL2,inj_ic_cyl2
+        JMPR cc_EQ,L_A94B6
+        MOVB RL2,#06H
+        CMPB RL2,inj_ic_cyl2
+        JMPR cc_EQ,L_A9462
+        BFLDH CCM0_FF52,#0FH,#00H
+        BSET P2.02H
+        BCLR CC2IC.07H
+        MOVB RL2,#00H
+        MOVB inj_ic_cyl2,RL2
+        MOV CC2,#DATA16 00032H
+        BFLDH CCM0_FF52,#0FH,#06H
+        MOVB RL0,#DATA16 00028H
+        MOVB RH0,#0AH
+        SUBB RH0,T0_FE50
+        NEGB RH0
+        CMPB RH0,#00H
+        JMPR cc_SGE,L_A945A
+        ADDB RH0,#DATA16 00078H
+L_A945A:                 ; 0xa945a
+        CMPB RH0,RL0
+        JMPR cc_C,L_A946E
+        BSET CC2IC.07H
+        JMPR cc_UC,L_A946E
+L_A9462:                 ; 0xa9462
+        JNBS state_mtv.0CH,L_A946E
+        BFLDH CCM0_FF52,#0FH,#00H
+        BSET P2.02H
+        BSET CC2IC.07H
+L_A946E:                 ; 0xa946e
+        MOV R0,inj_cc_9
+        JB state_mtv.0DH,L_A9492
+        MOVB RL2,prev_state_iv
+        JNB R2.02H,L_A9484
+        SUB R0,ti_wf_sync0
+        JMPR cc_UC,L_A9488
+L_A9484:                 ; 0xa9484
+        ADD R0,ti_wf_inc
+L_A9488:                 ; 0xa9488
+        JMPR cc_SLE,L_A948C
+        MOV R0,#00H
+L_A948C:                 ; 0xa948c
+        MOV inj_cc_9,R0
+        JMPR cc_UC,L_A94A4
+L_A9492:                 ; 0xa9492
+        MOVB RL2,prev_state_iv
+        JB R2.02H,L_A94A4
+        ADD R0,ti_n_pos_rg
+        JMPR cc_NN,L_A94A4
+        MOV R0,#DATA16 07FFFH
+L_A94A4:                 ; 0xa94a4
+        MOV ti_dur_cyl2,R0
+        MOVBZ R2,prev_state_iv
+        BMOV R2.02H,state_mtv.0DH
+        MOVB prev_state_iv,RL2
+        BCLR state_mtv.0DH
+L_A94B6:                 ; 0xa94b6
+        MOV R3,#DATA16 094BCH
+        JMPR cc_UC,L_A958E
+
+; ======== CapCom_CC3_Ch3_Drv_ImobGated  (@0xa94bc) ========
+        ; CAPCOM output-compare channel driver, CHANNEL 3 (CC3/CC3IC, P2.3, accumulator DAT_00fa18->fa10,
+        ; state byte DAT_00f59e). SECURITY NOTE: unlike Ch0-2 (which gate the accumulator on fd5a bits), this
+        ; channel gates on smartra_comms_status&1 -- i.e. the immobilizer comms state directly
+        ; enables/disables this output. Part of the 4-channel CapCom cluster (see 0xa9240).
+CapCom_CC3_Ch3_Drv_ImobGated:
+        MOVB RL1,eoi
+        ADDB RL1,#DATA16 0001EH
+        MOVB RL0,RL1
+        ADDB RL0,#DATA16 00028H
+        CMPB RL0,#DATA16 00078H
+        JMPR cc_ULE,L_A94D4
+        SUBB RL0,#DATA16 00078H
+L_A94D4:                 ; 0xa94d4
+        MOVBZ CC25_FE72,RL0
+        MOVB RH0,#DATA16 00028H
+        SUBB RH0,T7_F050
+        NEGB RH0
+        CMPB RH0,#00H
+        JMPR cc_SGE,L_A94EA
+        ADDB RH0,#DATA16 00078H
+L_A94EA:                 ; 0xa94ea
+        CMPB RH0,RL1
+        JMPR cc_C,L_A94F2
+        EXTR #01H
+        BSET SSCTIC.07H
+L_A94F2:                 ; 0xa94f2
+        MOVB RL2,#0AH
+        CMPB RL2,inj_ic_cyl3
+        JMPR cc_EQ,L_A958A
+        MOVB RL2,#06H
+        CMPB RL2,inj_ic_cyl3
+        JMPR cc_EQ,L_A9536
+        BFLDH CCM0_FF52,#0F0H,#00H
+        BSET P2.03H
+        BCLR CC3IC.07H
+        MOVB RL2,#00H
+        MOVB inj_ic_cyl3,RL2
+        MOV CC3,#DATA16 00050H
+        BFLDH CCM0_FF52,#0F0H,#060H
+        MOVB RL0,#DATA16 00028H
+        MOVB RH0,#DATA16 00028H
+        SUBB RH0,T0_FE50
+        NEGB RH0
+        CMPB RH0,#00H
+        JMPR cc_SGE,L_A952E
+        ADDB RH0,#DATA16 00078H
+L_A952E:                 ; 0xa952e
+        CMPB RH0,RL0
+        JMPR cc_C,L_A9542
+        BSET CC3IC.07H
+        JMPR cc_UC,L_A9542
+L_A9536:                 ; 0xa9536
+        JNBS state_mtv.0FH,L_A9542
+        BFLDH CCM0_FF52,#0F0H,#00H
+        BSET P2.03H
+        BSET CC3IC.07H
+L_A9542:                 ; 0xa9542
+        MOV R0,inj_cc_10
+        JB smartra_comms_status.00H,L_A9566
+        MOVB RL2,prev_state_iv
+        JNB R2.03H,L_A9558
+        SUB R0,ti_wf_sync0
+        JMPR cc_UC,L_A955C
+L_A9558:                 ; 0xa9558
+        ADD R0,ti_wf_inc
+L_A955C:                 ; 0xa955c
+        JMPR cc_SLE,L_A9560
+        MOV R0,#00H
+L_A9560:                 ; 0xa9560
+        MOV inj_cc_10,R0
+        JMPR cc_UC,L_A9578
+L_A9566:                 ; 0xa9566
+        MOVB RL2,prev_state_iv
+        JB R2.03H,L_A9578
+        ADD R0,ti_n_pos_rg
+        JMPR cc_NN,L_A9578
+        MOV R0,#DATA16 07FFFH
+L_A9578:                 ; 0xa9578
+        MOV ti_dur_cyl3,R0
+        MOVBZ R2,prev_state_iv
+        BMOV R2.03H,smartra_comms_status.00H
+        MOVB prev_state_iv,RL2
+        BCLR smartra_comms_status.00H
+L_A958A:                 ; 0xa958a
+        MOV R3,#DATA16 09240H
+L_A958E:                 ; 0xa958e
+        POP CP
+        RETI
+
+; ======== EngOut_Scheduler  (@0xa9592) ========
+        ; ------------------------------------------------------------
+        ; Engine output ISR (identified by HW interrupt vector + CAPCOM/channel registers): Engine 4-channel
+        ; output-event SCHEDULER: advances per-channel state machines switch(f59b/f59c/f59d/f59e) via jump
+        ; tables @0x6526/653a/654e/... (the CapCom_CC0..CC3_Drv arms), schedules CAPCOM compare events
+        ; (CCM/CCxIC) from eoi/angle timing + accumulators fa12/14/16/18. Computed-jump -> MCP decompiler
+        ; fails.
+        ; ------------------------------------------------------------
+EngOut_Scheduler:
+        SCXT CP,#DATA16 0FC16H
+        BFLDH PSW_FF10,#0F0H,#070H
+        NOP
+        MOVB RL0,msk_inj_cyl_ok
+        ANDB RL0,#01H
+        JMPA cc_NE,L_A970E
+        MOVBZ R2,inj_ic_cyl0
+        MOV R2,[R2+#06526H]
+        JMPI cc_UC,[R2]
+        BCMP state_mtv.06H,state_mtv.06H
+        JMPA cc_NC,L_A970E
+        MOV R0,T0_FE50
+        SUBB RL0,#DATA16 00046H
+        CMPB RL0,#00H
+        JMPR cc_SGE,L_A95C8
+        ADDB RL0,#DATA16 00078H
+L_A95C8:                 ; 0xa95c8
+        CMPB RL0,#DATA16 00028H
+        JMPA cc_ULE,L_A970E
+        BCLR state_mtv.06H
+        MOVB RL2,#02H
+        MOVB inj_ic_cyl0,RL2
+        MOVB RL0,T0_FE50
+        SUBB RL0,#DATA16 0006EH
+        CMPB RL0,#00H
+        JMPR cc_SGE,L_A95E8
+        ADDB RL0,#DATA16 00078H
+L_A95E8:                 ; 0xa95e8
+        CMPB RL0,#DATA16 00064H
+        JMPR cc_UGT,L_A962C
+        BFLDL 0FF52H,#0FH,#00H
+        MOVB RL0,soi
+        ADDB RL0,#DATA16 0006EH
+        CMPB RL0,#DATA16 00078H
+        JMPR cc_ULE,L_A9604
+        SUBB RL0,#DATA16 00078H
+L_A9604:                 ; 0xa9604
+        MOVBZ CC0_FE80,RL0
+        BCLR CC0IC.07H
+        BFLDL 0FF52H,#0FH,#06H
+        MOVB RH0,#DATA16 0006EH
+        SUBB RH0,T0_FE50
+        NEGB RH0
+        CMPB RH0,#00H
+        JMPR cc_SGE,L_A9620
+        ADDB RH0,#DATA16 00078H
+L_A9620:                 ; 0xa9620
+        CMPB RH0,soi
+        JMPA cc_C,L_A970E
+        BSET CC0IC.07H
+        JMPR cc_UC,L_A970E
+L_A962C:                 ; 0xa962c
+        MOVB RL2,#00H
+        MOVB inj_ic_cyl0,RL2
+        JMPR cc_UC,L_A970E
+        JNB state_mtv.06H,L_A9666
+        MOV R0,T0_FE50
+        SUBB RL0,#DATA16 00046H
+        CMPB RL0,#00H
+        JMPR cc_SGE,L_A9648
+        ADDB RL0,#DATA16 00078H
+L_A9648:                 ; 0xa9648
+        JB state_mtv.05H,L_A9652
+        CMPB RL0,#DATA16 00028H
+        JMPR cc_C,L_A9666
+L_A9652:                 ; 0xa9652
+        BSET state_mtv.05H
+        SUBB RL0,#DATA16 00028H
+        CMPB RL0,soi
+        JMPR cc_C,L_A9666
+        BFLDL 0FF52H,#0FH,#00H
+        BSET CC0IC.07H
+        JMPR cc_UC,L_A970E
+L_A9666:                 ; 0xa9666
+        CMP R4,ti_hom_bas_1
+        JMPR cc_ULE,L_A96BA
+        ATOMIC #02H
+        BFLDL 0FF52H,#0FH,#00H
+        MOV R0,T1_FE52
+        JB CC0IC.07H,L_A96BA
+        BCLR P2.00H
+        SUB CC0_FE80,R0
+        MOV R1,R4
+        SUB R1,ti_hom_bas_1
+        SUB CC0_FE80,R1
+        JMPR cc_UGT,L_A9696
+        SUB R4,CC0_FE80
+        BSET P2.00H
+        BSET CC0IC.07H
+        JMPR cc_UC,L_A96BA
+L_A9696:                 ; 0xa9696
+        MOV R4,ti_hom_bas_1
+        MOV R1,CC0_FE80
+        ADD CC0_FE80,R0
+        BFLDL 0FF52H,#0FH,#0DH
+        JB R1.0FH,L_A96BA
+        CMP CC0,T1_FE52
+        JMPR cc_EQ,L_A96B2
+        JMPR cc_NN,L_A96BA
+L_A96B2:                 ; 0xa96b2
+        BFLDL 0FF52H,#0FH,#00H
+        BSET P2.00H
+        BSET CC0IC.07H
+L_A96BA:                 ; 0xa96ba
+        JMPR cc_UC,L_A970E
+        MOV R0,ti_hom_bas_1
+        SUB R0,R4
+        JMPR cc_ULE,L_A970E
+        CMP R0,ti_inj_min_pw
+        JMPR cc_ULE,L_A970E
+        MOVB RL2,#08H
+        MOVB inj_ic_cyl0,RL2
+        MOVB RL2,#DATA16 000FEH
+        ANDB inj_arm_mask,RL2
+        MOV R4,ti_hom_bas_1
+        ADD R0,ti_inj_ext
+        JMPR cc_NC,L_A96E6
+        MOV R0,0FF1EH
+L_A96E6:                 ; 0xa96e6
+        ATOMIC #02H
+        BCLR P2.00H
+        MOV CC0,T1_FE52
+        ADD CC0_FE80,R0
+        BFLDL 0FF52H,#0FH,#0DH
+        JB R0.0FH,L_A970E
+        MOV R0,T1_FE52
+        SUB R0,CC0_FE80
+        JB R0.0FH,L_A970E
+        BFLDL 0FF52H,#0FH,#00H
+        BSET P2.00H
+        BSET CC0IC.07H
+L_A970E:                 ; 0xa970e
+        MOVB RL0,msk_inj_cyl_ok
+        ANDB RL0,#02H
+        JMPA cc_NE,L_A9880
+        MOVBZ R2,inj_ic_cyl1
+        MOV R2,[R2+#0653AH]
+        JMPI cc_UC,[R2]
+        BCMP state_mtv.09H,state_mtv.09H
+        JMPA cc_NC,L_A9880
+        MOV R0,T0_FE50
+        SUBB RL0,#DATA16 00064H
+        CMPB RL0,#00H
+        JMPR cc_SGE,L_A973A
+        ADDB RL0,#DATA16 00078H
+L_A973A:                 ; 0xa973a
+        CMPB RL0,#DATA16 00028H
+        JMPA cc_ULE,L_A9880
+        BCLR state_mtv.09H
+        MOVB RL2,#02H
+        MOVB inj_ic_cyl1,RL2
+        MOVB RL0,T0_FE50
+        SUBB RL0,#DATA16 00014H
+        CMPB RL0,#00H
+        JMPR cc_SGE,L_A975A
+        ADDB RL0,#DATA16 00078H
+L_A975A:                 ; 0xa975a
+        CMPB RL0,#DATA16 00064H
+        JMPR cc_UGT,L_A979E
+        BFLDL 0FF52H,#0F0H,#00H
+        MOVB RL0,soi
+        ADDB RL0,#DATA16 00014H
+        CMPB RL0,#DATA16 00078H
+        JMPR cc_ULE,L_A9776
+        SUBB RL0,#DATA16 00078H
+L_A9776:                 ; 0xa9776
+        MOVBZ CC1_FE82,RL0
+        BCLR CC1IC.07H
+        BFLDL 0FF52H,#0F0H,#060H
+        MOVB RH0,#DATA16 00014H
+        SUBB RH0,T0_FE50
+        NEGB RH0
+        CMPB RH0,#00H
+        JMPR cc_SGE,L_A9792
+        ADDB RH0,#DATA16 00078H
+L_A9792:                 ; 0xa9792
+        CMPB RH0,soi
+        JMPA cc_C,L_A9880
+        BSET CC1IC.07H
+        JMPR cc_UC,L_A9880
+L_A979E:                 ; 0xa979e
+        MOVB RL2,#00H
+        MOVB inj_ic_cyl1,RL2
+        JMPR cc_UC,L_A9880
+        JNB state_mtv.09H,L_A97D8
+        MOV R0,T0_FE50
+        SUBB RL0,#DATA16 00064H
+        CMPB RL0,#00H
+        JMPR cc_SGE,L_A97BA
+        ADDB RL0,#DATA16 00078H
+L_A97BA:                 ; 0xa97ba
+        JB state_mtv.08H,L_A97C4
+        CMPB RL0,#DATA16 00028H
+        JMPR cc_C,L_A97D8
+L_A97C4:                 ; 0xa97c4
+        BSET state_mtv.08H
+        SUBB RL0,#DATA16 00028H
+        CMPB RL0,soi
+        JMPR cc_C,L_A97D8
+        BFLDL 0FF52H,#0F0H,#00H
+        BSET CC1IC.07H
+        JMPR cc_UC,L_A9880
+L_A97D8:                 ; 0xa97d8
+        CMP R5,ti_hom_bas_1
+        JMPR cc_ULE,L_A982C
+        ATOMIC #02H
+        BFLDL 0FF52H,#0F0H,#00H
+        MOV R0,T1_FE52
+        JB CC1IC.07H,L_A982C
+        BCLR P2.01H
+        SUB CC1_FE82,R0
+        MOV R1,R5
+        SUB R1,ti_hom_bas_1
+        SUB CC1_FE82,R1
+        JMPR cc_UGT,L_A9808
+        SUB R5,CC1_FE82
+        BSET P2.01H
+        BSET CC1IC.07H
+        JMPR cc_UC,L_A982C
+L_A9808:                 ; 0xa9808
+        MOV R5,ti_hom_bas_1
+        MOV R1,CC1_FE82
+        ADD CC1_FE82,R0
+        BFLDL 0FF52H,#0F0H,#0D0H
+        JB R1.0FH,L_A982C
+        CMP CC1,T1_FE52
+        JMPR cc_EQ,L_A9824
+        JMPR cc_NN,L_A982C
+L_A9824:                 ; 0xa9824
+        BFLDL 0FF52H,#0F0H,#00H
+        BSET P2.01H
+        BSET CC1IC.07H
+L_A982C:                 ; 0xa982c
+        JMPR cc_UC,L_A9880
+        MOV R0,ti_hom_bas_1
+        SUB R0,R5
+        JMPR cc_ULE,L_A9880
+        CMP R0,ti_inj_min_pw
+        JMPR cc_ULE,L_A9880
+        MOVB RL2,#08H
+        MOVB inj_ic_cyl1,RL2
+        MOVB RL2,#DATA16 000FDH
+        ANDB inj_arm_mask,RL2
+        MOV R5,ti_hom_bas_1
+        ADD R0,ti_inj_ext
+        JMPR cc_NC,L_A9858
+        MOV R0,0FF1EH
+L_A9858:                 ; 0xa9858
+        ATOMIC #02H
+        BCLR P2.01H
+        MOV CC1,T1_FE52
+        ADD CC1_FE82,R0
+        BFLDL 0FF52H,#0F0H,#0D0H
+        JB R0.0FH,L_A9880
+        MOV R0,T1_FE52
+        SUB R0,CC1_FE82
+        JB R0.0FH,L_A9880
+        BFLDL 0FF52H,#0F0H,#00H
+        BSET P2.01H
+        BSET CC1IC.07H
+L_A9880:                 ; 0xa9880
+        MOVB RL0,msk_inj_cyl_ok
+        ANDB RL0,#04H
+        JMPA cc_NE,L_A99F2
+        MOVBZ R2,inj_ic_cyl2
+        MOV R2,[R2+#0654EH]
+        JMPI cc_UC,[R2]
+        BCMP state_mtv.0CH,state_mtv.0CH
+        JMPA cc_NC,L_A99F2
+        MOV R0,T0_FE50
+        SUBB RL0,#DATA16 0000AH
+        CMPB RL0,#00H
+        JMPR cc_SGE,L_A98AC
+        ADDB RL0,#DATA16 00078H
+L_A98AC:                 ; 0xa98ac
+        CMPB RL0,#DATA16 00028H
+        JMPA cc_ULE,L_A99F2
+        BCLR state_mtv.0CH
+        MOVB RL2,#02H
+        MOVB inj_ic_cyl2,RL2
+        MOVB RL0,T0_FE50
+        SUBB RL0,#DATA16 00032H
+        CMPB RL0,#00H
+        JMPR cc_SGE,L_A98CC
+        ADDB RL0,#DATA16 00078H
+L_A98CC:                 ; 0xa98cc
+        CMPB RL0,#DATA16 00064H
+        JMPR cc_UGT,L_A9910
+        BFLDH CCM0_FF52,#0FH,#00H
+        MOVB RL0,soi
+        ADDB RL0,#DATA16 00032H
+        CMPB RL0,#DATA16 00078H
+        JMPR cc_ULE,L_A98E8
+        SUBB RL0,#DATA16 00078H
+L_A98E8:                 ; 0xa98e8
+        MOVBZ CC2_FE84,RL0
+        BCLR CC2IC.07H
+        BFLDH CCM0_FF52,#0FH,#06H
+        MOVB RH0,#DATA16 00032H
+        SUBB RH0,T0_FE50
+        NEGB RH0
+        CMPB RH0,#00H
+        JMPR cc_SGE,L_A9904
+        ADDB RH0,#DATA16 00078H
+L_A9904:                 ; 0xa9904
+        CMPB RH0,soi
+        JMPA cc_C,L_A99F2
+        BSET CC2IC.07H
+        JMPR cc_UC,L_A99F2
+L_A9910:                 ; 0xa9910
+        MOVB RL2,#00H
+        MOVB inj_ic_cyl2,RL2
+        JMPR cc_UC,L_A99F2
+        JNB state_mtv.0CH,L_A994A
+        MOV R0,T0_FE50
+        SUBB RL0,#DATA16 0000AH
+        CMPB RL0,#00H
+        JMPR cc_SGE,L_A992C
+        ADDB RL0,#DATA16 00078H
+L_A992C:                 ; 0xa992c
+        JB state_mtv.0BH,L_A9936
+        CMPB RL0,#DATA16 00028H
+        JMPR cc_C,L_A994A
+L_A9936:                 ; 0xa9936
+        BSET state_mtv.0BH
+        SUBB RL0,#DATA16 00028H
+        CMPB RL0,soi
+        JMPR cc_C,L_A994A
+        BFLDH CCM0_FF52,#0FH,#00H
+        BSET CC2IC.07H
+        JMPR cc_UC,L_A99F2
+L_A994A:                 ; 0xa994a
+        CMP R6,ti_hom_bas_1
+        JMPR cc_ULE,L_A999E
+        ATOMIC #02H
+        BFLDH CCM0_FF52,#0FH,#00H
+        MOV R0,T1_FE52
+        JB CC2IC.07H,L_A999E
+        BCLR P2.02H
+        SUB CC2_FE84,R0
+        MOV R1,R6
+        SUB R1,ti_hom_bas_1
+        SUB CC2_FE84,R1
+        JMPR cc_UGT,L_A997A
+        SUB R6,CC2_FE84
+        BSET P2.02H
+        BSET CC2IC.07H
+        JMPR cc_UC,L_A999E
+L_A997A:                 ; 0xa997a
+        MOV R6,ti_hom_bas_1
+        MOV R1,CC2_FE84
+        ADD CC2_FE84,R0
+        BFLDH CCM0_FF52,#0FH,#0DH
+        JB R1.0FH,L_A999E
+        CMP CC2,T1_FE52
+        JMPR cc_EQ,L_A9996
+        JMPR cc_NN,L_A999E
+L_A9996:                 ; 0xa9996
+        BFLDH CCM0_FF52,#0FH,#00H
+        BSET P2.02H
+        BSET CC2IC.07H
+L_A999E:                 ; 0xa999e
+        JMPR cc_UC,L_A99F2
+        MOV R0,ti_hom_bas_1
+        SUB R0,R6
+        JMPR cc_ULE,L_A99F2
+        CMP R0,ti_inj_min_pw
+        JMPR cc_ULE,L_A99F2
+        MOVB RL2,#08H
+        MOVB inj_ic_cyl2,RL2
+        MOVB RL2,#DATA16 000FBH
+        ANDB inj_arm_mask,RL2
+        MOV R6,ti_hom_bas_1
+        ADD R0,ti_inj_ext
+        JMPR cc_NC,L_A99CA
+        MOV R0,0FF1EH
+L_A99CA:                 ; 0xa99ca
+        ATOMIC #02H
+        BCLR P2.02H
+        MOV CC2,T1_FE52
+        ADD CC2_FE84,R0
+        BFLDH CCM0_FF52,#0FH,#0DH
+        JB R0.0FH,L_A99F2
+        MOV R0,T1_FE52
+        SUB R0,CC2_FE84
+        JB R0.0FH,L_A99F2
+        BFLDH CCM0_FF52,#0FH,#00H
+        BSET P2.02H
+        BSET CC2IC.07H
+L_A99F2:                 ; 0xa99f2
+        MOVB RL0,msk_inj_cyl_ok
+        ANDB RL0,#DATA16 00008H
+        JMPA cc_NE,L_A9B66
+        MOVBZ R2,inj_ic_cyl3
+        MOV R2,[R2+#06562H]
+        JMPI cc_UC,[R2]
+        BCMP state_mtv.0FH,state_mtv.0FH
+        JMPA cc_NC,L_A9B66
+        MOV R0,T0_FE50
+        SUBB RL0,#DATA16 00028H
+        CMPB RL0,#00H
+        JMPR cc_SGE,L_A9A20
+        ADDB RL0,#DATA16 00078H
+L_A9A20:                 ; 0xa9a20
+        CMPB RL0,#DATA16 00028H
+        JMPA cc_ULE,L_A9B66
+        BCLR state_mtv.0FH
+        MOVB RL2,#02H
+        MOVB inj_ic_cyl3,RL2
+        MOVB RL0,T0_FE50
+        SUBB RL0,#DATA16 00050H
+        CMPB RL0,#00H
+        JMPR cc_SGE,L_A9A40
+        ADDB RL0,#DATA16 00078H
+L_A9A40:                 ; 0xa9a40
+        CMPB RL0,#DATA16 00064H
+        JMPR cc_UGT,L_A9A84
+        BFLDH CCM0_FF52,#0F0H,#00H
+        MOVB RL0,soi
+        ADDB RL0,#DATA16 00050H
+        CMPB RL0,#DATA16 00078H
+        JMPR cc_ULE,L_A9A5C
+        SUBB RL0,#DATA16 00078H
+L_A9A5C:                 ; 0xa9a5c
+        MOVBZ CC3_FE86,RL0
+        BCLR CC3IC.07H
+        BFLDH CCM0_FF52,#0F0H,#060H
+        MOVB RH0,#DATA16 00050H
+        SUBB RH0,T0_FE50
+        NEGB RH0
+        CMPB RH0,#00H
+        JMPR cc_SGE,L_A9A78
+        ADDB RH0,#DATA16 00078H
+L_A9A78:                 ; 0xa9a78
+        CMPB RH0,soi
+        JMPA cc_C,L_A9B66
+        BSET CC3IC.07H
+        JMPR cc_UC,L_A9B66
+L_A9A84:                 ; 0xa9a84
+        MOVB RL2,#00H
+        MOVB inj_ic_cyl3,RL2
+        JMPR cc_UC,L_A9B66
+        JNB state_mtv.0FH,L_A9ABE
+        MOV R0,T0_FE50
+        SUBB RL0,#DATA16 00028H
+        CMPB RL0,#00H
+        JMPR cc_SGE,L_A9AA0
+        ADDB RL0,#DATA16 00078H
+L_A9AA0:                 ; 0xa9aa0
+        JB state_mtv.0EH,L_A9AAA
+        CMPB RL0,#DATA16 00028H
+        JMPR cc_C,L_A9ABE
+L_A9AAA:                 ; 0xa9aaa
+        BSET state_mtv.0EH
+        SUBB RL0,#DATA16 00028H
+        CMPB RL0,soi
+        JMPR cc_C,L_A9ABE
+        BFLDH CCM0_FF52,#0F0H,#00H
+        BSET CC3IC.07H
+        JMPR cc_UC,L_A9B66
+L_A9ABE:                 ; 0xa9abe
+        CMP R7,ti_hom_bas_1
+        JMPR cc_ULE,L_A9B12
+        ATOMIC #02H
+        BFLDH CCM0_FF52,#0F0H,#00H
+        MOV R0,T1_FE52
+        JB CC3IC.07H,L_A9B12
+        BCLR P2.03H
+        SUB CC3_FE86,R0
+        MOV R1,R7
+        SUB R1,ti_hom_bas_1
+        SUB CC3_FE86,R1
+        JMPR cc_UGT,L_A9AEE
+        SUB R7,CC3_FE86
+        BSET P2.03H
+        BSET CC3IC.07H
+        JMPR cc_UC,L_A9B12
+L_A9AEE:                 ; 0xa9aee
+        MOV R7,ti_hom_bas_1
+        MOV R1,CC3_FE86
+        ADD CC3_FE86,R0
+        BFLDH CCM0_FF52,#0F0H,#0D0H
+        JB R1.0FH,L_A9B12
+        CMP CC3,T1_FE52
+        JMPR cc_EQ,L_A9B0A
+        JMPR cc_NN,L_A9B12
+L_A9B0A:                 ; 0xa9b0a
+        BFLDH CCM0_FF52,#0F0H,#00H
+        BSET P2.03H
+        BSET CC3IC.07H
+L_A9B12:                 ; 0xa9b12
+        JMPR cc_UC,L_A9B66
+        MOV R0,ti_hom_bas_1
+        SUB R0,R7
+        JMPR cc_ULE,L_A9B66
+        CMP R0,ti_inj_min_pw
+        JMPR cc_ULE,L_A9B66
+        MOVB RL2,#08H
+        MOVB inj_ic_cyl3,RL2
+        MOVB RL2,#DATA16 000F7H
+        ANDB inj_arm_mask,RL2
+        MOV R7,ti_hom_bas_1
+        ADD R0,ti_inj_ext
+        JMPR cc_NC,L_A9B3E
+        MOV R0,0FF1EH
+L_A9B3E:                 ; 0xa9b3e
+        ATOMIC #02H
+        BCLR P2.03H
+        MOV CC3,T1_FE52
+        ADD CC3_FE86,R0
+        BFLDH CCM0_FF52,#0F0H,#0D0H
+        JB R0.0FH,L_A9B66
+        MOV R0,T1_FE52
+        SUB R0,CC3_FE86
+        JB R0.0FH,L_A9B66
+        BFLDH CCM0_FF52,#0F0H,#00H
+        BSET P2.03H
+        BSET CC3IC.07H
+L_A9B66:                 ; 0xa9b66
+        POP CP
+        RETI
+
+; ======== CC8INT_handler  (@0xa9b6a) ========
+CC8INT_handler:
+        SCXT CP,#DATA16 0FC16H
+        BFLDH PSW_FF10,#0F0H,#070H
+        SCXT MDC,#DATA16 00000H
+        PUSH MDH
+        PUSH MDL
+        MOVB RL2,syn_eng
+        JMPA cc_EQ,L_A9E08
+        MOVB RL2,crank_tim_6
+        JMPA cc_NE,L_A9D88
+        MOVB RL2,lv_ti_f588
+        JMPA cc_NE,L_A9D5C
+        MOVB RL2,#0AH
+        CMPB RL2,inj_ic_cyl0
+        JMPR cc_NE,L_A9C04
+        JB state_mtv.04H,L_A9BB4
+        MOVBZ R0,soi_tipr
+        ADD R0,#DATA16 0006EH
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_A9BB0
+        SUB R0,#DATA16 00078H
+L_A9BB0:                 ; 0xa9bb0
+        MOV CC0_FE80,R0
+L_A9BB4:                 ; 0xa9bb4
+        BFLDL 0FF52H,#0FH,#06H
+        MOV R0,T0_FE50
+        SUB R0,#DATA16 0006EH
+        CMP R0,#00H
+        JMPR cc_SGE,L_A9BC8
+        ADD R0,#DATA16 00078H
+L_A9BC8:                 ; 0xa9bc8
+        MOV R1,T0_FE50
+        SUB R1,CC0_FE80
+        CMP R1,#00H
+        JMPR cc_SGE,L_A9BD8
+        ADD R1,#DATA16 00078H
+L_A9BD8:                 ; 0xa9bd8
+        CMP R0,R1
+        JMPR cc_C,L_A9C04
+        NEG R0
+        JMPR cc_EQ,L_A9C02
+        CMP R0,#00H
+        JMPR cc_SGE,L_A9BE8
+        ADD R0,#DATA16 00078H
+L_A9BE8:                 ; 0xa9be8
+        MOVBZ R1,eoi_tipr
+        SUB R0,R1
+        JMPR cc_N,L_A9C04
+        MOV R1,crank_tim_19
+        MULU R0,R1
+        CMP MDH,0FF1CH
+        JMPR cc_NE,L_A9C02
+        CMP MDL,tipr_bas
+        JMPR cc_C,L_A9C04
+L_A9C02:                 ; 0xa9c02
+        BSET CC0IC.07H
+L_A9C04:                 ; 0xa9c04
+        MOVB RL2,#0AH
+        CMPB RL2,inj_ic_cyl1
+        JMPR cc_NE,L_A9C76
+        JB state_mtv.04H,L_A9C26
+        MOVBZ R0,soi_tipr
+        ADD R0,#DATA16 00014H
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_A9C22
+        SUB R0,#DATA16 00078H
+L_A9C22:                 ; 0xa9c22
+        MOV CC1_FE82,R0
+L_A9C26:                 ; 0xa9c26
+        BFLDL 0FF52H,#0F0H,#060H
+        MOV R0,T0_FE50
+        SUB R0,#DATA16 00014H
+        CMP R0,#00H
+        JMPR cc_SGE,L_A9C3A
+        ADD R0,#DATA16 00078H
+L_A9C3A:                 ; 0xa9c3a
+        MOV R1,T0_FE50
+        SUB R1,CC1_FE82
+        CMP R1,#00H
+        JMPR cc_SGE,L_A9C4A
+        ADD R1,#DATA16 00078H
+L_A9C4A:                 ; 0xa9c4a
+        CMP R0,R1
+        JMPR cc_C,L_A9C76
+        NEG R0
+        JMPR cc_EQ,L_A9C74
+        CMP R0,#00H
+        JMPR cc_SGE,L_A9C5A
+        ADD R0,#DATA16 00078H
+L_A9C5A:                 ; 0xa9c5a
+        MOVBZ R1,eoi_tipr
+        SUB R0,R1
+        JMPR cc_N,L_A9C76
+        MOV R1,crank_tim_19
+        MULU R0,R1
+        CMP MDH,0FF1CH
+        JMPR cc_NE,L_A9C74
+        CMP MDL,tipr_bas
+        JMPR cc_C,L_A9C76
+L_A9C74:                 ; 0xa9c74
+        BSET CC1IC.07H
+L_A9C76:                 ; 0xa9c76
+        MOVB RL2,#0AH
+        CMPB RL2,inj_ic_cyl2
+        JMPR cc_NE,L_A9CE8
+        JB state_mtv.04H,L_A9C98
+        MOVBZ R0,soi_tipr
+        ADD R0,#DATA16 00032H
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_A9C94
+        SUB R0,#DATA16 00078H
+L_A9C94:                 ; 0xa9c94
+        MOV CC2_FE84,R0
+L_A9C98:                 ; 0xa9c98
+        BFLDH CCM0_FF52,#0FH,#06H
+        MOV R0,T0_FE50
+        SUB R0,#DATA16 00032H
+        CMP R0,#00H
+        JMPR cc_SGE,L_A9CAC
+        ADD R0,#DATA16 00078H
+L_A9CAC:                 ; 0xa9cac
+        MOV R1,T0_FE50
+        SUB R1,CC2_FE84
+        CMP R1,#00H
+        JMPR cc_SGE,L_A9CBC
+        ADD R1,#DATA16 00078H
+L_A9CBC:                 ; 0xa9cbc
+        CMP R0,R1
+        JMPR cc_C,L_A9CE8
+        NEG R0
+        JMPR cc_EQ,L_A9CE6
+        CMP R0,#00H
+        JMPR cc_SGE,L_A9CCC
+        ADD R0,#DATA16 00078H
+L_A9CCC:                 ; 0xa9ccc
+        MOVBZ R1,eoi_tipr
+        SUB R0,R1
+        JMPR cc_N,L_A9CE8
+        MOV R1,crank_tim_19
+        MULU R0,R1
+        CMP MDH,0FF1CH
+        JMPR cc_NE,L_A9CE6
+        CMP MDL,tipr_bas
+        JMPR cc_C,L_A9CE8
+L_A9CE6:                 ; 0xa9ce6
+        BSET CC2IC.07H
+L_A9CE8:                 ; 0xa9ce8
+        MOVB RL2,#0AH
+        CMPB RL2,inj_ic_cyl3
+        JMPR cc_NE,L_A9D5A
+        JB state_mtv.04H,L_A9D0A
+        MOVBZ R0,soi_tipr
+        ADD R0,#DATA16 00050H
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_A9D06
+        SUB R0,#DATA16 00078H
+L_A9D06:                 ; 0xa9d06
+        MOV CC3_FE86,R0
+L_A9D0A:                 ; 0xa9d0a
+        BFLDH CCM0_FF52,#0F0H,#060H
+        MOV R0,T0_FE50
+        SUB R0,#DATA16 00050H
+        CMP R0,#00H
+        JMPR cc_SGE,L_A9D1E
+        ADD R0,#DATA16 00078H
+L_A9D1E:                 ; 0xa9d1e
+        MOV R1,T0_FE50
+        SUB R1,CC3_FE86
+        CMP R1,#00H
+        JMPR cc_SGE,L_A9D2E
+        ADD R1,#DATA16 00078H
+L_A9D2E:                 ; 0xa9d2e
+        CMP R0,R1
+        JMPR cc_C,L_A9D5A
+        NEG R0
+        JMPR cc_EQ,L_A9D58
+        CMP R0,#00H
+        JMPR cc_SGE,L_A9D3E
+        ADD R0,#DATA16 00078H
+L_A9D3E:                 ; 0xa9d3e
+        MOVBZ R1,eoi_tipr
+        SUB R0,R1
+        JMPR cc_N,L_A9D5A
+        MOV R1,crank_tim_19
+        MULU R0,R1
+        CMP MDH,0FF1CH
+        JMPR cc_NE,L_A9D58
+        CMP MDL,tipr_bas
+        JMPR cc_C,L_A9D5A
+L_A9D58:                 ; 0xa9d58
+        BSET CC3IC.07H
+L_A9D5A:                 ; 0xa9d5a
+        JMPR cc_UC,L_A9DDC
+L_A9D5C:                 ; 0xa9d5c
+        MOVB RL2,#0AH
+        CMPB RL2,inj_ic_cyl0
+        JMPR cc_NE,L_A9D68
+        BFLDL 0FF52H,#0FH,#06H
+L_A9D68:                 ; 0xa9d68
+        CMPB RL2,inj_ic_cyl1
+        JMPR cc_NE,L_A9D72
+        BFLDL 0FF52H,#0F0H,#060H
+L_A9D72:                 ; 0xa9d72
+        CMPB RL2,inj_ic_cyl2
+        JMPR cc_NE,L_A9D7C
+        BFLDH CCM0_FF52,#0FH,#06H
+L_A9D7C:                 ; 0xa9d7c
+        CMPB RL2,inj_ic_cyl3
+        JMPR cc_NE,L_A9D86
+        BFLDH CCM0_FF52,#0F0H,#060H
+L_A9D86:                 ; 0xa9d86
+        JMPR cc_UC,L_A9DDC
+L_A9D88:                 ; 0xa9d88
+        MOVB inj_cc_1,ZEROS
+        BCLR state_mtv.06H
+        MOV R4,#00H
+        ATOMIC #01H
+        BFLDL 0F152H,#0FH,#00H
+        BSET P2.00H
+        BCLR CC0IC.07H
+        MOVB RL2,#02H
+        MOVB inj_ic_cyl0,RL2
+        BCLR state_mtv.09H
+        MOV R5,#00H
+        ATOMIC #01H
+        BFLDL 0F152H,#0F0H,#00H
+        BSET P2.01H
+        BCLR CC1IC.07H
+        MOVB RL2,#02H
+        MOVB inj_ic_cyl1,RL2
+        BCLR state_mtv.0CH
+        MOV R6,#00H
+        ATOMIC #01H
+        BFLDH CCM0_FF52,#0FH,#00H
+        BSET P2.02H
+        BCLR CC2IC.07H
+        MOVB RL2,#02H
+        MOVB inj_ic_cyl2,RL2
+        BCLR state_mtv.0FH
+        MOV R7,#00H
+        ATOMIC #01H
+        BFLDH CCM0_FF52,#0F0H,#00H
+        BSET P2.03H
+        BCLR CC3IC.07H
+        MOVB RL2,#02H
+        MOVB inj_ic_cyl3,RL2
+L_A9DDC:                 ; 0xa9ddc
+        EXTR #01H
+        CMP T7,#DATA16 0003CH
+        JMPR cc_UGT,L_A9DEE
+        MOV CC25,#DATA16 00014H
+        MOV R3,#DATA16 09316H
+        JMPR cc_UC,L_A9DF6
+L_A9DEE:                 ; 0xa9dee
+        MOV CC25,#DATA16 00050H
+        MOV R3,#DATA16 094BCH
+L_A9DF6:                 ; 0xa9df6
+        EXTR #01H
+        CMP T0,CC25_FE72
+        JMPA cc_C,L_AA494
+        EXTR #01H
+        BSET SSCTIC.07H
+        JMPA cc_UC,L_AA494
+L_A9E08:                 ; 0xa9e08
+        JBC state_mtv.03H,L_A9E10
+        JMPA cc_UC,L_AA114
+L_A9E10:                 ; 0xa9e10
+        BCMP lv_err_com_resp_imob.0CH,lv_err_com_resp_imob.0CH
+        JMPA cc_NC,L_AA0C4
+        CMPB ZEROS,inj_cc_1
+        JMPA cc_EQ,L_AA0C4
+        CMP ZEROS,tipr_bas
+        JMPA cc_EQ,L_AA0C4
+        MOVBZ R3,crank_tim_7
+        BMOV state_mtv.04H,lv_err_com_resp_imob.0DH
+        BMOV R2.00H,P2.0EH
+        MOVBZ R0,inj_cc_1
+        AND R0,#01H
+        JMPR cc_EQ,L_A9ECE
+        MOVB RL1,#0AH
+        MOVB inj_ic_cyl0,RL1
+        MOV R4,#00H
+        MOVB RL1,lv_ti_f588
+        JMPR cc_NE,L_A9EB6
+        JB lv_err_com_resp_imob.0DH,L_A9E92
+        JB R2.00H,L_A9E5C
+        MOVBZ R0,cyl_tipr_first_cam_low
+        MOVBZ R1,cyl_tipr_fol_cam_low
+        JMPR cc_UC,L_A9E64
+L_A9E5C:                 ; 0xa9e5c
+        MOVBZ R0,cyl_tipr_first_cam_high
+        MOVBZ R1,cyl_tipr_fol_cam_high
+L_A9E64:                 ; 0xa9e64
+        AND R0,#01H
+        JMPR cc_NE,L_A9E7C
+        CMP R1,#00H
+        JMPR cc_EQ,L_A9E72
+        MOV R0,#DATA16 00FFFH
+        JMPR cc_UC,L_A9E84
+L_A9E72:                 ; 0xa9e72
+        MOVBZ R0,tooth_nr_tipr_fol
+        JMPR cc_NE,L_A9E84
+        BSET CC0IC.07H
+        JMPR cc_UC,L_A9E84
+L_A9E7C:                 ; 0xa9e7c
+        MOVBZ R0,tooth_nr_tipr_first
+        JMPR cc_NE,L_A9E84
+        BSET CC0IC.07H
+L_A9E84:                 ; 0xa9e84
+        ADD R0,R3
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_A9E90
+        SUB R0,#DATA16 00078H
+L_A9E90:                 ; 0xa9e90
+        JMPR cc_UC,L_A9EA4
+L_A9E92:                 ; 0xa9e92
+        MOVBZ R0,soi_tipr
+        ADD R0,#DATA16 0006EH
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_A9EA4
+        SUB R0,#DATA16 00078H
+L_A9EA4:                 ; 0xa9ea4
+        MOV CC0_FE80,R0
+        MOVBZ R0,crank_tim_7
+        CMP R0,CC0_FE80
+        JMPR cc_NE,L_A9ED6
+        BSET CC0IC.07H
+        JMPR cc_UC,L_A9ED6
+L_A9EB6:                 ; 0xa9eb6
+        MOVBZ R0,soi_tipr
+        ADD R0,#DATA16 0006EH
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_A9EC8
+        SUB R0,#DATA16 00078H
+L_A9EC8:                 ; 0xa9ec8
+        MOV CC0_FE80,R0
+        JMPR cc_UC,L_A9ED6
+L_A9ECE:                 ; 0xa9ece
+        MOVB RL1,#DATA16 00012H
+        MOVB inj_ic_cyl0,RL1
+L_A9ED6:                 ; 0xa9ed6
+        MOVBZ R0,inj_cc_1
+        AND R0,#02H
+        JMPR cc_EQ,L_A9F70
+        MOVB RL1,#0AH
+        MOVB inj_ic_cyl1,RL1
+        MOV R5,#00H
+        MOVB RL1,lv_ti_f588
+        JMPR cc_NE,L_A9F58
+        JB lv_err_com_resp_imob.0DH,L_A9F34
+        JB R2.00H,L_A9EFE
+        MOVBZ R0,cyl_tipr_first_cam_low
+        MOVBZ R1,cyl_tipr_fol_cam_low
+        JMPR cc_UC,L_A9F06
+L_A9EFE:                 ; 0xa9efe
+        MOVBZ R0,cyl_tipr_first_cam_high
+        MOVBZ R1,cyl_tipr_fol_cam_high
+L_A9F06:                 ; 0xa9f06
+        AND R0,#02H
+        JMPR cc_NE,L_A9F1E
+        CMP R1,#01H
+        JMPR cc_EQ,L_A9F14
+        MOV R0,#DATA16 00FFFH
+        JMPR cc_UC,L_A9F26
+L_A9F14:                 ; 0xa9f14
+        MOVBZ R0,tooth_nr_tipr_fol
+        JMPR cc_NE,L_A9F26
+        BSET CC1IC.07H
+        JMPR cc_UC,L_A9F26
+L_A9F1E:                 ; 0xa9f1e
+        MOVBZ R0,tooth_nr_tipr_first
+        JMPR cc_NE,L_A9F26
+        BSET CC1IC.07H
+L_A9F26:                 ; 0xa9f26
+        ADD R0,R3
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_A9F32
+        SUB R0,#DATA16 00078H
+L_A9F32:                 ; 0xa9f32
+        JMPR cc_UC,L_A9F46
+L_A9F34:                 ; 0xa9f34
+        MOVBZ R0,soi_tipr
+        ADD R0,#DATA16 00014H
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_A9F46
+        SUB R0,#DATA16 00078H
+L_A9F46:                 ; 0xa9f46
+        MOV CC1_FE82,R0
+        MOVBZ R0,crank_tim_7
+        CMP R0,CC1_FE82
+        JMPR cc_NE,L_A9F78
+        BSET CC1IC.07H
+        JMPR cc_UC,L_A9F78
+L_A9F58:                 ; 0xa9f58
+        MOVBZ R0,soi_tipr
+        ADD R0,#DATA16 00014H
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_A9F6A
+        SUB R0,#DATA16 00078H
+L_A9F6A:                 ; 0xa9f6a
+        MOV CC1_FE82,R0
+        JMPR cc_UC,L_A9F78
+L_A9F70:                 ; 0xa9f70
+        MOVB RL1,#DATA16 00012H
+        MOVB inj_ic_cyl1,RL1
+L_A9F78:                 ; 0xa9f78
+        MOVBZ R0,inj_cc_1
+        AND R0,#04H
+        JMPR cc_EQ,L_AA012
+        MOVB RL1,#0AH
+        MOVB inj_ic_cyl2,RL1
+        MOV R6,#00H
+        MOVB RL1,lv_ti_f588
+        JMPR cc_NE,L_A9FFA
+        JB lv_err_com_resp_imob.0DH,L_A9FD6
+        JB R2.00H,L_A9FA0
+        MOVBZ R0,cyl_tipr_first_cam_low
+        MOVBZ R1,cyl_tipr_fol_cam_low
+        JMPR cc_UC,L_A9FA8
+L_A9FA0:                 ; 0xa9fa0
+        MOVBZ R0,cyl_tipr_first_cam_high
+        MOVBZ R1,cyl_tipr_fol_cam_high
+L_A9FA8:                 ; 0xa9fa8
+        AND R0,#04H
+        JMPR cc_NE,L_A9FC0
+        CMP R1,#02H
+        JMPR cc_EQ,L_A9FB6
+        MOV R0,#DATA16 00FFFH
+        JMPR cc_UC,L_A9FC8
+L_A9FB6:                 ; 0xa9fb6
+        MOVBZ R0,tooth_nr_tipr_fol
+        JMPR cc_NE,L_A9FC8
+        BSET CC2IC.07H
+        JMPR cc_UC,L_A9FC8
+L_A9FC0:                 ; 0xa9fc0
+        MOVBZ R0,tooth_nr_tipr_first
+        JMPR cc_NE,L_A9FC8
+        BSET CC2IC.07H
+L_A9FC8:                 ; 0xa9fc8
+        ADD R0,R3
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_A9FD4
+        SUB R0,#DATA16 00078H
+L_A9FD4:                 ; 0xa9fd4
+        JMPR cc_UC,L_A9FE8
+L_A9FD6:                 ; 0xa9fd6
+        MOVBZ R0,soi_tipr
+        ADD R0,#DATA16 00032H
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_A9FE8
+        SUB R0,#DATA16 00078H
+L_A9FE8:                 ; 0xa9fe8
+        MOV CC2_FE84,R0
+        MOVBZ R0,crank_tim_7
+        CMP R0,CC2_FE84
+        JMPR cc_NE,L_AA01A
+        BSET CC2IC.07H
+        JMPR cc_UC,L_AA01A
+L_A9FFA:                 ; 0xa9ffa
+        MOVBZ R0,soi_tipr
+        ADD R0,#DATA16 00032H
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_AA00C
+        SUB R0,#DATA16 00078H
+L_AA00C:                 ; 0xaa00c
+        MOV CC2_FE84,R0
+        JMPR cc_UC,L_AA01A
+L_AA012:                 ; 0xaa012
+        MOVB RL1,#DATA16 00012H
+        MOVB inj_ic_cyl2,RL1
+L_AA01A:                 ; 0xaa01a
+        MOVBZ R0,inj_cc_1
+        AND R0,#DATA16 00008H
+        JMPR cc_EQ,L_AA0B8
+        MOVB RL1,#0AH
+        MOVB inj_ic_cyl3,RL1
+        MOV R7,#00H
+        MOVB RL1,lv_ti_f588
+        JMPR cc_NE,L_AA0A0
+        JB lv_err_com_resp_imob.0DH,L_AA07C
+        JB R2.00H,L_AA044
+        MOVBZ R0,cyl_tipr_first_cam_low
+        MOVBZ R1,cyl_tipr_fol_cam_low
+        JMPR cc_UC,L_AA04C
+L_AA044:                 ; 0xaa044
+        MOVBZ R0,cyl_tipr_first_cam_high
+        MOVBZ R1,cyl_tipr_fol_cam_high
+L_AA04C:                 ; 0xaa04c
+        AND R0,#DATA16 00008H
+        JMPR cc_NE,L_AA066
+        CMP R1,#03H
+        JMPR cc_EQ,L_AA05C
+        MOV R0,#DATA16 00FFFH
+        JMPR cc_UC,L_AA06E
+L_AA05C:                 ; 0xaa05c
+        MOVBZ R0,tooth_nr_tipr_fol
+        JMPR cc_NE,L_AA06E
+        BSET CC3IC.07H
+        JMPR cc_UC,L_AA06E
+L_AA066:                 ; 0xaa066
+        MOVBZ R0,tooth_nr_tipr_first
+        JMPR cc_NE,L_AA06E
+        BSET CC3IC.07H
+L_AA06E:                 ; 0xaa06e
+        ADD R0,R3
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_AA07A
+        SUB R0,#DATA16 00078H
+L_AA07A:                 ; 0xaa07a
+        JMPR cc_UC,L_AA08E
+L_AA07C:                 ; 0xaa07c
+        MOVBZ R0,soi_tipr
+        ADD R0,#DATA16 00050H
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_AA08E
+        SUB R0,#DATA16 00078H
+L_AA08E:                 ; 0xaa08e
+        MOV CC3_FE86,R0
+        MOVBZ R0,crank_tim_7
+        CMP R0,CC3_FE86
+        JMPR cc_NE,L_AA0C0
+        BSET CC3IC.07H
+        JMPR cc_UC,L_AA0C0
+L_AA0A0:                 ; 0xaa0a0
+        MOVBZ R0,soi_tipr
+        ADD R0,#DATA16 00050H
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_AA0B2
+        SUB R0,#DATA16 00078H
+L_AA0B2:                 ; 0xaa0b2
+        MOV CC3_FE86,R0
+        JMPR cc_UC,L_AA0C0
+L_AA0B8:                 ; 0xaa0b8
+        MOVB RL1,#DATA16 00012H
+        MOVB inj_ic_cyl3,RL1
+L_AA0C0:                 ; 0xaa0c0
+        JMPA cc_UC,L_AA494
+L_AA0C4:                 ; 0xaa0c4
+        MOVB inj_cc_1,ZEROS
+        MOV R4,#00H
+        ATOMIC #01H
+        BFLDL 0F152H,#0FH,#00H
+        BSET P2.00H
+        BCLR CC0IC.07H
+        MOVB RL2,#02H
+        MOVB inj_ic_cyl0,RL2
+        MOV R5,#00H
+        ATOMIC #01H
+        BFLDL 0F152H,#0F0H,#00H
+        BSET P2.01H
+        BCLR CC1IC.07H
+        MOVB RL2,#02H
+        MOVB inj_ic_cyl1,RL2
+        MOV R6,#00H
+        ATOMIC #01H
+        BFLDH CCM0_FF52,#0FH,#00H
+        BSET P2.02H
+        BCLR CC2IC.07H
+        MOVB RL2,#02H
+        MOVB inj_ic_cyl2,RL2
+        MOV R7,#00H
+        ATOMIC #01H
+        BFLDH CCM0_FF52,#0F0H,#00H
+        BSET P2.03H
+        BCLR CC3IC.07H
+        MOVB RL2,#02H
+        MOVB inj_ic_cyl3,RL2
+        JMPA cc_UC,L_AA494
+L_AA114:                 ; 0xaa114
+        MOVB RL2,lv_ti_f588
+        JMPA cc_NE,L_AA494
+        MOVB RL2,inj_ic_cyl0
+        CMPB RL2,#DATA16 0000AH
+        JMPR cc_NE,L_AA1AC
+        BCMP lv_err_com_resp_imob.0DH,state_mtv.04H
+        JMPR cc_NN,L_AA188
+        MOVBZ R0,soi_tipr
+        ADD R0,#DATA16 0006EH
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_AA13E
+        SUB R0,#DATA16 00078H
+L_AA13E:                 ; 0xaa13e
+        MOV CC0_FE80,R0
+        MOVBZ R0,crank_tim_7
+        SUB R0,#DATA16 0006EH
+        CMP R0,#00H
+        JMPR cc_SGE,L_AA152
+        ADD R0,#DATA16 00078H
+L_AA152:                 ; 0xaa152
+        MOVBZ R1,crank_tim_7
+        SUB R1,CC0_FE80
+        CMP R1,#00H
+        JMPR cc_SGE,L_AA162
+        ADD R1,#DATA16 00078H
+L_AA162:                 ; 0xaa162
+        CMP R0,R1
+        JMPR cc_C,L_AA1F8
+        NEG R0
+        JMPR cc_EQ,L_AA184
+        CMP R0,#00H
+        JMPR cc_SGE,L_AA172
+        ADD R0,#DATA16 00078H
+L_AA172:                 ; 0xaa172
+        MOV R1,crank_tim_19
+        MULU R0,R1
+        CMP MDH,0FF1CH
+        JMPR cc_NE,L_AA184
+        CMP MDL,tipr_bas
+        JMPR cc_C,L_AA1F8
+L_AA184:                 ; 0xaa184
+        BSET CC0IC.07H
+        JMPR cc_UC,L_AA1F8
+L_AA188:                 ; 0xaa188
+        MOVBZ R0,crank_tim_7
+        SUB R0,R3
+        CMP R0,#00H
+        JMPR cc_SGE,L_AA196
+        ADD R0,#DATA16 00078H
+L_AA196:                 ; 0xaa196
+        MOV R1,CC0_FE80
+        SUB R1,R3
+        CMP R1,#00H
+        JMPR cc_SGE,L_AA1A4
+        ADD R1,#DATA16 00078H
+L_AA1A4:                 ; 0xaa1a4
+        CMP R0,R1
+        JMPR cc_C,L_AA1F8
+        BSET CC0IC.07H
+        JMPR cc_UC,L_AA1F8
+L_AA1AC:                 ; 0xaa1ac
+        JNB lv_err_com_resp_imob.0DH,L_AA1F8
+        CMPB RL2,#DATA16 00010H
+        JMPR cc_EQ,L_AA1BC
+        CMPB RL2,#DATA16 00012H
+        JMPR cc_NE,L_AA1F8
+L_AA1BC:                 ; 0xaa1bc
+        MOVBZ R0,crank_tim_7
+        SUB R0,R3
+        CMP R0,#00H
+        JMPR cc_SGE,L_AA1CA
+        ADD R0,#DATA16 00078H
+L_AA1CA:                 ; 0xaa1ca
+        MOV R1,#DATA16 0006EH
+        SUB R1,R3
+        CMP R1,#00H
+        JMPR cc_SGE,L_AA1D8
+        ADD R1,#DATA16 00078H
+L_AA1D8:                 ; 0xaa1d8
+        CMP R0,R1
+        JMPR cc_C,L_AA1F8
+        BSET state_mtv.06H
+        MOVBZ R0,lv_ti_f589
+        JMPR cc_EQ,L_AA1F8
+        MOVB RL2,#DATA16 00010H
+        CMPB RL2,inj_ic_cyl0
+        JMPR cc_NE,L_AA1F8
+        MOVB RL2,#DATA16 000FEH
+        ANDB inj_arm_mask,RL2
+        BSET CC0IC.07H
+L_AA1F8:                 ; 0xaa1f8
+        MOVB RL2,inj_ic_cyl1
+        CMPB RL2,#DATA16 0000AH
+        JMPR cc_NE,L_AA288
+        BCMP lv_err_com_resp_imob.0DH,state_mtv.04H
+        JMPR cc_NN,L_AA264
+        MOVBZ R0,soi_tipr
+        ADD R0,#DATA16 00014H
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_AA21A
+        SUB R0,#DATA16 00078H
+L_AA21A:                 ; 0xaa21a
+        MOV CC1_FE82,R0
+        MOVBZ R0,crank_tim_7
+        SUB R0,#DATA16 00014H
+        CMP R0,#00H
+        JMPR cc_SGE,L_AA22E
+        ADD R0,#DATA16 00078H
+L_AA22E:                 ; 0xaa22e
+        MOVBZ R1,crank_tim_7
+        SUB R1,CC1_FE82
+        CMP R1,#00H
+        JMPR cc_SGE,L_AA23E
+        ADD R1,#DATA16 00078H
+L_AA23E:                 ; 0xaa23e
+        CMP R0,R1
+        JMPR cc_C,L_AA2D4
+        NEG R0
+        JMPR cc_EQ,L_AA260
+        CMP R0,#00H
+        JMPR cc_SGE,L_AA24E
+        ADD R0,#DATA16 00078H
+L_AA24E:                 ; 0xaa24e
+        MOV R1,crank_tim_19
+        MULU R0,R1
+        CMP MDH,0FF1CH
+        JMPR cc_NE,L_AA260
+        CMP MDL,tipr_bas
+        JMPR cc_C,L_AA2D4
+L_AA260:                 ; 0xaa260
+        BSET CC1IC.07H
+        JMPR cc_UC,L_AA2D4
+L_AA264:                 ; 0xaa264
+        MOVBZ R0,crank_tim_7
+        SUB R0,R3
+        CMP R0,#00H
+        JMPR cc_SGE,L_AA272
+        ADD R0,#DATA16 00078H
+L_AA272:                 ; 0xaa272
+        MOV R1,CC1_FE82
+        SUB R1,R3
+        CMP R1,#00H
+        JMPR cc_SGE,L_AA280
+        ADD R1,#DATA16 00078H
+L_AA280:                 ; 0xaa280
+        CMP R0,R1
+        JMPR cc_C,L_AA2D4
+        BSET CC1IC.07H
+        JMPR cc_UC,L_AA2D4
+L_AA288:                 ; 0xaa288
+        JNB lv_err_com_resp_imob.0DH,L_AA2D4
+        CMPB RL2,#DATA16 00010H
+        JMPR cc_EQ,L_AA298
+        CMPB RL2,#DATA16 00012H
+        JMPR cc_NE,L_AA2D4
+L_AA298:                 ; 0xaa298
+        MOVBZ R0,crank_tim_7
+        SUB R0,R3
+        CMP R0,#00H
+        JMPR cc_SGE,L_AA2A6
+        ADD R0,#DATA16 00078H
+L_AA2A6:                 ; 0xaa2a6
+        MOV R1,#DATA16 00014H
+        SUB R1,R3
+        CMP R1,#00H
+        JMPR cc_SGE,L_AA2B4
+        ADD R1,#DATA16 00078H
+L_AA2B4:                 ; 0xaa2b4
+        CMP R0,R1
+        JMPR cc_C,L_AA2D4
+        BSET state_mtv.09H
+        MOVBZ R0,lv_ti_f589
+        JMPR cc_EQ,L_AA2D4
+        MOVB RL2,#DATA16 00010H
+        CMPB RL2,inj_ic_cyl1
+        JMPR cc_NE,L_AA2D4
+        MOVB RL2,#DATA16 000FDH
+        ANDB inj_arm_mask,RL2
+        BSET CC1IC.07H
+L_AA2D4:                 ; 0xaa2d4
+        MOVB RL2,inj_ic_cyl2
+        CMPB RL2,#DATA16 0000AH
+        JMPR cc_NE,L_AA364
+        BCMP lv_err_com_resp_imob.0DH,state_mtv.04H
+        JMPR cc_NN,L_AA340
+        MOVBZ R0,soi_tipr
+        ADD R0,#DATA16 00032H
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_AA2F6
+        SUB R0,#DATA16 00078H
+L_AA2F6:                 ; 0xaa2f6
+        MOV CC2_FE84,R0
+        MOVBZ R0,crank_tim_7
+        SUB R0,#DATA16 00032H
+        CMP R0,#00H
+        JMPR cc_SGE,L_AA30A
+        ADD R0,#DATA16 00078H
+L_AA30A:                 ; 0xaa30a
+        MOVBZ R1,crank_tim_7
+        SUB R1,CC2_FE84
+        CMP R1,#00H
+        JMPR cc_SGE,L_AA31A
+        ADD R1,#DATA16 00078H
+L_AA31A:                 ; 0xaa31a
+        CMP R0,R1
+        JMPR cc_C,L_AA3B0
+        NEG R0
+        JMPR cc_EQ,L_AA33C
+        CMP R0,#00H
+        JMPR cc_SGE,L_AA32A
+        ADD R0,#DATA16 00078H
+L_AA32A:                 ; 0xaa32a
+        MOV R1,crank_tim_19
+        MULU R0,R1
+        CMP MDH,0FF1CH
+        JMPR cc_NE,L_AA33C
+        CMP MDL,tipr_bas
+        JMPR cc_C,L_AA3B0
+L_AA33C:                 ; 0xaa33c
+        BSET CC2IC.07H
+        JMPR cc_UC,L_AA3B0
+L_AA340:                 ; 0xaa340
+        MOVBZ R0,crank_tim_7
+        SUB R0,R3
+        CMP R0,#00H
+        JMPR cc_SGE,L_AA34E
+        ADD R0,#DATA16 00078H
+L_AA34E:                 ; 0xaa34e
+        MOV R1,CC2_FE84
+        SUB R1,R3
+        CMP R1,#00H
+        JMPR cc_SGE,L_AA35C
+        ADD R1,#DATA16 00078H
+L_AA35C:                 ; 0xaa35c
+        CMP R0,R1
+        JMPR cc_C,L_AA3B0
+        BSET CC2IC.07H
+        JMPR cc_UC,L_AA3B0
+L_AA364:                 ; 0xaa364
+        JNB lv_err_com_resp_imob.0DH,L_AA3B0
+        CMPB RL2,#DATA16 00010H
+        JMPR cc_EQ,L_AA374
+        CMPB RL2,#DATA16 00012H
+        JMPR cc_NE,L_AA3B0
+L_AA374:                 ; 0xaa374
+        MOVBZ R0,crank_tim_7
+        SUB R0,R3
+        CMP R0,#00H
+        JMPR cc_SGE,L_AA382
+        ADD R0,#DATA16 00078H
+L_AA382:                 ; 0xaa382
+        MOV R1,#DATA16 00032H
+        SUB R1,R3
+        CMP R1,#00H
+        JMPR cc_SGE,L_AA390
+        ADD R1,#DATA16 00078H
+L_AA390:                 ; 0xaa390
+        CMP R0,R1
+        JMPR cc_C,L_AA3B0
+        BSET state_mtv.0CH
+        MOVBZ R0,lv_ti_f589
+        JMPR cc_EQ,L_AA3B0
+        MOVB RL2,#DATA16 00010H
+        CMPB RL2,inj_ic_cyl2
+        JMPR cc_NE,L_AA3B0
+        MOVB RL2,#DATA16 000FBH
+        ANDB inj_arm_mask,RL2
+        BSET CC2IC.07H
+L_AA3B0:                 ; 0xaa3b0
+        MOVB RL2,inj_ic_cyl3
+        CMPB RL2,#DATA16 0000AH
+        JMPR cc_NE,L_AA440
+        BCMP lv_err_com_resp_imob.0DH,state_mtv.04H
+        JMPR cc_NN,L_AA41C
+        MOVBZ R0,soi_tipr
+        ADD R0,#DATA16 00050H
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_AA3D2
+        SUB R0,#DATA16 00078H
+L_AA3D2:                 ; 0xaa3d2
+        MOV CC3_FE86,R0
+        MOVBZ R0,crank_tim_7
+        SUB R0,#DATA16 00050H
+        CMP R0,#00H
+        JMPR cc_SGE,L_AA3E6
+        ADD R0,#DATA16 00078H
+L_AA3E6:                 ; 0xaa3e6
+        MOVBZ R1,crank_tim_7
+        SUB R1,CC3_FE86
+        CMP R1,#00H
+        JMPR cc_SGE,L_AA3F6
+        ADD R1,#DATA16 00078H
+L_AA3F6:                 ; 0xaa3f6
+        CMP R0,R1
+        JMPR cc_C,L_AA48C
+        NEG R0
+        JMPR cc_EQ,L_AA418
+        CMP R0,#00H
+        JMPR cc_SGE,L_AA406
+        ADD R0,#DATA16 00078H
+L_AA406:                 ; 0xaa406
+        MOV R1,crank_tim_19
+        MULU R0,R1
+        CMP MDH,0FF1CH
+        JMPR cc_NE,L_AA418
+        CMP MDL,tipr_bas
+        JMPR cc_C,L_AA48C
+L_AA418:                 ; 0xaa418
+        BSET CC3IC.07H
+        JMPR cc_UC,L_AA48C
+L_AA41C:                 ; 0xaa41c
+        MOVBZ R0,crank_tim_7
+        SUB R0,R3
+        CMP R0,#00H
+        JMPR cc_SGE,L_AA42A
+        ADD R0,#DATA16 00078H
+L_AA42A:                 ; 0xaa42a
+        MOV R1,CC3_FE86
+        SUB R1,R3
+        CMP R1,#00H
+        JMPR cc_SGE,L_AA438
+        ADD R1,#DATA16 00078H
+L_AA438:                 ; 0xaa438
+        CMP R0,R1
+        JMPR cc_C,L_AA48C
+        BSET CC3IC.07H
+        JMPR cc_UC,L_AA48C
+L_AA440:                 ; 0xaa440
+        JNB lv_err_com_resp_imob.0DH,L_AA48C
+        CMPB RL2,#DATA16 00010H
+        JMPR cc_EQ,L_AA450
+        CMPB RL2,#DATA16 00012H
+        JMPR cc_NE,L_AA48C
+L_AA450:                 ; 0xaa450
+        MOVBZ R0,crank_tim_7
+        SUB R0,R3
+        CMP R0,#00H
+        JMPR cc_SGE,L_AA45E
+        ADD R0,#DATA16 00078H
+L_AA45E:                 ; 0xaa45e
+        MOV R1,#DATA16 00050H
+        SUB R1,R3
+        CMP R1,#00H
+        JMPR cc_SGE,L_AA46C
+        ADD R1,#DATA16 00078H
+L_AA46C:                 ; 0xaa46c
+        CMP R0,R1
+        JMPR cc_C,L_AA48C
+        BSET state_mtv.0FH
+        MOVBZ R0,lv_ti_f589
+        JMPR cc_EQ,L_AA48C
+        MOVB RL2,#DATA16 00010H
+        CMPB RL2,inj_ic_cyl3
+        JMPR cc_NE,L_AA48C
+        MOVB RL2,#DATA16 000F7H
+        ANDB inj_arm_mask,RL2
+        BSET CC3IC.07H
+L_AA48C:                 ; 0xaa48c
+        MOVBZ R3,crank_tim_7
+        BMOV state_mtv.04H,lv_err_com_resp_imob.0DH
+L_AA494:                 ; 0xaa494
+        POP MDL
+        POP MDH
+        POP MDC
+        POP CP
+        RETI
+
+S_A9236 ENDS
+        END

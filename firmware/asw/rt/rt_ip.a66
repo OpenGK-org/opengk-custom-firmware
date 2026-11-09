@@ -1,0 +1,268 @@
+; asw/rt/rt_ip.a66
+; 0xFEE94-0xFF0D8  (580 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Get_IP_Byte_2D_Table, Get_IP_Byte_3D_Table, Get_IP_Word_2D_Table, Get_IP_Word_3D_Table, Get_IP_Word_Y_Axis
+
+S_FEE94 SECTION CODE AT 0FEE94H
+
+; ======== Get_IP_Word_Y_Axis  (@0xfee94) ========
+Get_IP_Word_Y_Axis:
+        MOV DPP0_FE00,R13
+        MOV R1,R12
+        MOV R2,R1
+        ADD R2,[R1]
+        ADD R2,[R1+]
+        CMP R14,[R2]
+        JMPR cc_NC,L_FEED6
+        CMP R14,[R1]
+        JMPR cc_ULE,L_FEED4
+L_FEEA8:                 ; 0xfeea8
+        SUB R2,#02H
+        CMP R14,[R2]
+        JMPR cc_C,L_FEEA8
+        JMPR cc_EQ,L_FEED6
+        SUB R14,[R2]
+        MOV MDH_FE0C,R14
+        MOV MDL,#DATA16 00000H
+        MOV R10,[R2+#02H]
+        SUB R10,[R2]
+        DIVLU R10
+        SUB R2,R1
+        SHR R2,#01H
+        MOVB ip_idx,RL2
+        MOV ip_frac,MDL
+        MOV DPP0,#DATA16 00024H
+        RETS
+L_FEED4:                 ; 0xfeed4
+        MOV R2,R1
+L_FEED6:                 ; 0xfeed6
+        SUB R2,R1
+        SHR R2,#01H
+        MOVB ip_idx,RL2
+        MOV ip_frac,ZEROS
+        MOV DPP0,#DATA16 00024H
+        RETS
+
+; ======== Get_IP_Word_3D_Table  (@0xfeee8) ========
+Get_IP_Word_3D_Table:
+        MOVBZ R3,ip_idx
+        MOVBZ R2,knk_idx_base
+        MOVBZ R5,g_f518
+        MULU R3,R5
+        SHL R5,#01H
+        ADD R2,0FE0EH
+        SHL R2,#01H
+        ADD R12,R2
+        MOV R15,g_f8c0
+        JMPR cc_EQ,L_FEF84
+        EXTP R13, #03H
+        MOV R4,[R12]
+        MOV R2,[R12+#02H]
+        SUB R2,R4
+        JMPR cc_NC,L_FEF20
+        NEG R2
+        MULU R2,R15
+        ADD MDL,0FE0EH
+        SUBC R4,MDH_FE0C
+        JMPR cc_UC,L_FEF2A
+L_FEF20:                 ; 0xfef20
+        MULU R2,R15
+        ADD MDL,0FE0EH
+        ADDC R4,MDH_FE0C
+L_FEF2A:                 ; 0xfef2a
+        MOV R10,ip_frac
+        JMPR cc_EQ,L_FEF82
+        ADD R12,R5
+        EXTP R13, #03H
+        MOV R3,[R12]
+        MOV R5,[R12+#02H]
+        SUB R5,R3
+        JMPR cc_NC,L_FEF5C
+        NEG R5
+        MULU R5,R15
+        ADD MDL,0FE0EH
+        SUBC R3,MDH_FE0C
+        SUB R3,R4
+        JMPR cc_NC,L_FEF78
+        NEG R3
+        MULU R3,R10
+        ADD MDL,0FE0EH
+        SUBC R4,MDH_FE0C
+        RETS
+L_FEF5C:                 ; 0xfef5c
+        MULU R5,R15
+        ADD MDL,0FE0EH
+        ADDC R3,MDH_FE0C
+        SUB R3,R4
+        JMPR cc_NC,L_FEF78
+        NEG R3
+        MULU R3,R10
+        ADD MDL,0FE0EH
+        SUBC R4,MDH_FE0C
+        RETS
+L_FEF78:                 ; 0xfef78
+        MULU R3,R10
+        ADD MDL,0FE0EH
+        ADDC R4,MDH_FE0C
+L_FEF82:                 ; 0xfef82
+        RETS
+L_FEF84:                 ; 0xfef84
+        MOV R10,ip_frac
+        JMPR cc_EQ,L_FEFA4
+        ADD R5,R12
+        EXTP R13, #02H
+        MOV R4,[R12]
+        MOV R3,[R5]
+        SUB R3,R4
+        JMPR cc_NC,L_FEF78
+        NEG R3
+        MULU R3,R10
+        ADD MDL,0FE0EH
+        SUBC R4,MDH_FE0C
+        RETS
+L_FEFA4:                 ; 0xfefa4
+        EXTP R13, #01H
+        MOV R4,[R12]
+        RETS
+
+; ======== Get_IP_Word_2D_Table  (@0xfefaa) ========
+Get_IP_Word_2D_Table:
+        MOVBZ R2,ip_idx
+        SHL R2,#01H
+        ADD R12,R2
+        MOV R10,ip_frac
+        JMPR cc_EQ,L_FEFDC
+        EXTP R13, #02H
+        MOV R4,[R12+]
+        MOV R2,[R12]
+        SUB R2,R4
+        JMPR cc_NC,L_FEFD0
+        NEG R2
+        MULU R2,R10
+        ADD MDL,0FE0EH
+        SUBC R4,MDH_FE0C
+        RETS
+L_FEFD0:                 ; 0xfefd0
+        MULU R2,R10
+        ADD MDL,0FE0EH
+        ADDC R4,MDH_FE0C
+        RETS
+L_FEFDC:                 ; 0xfefdc
+        EXTP R13, #01H
+        MOV R4,[R12]
+        RETS
+
+; ======== Get_IP_Byte_2D_Table  (@0xfefe2) ========
+Get_IP_Byte_2D_Table:
+        MOVBZ R2,ip_idx
+        XORB RH4,RH4
+        ADD R12,R2
+        MOV R10,ip_frac
+        JMPR cc_EQ,L_FF014
+        EXTP R13, #02H
+        MOVB RL4,[R12+]
+        MOVB RL2,[R12]
+        SUB R2,R4
+        JMPR cc_NC,L_FF008
+        NEG R2
+        MULU R2,R10
+        ADD MDL,0FE0EH
+        SUBC R4,MDH_FE0C
+        RETS
+L_FF008:                 ; 0xff008
+        MULU R2,R10
+        ADD MDL,0FE0EH
+        ADDC R4,MDH_FE0C
+        RETS
+L_FF014:                 ; 0xff014
+        EXTP R13, #01H
+        MOVB RL4,[R12]
+        RETS
+
+; ======== Get_IP_Byte_3D_Table  (@0xff01a) ========
+Get_IP_Byte_3D_Table:
+        MOVBZ R3,ip_idx
+        MOVBZ R2,knk_idx_base
+        MOVBZ R5,g_f518
+        XORB RH4,RH4
+        MULU R3,R5
+        ADD R12,0FE0EH
+        ADD R12,R2
+        MOV R15,g_f8c0
+        JMPR cc_EQ,L_FF0B2
+        EXTP R13, #03H
+        MOVB RL4,[R12]
+        MOVB RL2,[R12+#01H]
+        SUB R2,R4
+        JMPR cc_NC,L_FF050
+        NEG R2
+        MULU R2,R15
+        ADD MDL,0FE0EH
+        SUBC R4,MDH_FE0C
+        JMPR cc_UC,L_FF05A
+L_FF050:                 ; 0xff050
+        MULU R2,R15
+        ADD MDL,0FE0EH
+        ADDC R4,MDH_FE0C
+L_FF05A:                 ; 0xff05a
+        MOV R10,ip_frac
+        JMPR cc_EQ,L_FF0B0
+        ADD R12,R5
+        EXTP R13, #02H
+        MOVB RL3,[R12+]
+        MOVB RL5,[R12]
+        SUB R5,R3
+        JMPR cc_NC,L_FF08A
+        NEG R5
+        MULU R5,R15
+        ADD MDL,0FE0EH
+        SUBC R3,MDH_FE0C
+        SUB R3,R4
+        JMPR cc_NC,L_FF0A6
+        NEG R3
+        MULU R3,R10
+        ADD MDL,0FE0EH
+        SUBC R4,MDH_FE0C
+        RETS
+L_FF08A:                 ; 0xff08a
+        MULU R5,R15
+        ADD MDL,0FE0EH
+        ADDC R3,MDH_FE0C
+        SUB R3,R4
+        JMPR cc_NC,L_FF0A6
+        NEG R3
+        MULU R3,R10
+        ADD MDL,0FE0EH
+        SUBC R4,MDH_FE0C
+        RETS
+L_FF0A6:                 ; 0xff0a6
+        MULU R3,R10
+        ADD MDL,0FE0EH
+        ADDC R4,MDH_FE0C
+L_FF0B0:                 ; 0xff0b0
+        RETS
+L_FF0B2:                 ; 0xff0b2
+        MOV R10,ip_frac
+        JMPR cc_EQ,L_FF0D2
+        ADD R5,R12
+        EXTP R13, #02H
+        MOVB RL4,[R12]
+        MOVB RL3,[R5]
+        SUB R3,R4
+        JMPR cc_NC,L_FF0A6
+        NEG R3
+        MULU R3,R10
+        ADD MDL,0FE0EH
+        SUBC R4,MDH_FE0C
+        RETS
+L_FF0D2:                 ; 0xff0d2
+        EXTP R13, #01H
+        MOVB RL4,[R12]
+        RETS
+
+S_FEE94 ENDS
+        END

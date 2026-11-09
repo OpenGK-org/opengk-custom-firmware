@@ -1,0 +1,275 @@
+; asw/tps/tps_sam.a66
+; 0xC9C58-0xC9EBE  (614 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_n_min_fl                           EQU  0902BBH
+c_tps_grd_bol_rpl                    EQU  0903DBH
+c_tps_grd_min_pu                     EQU  0903E3H
+c_tps_hys_fl                         EQU  0903E4H
+c_tps_is                             EQU  0903E5H
+c_tps_max_is                         EQU  0903E8H
+c_tps_sub_is                         EQU  0903F2H
+c_tps_av_hys_neg                     EQU  0907AAH
+c_tps_av_hys_pos                     EQU  0907ACH
+sstm_n_4_4                        EQU  090A16H
+sstm_n_2_3                   EQU  09110AH
+id_iga_tps_grd_tra__n                EQU  0952D0H
+id_iga_tps_grd_tra_at__n             EQU  0952D4H
+id_tps_fl__n                         EQU  09550FH
+
+PUBLIC  Acq_TPS, Calc_TPS_Av, Calc_TPS_ErrSubst, Calc_TPS_GRD_SAM, Calc_TPS_Seg
+EXTERN  AcComp_AccIn_OffDelay:NEAR, AcComp_AccIn_VS:NEAR, Acq_TPS_Mes_Mon:NEAR, Add_r12_r13_Return_r4:NEAR
+EXTERN  Get_Byte_Y_Axis:NEAR, Get_IP_Byte_2D_Table:NEAR, Get_Word_Y_Axis:NEAR, Read_Byte_Far:NEAR
+EXTERN  sub_r12_13_ret_r4:NEAR, sub_r12_r13_rets_r4:NEAR
+
+S_C9C58 SECTION CODE AT 0C9C58H
+
+; ======== Calc_TPS_ErrSubst  (@0xc9c58) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): Throttle position error substitution path (tps_mes_diag=max)
+        ; ------------------------------------------------------------
+Calc_TPS_ErrSubst:
+        MOVBZ R4,DPP0:c_tps_max_is
+        SHL R4,#02H
+        MOV tps_mes_10_diag,R4
+        MOVB RL4,DPP0:c_tps_max_is
+        MOVB tps_mes_diag,RL4
+        BSET lv_err_tps_det.0BH
+        BCLR lv_err_tps_det.0AH
+        BCLR lv_err_tps_det.0DH
+        BCLR lv_err_tps_det.0CH
+        MOVB ctr_tps_noise,ZEROS
+        MOV lv_tps_cdd4,ZEROS
+        MOV lv_tps_cdd2,ZEROS
+        MOVB t_tps_noise_1,ZEROS
+        MOV R4,lv_tps_fa7e
+        AND R4,#DATA16 003FFH
+        SHR R4,#02H
+        MOVB lv_tps_c359,RL4
+        CALLS 00CH,Acq_TPS_Mes_Mon
+        MOVBZ R12,tps_mes_diag
+        MOVBZ R13,lv_tps_f78f
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB tps,RL4
+        MOVB lv_tps_f4bc,RL4
+        MOVB RL5,tps
+        MOVB lv_tps_f4bb,RL5
+        MOVB RL3,tps
+        MOVB lv_tps_f4ba,RL3
+        MOVB RL2,tps
+        MOVB lv_tps_f4b9,RL2
+        MOV R4,tps_ad_mmv_is
+        MOV lv_tps_f798,R4
+        RETS
+
+; ======== Acq_TPS  (@0xc9cca) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by maf/tps output signals + DTC): Throttle-position sensor acquisition: raw tps
+        ; + sensor-detect flag lv_err_tps_det.
+        ; ------------------------------------------------------------
+Acq_TPS:
+        BSET lv_err_tps_det.01H
+        MOVB RL4,lv_tps_f4bb
+        MOVB lv_tps_f4bc,RL4
+        MOVB RL5,lv_tps_f4ba
+        MOVB lv_tps_f4bb,RL5
+        MOVB RL3,lv_tps_f4b9
+        MOVB lv_tps_f4ba,RL3
+        MOVB RL2,tps
+        MOVB lv_tps_f4b9,RL2
+        CALLS 00CH,Acq_TPS_Mes_Mon
+        JB lv_err_tps_det.05H,L_C9D06
+        MOVBZ R12,tps_mes_diag
+        MOVBZ R13,lv_tps_f78f
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB tps,RL4
+        RETS
+L_C9D06:                 ; 0xc9d06
+        MOVB RL4,tps_sub_diag
+        MOVB tps,RL4
+        RETS
+
+; ======== Calc_TPS_Av  (@0xc9d10) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by maf/tps output signals + DTC): Throttle-position averaging: tps_av_raw /
+        ; tps_av.
+        ; ------------------------------------------------------------
+Calc_TPS_Av:
+        MOV [-R0],R9
+        JB lv_err_tps_det.05H,L_C9D30
+        MOV R12,lv_tps_fa7e
+        AND R12,#DATA16 003FFH
+        SHL R12,#04H
+        MOV R13,tps_ad_mmv_is
+        SHR R13,#02H
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV tps_av_raw,R4
+        JMPR cc_UC,L_C9D4A
+L_C9D30:                 ; 0xc9d30
+        MOVB RL4,tps_sub_diag
+        CMPB RL4,DPP0:c_tps_sub_is
+        JMPR cc_NC,L_C9D40
+        MOV tps_av_raw,ZEROS
+        JMPR cc_UC,L_C9D4A
+L_C9D40:                 ; 0xc9d40
+        MOVBZ R4,tps_sub_diag
+        SHL R4,#06H
+        MOV tps_av_raw,R4
+L_C9D4A:                 ; 0xc9d4a
+        MOV R12,tps_av_raw
+        MOV R13,DPP0:c_tps_av_hys_pos
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV R9,R4
+        CMP R9,tps_av
+        JMPR cc_ULE,L_C9D64
+        MOV tps_av,R9
+        JMPR cc_UC,L_C9D7C
+L_C9D64:                 ; 0xc9d64
+        MOV R12,tps_av_raw
+        MOV R13,DPP0:c_tps_av_hys_neg
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV R9,R4
+        CMP R9,tps_av
+        JMPR cc_NC,L_C9D7C
+        MOV tps_av,R9
+L_C9D7C:                 ; 0xc9d7c
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_TPS_Seg  (@0xc9d80) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by maf/tps output signals + DTC): Per-segment throttle position tps_seg.
+        ; ------------------------------------------------------------
+Calc_TPS_Seg:
+        MOV R12,lv_tps_fa7e
+        AND R12,#DATA16 003FFH
+        SHL R12,#04H
+        MOV R13,tps_ad_mmv_is
+        SHR R13,#02H
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV tps_seg,R4
+        RETS
+
+; ======== Calc_TPS_GRD_SAM  (@0xc9d9a) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (MS42, verified): throttle gradient tps_grd_sam = tps-prev + fuel-cut TPS thresholds
+        ; (c_tps_hys_fl)
+        ; (was FUN_0c9d9a)
+        ; ------------------------------------------------------------
+Calc_TPS_GRD_SAM:
+        MOV [-R0],R7
+        MOV [-R0],R6
+        BCLR lv_err_tps_det.07H
+        BCLR lv_err_tps_det.08H
+        MOVB RL4,tps
+        CMPB RL4,DPP0:c_tps_is
+        JMPR cc_C,L_C9DB4
+        MOV R4,tps_ad_mmv_is
+        MOV lv_tps_f798,R4
+L_C9DB4:                 ; 0xc9db4
+        JB lv_ct.00H,L_C9E26
+        MOV R12,#DATA16 POF sstm_n_2_3
+        MOV R13,#DATA16 PAG sstm_n_2_3
+        MOV R14,n_C93C
+        CALLS 00FH,Get_Word_Y_Axis
+        MOV R12,#DATA16 POF id_tps_fl__n
+        MOV R13,#DATA16 PAG id_tps_fl__n
+        CALLS 00FH,Read_Byte_Far
+        MOVB RL7,RL4
+        CMPB RL7,tps
+        JMPR cc_UGT,L_C9DE8
+        JB lv_err_tps_det.06H,L_C9DFA
+        CALLS 00CH,AcComp_AccIn_VS
+        BSET lv_err_tps_det.06H
+        JMPR cc_UC,L_C9DFA
+L_C9DE8:                 ; 0xc9de8
+        MOVBZ R12,RL7
+        MOVBZ R13,DPP0:c_tps_hys_fl
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL4,tps
+        JMPR cc_ULE,L_C9DFA
+        BCLR lv_err_tps_det.06H
+L_C9DFA:                 ; 0xc9dfa
+        JNB lv_err_tps_det.06H,L_C9E22
+        MOVB RL4,n_32
+        CMPB RL4,DPP0:c_n_min_fl
+        JMPR cc_C,L_C9E22
+        JNB lv_err_tps_det.00H,L_C9E22
+        MOV R4,lam_bank_1_lam_up_lam_up_carrier
+        AND R4,#04H
+        JMPR cc_NE,L_C9E22
+        MOV R4,lam_bank_1_lam_up_lam_up_carrier
+        AND R4,#DATA16 00008H
+        JMPR cc_NE,L_C9E22
+        BSET lv_err_tps_det.02H
+        JMPR cc_UC,L_C9E2A
+L_C9E22:                 ; 0xc9e22
+        BCLR lv_err_tps_det.02H
+        JMPR cc_UC,L_C9E2A
+L_C9E26:                 ; 0xc9e26
+        BCLR lv_err_tps_det.06H
+        BCLR lv_err_tps_det.02H
+L_C9E2A:                 ; 0xc9e2a
+        MOVB RL4,tps
+        CMPB RL4,lv_tps_f4bc
+        JMPR cc_NC,L_C9E56
+        BSET lv_err_tps_det.09H
+        MOVB RL5,lv_tps_f4bc
+        SUBB RL5,tps
+        MOVB lv_tps_f4b6,RL5
+        MOVBZ R4,RL5
+        NEG R4
+        MOV tps_grd_sam,R4
+        CMPB RL5,DPP0:c_tps_grd_min_pu
+        JMPR cc_ULE,L_C9E52
+        BSET lv_err_tps_det.07H
+L_C9E52:                 ; 0xc9e52
+        BCLR lv_err_tps_det.03H
+        JMPR cc_UC,L_C9EB8
+L_C9E56:                 ; 0xc9e56
+        MOVB RL4,tps
+        SUBB RL4,lv_tps_f4bc
+        MOVB lv_tps_f4b6,RL4
+        MOVBZ R4,RL4
+        MOV tps_grd_sam,R4
+        MOV R12,#DATA16 POF sstm_n_4_4
+        MOV R13,#DATA16 PAG sstm_n_4_4
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_Byte_Y_Axis
+        JNB lv_conf_mis.0AH,L_C9E8C
+        MOV R12,#DATA16 POF id_iga_tps_grd_tra_at__n
+        MOV R13,#DATA16 PAG id_iga_tps_grd_tra_at__n
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB RL6,RL4
+        JMPR cc_UC,L_C9E9A
+L_C9E8C:                 ; 0xc9e8c
+        MOV R12,#DATA16 POF id_iga_tps_grd_tra__n
+        MOV R13,#DATA16 PAG id_iga_tps_grd_tra__n
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB RL6,RL4
+L_C9E9A:                 ; 0xc9e9a
+        CMPB RL6,lv_tps_f4b6
+        JMPR cc_UGT,L_C9EA2
+        BSET lv_err_tps_det.08H
+L_C9EA2:                 ; 0xc9ea2
+        MOVB RL4,lv_tps_f4b6
+        CMPB RL4,DPP0:c_tps_grd_bol_rpl
+        JMPR cc_NC,L_C9EB0
+        BSET lv_err_tps_det.09H
+        JMPR cc_UC,L_C9EB2
+L_C9EB0:                 ; 0xc9eb0
+        BCLR lv_err_tps_det.09H
+L_C9EB2:                 ; 0xc9eb2
+        CALLS 00CH,AcComp_AccIn_OffDelay
+        BSET lv_err_tps_det.03H
+L_C9EB8:                 ; 0xc9eb8
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        RETS
+
+S_C9C58 ENDS
+        END

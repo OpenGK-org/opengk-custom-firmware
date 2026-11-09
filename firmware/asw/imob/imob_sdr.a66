@@ -1,0 +1,261 @@
+; asw/imob/imob_sdr.a66
+; 0xE4F38-0xE51CA  (658 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_dly_lock_imob                      EQU  090196H
+
+PUBLIC  KWP_App_SID_12_case, KWP_App_SID_15_case, KWP_App_SID_1A_case, KWP_App_SID_20_case
+EXTERN  Imob_Update_WarnLamp:NEAR, L_E5A72:NEAR, SMARTRA_disable:NEAR
+
+S_E4F38 SECTION CODE AT 0E4F38H
+
+; ======== KWP_App_SID_12_case  (@0xe4f38) ========
+KWP_App_SID_12_case:
+        MOV R4,kwp_msg_len
+        CMP R4,#02H
+        JMPR cc_NE,L_E4F66
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],imob_data_ctl_key_nr_learn_imob
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],imob_data_ram_state_imob
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],key_state_imob
+        MOV R4,#05H
+        MOV kwp_msg_len,R4
+        MOVB kwp_nrc,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E4F66:                 ; 0xe4f66
+        BSET lv_fmy_imob.05H
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPA cc_UC,L_E5A72
+
+; ======== KWP_App_SID_1A_case  (@0xe4f74) ========
+KWP_App_SID_1A_case:
+        MOV R4,kwp_msg_len
+        CMP R4,#DATA16 0000BH
+        JMPA cc_NE,L_E50BC
+        MOVB RL4,n_32
+        JMPA cc_NE,L_E50B0
+        MOVB RL5,imob_data_ram_state_imob
+        CMPB RL5,#02H
+        JMPR cc_EQ,L_E4F9C
+        CMPB RL5,#03H
+        JMPR cc_EQ,L_E4F9C
+        CMPB RL5,#01H
+        JMPR cc_EQ,L_E4FDA
+        JMPA cc_UC,L_E50A4
+L_E4F9C:                 ; 0xe4f9c
+        MOVB RL4,[R9+]
+        MOVB q_imob_seed_material,RL4
+        MOVB RL5,[R9+]
+        MOVB imob_sdr_b0,RL5
+        MOVB RL3,[R9+]
+        MOVB imob_sdr_b1,RL3
+        MOVB RL2,[R9+]
+        MOVB imob_sdr_b2,RL2
+        MOVB RL1,[R9+]
+        MOVB imob_sdr_b3,RL1
+        MOVB RL4,[R9+]
+        MOVB imob_sdr_b4,RL4
+        MOVB RL4,[R9+]
+        MOVB q_imob_resp_key,RL4
+        MOVB RL4,[R9+]
+        MOVB imob_ca25,RL4
+        MOVB imob_ca26,[R9]
+        MOVB kwp_nrc,ZEROS
+        BSET imob_bw.0AH
+        JMPA cc_UC,L_E5A72
+L_E4FDA:                 ; 0xe4fda
+        MOVB RL4,[R9+]
+        CMPB RL4,q_imob_seed_material
+        JMPR cc_NE,L_E5048
+        MOVB RL4,[R9+]
+        CMPB RL4,imob_sdr_b0
+        JMPR cc_NE,L_E5048
+        MOVB RL4,[R9+]
+        CMPB RL4,imob_sdr_b1
+        JMPR cc_NE,L_E5048
+        MOVB RL4,[R9+]
+        CMPB RL4,imob_sdr_b2
+        JMPR cc_NE,L_E5048
+        MOVB RL4,[R9+]
+        CMPB RL4,imob_sdr_b3
+        JMPR cc_NE,L_E5048
+        MOVB RL4,[R9+]
+        CMPB RL4,imob_sdr_b4
+        JMPR cc_NE,L_E5048
+        MOVB RL4,[R9+]
+        CMPB RL4,q_imob_resp_key
+        JMPR cc_NE,L_E5048
+        MOVB RL4,[R9+]
+        CMPB RL4,imob_ca25
+        JMPR cc_NE,L_E5048
+        MOVB RL4,[R9]
+        CMPB RL4,imob_ca26
+        JMPR cc_NE,L_E5048
+        MOVB RL4,ctr_imob_nvm_1
+        CMPB RL4,#03H
+        JMPR cc_NC,L_E5048
+        BSET imob_bw.0AH
+        MOVB ctr_imob_nvm_1,ZEROS
+        MOVB RL4,#01H
+        MOV R5,kwp_req_ptr
+        MOVB [R5+#01H],RL4
+        MOV R4,#03H
+        MOV kwp_msg_len,R4
+        MOVB kwp_nrc,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E5048:                 ; 0xe5048
+        BCLR imob_bw.0AH
+        MOVB RL4,ctr_imob_nvm_1
+        CMPB RL4,#02H
+        JMPR cc_C,L_E5088
+        MOVB RL5,#04H
+        MOVB imob_data_ram_state_imob,RL5
+        MOVB RL3,imob_sdr_ctr
+        MOVB lv_crank_c289,RL3
+        MOVB RL2,#04H
+        MOVB imob_sdr_ctr,RL2
+        MOVBZ R4,DPP0:c_dly_lock_imob
+        MOV R12,R4
+        SHL R12,#04H
+        SUB R12,R4
+        SHL R12,#02H
+        ADD R12,#02H
+        CALLS 00BH,Imob_Update_WarnLamp
+        MOVBZ R4,DPP0:c_dly_lock_imob
+        MOV R5,R4
+        SHL R5,#04H
+        SUB R5,R4
+        SHL R5,#02H
+        MOV imob_ca40,R5
+L_E5088:                 ; 0xe5088
+        MOVB RL4,ctr_imob_nvm_1
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NC,L_E5098
+        ADDB RL4,#01H
+        MOVB ctr_imob_nvm_1,RL4
+L_E5098:                 ; 0xe5098
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPA cc_UC,L_E5A72
+L_E50A4:                 ; 0xe50a4
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPA cc_UC,L_E5A72
+L_E50B0:                 ; 0xe50b0
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPA cc_UC,L_E5A72
+L_E50BC:                 ; 0xe50bc
+        BSET lv_fmy_imob.05H
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPA cc_UC,L_E5A72
+
+; ======== KWP_App_SID_15_case  (@0xe50ca) ========
+KWP_App_SID_15_case:
+        MOV R4,kwp_msg_len
+        CMP R4,#02H
+        JMPR cc_NE,L_E5112
+        MOVB RL4,n_32
+        JMPR cc_NE,L_E5106
+        MOVB RL5,imob_data_ram_state_imob
+        CMPB RL5,#01H
+        JMPR cc_EQ,L_E50E4
+        CMPB RL5,#04H
+        JMPR cc_NE,L_E5106
+L_E50E4:                 ; 0xe50e4
+        MOVB RL4,imob_data_ram_state_imob
+        CMPB RL4,#04H
+        JMPR cc_NE,L_E50F8
+        MOVB RL5,#04H
+        MOVB [R9],RL5
+        MOV R4,#03H
+        MOV kwp_msg_len,R4
+        JMPR cc_UC,L_E50FE
+L_E50F8:                 ; 0xe50f8
+        MOV R4,#02H
+        MOV kwp_msg_len,R4
+L_E50FE:                 ; 0xe50fe
+        MOVB kwp_nrc,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E5106:                 ; 0xe5106
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPA cc_UC,L_E5A72
+L_E5112:                 ; 0xe5112
+        BSET lv_fmy_imob.05H
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPA cc_UC,L_E5A72
+
+; ======== KWP_App_SID_20_case  (@0xe5120) ========
+KWP_App_SID_20_case:
+        MOV R4,kwp_msg_len
+        CMP R4,#03H
+        JMPR cc_NE,L_E51BC
+        MOVB RL4,n_32
+        JMPR cc_NE,L_E51B0
+        MOVB RL5,imob_data_ram_state_imob
+        CMPB RL5,#02H
+        JMPR cc_EQ,L_E51B0
+        JNB imob_bw.0AH,L_E51B0
+        BCLR imob_bw.0AH
+        MOVB RL3,[R9]
+        CMPB RL3,#01H
+        JMPR cc_NE,L_E5190
+        MOVB q_imob_seed_material,ZEROS
+        MOVB imob_sdr_b0,ZEROS
+        MOVB imob_sdr_b1,ZEROS
+        MOVB imob_sdr_b2,ZEROS
+        MOVB imob_sdr_b3,ZEROS
+        MOVB imob_sdr_b4,ZEROS
+        MOVB q_imob_resp_key,ZEROS
+        MOVB imob_ca25,ZEROS
+        MOVB imob_ca26,ZEROS
+        CALLS 00BH,SMARTRA_disable
+        MOV imob_sdr_b5,ZEROS
+        MOVB RL4,#05H
+        MOVB imob_sdr_ctr,RL4
+        MOVB RL5,#03H
+        MOVB imob_data_ram_state_imob,RL5
+        MOVB RL3,#09H
+        MOVB smartra_proto_step,RL3
+        MOVB key_state_imob,ZEROS
+        MOVB RL2,#01H
+        MOVB [R9],RL2
+        MOVB kwp_nrc,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E5190:                 ; 0xe5190
+        MOVB RL4,[R9]
+        CMPB RL4,#02H
+        JMPR cc_NE,L_E51A4
+        MOVB RL4,#DATA16 000F0H
+        MOVB [R9],RL4
+        MOVB kwp_nrc,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E51A4:                 ; 0xe51a4
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPA cc_UC,L_E5A72
+L_E51B0:                 ; 0xe51b0
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPA cc_UC,L_E5A72
+L_E51BC:                 ; 0xe51bc
+        BSET lv_fmy_imob.05H
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPA cc_UC,L_E5A72
+
+S_E4F38 ENDS
+        END

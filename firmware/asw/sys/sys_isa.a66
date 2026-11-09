@@ -1,0 +1,203 @@
+; asw/sys/sys_isa.a66
+; 0xC0C9E-0xC0E64  (454 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_crlc_opg_av_isa                    EQU  09016BH
+lc_opg_isa_man                       EQU  090487H
+lc_opg_sp_st_isa                     EQU  090488H
+c_opg_isa_man                        EQU  09066AH
+c_opg_sp_es_isa                      EQU  09066CH
+c_opg_ofs_isa_man                    EQU  0908E8H
+
+PUBLIC  Calc_ISA_Opening_Sp, Reset_ISA, UpdBits_lv_iga_tra_knk_ce6
+EXTERN  Abs_Diff_U16:NEAR, Add_r12_r13_Return_r4:NEAR, Get_IP_Word_2D_Table_DWord_YWord:NEAR, Get_IP_Word_3D_Table_DWord_XByte_YWord:NEAR
+EXTERN  Interp_U16:NEAR, Sat_Add_S16_v2:NEAR, sub_r12_r13_rets_r4:NEAR
+
+S_C0C9E SECTION CODE AT 0C0C9EH
+
+; ======== Reset_ISA  (@0xc0c9e) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by idle/ISA output signals): Idle-air actuator (ISA) off/reset:
+        ; opg_av_isa=opg_sp_isa=isapwm_isa=0, clears PWM outputs PW0/PW1 and lv_iga_tra_knk transition bits.
+        ; ------------------------------------------------------------
+Reset_ISA:
+        BCLR lv_iga_tra_knk.09H
+        BCLR lv_iga_tra_knk.0AH
+        BCLR lv_iga_tra_knk.0BH
+        MOV opg_av_isa,ZEROS
+        MOV opg_sp_isa,ZEROS
+        MOV isapwm_isa,ZEROS
+        JB state_out_req.07H,L_C0CCC
+        MOV R4,PP1_F03A
+        ADD R4,#01H
+        MOV R2,#00H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV PW1_FE32,R4
+L_C0CCC:                 ; 0xc0ccc
+        MOV R4,PP0_F038
+        ADD R4,#01H
+        MOV R2,#00H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV PW0_FE30,R4
+        RETS
+
+; ======== UpdBits_lv_iga_tra_knk_ce6  (@0xc0ce6) ========
+UpdBits_lv_iga_tra_knk_ce6:
+        BSET lv_iga_tra_knk.09H
+        BCLR lv_iga_tra_knk.0AH
+        BCLR lv_iga_tra_knk.0BH
+        RETS
+
+; ======== Calc_ISA_Opening_Sp  (@0xc0cee) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by idle/ISA output signals): Idle-air actuator opening setpoint: opg_sp_isa from
+        ; opg_sp_mdl_isa + transition-state model (opg_sp_tra_st_mdl_isa, n/tco 3D map) when lv_pl idle;
+        ; drives isapwm_isa duty.
+        ; ------------------------------------------------------------
+Calc_ISA_Opening_Sp:
+        MOV [-R0],R9
+        JNB lv_pl.04H,L_C0D00
+        MOV R4,opg_sp_st_isa
+        MOV opg_sp_tra_st_mdl_isa,R4
+        MOV R9,R4
+        JMPR cc_UC,L_C0D8A
+L_C0D00:                 ; 0xc0d00
+        JNB lv_iga_tra_knk.09H,L_C0D86
+        MOV R12,#DATA16 049F2H
+        MOV R13,n_C93C
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YWord
+        MOV R9,R4
+        MOV R12,opg_sp_tra_st_mdl_isa
+        MOV R13,opg_sp_mdl_isa
+        CALLS 00FH,Abs_Diff_U16
+        CMP R4,R9
+        JMPR cc_C,L_C0D46
+        JNB lv_iga_tra_knk.0BH,L_C0D34
+        MOV R4,opg_sp_tra_st_mdl_isa
+        CMP R4,opg_sp_mdl_isa
+        JMPR cc_C,L_C0D46
+L_C0D34:                 ; 0xc0d34
+        JNB lv_iga_tra_knk.0AH,L_C0D42
+        MOV R4,opg_sp_tra_st_mdl_isa
+        CMP R4,opg_sp_mdl_isa
+        JMPR cc_UGT,L_C0D46
+L_C0D42:                 ; 0xc0d42
+        JNB lv_pl.00H,L_C0D56
+L_C0D46:                 ; 0xc0d46
+        MOV R4,opg_sp_mdl_isa
+        MOV opg_sp_tra_st_mdl_isa,R4
+        BCLR lv_iga_tra_knk.09H
+        BCLR lv_iga_tra_knk.0AH
+        BCLR lv_iga_tra_knk.0BH
+        JMPR cc_UC,L_C0D80
+L_C0D56:                 ; 0xc0d56
+        MOV R4,opg_sp_tra_st_mdl_isa
+        CMP R4,opg_sp_mdl_isa
+        JMPR cc_ULE,L_C0D70
+        MOV R12,R4
+        MOV R13,R9
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV opg_sp_tra_st_mdl_isa,R4
+        BSET lv_iga_tra_knk.0BH
+        JMPR cc_UC,L_C0D80
+L_C0D70:                 ; 0xc0d70
+        MOV R12,opg_sp_tra_st_mdl_isa
+        MOV R13,R9
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV opg_sp_tra_st_mdl_isa,R4
+        BSET lv_iga_tra_knk.0AH
+L_C0D80:                 ; 0xc0d80
+        MOV R9,opg_sp_tra_st_mdl_isa
+        JMPR cc_UC,L_C0D8A
+L_C0D86:                 ; 0xc0d86
+        MOV R9,opg_sp_mdl_isa
+L_C0D8A:                 ; 0xc0d8a
+        JNB lv_iga_dif_max_er.0EH,L_C0D98
+        MOV R4,opg_sp_isa_ext_adj
+        MOV opg_sp_isa,R4
+        JMPR cc_UC,L_C0DEC
+L_C0D98:                 ; 0xc0d98
+        MOVB RL4,DPP0:lc_opg_isa_man
+        JMPR cc_EQ,L_C0DA8
+        MOV R4,DPP0:c_opg_isa_man
+        MOV opg_sp_isa,R4
+        JMPR cc_UC,L_C0DEC
+L_C0DA8:                 ; 0xc0da8
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_C0DBC
+        JNB can_fd58.09H,L_C0DB6
+        MOV R9,DPP0:c_opg_sp_es_isa
+        JMPR cc_UC,L_C0DDE
+L_C0DB6:                 ; 0xc0db6
+        MOV R9,opg_sp_pwl_isa
+        JMPR cc_UC,L_C0DDE
+L_C0DBC:                 ; 0xc0dbc
+        JNB lv_err_tps_det.05H,L_C0DD4
+        JB lv_ct.00H,L_C0DD4
+        MOV R12,#DATA16 049EAH
+        MOV R13,n_C93C
+        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YWord
+        MOV R9,R4
+        JMPR cc_UC,L_C0DDE
+L_C0DD4:                 ; 0xc0dd4
+        MOVB RL4,DPP0:lc_opg_sp_st_isa
+        JMPR cc_NE,L_C0DDE
+        MOV R9,opg_sp_mdl_isa
+L_C0DDE:                 ; 0xc0dde
+        MOV R12,R9
+        MOV R13,DPP0:c_opg_ofs_isa_man
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV opg_sp_isa,R4
+L_C0DEC:                 ; 0xc0dec
+        JNB lv_cat_diag_inh_1.0FH,L_C0DFE
+        MOV R4,isapwm_lih
+        MOV isapwm_isa,R4
+        MOV R9,opg_av_lih_isa
+        JMPR cc_UC,L_C0E16
+L_C0DFE:                 ; 0xc0dfe
+        MOV R12,#DATA16 049FEH
+        MOV R13,opg_sp_isa
+        MOVBZ R14,vb
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YWord
+        MOV isapwm_isa,R4
+        MOV R9,opg_sp_isa
+L_C0E16:                 ; 0xc0e16
+        JB state_out_req.07H,L_C0E34
+        MOV R4,PP1_F03A
+        ADD R4,#01H
+        MOV R2,isapwm_isa
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV PW1_FE32,R4
+L_C0E34:                 ; 0xc0e34
+        MOV R4,PP0_F038
+        ADD R4,#01H
+        MOV R2,#00H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV PW0_FE30,R4
+        MOV R12,opg_av_isa
+        MOV R13,R9
+        MOVBZ R14,DPP0:c_crlc_opg_av_isa
+        SHL R14,#08H
+        CALLS 00FH,Interp_U16
+        MOV opg_av_isa,R4
+        MOV R9,[R0+]
+        RETS
+
+S_C0C9E ENDS
+        END

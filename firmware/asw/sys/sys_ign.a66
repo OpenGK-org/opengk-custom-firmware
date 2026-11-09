@@ -1,0 +1,179 @@
+; asw/sys/sys_ign.a66
+; 0xA38EE-0xA3A7C  (398 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Ctl_Ign_Output_CC6, EngIgn_ArmOutputs, EngIgn_DisableOutputs, Set_Ign_Output_CC6
+
+S_A38EE SECTION CODE AT 0A38EEH
+
+; ======== EngIgn_ArmOutputs  (@0xa38ee) ========
+        ; Engine START - arms ignition outputs. Starts GPT T2/T4 (CON|=0xff, IC enabled), arms ignition CAPCOM
+        ; CC6/CC7 (compare=0xfff) + CC9/CC27, CCM1/CCM2/CCM6 modes; dbl_igc=1, td_igc_cut=0. Restart-group
+        ; counterpart of EngIgn_DisableOutputs (0a3974).
+EngIgn_ArmOutputs:
+        BCLR smartra_comms_status.08H
+        BCLR smartra_comms_status.09H
+        BCLR smartra_comms_status.07H
+        BFLDL 0FF60H,#0FFH,#00H
+        BFLDL 0FF40H,#0FFH,#00H
+        BFLDL 0FF60H,#0FFH,#02BH
+        MOVB ign_cc_8,ZEROS
+        MOVB td_igc_cut,ZEROS
+        BFLDL 0FF64H,#0FFH,#00H
+        BFLDL 0FF44H,#0FFH,#00H
+        BFLDL 0FF64H,#0FFH,#062H
+        MOVB ign_dwell_a,ZEROS
+        MOVB ign_dwell_b,ZEROS
+        MOVB RL4,#01H
+        MOVB dbl_igc,RL4
+        MOVB ign_cmp_a,ZEROS
+        BCLR smartra_comms_status.01H
+        BCLR smartra_comms_status.03H
+        BCLR smartra_comms_status.02H
+        BFLDL 0FF84H,#0FFH,#00H
+        BFLDH CCM1_FF54,#0FH,#00H
+        MOV CC6,#DATA16 00FFFH
+        BFLDL 0FF84H,#0FFH,#066H
+        MOVB ign_cmp_b,ZEROS
+        BCLR smartra_comms_status.04H
+        BCLR smartra_comms_status.06H
+        BCLR smartra_comms_status.05H
+        BFLDL 0FF86H,#0FFH,#00H
+        BFLDH CCM1_FF54,#0F0H,#00H
+        MOV CC7,#DATA16 00FFFH
+        BFLDL 0FF86H,#0FFH,#067H
+        EXTR #01H
+        BFLDL 0F176H,#0FFH,#00H
+        BFLDH CCM6_FF26,#0F0H,#00H
+        EXTR #01H
+        BFLDL 0F176H,#0FFH,#061H
+        BFLDL 0FF8AH,#0FFH,#00H
+        BFLDL 0FF56H,#0F0H,#00H
+        BFLDL 0FF8AH,#0FFH,#060H
+        RETS
+
+; ======== EngIgn_DisableOutputs  (@0xa3974) ========
+        ; Engine STOP - disables/safes ignition outputs. Ignition CAPCOM CC6/CC7 (P2.6/P2.7 coil pins, forced
+        ; low push-pull: ODP2&~0xc0, P2&~0xc0, DP2|0xc0) + CC9/CC27 + GPT T2/T4; clears CCM1/CCM6 ignition
+        ; mode fields. STOP-trio member (with EngCrank_StopTimingCapture + EngInj_DisableOutputs); counterpart
+        ; of EngIgn_ArmOutputs (0a38ee). Called by ProgSession_StateMachine_VbGated at engine-stop /
+        ; enter-programming. [Earlier labeled a 'reinit'; in context it is the ignition-stop.]
+EngIgn_DisableOutputs:
+        EXTR #01H
+        BFLDL 0F176H,#0FFH,#00H
+        BFLDH CCM6_FF26,#0F0H,#00H
+        BFLDL 0FF8AH,#0FFH,#00H
+        BFLDL 0FF84H,#0FFH,#00H
+        BFLDH CCM1_FF54,#0FH,#00H
+        EXTR #01H
+        BCLR ODP2.06H
+        BCLR P2.06H
+        BSET DP2.06H
+        MOVB RL4,#DATA16 00012H
+        MOVB ign_cmp_a,RL4
+        BFLDL 0FF86H,#0FFH,#00H
+        BFLDH CCM1_FF54,#0F0H,#00H
+        EXTR #01H
+        BCLR ODP2.07H
+        BCLR P2.07H
+        BSET DP2.07H
+        MOVB ign_cmp_b,RL4
+        BFLDL 0FF60H,#0FFH,#00H
+        BFLDL 0FF40H,#0FFH,#00H
+        BFLDL 0FF64H,#0FFH,#00H
+        BFLDL 0FF44H,#0FFH,#00H
+        RETS
+
+; ======== Ctl_Ign_Output_CC6  (@0xa39c0) ========
+        ; ------------------------------------------------------------
+        ; Seg-A ISR helper (verified by SFR/CCP usage): Ignition output port config
+        ; (CC6/CCM1/P2.6/DP2/ODP2/CC6IC) by param state.
+        ; ------------------------------------------------------------
+Ctl_Ign_Output_CC6:
+        MOV R4,R12
+        CMPB RL4,#00H
+        JMPR cc_EQ,L_A39CC
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_A3A0C
+        JMPR cc_UC,L_A3A4A
+L_A39CC:                 ; 0xa39cc
+        BFLDL 0FF84H,#0FFH,#00H
+        BFLDH CCM1_FF54,#0FH,#00H
+        EXTR #01H
+        BCLR ODP2.06H
+        BCLR P2.06H
+        BSET DP2.06H
+        BFLDL 0FF84H,#0FFH,#066H
+        BSET P2.06H
+        MOV R4,T1_FE52
+        ADD R4,R13
+        MOV CC6_FE8C,R4
+        BFLDH CCM1_FF54,#0FH,#0DH
+        CMP R13,#DATA16 08000H
+        JMPR cc_NC,L_A3A4A
+        MOV R4,T1_FE52
+        SUB R4,CC6_FE8C
+        CMP R4,#DATA16 07FFFH
+        JMPR cc_UGT,L_A3A4A
+        BFLDH CCM1_FF54,#0FH,#00H
+        BCLR P2.06H
+        RETS
+L_A3A0C:                 ; 0xa3a0c
+        BFLDL 0FF86H,#0FFH,#00H
+        BFLDH CCM1_FF54,#0F0H,#00H
+        EXTR #01H
+        BCLR ODP2.07H
+        BCLR P2.07H
+        BSET DP2.07H
+        BFLDL 0FF86H,#0FFH,#067H
+        BSET P2.07H
+        MOV R4,T1_FE52
+        ADD R4,R13
+        MOV CC7_FE8E,R4
+        BFLDH CCM1_FF54,#0F0H,#0D0H
+        CMP R13,#DATA16 08000H
+        JMPR cc_NC,L_A3A4A
+        MOV R4,T1_FE52
+        SUB R4,CC7_FE8E
+        CMP R4,#DATA16 07FFFH
+        JMPR cc_UGT,L_A3A4A
+        BFLDH CCM1_FF54,#0F0H,#00H
+        BCLR P2.07H
+L_A3A4A:                 ; 0xa3a4a
+        RETS
+
+; ======== Set_Ign_Output_CC6  (@0xa3a4c) ========
+        ; ------------------------------------------------------------
+        ; Seg-A ISR helper (verified by SFR/CCP usage): Set ignition output CC6 enable/disable/mode by param
+        ; (CC6IC/CCM1/P2.6).
+        ; ------------------------------------------------------------
+Set_Ign_Output_CC6:
+        MOV R4,R12
+        CMPB RL4,#00H
+        JMPR cc_EQ,L_A3A58
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_A3A6A
+        JMPR cc_UC,L_A3A7A
+L_A3A58:                 ; 0xa3a58
+        BFLDL 0FF84H,#0FFH,#00H
+        BFLDH CCM1_FF54,#0FH,#00H
+        EXTR #01H
+        BCLR ODP2.06H
+        BCLR P2.06H
+        BSET DP2.06H
+        RETS
+L_A3A6A:                 ; 0xa3a6a
+        BFLDL 0FF86H,#0FFH,#00H
+        BFLDH CCM1_FF54,#0F0H,#00H
+        EXTR #01H
+        BCLR ODP2.07H
+        BCLR P2.07H
+        BSET DP2.07H
+L_A3A7A:                 ; 0xa3a7a
+        RETS
+
+S_A38EE ENDS
+        END

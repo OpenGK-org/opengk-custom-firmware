@@ -1,0 +1,81 @@
+; asw/sys/sys_spin.a66
+; 0xA040C-0xA04C2  (182 bytes, 1 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  SpinHalt_a040c
+
+S_A040C SECTION CODE AT 0A040CH
+
+; ======== SpinHalt_a040c  (@0xa040c) ========
+SpinHalt_a040c:
+        JMPS 00AH,SpinHalt_a040c
+
+        ; ------------------------------------------------------------
+        ; (likely) RAM/paged global @0xa0410 [dpp]  W:{-}  R:{KWP_ServiceTable_Dispatch}
+        ; ------------------------------------------------------------
+        ; data @0xa0410 (48 bytes)
+        DB      006H,0FCH,00DH,000H,064H,0EFH,00DH,000H,062H,0FBH,00DH,000H,096H,0FBH,00DH,000H
+        DB      002H,0FCH,00DH,000H,004H,0FCH,00DH,000H,0BEH,0A4H,008H,000H,0CCH,0A7H,008H,000H
+        DB      0C0H,0A6H,008H,000H,098H,0A5H,008H,000H,04AH,0A8H,008H,000H,0F6H,0A4H,008H,000H
+        BOR lv_carb_err.00H,P2.00H
+        ; ------------------------------------------------------------
+        ; (likely) RAM/paged global @0xa0444 [dpp]  W:{-}  R:{KWP_BL_SID_23_ReadMemoryByAddress}
+        ; ------------------------------------------------------------
+        JMPS 028H,00028H
+
+        ; ------------------------------------------------------------
+        ; (likely) RAM/paged global @0xa0448 [dpp]  W:{-}  R:{KWP_BL_SID_3D_WriteMemoryByAddress}
+        ; ------------------------------------------------------------
+        ; data @0xa0448 (4 bytes)
+        DB      00AH,029H,028H,000H
+
+        ; ------------------------------------------------------------
+        ; KWP BL ReadEcuId descriptor-table pointer 0
+        ; ------------------------------------------------------------
+        ; data @0xa044c (2 bytes)
+        DB      0B6H,01BH
+
+        ; ------------------------------------------------------------
+        ; KWP BL ReadEcuId descriptor-table pointer 1
+        ; ------------------------------------------------------------
+        ; data @0xa044e (20 bytes)
+        DB      00AH,000H,0DAH,01BH,00AH,000H,0FEH,0FDH,0DEH,0E7H,0FEH,0D7H,0C0H,049H,00AH,000H
+        DB      05AH,0E0H,00DH,000H
+
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa0462 [dpp]  W:{-}
+        ; R:{BL_Flash_RamDriver_CopyExecWipe,Elevated_Write_Routine}
+        ; ------------------------------------------------------------
+        ; data @0xa0462 (2 bytes)
+        DB      094H,0ECH
+
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa0464 [dpp]  W:{-}
+        ; R:{BL_Flash_RamDriver_CopyExecWipe,Elevated_Write_Routine}
+        ; ------------------------------------------------------------
+        ; data @0xa0464 (2 bytes)
+        DB      00DH,000H
+
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa0466 [dpp]  W:{-}
+        ; R:{BL_Flash_RamDriver_CopyExecWipe,Elevated_Write_Routine}
+        ; ------------------------------------------------------------
+        ; data @0xa0466 (2 bytes)
+        DB      096H,0ECH
+
+        ; ------------------------------------------------------------
+        ; NVM CRC config block (seed ptrs @+0x2e/+0x52)
+        ; ------------------------------------------------------------
+        ; data @0xa0468 (90 bytes)
+        DB      00DH,000H,0DAH,034H,00AH,000H,024H,034H,00AH,000H,08CH,0E6H,00DH,000H,022H,04BH
+        DB      00AH,000H,02EH,04BH,00AH,000H,090H,059H,00AH,000H,0FAH,058H,00AH,000H,05AH,05AH
+        DB      00AH,000H,0FEH,0FFH,00AH,000H,0FEH,0FFH,00AH,000H,0FEH,0FFH,00AH,000H,052H,000H
+        DB      00AH,000H,068H,000H,00AH,000H,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,000H,000H,009H,000H,04CH,000H
+        DB      009H,000H,00CH,000H,009H,000H,010H,000H,009H,000H
+
+S_A040C ENDS
+        END

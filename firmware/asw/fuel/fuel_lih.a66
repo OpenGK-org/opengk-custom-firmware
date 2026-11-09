@@ -1,0 +1,136 @@
+; asw/fuel/fuel_lih.a66
+; 0xE5C38-0xE5D36  (254 bytes, 6 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_abc_max_crk                        EQU  0900DAH
+c_t_efp_igk                          EQU  090338H
+
+PUBLIC  Calc_Crank_Err_LIH, Nop_e5d32, Nop_e5d34, Set_FuelPump_Latch_2, Set_Out_FuelReq_4, Tail_f0c7b8c_d2c
+EXTERN  DTC_Update_Status_MIL:NEAR, Diag_DTC_dd116:NEAR, Diag_DTC_dd23c:NEAR, Init_CC5_Output:NEAR
+
+S_E5C38 SECTION CODE AT 0E5C38H
+
+; ======== Set_FuelPump_Latch_2  (@0xe5c38) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by output/adapt signals): Fuel-pump output latch set (variant).
+        ; ------------------------------------------------------------
+Set_FuelPump_Latch_2:
+        MOV sw_timer_b,ZEROS
+        MOVB RL4,#DATA16 000FEH
+        ANDB state_fuel_req,RL4
+        MOVB RL4,state_fuel_req
+        JMPR cc_NE,L_E5C54
+        BSET state_out_fault.0DH
+        JB state_out_req.04H,L_E5C5C
+        BSET state_out_diag.0DH
+        JMPR cc_UC,L_E5C5C
+L_E5C54:                 ; 0xe5c54
+        BCLR state_out_fault.0DH
+        JB state_out_req.04H,L_E5C5C
+        BCLR state_out_diag.0DH
+L_E5C5C:                 ; 0xe5c5c
+        JNB lv_ecu_err.03H,L_E5C74
+        MOVB RL4,#DATA16 00020H
+        ORB dtc_ecu_flags,RL4
+        MOV R12,#DATA16 0D47AH
+        MOV R13,#DATA16 057F0H
+        CALLS 00DH,DTC_Update_Status_MIL
+L_E5C74:                 ; 0xe5c74
+        CALLS 00BH,Diag_DTC_dd23c
+        RETS
+
+; ======== Calc_Crank_Err_LIH  (@0xe5c7a) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by output/adapt signals): Crank-error load-increase-heating request: crk_err_lih_req +
+        ; lv_iga_dif_max_er + maf_dif cond.
+        ; ------------------------------------------------------------
+Calc_Crank_Err_LIH:
+        MOV sw_timer_c,ZEROS
+        BCLR lv_iga_dif_max_er.06H
+        MOVB RL4,lv_sched_diag_inh
+        ANDB RL4,#01H
+        JMPR cc_NE,L_E5CF0
+        MOVBZ R4,DPP0:c_t_efp_igk
+        MOV sw_timer_b,R4
+        MOVB RL4,#DATA16 000FEH
+        ANDB state_fuel_req,RL4
+        MOVB RL4,state_fuel_req
+        JMPR cc_NE,L_E5CA8
+        BSET state_out_fault.0DH
+        JB state_out_req.04H,L_E5CB0
+        BSET state_out_diag.0DH
+        JMPR cc_UC,L_E5CB0
+L_E5CA8:                 ; 0xe5ca8
+        BCLR state_out_fault.0DH
+        JB state_out_req.04H,L_E5CB0
+        BCLR state_out_diag.0DH
+L_E5CB0:                 ; 0xe5cb0
+        MOV R4,#DATA16 00168H
+        MOV crank_tim_13,R4
+        JNB lv_cdn_diag_maf_dif_ch_int.0CH,L_E5CD6
+        MOVB crk_err_lih_req,ZEROS
+        MOVBZ R5,DPP0:c_abc_max_crk
+        SHR R5,#01H
+        CMPB RL5,crank_tim_0
+        JMPR cc_NC,L_E5CD6
+        MOVBZ R5,DPP0:c_abc_max_crk
+        SHR R5,#01H
+        MOVB crank_tim_0,RL5
+L_E5CD6:                 ; 0xe5cd6
+        JNB lv_ecu_err.03H,L_E5CEE
+        MOVB RL4,#DATA16 00020H
+        ORB dtc_ecu_flags,RL4
+        MOV R12,#DATA16 0D47AH
+        MOV R13,#DATA16 057F0H
+        CALLS 00DH,DTC_Update_Status_MIL
+L_E5CEE:                 ; 0xe5cee
+        BCLR lv_cdn_diag_maf_dif_ch_int.0CH
+L_E5CF0:                 ; 0xe5cf0
+        CALLS 00AH,Init_CC5_Output
+        RETS
+
+; ======== Set_Out_FuelReq_4  (@0xe5cf6) ========
+        ; ------------------------------------------------------------
+        ; Digital-output-latch driver (fd94=request/fd96=state, fd98=feedback; CC5/P2.5=fuel-pump relay): Set
+        ; output-request latch bit 0x2000 (variant).
+        ; ------------------------------------------------------------
+Set_Out_FuelReq_4:
+        CALLS 00CH,Diag_DTC_dd116
+        MOVB RL4,first_vld_tooth
+        BMOVN PSW.06H,PSW.03H
+        JNB PSW.06H,L_E5D2A
+        MOV sw_timer_b,ZEROS
+        MOVB RL4,#DATA16 000FEH
+        ANDB state_fuel_req,RL4
+        MOVB RL4,state_fuel_req
+        JMPR cc_NE,L_E5D22
+        BSET state_out_fault.0DH
+        JB state_out_req.04H,L_E5D2A
+        BSET state_out_diag.0DH
+        RETS
+L_E5D22:                 ; 0xe5d22
+        BCLR state_out_fault.0DH
+        JB state_out_req.04H,L_E5D2A
+        BCLR state_out_diag.0DH
+L_E5D2A:                 ; 0xe5d2a
+        RETS
+
+; ======== Tail_f0c7b8c_d2c  (@0xe5d2c) ========
+Tail_f0c7b8c_d2c:
+        CALLS 00CH,Diag_DTC_dd116
+        RETS
+
+; ======== Nop_e5d32  (@0xe5d32) ========
+Nop_e5d32:
+        RETS
+
+; ======== Nop_e5d34  (@0xe5d34) ========
+Nop_e5d34:
+        RETS
+
+S_E5C38 ENDS
+        END

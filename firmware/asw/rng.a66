@@ -1,0 +1,84 @@
+; asw/rng.a66
+; 0xC90E2-0xC916E  (140 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Calc_RBM_TCO_Stuck_Rng, ClrBits_state_rbm_tco_stuck_rng_0ec, Reset_state_rbm_tco_stuck_rng_0e2
+EXTERN  Div_U32_U16_Round32:NEAR
+
+S_C90E2 SECTION CODE AT 0C90E2H
+
+; ======== Reset_state_rbm_tco_stuck_rng_0e2  (@0xc90e2) ========
+Reset_state_rbm_tco_stuck_rng_0e2:
+        MOVB state_rbm_tco_stuck_rng,ZEROS
+        MOV rate_rbm_tco_stuck_rng,ONES
+        RETS
+
+; ======== ClrBits_state_rbm_tco_stuck_rng_0ec  (@0xc90ec) ========
+ClrBits_state_rbm_tco_stuck_rng_0ec:
+        MOVB RL4,#DATA16 000FDH
+        ANDB state_rbm_tco_stuck_rng,RL4
+        RETS
+
+; ======== Calc_RBM_TCO_Stuck_Rng  (@0xc90f6) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by state_rbm_/rate_rbm_ output signals): IUMPR rate-based monitor for TCO Stuck
+        ; Rng: updates state_rbm_tco_stuck_rng / rate_rbm_tco_stuck_rng (in-use completion ratio =
+        ; numerator/denominator).
+        ; ------------------------------------------------------------
+Calc_RBM_TCO_Stuck_Rng:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        JNB obd_sf.0DH,L_C9168
+        MOVB RL4,state_rbm_tco_stuck_rng
+        ANDB RL4,#01H
+        JMPR cc_NE,L_C9110
+        JNB lv_n_max_isa_err.0DH,L_C9110
+        MOVB RL4,#01H
+        ORB state_rbm_tco_stuck_rng,RL4
+L_C9110:                 ; 0xc9110
+        MOVB RL4,state_rbm_tco_stuck_rng
+        ANDB RL4,#02H
+        JMPR cc_NE,L_C9122
+        JNB lv_n_max_isa_err.0CH,L_C9122
+        MOVB RL4,#02H
+        ORB state_rbm_tco_stuck_rng,RL4
+L_C9122:                 ; 0xc9122
+        MOVB RL4,state_rbm_tco_stuck_rng
+        ANDB RL4,#04H
+        JMPR cc_NE,L_C9130
+        MOVB RL4,#04H
+        ORB state_rbm_tco_stuck_rng,RL4
+L_C9130:                 ; 0xc9130
+        MOV R12,ctr_comp_rbm_tco_stuck_rng
+        MOV R13,#00H
+        MOV R13,R12
+        MOV R12,0FF1CH
+        MOV R14,ctr_cdn_rbm_tco_stuck_rng
+        CALLS 00FH,Div_U32_U16_Round32
+        MOV R8,R4
+        MOV R9,R5
+        MOV R4,R9
+        SHR R8,#03H
+        SHR R9,#03H
+        SHL R4,#0DH
+        OR R8,R4
+        CMP R9,#00H
+        JMPR cc_NE,L_C915A
+        CMP R8,#DATA16 0FFFFH
+L_C915A:                 ; 0xc915a
+        JMPR cc_C,L_C9162
+        MOV rate_rbm_tco_stuck_rng,ONES
+        JMPR cc_UC,L_C9168
+L_C9162:                 ; 0xc9162
+        MOV R4,R8
+        MOV rate_rbm_tco_stuck_rng,R4
+L_C9168:                 ; 0xc9168
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_C90E2 ENDS
+        END

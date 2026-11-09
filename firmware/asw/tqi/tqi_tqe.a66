@@ -1,0 +1,347 @@
+; asw/tqi/tqi_tqe.a66
+; 0xB0FE4-0xB132E  (842 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_fac_tqe                            EQU  0901B9H
+lc_mod_eff_av                        EQU  090480H
+lc_tq_intv_ena_as                    EQU  090494H
+lc_tq_intv_inh_as                    EQU  090495H
+lc_tqi_sp_man_act                    EQU  09049BH
+c_tq_dif_1                           EQU  09091CH
+c_tq_dif_2                           EQU  09091EH
+c_tq_dif_hys_1                       EQU  090926H
+c_tq_dif_hys_2                       EQU  090928H
+c_tq_dif_hys_is_1                    EQU  09092AH
+c_tq_dif_hys_is_2                    EQU  09092CH
+c_tq_dif_is_1                        EQU  09092EH
+c_tq_dif_is_2                        EQU  090930H
+c_tqi_sp_man                         EQU  09095AH
+
+PUBLIC  Calc_TQE, Calc_TQI_Ref_Bas, Calc_TQI_Sp, Set_eff_tot_bas_21e
+EXTERN  Div_Q16_Round:NEAR, Get_IP_Word_3D_Table_DWord_XWord_YByte:NEAR, MulDiv_S16_c:NEAR, Mul_Q15_Sat:NEAR
+EXTERN  Mul_Q15_Sat_Signed:NEAR, Sat_Add_S16:NEAR, Sat_Sub_S16:NEAR
+
+S_B0FE4 SECTION CODE AT 0B0FE4H
+
+; ======== Calc_TQI_Sp  (@0xb0fe4) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS31, verified): Torque Monitoring Limitation & Coordination (tqi_sp_1)
+        ; ------------------------------------------------------------
+Calc_TQI_Sp:
+        MOV [-R0],R9
+        JB lv_ast.06H,L_B0FEE
+        JMPA cc_UC,L_B11A6
+L_B0FEE:                 ; 0xb0fee
+        MOV R12,tqi_bas
+        MOV R13,tq_add_req_act_fil_ch
+        CALLS 00FH,Sat_Sub_S16
+        MOV tqi_bas_cor_ch,R4
+        MOV R5,tqi_req_fast
+        CMP R5,tqi_bas_cor_ch
+        JMPR cc_SGE,L_B100E
+        MOV R4,tqi_req_fast
+        JMPR cc_UC,L_B1012
+L_B100E:                 ; 0xb100e
+        MOV R4,tqi_bas_cor_ch
+L_B1012:                 ; 0xb1012
+        MOV tqi_fast,R4
+        MOV R12,R4
+        MOV R13,tq_dif_p_d_fast_is
+        CALLS 00FH,Sat_Add_S16
+        MOV R12,R4
+        MOV R13,tq_dif_aj
+        CALLS 00FH,Sat_Add_S16
+        MOV R9,R4
+        CMP R9,#00H
+        JMPR cc_SLE,L_B1034
+        MOV R4,R9
+        JMPR cc_UC,L_B1036
+L_B1034:                 ; 0xb1034
+        MOV R4,#00H
+L_B1036:                 ; 0xb1036
+        MOV tqi_sp_1,R4
+        MOV R5,tqi_add_act
+        CMP R5,#00H
+        JMPR cc_SLE,L_B1056
+        MOV R12,tqi_req_tra
+        MOV R13,tqi_bas
+        MOV R14,R5
+        CALLS 00FH,MulDiv_S16_c
+        MOV tqi_bas_cor,R4
+        JMPR cc_UC,L_B105A
+L_B1056:                 ; 0xb1056
+        MOV tqi_bas_cor,ZEROS
+L_B105A:                 ; 0xb105a
+        MOV R12,tqi_sp_1
+        MOV R13,tqi_bas_cor
+        CALLS 00FH,Sat_Sub_S16
+        MOV R9,R4
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_B10A8
+        CMP R9,DPP0:c_tq_dif_is_1
+        JMPR cc_SLT,L_B1078
+        CMP R9,DPP0:c_tq_dif_is_2
+        JMPR cc_SLE,L_B107C
+L_B1078:                 ; 0xb1078
+        BSET lv_act_cle_slv_ivvt.0AH
+        JMPR cc_UC,L_B10E2
+L_B107C:                 ; 0xb107c
+        MOV R12,DPP0:c_tq_dif_is_1
+        MOV R13,DPP0:c_tq_dif_hys_is_1
+        CALLS 00FH,Sat_Add_S16
+        CMP R9,R4
+        JMPR cc_SGE,L_B1090
+        JB lv_act_cle_slv_ivvt.0AH,L_B10E2
+L_B1090:                 ; 0xb1090
+        MOV R12,DPP0:c_tq_dif_is_2
+        MOV R13,DPP0:c_tq_dif_hys_is_2
+        CALLS 00FH,Sat_Sub_S16
+        CMP R9,R4
+        JMPR cc_SLE,L_B10A4
+        JB lv_act_cle_slv_ivvt.0AH,L_B10E2
+L_B10A4:                 ; 0xb10a4
+        BCLR lv_act_cle_slv_ivvt.0AH
+        JMPR cc_UC,L_B10E2
+L_B10A8:                 ; 0xb10a8
+        CMP R9,DPP0:c_tq_dif_1
+        JMPR cc_SLT,L_B10B4
+        CMP R9,DPP0:c_tq_dif_2
+        JMPR cc_SLE,L_B10B8
+L_B10B4:                 ; 0xb10b4
+        BSET lv_act_cle_slv_ivvt.0AH
+        JMPR cc_UC,L_B10E2
+L_B10B8:                 ; 0xb10b8
+        MOV R12,DPP0:c_tq_dif_1
+        MOV R13,DPP0:c_tq_dif_hys_1
+        CALLS 00FH,Sat_Add_S16
+        CMP R9,R4
+        JMPR cc_SGE,L_B10CC
+        JB lv_act_cle_slv_ivvt.0AH,L_B10E2
+L_B10CC:                 ; 0xb10cc
+        MOV R12,DPP0:c_tq_dif_2
+        MOV R13,DPP0:c_tq_dif_hys_2
+        CALLS 00FH,Sat_Sub_S16
+        CMP R9,R4
+        JMPR cc_SLE,L_B10E0
+        JB lv_act_cle_slv_ivvt.0AH,L_B10E2
+L_B10E0:                 ; 0xb10e0
+        BCLR lv_act_cle_slv_ivvt.0AH
+L_B10E2:                 ; 0xb10e2
+        BCMP lv_act_cle_slv_ivvt.0AH,lv_asr_act.05H
+        JMPR cc_C,L_B10EE
+        MOVB RL4,DPP0:lc_tq_intv_ena_as
+        JMPR cc_EQ,L_B10F8
+L_B10EE:                 ; 0xb10ee
+        MOVB RL4,DPP0:lc_tq_intv_inh_as
+        JMPR cc_NE,L_B10F8
+        BSET lv_act_cle_slv_ivvt.0BH
+        JMPR cc_UC,L_B10FA
+L_B10F8:                 ; 0xb10f8
+        BCLR lv_act_cle_slv_ivvt.0BH
+L_B10FA:                 ; 0xb10fa
+        JNB lv_act_cle_slv_ivvt.0CH,L_B1108
+        MOV R4,tqi_req_tra
+        MOV tqi_sp_2,R4
+        JMPR cc_UC,L_B1110
+L_B1108:                 ; 0xb1108
+        MOV R4,tqi_bas_cor
+        MOV tqi_sp_2,R4
+L_B1110:                 ; 0xb1110
+        JNB lv_act_cle_slv_ivvt.0BH,L_B111E
+        MOV R4,tqi_sp_1
+        MOV tqi_sp_3,R4
+        JMPR cc_UC,L_B1126
+L_B111E:                 ; 0xb111e
+        MOV R4,tqi_sp_2
+        MOV tqi_sp_3,R4
+L_B1126:                 ; 0xb1126
+        MOVB RL4,DPP0:lc_tqi_sp_man_act
+        JMPR cc_EQ,L_B1136
+        MOV R4,DPP0:c_tqi_sp_man
+        MOV tqi_sp,R4
+        JMPR cc_UC,L_B113E
+L_B1136:                 ; 0xb1136
+        MOV R4,tqi_sp_3
+        MOV tqi_sp,R4
+L_B113E:                 ; 0xb113e
+        MOVB RL4,DPP0:lc_tqi_sp_man_act
+        JMPR cc_EQ,L_B114E
+        MOV R4,DPP0:c_tqi_sp_man
+        MOV tqi_sp_maf_1,R4
+        JMPR cc_UC,L_B116A
+L_B114E:                 ; 0xb114e
+        MOV R12,tqi_req_slow
+        MOV R13,tq_dif_p_d_slow_is
+        CALLS 00FH,Sat_Add_S16
+        MOV R9,R4
+        CMP R9,#00H
+        JMPR cc_SLE,L_B1164
+        MOV R4,R9
+        JMPR cc_UC,L_B1166
+L_B1164:                 ; 0xb1164
+        MOV R4,#00H
+L_B1166:                 ; 0xb1166
+        MOV tqi_sp_maf_1,R4
+L_B116A:                 ; 0xb116a
+        MOV R12,tqi_sp_maf_1
+        ASHR R12,#01H
+        MOV R13,eff_tot_bas_slow
+        CALLS 00FH,Div_Q16_Round
+        MOV tqi_sp_maf_2,R4
+        MOV R5,tqi_min_pu
+        CMP R5,tqi_sp_maf_2
+        JMPR cc_SLE,L_B118C
+        MOV R4,tqi_min_pu
+        JMPR cc_UC,L_B1190
+L_B118C:                 ; 0xb118c
+        MOV R4,tqi_sp_maf_2
+L_B1190:                 ; 0xb1190
+        MOV tqi_sp_maf,R4
+        MOV R12,#DATA16 0463AH
+        MOVBZ R13,n_32
+        MOV R14,R4
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XWord_YByte
+        MOV maf_sp_tqi,R4
+L_B11A6:                 ; 0xb11a6
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_TQE  (@0xb11aa) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS2000, verified): Actual Engine Torque
+        ; ------------------------------------------------------------
+Calc_TQE:
+        MOV [-R0],R9
+        JNB lv_ast.06H,L_B11E2
+        MOV R12,eff_iga_av
+        MOV R13,eff_scc_av
+        CALLS 00FH,Mul_Q15_Sat
+        MOV R12,R4
+        MOV R13,eff_lamb_av
+        CALLS 00FH,Mul_Q15_Sat
+        MOV eff_tot_av,R4
+        MOV R12,tqi_ref
+        MOV R13,R4
+        CALLS 00FH,Mul_Q15_Sat_Signed
+        MOV R9,R4
+        CMP R9,#00H
+        JMPR cc_SGE,L_B11DC
+        MOV R9,#00H
+L_B11DC:                 ; 0xb11dc
+        MOV tqi_av_hom,R9
+        JMPR cc_UC,L_B11E6
+L_B11E2:                 ; 0xb11e2
+        MOV tqi_av_hom,ZEROS
+L_B11E6:                 ; 0xb11e6
+        MOV R4,tqi_av_hom
+        MOV tqi_av,R4
+        MOV R12,R4
+        MOV R13,tq_loss
+        CALLS 00FH,Sat_Add_S16
+        MOV tq_av,R4
+        MOVBS R5,n_grd
+        MOVBZ R2,DPP0:c_fac_tqe
+        MUL R5,R2
+        MOV tqe_dif,MDL
+        MOV R5,0FE0EH
+        MOV R12,R4
+        MOV R13,R5
+        CALLS 00FH,Sat_Sub_S16
+        MOV tqe,R4
+        MOV R9,[R0+]
+        RETS
+
+; ======== Set_eff_tot_bas_21e  (@0xb121e) ========
+Set_eff_tot_bas_21e:
+        MOV R4,#DATA16 08000H
+        MOV eff_tot_bas,R4
+        RETS
+
+; ======== Calc_TQI_Ref_Bas  (@0xb1228) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS2000, verified): Reference and Basic Torque
+        ; ------------------------------------------------------------
+Calc_TQI_Ref_Bas:
+        MOV [-R0],R9
+        JB lv_ast.06H,L_B1232
+        JMPA cc_UC,L_B132A
+L_B1232:                 ; 0xb1232
+        MOV R12,#DATA16 04646H
+        MOVBZ R13,n_32
+        MOV R14,maf_word
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XWord_YByte
+        MOV tqi_ref,R4
+        MOV R12,R4
+        MOV R13,eff_lamb_bas_cor
+        CALLS 00FH,Mul_Q15_Sat_Signed
+        MOV tqi_ref_lamb,R4
+        MOV R12,R4
+        MOV R13,eff_scc_bas
+        CALLS 00FH,Mul_Q15_Sat_Signed
+        MOV tqi_ref_lamb_scc,R4
+        MOV R12,tqi_ref
+        MOV R13,eff_iga_bas_cor
+        CALLS 00FH,Mul_Q15_Sat_Signed
+        MOV tqi_ref_iga,R4
+        MOV R12,R4
+        MOV R13,eff_scc_bas
+        CALLS 00FH,Mul_Q15_Sat_Signed
+        MOV tqi_ref_iga_scc,R4
+        MOVB RL4,DPP0:lc_mod_eff_av
+        JMPR cc_EQ,L_B12AC
+        MOV R12,eff_scc_av
+        MOV R13,eff_lamb_av
+        CALLS 00FH,Mul_Q15_Sat
+        MOV R12,R4
+        MOV R13,eff_egr_hom
+        CALLS 00FH,Mul_Q15_Sat
+        MOV R13,R4
+        MOV R12,tqi_ref_iga
+        CALLS 00FH,Mul_Q15_Sat_Signed
+        MOV tqi_bas,R4
+        JMPR cc_UC,L_B12C6
+L_B12AC:                 ; 0xb12ac
+        MOV R12,eff_lamb_sp_bas
+        MOV R13,eff_egr_hom
+        CALLS 00FH,Mul_Q15_Sat
+        MOV R13,R4
+        MOV R12,tqi_ref_iga_scc
+        CALLS 00FH,Mul_Q15_Sat_Signed
+        MOV tqi_bas,R4
+L_B12C6:                 ; 0xb12c6
+        MOV R12,tqi_ref_iga
+        MOV R13,eff_lamb_bas_cor
+        CALLS 00FH,Mul_Q15_Sat_Signed
+        MOV tqi_ref_iga_lamb,R4
+        MOV R12,tqi_ref
+        MOV R13,eff_scc_bas
+        CALLS 00FH,Mul_Q15_Sat_Signed
+        MOV tqi_ref_scc,R4
+        MOV R12,tqi_ref_lamb
+        MOV R13,eff_iga_min
+        CALLS 00FH,Mul_Q15_Sat_Signed
+        MOV tqi_ref_iga_min_lamb,R4
+        MOV R12,eff_lamb_bas_cor
+        MOV R13,eff_scc_bas
+        CALLS 00FH,Mul_Q15_Sat
+        MOV R12,R4
+        MOV R13,eff_egr_hom
+        CALLS 00FH,Mul_Q15_Sat
+        MOV R9,R4
+        MOV R12,eff_iga_bas_cor
+        MOV R13,R9
+        CALLS 00FH,Mul_Q15_Sat
+        MOV eff_tot_bas,R4
+        MOV R12,eff_iga_bas_cor_knk_fil
+        MOV R13,R9
+        CALLS 00FH,Mul_Q15_Sat
+        MOV eff_tot_bas_slow,R4
+L_B132A:                 ; 0xb132a
+        MOV R9,[R0+]
+        RETS
+
+S_B0FE4 ENDS
+        END

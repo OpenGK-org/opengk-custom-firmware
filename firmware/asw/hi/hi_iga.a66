@@ -1,0 +1,651 @@
+; asw/hi/hi_iga.a66
+; 0xD5E2A-0xD648A  (1632 bytes, 14 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_n_hys_min_puc                      EQU  09029EH
+c_n_max_inf                          EQU  0902AAH
+c_vb_min_obd1                        EQU  090417H
+c_n_grd_min                          EQU  09096FH
+
+PUBLIC  Build_DAQ_SignalList, Calc_CDN_Diag_MAF_Cond, Calc_CPU_Load, Set_lv_iga_dif_max_er, Set_lv_iga_dif_max_er_d62d, Set_lv_iga_dif_max_er_d62f
+PUBLIC  Task_AirPath_ISA, Task_COP_IGA_TI, Task_Idle_Gear, Task_SpeedLimit_Loss, Task_TI_Reset, Task_TQI_Coord
+PUBLIC  Task_TQ_Control, Task_TqConverter
+EXTERN  AcComp_AccIn_Ctl:NEAR, AcComp_PressureCutoff:NEAR, Acq_Cam_Raw:NEAR, Acq_MAF_Mes:NEAR
+EXTERN  Acq_TPS:NEAR, Calc_ACP:NEAR, Calc_AMP_Pred:NEAR, Calc_AR_Red_Avl:NEAR
+EXTERN  Calc_AR_Red_Bas_Thr:NEAR, Calc_Act_AJ:NEAR, Calc_AirPath_Sp:NEAR, Calc_AntiJerk_Filt:NEAR
+EXTERN  Calc_COP_IGA_TI:NEAR, Calc_Cat_Diag_Inhibit_2:NEAR, Calc_EFF_IGA:NEAR, Calc_ER_Std:NEAR
+EXTERN  Calc_Eff_Lamb:NEAR, Calc_Eff_SCC_Pattern:NEAR, Calc_Eff_SCC_Upd:NEAR, Calc_FacTqReqClu_Hys:NEAR
+EXTERN  Calc_Fac_CH_Red:NEAR, Calc_Fac_TQ_Req:NEAR, Calc_Fac_TQ_Req_TPS:NEAR, Calc_FuelFlow_Add_CP:NEAR
+EXTERN  Calc_GS_Act_Delay:NEAR, Calc_IGA_Tra_Knk:NEAR, Calc_ISA_CatHeat:NEAR, Calc_ISA_Opening_Start:NEAR
+EXTERN  Calc_ISA_PWL_State:NEAR, Calc_Inh_IGC:NEAR, Calc_Inj_Pattern:NEAR, Calc_Knk_Ad_Ast:NEAR
+EXTERN  Calc_MAF_Alti_Cor:NEAR, Calc_MAF_Dif_CH_Cond:NEAR, Calc_MAF_HB:NEAR, Calc_MAF_TQI_Ref:NEAR
+EXTERN  Calc_MAF_Variables:NEAR, Calc_Mis_FadeOut_TPS:NEAR, Calc_N_DIF:NEAR, Calc_N_PRED_MAX_LIM:NEAR
+EXTERN  Calc_N_SP_IS_Cor:NEAR, Calc_N_SP_IS_MAX:NEAR, Calc_N_SP_IS_Sel:NEAR, Calc_PL_State_FromVS:NEAR
+EXTERN  Calc_RBM_State:NEAR, Calc_Ratio_TQI_Bas_Stnd:NEAR, Calc_Seg_Timing:NEAR, Calc_TI_ADD_DLY_VB:NEAR
+EXTERN  Calc_TI_CatHeat:NEAR, Calc_TI_Cor_IVVT:NEAR, Calc_TI_St_Rest:NEAR, Calc_TPS_Av:NEAR
+EXTERN  Calc_TPS_GRD_SAM:NEAR, Calc_TPS_PWM:NEAR, Calc_TPS_Seg:NEAR, Calc_TQE:NEAR
+EXTERN  Calc_TQI_ASR_FAST:NEAR, Calc_TQI_AV_EMS:NEAR, Calc_TQI_GS_FAST_DEC:NEAR, Calc_TQI_MSR:NEAR
+EXTERN  Calc_TQI_Max:NEAR, Calc_TQI_Min_Pu:NEAR, Calc_TQI_Ref_Bas:NEAR, Calc_TQI_Req_Driv:NEAR
+EXTERN  Calc_TQI_Req_MinMax:NEAR, Calc_TQI_Sp:NEAR, Calc_TQ_ADD_CP:NEAR, Calc_TQ_Add_CH:NEAR
+EXTERN  Calc_TQ_Add_Coord:NEAR, Calc_TQ_Add_IS_Pred:NEAR, Calc_TQ_Add_Tra:NEAR, Calc_TQ_DIF_IS_AD:NEAR
+EXTERN  Calc_TQ_DIF_I_IS:NEAR, Calc_TQ_DIF_P_D_IS:NEAR, Calc_TQ_FR_St:NEAR, Calc_TQ_Loss:NEAR
+EXTERN  Calc_TQ_Loss_Acc:NEAR, Calc_TQ_Loss_ECF:NEAR, Calc_TQ_Loss_Sum:NEAR, Calc_TQ_Min_Clu:NEAR
+EXTERN  Calc_TQ_Req_Clu:NEAR, Calc_TQ_Req_Tra:NEAR, Calc_TQ_St:NEAR, Calc_TqConverter:NEAR
+EXTERN  Calc_VS_ConfLearn:NEAR, Calc_VS_RR:NEAR, Calc_VS_STATE_CFA:NEAR, Calc_maf_sp:NEAR
+EXTERN  Calc_maf_sp_hb:NEAR, Calc_prs_ex_c47b:NEAR, Calc_t_pu:NEAR, CanPurge_Set_Close:NEAR
+EXTERN  CanPurge_Set_Close_2:NEAR, Check_N_Window:NEAR, Clamp_IGC_Dur_Min:NEAR, DTC_Capture_FreezeFrame:NEAR
+EXTERN  Dec_Dc346_SegCtr:NEAR, Dec_Dc3b8:NEAR, Dec_IGA_Knk_Diag_Dly:NEAR, Diag_ACP_Sensor:NEAR
+EXTERN  Diag_CAN_BusOff:NEAR, Diag_DTC_dd426:NEAR, Diag_IGC_Dur:NEAR, Diag_MAF_Dif_CH:NEAR
+EXTERN  Diag_MAF_Sensor:NEAR, DriveTrain_Engaged:NEAR, EngSpeedLimit_Coord:NEAR, GearRatio_Detect:NEAR
+EXTERN  IVVT_Diag_Group:NEAR, IVVT_MesStep_Tick:NEAR, IdleSpeedAdapt_Cond:NEAR, Nop_c4080:NEAR
+EXTERN  Reset_Df748_14e:NEAR, Reset_lv_crk_tooth_err_ece:NEAR, Reset_pv_av_h_9d8:NEAR, Reset_uVar1_89c:NEAR
+EXTERN  SeqFuelCut_CylSel:NEAR, Set_lv_diag_trip_avl_ivvt:NEAR, Set_lv_er_carb_b4:NEAR, Set_lv_inh_fsd_cp:NEAR
+EXTERN  Set_lv_n_max_isa_err_c903:NEAR, Set_state_iv:NEAR
+
+S_D5E2A SECTION CODE AT 0D5E2AH
+
+; ======== Build_DAQ_SignalList  (@0xd5e2a) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified): Builds the measurement/DAQ signal-ID telegram list (writes signal IDs
+        ; 0x1c/0x1f/0x20/0x21/0x2f/0x41/0x42... into the TX ring buffers @0xf62e/0xf64e), conditionally by
+        ; config (conf_mis/cam variant c24e).
+        ; ------------------------------------------------------------
+Build_DAQ_SignalList:
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_D5E66
+        JB sched_flags2.0FH,L_D5E66
+        MOVB RL4,#DATA16 0001CH
+        MOVBZ R5,tq_hi_wr
+        MOVB [R5+#0F62EH],RL4
+        MOVB RL4,tq_hi_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_wr,RL4
+        MOVB RL4,tq_hi_wr
+        CMPB RL4,tq_hi_rd
+        JMPR cc_NE,L_D5E66
+        BSET sched_flags.01H
+        MOVB RL4,tq_hi_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_rd,RL4
+L_D5E66:                 ; 0xd5e66
+        MOVB RL4,#00H
+        MOVBZ R5,tq_hi_wr
+        MOVB [R5+#0F62EH],RL4
+        MOVB RL4,tq_hi_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_wr,RL4
+        MOVB RL4,tq_hi_wr
+        CMPB RL4,tq_hi_rd
+        JMPR cc_NE,L_D5E98
+        BSET sched_flags.01H
+        MOVB RL4,tq_hi_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_rd,RL4
+L_D5E98:                 ; 0xd5e98
+        MOVB RL4,#DATA16 0002FH
+        MOVBZ R5,tq_hi_wr
+        MOVB [R5+#0F62EH],RL4
+        MOVB RL4,tq_hi_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_wr,RL4
+        MOVB RL4,tq_hi_wr
+        CMPB RL4,tq_hi_rd
+        JMPR cc_NE,L_D5ECC
+        BSET sched_flags.01H
+        MOVB RL4,tq_hi_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_rd,RL4
+L_D5ECC:                 ; 0xd5ecc
+        JNB lv_conf_mis.02H,L_D5F04
+        MOVB RL4,#DATA16 00031H
+        MOVBZ R5,tq_hi_wr
+        MOVB [R5+#0F62EH],RL4
+        MOVB RL4,tq_hi_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_wr,RL4
+        MOVB RL4,tq_hi_wr
+        CMPB RL4,tq_hi_rd
+        JMPR cc_NE,L_D5F04
+        BSET sched_flags.01H
+        MOVB RL4,tq_hi_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_rd,RL4
+L_D5F04:                 ; 0xd5f04
+        MOVB RL4,#DATA16 0001FH
+        MOVBZ R5,tq_hi_wr
+        MOVB [R5+#0F62EH],RL4
+        MOVB RL4,tq_hi_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_wr,RL4
+        MOVB RL4,tq_hi_wr
+        CMPB RL4,tq_hi_rd
+        JMPR cc_NE,L_D5F38
+        BSET sched_flags.01H
+        MOVB RL4,tq_hi_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_rd,RL4
+L_D5F38:                 ; 0xd5f38
+        MOVB RL4,#DATA16 00020H
+        MOVBZ R5,tq_hi_wr
+        MOVB [R5+#0F62EH],RL4
+        MOVB RL4,tq_hi_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_wr,RL4
+        MOVB RL4,tq_hi_wr
+        CMPB RL4,tq_hi_rd
+        JMPR cc_NE,L_D5F6C
+        BSET sched_flags.01H
+        MOVB RL4,tq_hi_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_rd,RL4
+L_D5F6C:                 ; 0xd5f6c
+        MOVB RL4,#DATA16 00021H
+        MOVBZ R5,tq_hi_wr
+        MOVB [R5+#0F62EH],RL4
+        MOVB RL4,tq_hi_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_wr,RL4
+        MOVB RL4,tq_hi_wr
+        CMPB RL4,tq_hi_rd
+        JMPR cc_NE,L_D5FA0
+        BSET sched_flags.01H
+        MOVB RL4,tq_hi_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_rd,RL4
+L_D5FA0:                 ; 0xd5fa0
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_D5FD8
+        MOVB RL4,#DATA16 0001DH
+        MOVBZ R5,tq_hi_wr
+        MOVB [R5+#0F62EH],RL4
+        MOVB RL4,tq_hi_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_wr,RL4
+        MOVB RL4,tq_hi_wr
+        CMPB RL4,tq_hi_rd
+        JMPR cc_NE,L_D5FD8
+        BSET sched_flags.01H
+        MOVB RL4,tq_hi_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_rd,RL4
+L_D5FD8:                 ; 0xd5fd8
+        MOVB RL4,#DATA16 0001EH
+        MOVBZ R5,tq_hi_wr
+        MOVB [R5+#0F62EH],RL4
+        MOVB RL4,tq_hi_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_wr,RL4
+        MOVB RL4,tq_hi_wr
+        CMPB RL4,tq_hi_rd
+        JMPR cc_NE,L_D600C
+        BSET sched_flags.01H
+        MOVB RL4,tq_hi_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_rd,RL4
+L_D600C:                 ; 0xd600c
+        MOVB RL4,#DATA16 00022H
+        MOVBZ R5,tq_hi_wr
+        MOVB [R5+#0F62EH],RL4
+        MOVB RL4,tq_hi_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_wr,RL4
+        MOVB RL4,tq_hi_wr
+        CMPB RL4,tq_hi_rd
+        JMPR cc_NE,L_D6040
+        BSET sched_flags.01H
+        MOVB RL4,tq_hi_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_rd,RL4
+L_D6040:                 ; 0xd6040
+        MOVB RL4,#DATA16 00027H
+        MOVBZ R5,tq_hi_wr
+        MOVB [R5+#0F62EH],RL4
+        MOVB RL4,tq_hi_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_wr,RL4
+        MOVB RL4,tq_hi_wr
+        CMPB RL4,tq_hi_rd
+        JMPR cc_NE,L_D6074
+        BSET sched_flags.01H
+        MOVB RL4,tq_hi_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_rd,RL4
+L_D6074:                 ; 0xd6074
+        MOVB RL4,idx_knk_load_zone
+        JMPR cc_EQ,L_D607E
+        CMPB RL4,#02H
+        JMPR cc_NE,L_D60B2
+L_D607E:                 ; 0xd607e
+        MOVB RL4,#DATA16 0002BH
+        MOVBZ R5,tq_hi_wr
+        MOVB [R5+#0F62EH],RL4
+        MOVB RL4,tq_hi_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_wr,RL4
+        MOVB RL4,tq_hi_wr
+        CMPB RL4,tq_hi_rd
+        JMPR cc_NE,L_D60B2
+        BSET sched_flags.01H
+        MOVB RL4,tq_hi_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_rd,RL4
+L_D60B2:                 ; 0xd60b2
+        MOVB RL4,idx_knk_load_zone
+        CMPB RL4,#01H
+        JMPR cc_NE,L_D60EC
+        MOVB RL5,#01H
+        MOVBZ R4,tq_mid_wr
+        MOVB [R4+#0F64EH],RL5
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_D60EC
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_D60EC:                 ; 0xd60ec
+        MOVB RL4,idx_knk_load_zone
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_D60F8
+        CMPB RL4,#03H
+        JMPR cc_NE,L_D6164
+L_D60F8:                 ; 0xd60f8
+        CALLS 00CH,Acq_Cam_Raw
+        MOVB RL4,#DATA16 00041H
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_D6130
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_D6130:                 ; 0xd6130
+        MOVB RL4,#DATA16 00042H
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_D6164
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_D6164:                 ; 0xd6164
+        RETS
+
+; ======== Task_TI_Reset  (@0xd6166) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Task_TI_Reset:
+        CALLS 00CH,Nop_c4080
+        CALLS 00BH,Calc_TI_St_Rest
+        CALLS 00CH,Reset_lv_crk_tooth_err_ece
+        RETS
+
+; ======== Calc_CDN_Diag_MAF_Cond  (@0xd6174) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by maf/tps output signals + DTC): Condition flags for MAF-based diag enable:
+        ; lv_cdn_diag_maf_dif_ch_int + lv_err_tps_det.
+        ; ------------------------------------------------------------
+Calc_CDN_Diag_MAF_Cond:
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_D620C
+        CALLS 00BH,Calc_Inh_IGC
+        CALLS 00BH,Calc_Seg_Timing
+        MOV eng_state_marker,ZEROS
+        BMOV lv_pl.03H,lv_iga_tra_knk.01H
+        CALLS 00CH,Calc_TPS_Seg
+        JNB lv_err_tps_det.01H,L_D61B8
+        CALLS 00CH,Calc_TPS_GRD_SAM
+        MOVB RL4,n_32
+        CMPB RL4,DPP0:c_n_max_inf
+        JMPR cc_NC,L_D61B0
+        MOVB RL5,DPP0:c_n_grd_min
+        CMPB RL5,n_grd
+        JMPR cc_SLE,L_D61B0
+        JNB lv_ct.00H,L_D61B0
+        BSET lv_cdn_diag_maf_dif_ch_int.0FH
+        JMPR cc_UC,L_D61B2
+L_D61B0:                 ; 0xd61b0
+        BCLR lv_cdn_diag_maf_dif_ch_int.0FH
+L_D61B2:                 ; 0xd61b2
+        CALLS 00DH,Calc_MAF_Dif_CH_Cond
+        BCLR lv_err_tps_det.01H
+L_D61B8:                 ; 0xd61b8
+        CALLS 00CH,Acq_MAF_Mes
+        CALLS 00DH,Diag_MAF_Sensor
+        CALLS 00CH,Calc_MAF_Variables
+        CALLS 00DH,Calc_MAF_HB
+        JB lv_pl.02H,L_D61E4
+        MOV R4,cycnr_hys_pu
+        JMPR cc_EQ,L_D61E4
+        SUB R4,#01H
+        MOV cycnr_hys_pu,R4
+        CMP R4,#00H
+        JMPR cc_NE,L_D61E4
+        MOVB RL4,DPP0:c_n_hys_min_puc
+        MOVB n_hys_pu,RL4
+L_D61E4:                 ; 0xd61e4
+        MOV R12,#DATA16 0D672H
+        CALLS 00CH,Check_N_Window
+        CALLS 00BH,Calc_IGA_Tra_Knk
+        CALLS 00BH,SeqFuelCut_CylSel
+        CALLS 00CH,Calc_Inj_Pattern
+        CALLS 00CH,Set_state_iv
+        CALLS 00CH,Calc_Eff_SCC_Upd
+        CALLS 00BH,Calc_TI_CatHeat
+        CALLS 00BH,Calc_TI_Cor_IVVT
+        CALLS 00AH,Calc_ER_Std
+L_D620C:                 ; 0xd620c
+        CALLS 00CH,Dec_Dc346_SegCtr
+        CALLS 00DH,Diag_MAF_Dif_CH
+        RETS
+
+; ======== Task_COP_IGA_TI  (@0xd6216) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Task_COP_IGA_TI:
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_D621E
+        CALLS 00DH,Calc_COP_IGA_TI
+L_D621E:                 ; 0xd621e
+        RETS
+
+; ======== Set_lv_iga_dif_max_er  (@0xd6220) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Set_lv_iga_dif_max_er:
+        BXOR lv_iga_dif_max_er.07H,ONES.00H
+        CALLS 00DH,Calc_TI_ADD_DLY_VB
+        JB can_fd58.0BH,L_D6230
+        CALLS 00DH,Clamp_IGC_Dur_Min
+L_D6230:                 ; 0xd6230
+        MOVB RL4,vb
+        CMPB RL4,DPP0:c_vb_min_obd1
+        JMPR cc_NC,L_D6248
+        MOVB RL5,dbc_rly_efp
+        CMPB RL5,#02H
+        JMPR cc_UGT,L_D6248
+        MOVB RL3,#02H
+        MOVB dbc_rly_efp,RL3
+L_D6248:                 ; 0xd6248
+        CALLS 00CH,Acq_TPS
+        CALLS 00CH,Calc_TPS_Av
+        JNB lv_iga_dif_max_er.07H,L_D6258
+        CALLS 00CH,Calc_AR_Red_Bas_Thr
+L_D6258:                 ; 0xd6258
+        CALLS 00CH,Calc_VS_ConfLearn
+        CALLS 00CH,Calc_AMP_Pred
+        CALLS 00CH,Calc_Cat_Diag_Inhibit_2
+        JNB lv_conf_mis.02H,L_D6278
+        MOVB RL4,conf_vs
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_D6274
+        CMPB RL4,#02H
+        JMPR cc_NE,L_D6278
+L_D6274:                 ; 0xd6274
+        CALLS 00CH,Calc_VS_RR
+L_D6278:                 ; 0xd6278
+        MOVB RL4,lv_iga_f4c8
+        JMPR cc_NE,L_D6292
+        CALLS 00CH,AcComp_AccIn_Ctl
+        CALLS 00CH,AcComp_PressureCutoff
+        CALLS 00DH,Calc_VS_STATE_CFA
+        MOVB RL4,#03H
+        MOVB lv_iga_f4c8,RL4
+        JMPR cc_UC,L_D6296
+L_D6292:                 ; 0xd6292
+        ADDB lv_iga_f4c8,ONES
+L_D6296:                 ; 0xd6296
+        CALLS 00CH,Calc_GS_Act_Delay
+        CALLS 00CH,IVVT_MesStep_Tick
+        CALLS 00CH,Calc_TPS_PWM
+        CALLS 00BH,Diag_CAN_BusOff
+        CALLS 00DH,Calc_t_pu
+        JNB lv_conf_mis.02H,L_D62B2
+        CALLS 00DH,Calc_Mis_FadeOut_TPS
+L_D62B2:                 ; 0xd62b2
+        RETS
+
+; ======== Task_Idle_Gear  (@0xd62b4) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Task_Idle_Gear:
+        CALLS 00CH,Calc_N_SP_IS_Sel
+        CALLS 00CH,Calc_N_SP_IS_Cor
+        CALLS 00CH,Calc_N_DIF
+        CALLS 00BH,Reset_pv_av_h_9d8
+        CALLS 00BH,GearRatio_Detect
+        CALLS 00BH,DriveTrain_Engaged
+        CALLS 00CH,Calc_TQ_Min_Clu
+        RETS
+
+; ======== Set_lv_iga_dif_max_er_d62d  (@0xd62d2) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Set_lv_iga_dif_max_er_d62d:
+        BXOR lv_iga_dif_max_er.08H,ONES.00H
+        JMPR cc_NN,L_D62F0
+        CALLS 00BH,Calc_AR_Red_Avl
+        CALLS 00BH,Reset_uVar1_89c
+        CALLS 00BH,Calc_TQI_Max
+        CALLS 00BH,Calc_Fac_TQ_Req_TPS
+        CALLS 00BH,Calc_Fac_TQ_Req
+        CALLS 00BH,Calc_TQ_Loss
+L_D62F0:                 ; 0xd62f0
+        CALLS 00CH,Calc_N_SP_IS_MAX
+        CALLS 00BH,Calc_TQ_Add_IS_Pred
+        CALLS 00BH,Calc_TQ_ADD_CP
+        RETS
+
+; ======== Set_lv_iga_dif_max_er_d62f  (@0xd62fe) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Set_lv_iga_dif_max_er_d62f:
+        BXOR lv_iga_dif_max_er.09H,ONES.00H
+        CALLS 00CH,Reset_Df748_14e
+        CALLS 00BH,Calc_TQ_St
+        CALLS 00BH,Calc_N_PRED_MAX_LIM
+        CALLS 00CH,Calc_TQ_Loss_Acc
+        CALLS 00BH,Calc_TQ_Loss_Sum
+        CALLS 00BH,Calc_TQ_Req_Clu
+        JNB lv_iga_dif_max_er.09H,L_D6328
+        BXOR lv_iga_dif_max_er.0AH,ONES.00H
+        JMPR cc_NN,L_D6328
+        CALLS 00AH,Calc_FacTqReqClu_Hys
+L_D6328:                 ; 0xd6328
+        CALLS 00BH,Calc_TQ_Req_Tra
+        CALLS 00CH,Calc_TQI_Req_Driv
+        CALLS 00BH,Calc_TQ_Add_Tra
+        RETS
+
+; ======== Task_TQI_Coord  (@0xd6336) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Task_TQI_Coord:
+        CALLS 00BH,Calc_TQI_Ref_Bas
+        CALLS 00BH,Calc_TQ_Add_Coord
+        CALLS 00CH,Calc_TQI_GS_FAST_DEC
+        CALLS 00CH,Calc_TQI_ASR_FAST
+        CALLS 00CH,Calc_TQI_MSR
+        CALLS 00CH,Calc_TQI_Req_MinMax
+        RETS
+
+; ======== Task_TQ_Control  (@0xd6350) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Task_TQ_Control:
+        CALLS 00BH,Calc_TQ_DIF_P_D_IS
+        CALLS 00CH,Calc_Act_AJ
+        CALLS 00CH,Calc_AntiJerk_Filt
+        CALLS 00BH,Calc_TQI_Sp
+        CALLS 00BH,Calc_Eff_Lamb
+        CALLS 00CH,Calc_Eff_SCC_Pattern
+        CALLS 00BH,Calc_maf_sp
+        CALLS 00DH,Calc_MAF_TQI_Ref
+        CALLS 00CH,Calc_EFF_IGA
+        CALLS 00BH,Calc_TQE
+        CALLS 00CH,Calc_TQI_AV_EMS
+        CALLS 00CH,Calc_maf_sp_hb
+        RETS
+
+; ======== Task_AirPath_ISA  (@0xd6382) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Task_AirPath_ISA:
+        CALLS 00BH,Calc_AirPath_Sp
+        CALLS 00BH,Calc_ISA_Opening_Start
+        CALLS 00DH,Diag_DTC_dd426
+        CALLS 00CH,Calc_ISA_PWL_State
+        CALLS 00CH,Calc_ISA_CatHeat
+        RETS
+
+; ======== Task_TqConverter  (@0xd6398) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Task_TqConverter:
+        MOVBZ R4,g_f4c9
+        AND R4,#01H
+        JMPR cc_EQ,L_D63BA
+        CALLS 00CH,Calc_TqConverter
+        CALLS 00BH,Calc_TQ_DIF_I_IS
+        CALLS 00BH,Calc_FuelFlow_Add_CP
+        MOVBZ R4,g_f4c9
+        AND R4,#03H
+        CMP R4,#03H
+        JMPR cc_NE,L_D63BA
+        CALLS 00CH,Calc_TQI_Min_Pu
+L_D63BA:                 ; 0xd63ba
+        SUBB g_f4c9,ONES
+        RETS
+
+; ======== Calc_CPU_Load  (@0xd63c0) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signals): CPU load monitoring: cpu_load_max_word (+ t_pl_diagcp
+        ; scheduling).
+        ; ------------------------------------------------------------
+Calc_CPU_Load:
+        MOV R4,crc_status
+        AND R4,#DATA16 00842H
+        JMPR cc_NE,L_D63E6
+        MOVB RL4,g_f4ca
+        JMPR cc_NE,L_D63E0
+        MOV R4,cpu_load
+        CMP R4,cpu_load_max_word
+        JMPR cc_ULE,L_D63F2
+        MOV cpu_load_max_word,R4
+        JMPR cc_UC,L_D63F2
+L_D63E0:                 ; 0xd63e0
+        ADDB g_f4ca,ONES
+        JMPR cc_UC,L_D63F2
+L_D63E6:                 ; 0xd63e6
+        MOV cpu_load_max_word,ZEROS
+        MOVB RL4,#DATA16 0001EH
+        MOVB g_f4ca,RL4
+L_D63F2:                 ; 0xd63f2
+        CALLS 00BH,Set_lv_diag_trip_avl_ivvt
+        CALLS 00CH,Calc_MAF_Alti_Cor
+        CALLS 00CH,Diag_IGC_Dur
+        CALLS 00CH,CanPurge_Set_Close_2
+        CALLS 00BH,Set_lv_inh_fsd_cp
+        MOVB RL4,conf_diagcp
+        JMPR cc_EQ,L_D642E
+        JNB lv_pl.00H,L_D642E
+        JB lv_err_tps_det.02H,L_D642E
+        MOV R4,cp_state
+        CMP R4,#04H
+        JMPR cc_EQ,L_D6420
+        CMP R4,#05H
+        JMPR cc_NE,L_D642E
+L_D6420:                 ; 0xd6420
+        MOV R4,t_pl_diagcp
+        CMP R4,#00H
+        JMPR cc_ULE,L_D642E
+        SUB R4,#01H
+        MOV t_pl_diagcp,R4
+L_D642E:                 ; 0xd642e
+        CALLS 00CH,Dec_IGA_Knk_Diag_Dly
+        CALLS 00CH,Calc_Knk_Ad_Ast
+        CALLS 00DH,DTC_Capture_FreezeFrame
+        JNB lv_conf_mis.02H,L_D6446
+        CALLS 00DH,Dec_Dc3b8
+        CALLS 00BH,Set_lv_er_carb_b4
+L_D6446:                 ; 0xd6446
+        CALLS 00CH,CanPurge_Set_Close
+        CALLS 00AH,IdleSpeedAdapt_Cond
+        CALLS 00AH,Calc_TQ_DIF_IS_AD
+        CALLS 00CH,IVVT_Diag_Group
+        CALLS 00CH,Calc_Ratio_TQI_Bas_Stnd
+        CALLS 00DH,Calc_PL_State_FromVS
+        RETS
+
+; ======== Task_SpeedLimit_Loss  (@0xd6460) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Task_SpeedLimit_Loss:
+        CALLS 00CH,EngSpeedLimit_Coord
+        CALLS 00BH,Calc_TQ_FR_St
+        CALLS 00CH,Calc_prs_ex_c47b
+        CALLS 00BH,Calc_Fac_CH_Red
+        CALLS 00CH,Calc_TQ_Add_CH
+        CALLS 00DH,Calc_TQ_Loss_ECF
+        CALLS 00BH,Calc_RBM_State
+        CALLS 00BH,Diag_ACP_Sensor
+        CALLS 00BH,Calc_ACP
+        CALLS 00CH,Set_lv_n_max_isa_err_c903
+        RETS
+
+S_D5E2A ENDS
+        END

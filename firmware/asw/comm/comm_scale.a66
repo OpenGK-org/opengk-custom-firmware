@@ -1,0 +1,243 @@
+; asw/comm/comm_scale.a66
+; 0xE2736-0xE28F6  (448 bytes, 8 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_maf_max                            EQU  09022EH
+
+PUBLIC  L_E2868, OBD_Build_Mode09_Status, OBD_Scale_FuelSys, OBD_Scale_FuelTrim, OBD_Scale_RPM, OBD_Scale_Temp
+PUBLIC  RetC_fe_85e, RetC_ff_864, Tail_Div_Ratio_U8_Sat_89e
+EXTERN  Div_Ratio_U8_Sat:NEAR, Mul_S16_Q7_Sat:NEAR, OBD_Mode09_CountItems:NEAR, sub_r12_13_ret_r4:NEAR
+
+S_E2736 SECTION CODE AT 0E2736H
+
+; ======== OBD_Build_Mode09_Status  (@0xe2736) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified): OBD Mode-09 / KWP status response builder: FUN_0b34e0(0xc4d0) result -> response
+        ; code 0x10/data.
+        ; ------------------------------------------------------------
+OBD_Build_Mode09_Status:
+        MOV R12,#DATA16 0C4D0H
+        CALLS 00BH,OBD_Mode09_CountItems
+        MOVB obd_m09_count,RL4
+        CMPB RL4,#00H
+        JMPA cc_NE,L_E2858
+        MOVB RL5,#DATA16 00010H
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],RL5
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b0
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b1
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b2
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b3
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b4
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b5
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b6
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b7
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b8
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b9
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b10
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b11
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b12
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b13
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b14
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b15
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b16
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b17
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b18
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b19
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b20
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b21
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b22
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b23
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b24
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b25
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b26
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b27
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b28
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b29
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b30
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],obd_m09_b31
+        MOVB RL6,#DATA16 00022H
+        JMPR cc_UC,L_E2868
+L_E2858:                 ; 0xe2858
+        MOVB RL6,#DATA16 000FDH
+        JMPR cc_UC,L_E2868
+
+; ======== RetC_fe_85e  (@0xe285e) ========
+RetC_fe_85e:
+        MOVB RL6,#DATA16 000FEH
+        JMPR cc_UC,L_E2868
+
+; ======== RetC_ff_864  (@0xe2864) ========
+RetC_ff_864:
+        MOVB RL6,#DATA16 000FFH
+L_E2868:                 ; 0xe2868
+        MOVB RL4,RL6
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== OBD_Scale_FuelSys  (@0xe2874) ========
+        ; ------------------------------------------------------------
+        ; OBD-II PID scaling helper (verified by PID callers): OBD-II fuel-system/lambda scaling to response
+        ; byte: used by PID03 fuel-system status.
+        ; ------------------------------------------------------------
+OBD_Scale_FuelSys:
+        MOV [-R0],R6
+        MOV R4,R13
+        CMPB RL4,#01H
+        JMPR cc_NE,L_E2880
+        MOVB RL6,#08H
+        JMPR cc_UC,L_E2898
+L_E2880:                 ; 0xe2880
+        MOV R4,#DATA16 00040H
+        AND R4,R12
+        JMPR cc_NE,L_E288C
+        MOVB RL6,#01H
+        JMPR cc_UC,L_E2898
+L_E288C:                 ; 0xe288c
+        MOV R4,#01H
+        AND R4,R12
+        JMPR cc_EQ,L_E2896
+        MOVB RL6,#02H
+        JMPR cc_UC,L_E2898
+L_E2896:                 ; 0xe2896
+        MOVB RL6,#04H
+L_E2898:                 ; 0xe2898
+        MOVB RL4,RL6
+        MOV R6,[R0+]
+        RETS
+
+; ======== Tail_Div_Ratio_U8_Sat_89e  (@0xe289e) ========
+Tail_Div_Ratio_U8_Sat_89e:
+        MOV [-R0],R12
+        MOV R12,[R0]
+        MOVBZ R13,DPP0:c_maf_max
+        SHL R13,#08H
+        CALLS 00FH,Div_Ratio_U8_Sat
+        ADD R0,#02H
+        RETS
+
+; ======== OBD_Scale_Temp  (@0xe28b0) ========
+        ; ------------------------------------------------------------
+        ; OBD-II PID scaling helper (verified by PID callers): OBD-II temperature scaling to response byte
+        ; (A-40 degC): used by PID05 coolant / PID0F IAT / PID46 ambient.
+        ; ------------------------------------------------------------
+OBD_Scale_Temp:
+        MOV [-R0],R12
+        MOVB RL4,[R0]
+        MOVBZ R12,RL4
+        MOV R13,#DATA16 00060H
+        CALLS 00FH,Mul_S16_Q7_Sat
+        MOVBZ R12,RL4
+        MOV R13,#08H
+        CALLS 00FH,sub_r12_13_ret_r4
+        ADD R0,#02H
+        RETS
+
+; ======== OBD_Scale_FuelTrim  (@0xe28ca) ========
+        ; ------------------------------------------------------------
+        ; OBD-II PID scaling helper (verified by PID callers): OBD-II fuel-trim scaling to response byte
+        ; (percent): used by PID06/07 STFT/LTFT.
+        ; ------------------------------------------------------------
+OBD_Scale_FuelTrim:
+        MOV R4,#DATA16 08000H
+        ADD R4,R12
+        SHR R4,#09H
+        ADD R4,#DATA16 00040H
+        RETS
+
+; ======== OBD_Scale_RPM  (@0xe28d8) ========
+        ; ------------------------------------------------------------
+        ; OBD-II PID scaling helper (verified by PID callers): OBD-II engine-RPM scaling to 2-byte response
+        ; (0.25 rpm/bit): used by PID0C.
+        ; ------------------------------------------------------------
+OBD_Scale_RPM:
+        CMP R13,#DATA16 03FFFH
+        JMPR cc_ULE,L_E28E4
+        MOV R13,#DATA16 0FFFFH
+        JMPR cc_UC,L_E28E6
+L_E28E4:                 ; 0xe28e4
+        SHL R13,#02H
+L_E28E6:                 ; 0xe28e6
+        MOV R4,R13
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,R13
+        MOVB [R12],RL4
+        RETS
+
+S_E2736 ENDS
+        END

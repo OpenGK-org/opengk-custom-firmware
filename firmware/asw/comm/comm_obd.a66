@@ -1,0 +1,547 @@
+; asw/comm/comm_obd.a66
+; 0xE2D72-0xE3220  (1198 bytes, 10 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_conf_kobd                          EQU  09014FH
+c_conf_kwp_io_vin                    EQU  090150H
+
+PUBLIC  Calc_TAst_OBD, Inc_Ctr_Wup_DTC_Clr, NVM_Save_s1c2, OBD_Build_DTC_List, Reset_OBD_Stat, Restore_OBD_Stat
+PUBLIC  Set__t_ast_obd_ee2, Set_lv_maf_trim_e2d7, Set_lv_maf_trim_e31a, Set_lv_pl
+EXTERN  Div_U32_U16_Round32:NEAR, Elevated_Write_Routine_prg_zone_wrapper:NEAR, Sat_Add_U32:NEAR, xor_routine:NEAR
+
+S_E2D72 SECTION CODE AT 0E2D72H
+
+; ======== Set_lv_maf_trim_e2d7  (@0xe2d72) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Set_lv_maf_trim_e2d7:
+        MOVB RL4,DPP0:c_conf_kwp_io_vin
+        JMPR cc_EQ,L_E2D7C
+        BSET lv_maf_trim.00H
+        RETS
+L_E2D7C:                 ; 0xe2d7c
+        BCLR lv_maf_trim.00H
+        RETS
+
+; ======== Set_lv_pl  (@0xe2d80) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Set_lv_pl:
+        MOVB RL4,DPP0:c_conf_kobd
+        JMPR cc_EQ,L_E2D8A
+        BSET lv_pl.0FH
+        RETS
+L_E2D8A:                 ; 0xe2d8a
+        BCLR lv_pl.0FH
+        RETS
+
+; ======== OBD_Build_DTC_List  (@0xe2d8e) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified): OBD/KWP DTC-list response builder: iterates the fault-memory array (DAT_00d69f) and
+        ; writes matching DTC entries into the response buffer (r9), gated by DAT_00fd8a.0.
+        ; ------------------------------------------------------------
+OBD_Build_DTC_List:
+        MOV [-R0],R9
+        MOV [-R0],R6
+        JNB obd_rdy_cont.00H,L_E2E54
+        MOVB RL6,#00H
+L_E2D98:                 ; 0xe2d98
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D69FH]
+        JMPR cc_NE,L_E2DC0
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D6BFH]
+        JMPR cc_NE,L_E2DC0
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D6DFH]
+        JMPR cc_NE,L_E2DC0
+        MOVB RL4,diag_d4b0
+        JMPR cc_NE,L_E2DC0
+        BSET R9.00H
+        JMPR cc_UC,L_E2E18
+L_E2DC0:                 ; 0xe2dc0
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D69FH]
+        CMPB RL5,#03H
+        JMPR cc_EQ,L_E2DEC
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D6BFH]
+        CMPB RL5,#03H
+        JMPR cc_EQ,L_E2DEC
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D6DFH]
+        CMPB RL5,#03H
+        JMPR cc_EQ,L_E2DEC
+        MOVB RL4,diag_d4b0
+        CMPB RL4,#03H
+        JMPR cc_NE,L_E2DF4
+L_E2DEC:                 ; 0xe2dec
+        BCLR obd_rdy_cont.00H
+        BCLR R9.00H
+        MOVB RL6,#04H
+        JMPR cc_UC,L_E2E18
+L_E2DF4:                 ; 0xe2df4
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#05AFAH]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0DAH]
+        MOVBZ R4,RL4
+        AND R4,#DATA16 00010H
+        JMPR cc_EQ,L_E2E16
+        BCLR R9.00H
+        MOVB RL6,#04H
+        JMPR cc_UC,L_E2E18
+L_E2E16:                 ; 0xe2e16
+        BSET R9.00H
+L_E2E18:                 ; 0xe2e18
+        ADDB RL6,#01H
+        CMPB RL6,#04H
+        JMPR cc_C,L_E2D98
+        JNB R9.00H,L_E2E54
+        MOVB RL6,#00H
+L_E2E24:                 ; 0xe2e24
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#05AF8H]
+        MOVBZ R4,RL5
+        SHR R4,#04H
+        SHL R4,#01H
+        MOV R5,[R4+#0D70AH]
+        MOVBZ R4,RL6
+        MOVB RL3,[R4+#05AF8H]
+        ANDB RL3,#DATA16 0000FH
+        MOVBZ R4,RL3
+        MOV R2,#01H
+        SHL R2,R4
+        AND R5,R2
+        JMPR cc_EQ,L_E2E4C
+        MOVB RL6,#01H
+        JMPR cc_UC,L_E2E4E
+L_E2E4C:                 ; 0xe2e4c
+        BCLR obd_rdy_cont.00H
+L_E2E4E:                 ; 0xe2e4e
+        ADDB RL6,#01H
+        CMPB RL6,#01H
+        JMPR cc_C,L_E2E24
+L_E2E54:                 ; 0xe2e54
+        JNB obd_rdy_cont.01H,L_E2EDC
+        MOVB RL6,#00H
+L_E2E5A:                 ; 0xe2e5a
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D6FFH]
+        JMPR cc_NE,L_E2E68
+        BSET R9.00H
+        JMPR cc_UC,L_E2EA0
+L_E2E68:                 ; 0xe2e68
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D6FFH]
+        CMPB RL5,#03H
+        JMPR cc_NE,L_E2E7C
+        BCLR obd_rdy_cont.01H
+        BCLR R9.00H
+        MOVB RL6,#01H
+        JMPR cc_UC,L_E2EA0
+L_E2E7C:                 ; 0xe2e7c
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#05AF9H]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0DAH]
+        MOVBZ R4,RL4
+        AND R4,#DATA16 00010H
+        JMPR cc_EQ,L_E2E9E
+        BCLR R9.00H
+        MOVB RL6,#01H
+        JMPR cc_UC,L_E2EA0
+L_E2E9E:                 ; 0xe2e9e
+        BSET R9.00H
+L_E2EA0:                 ; 0xe2ea0
+        ADDB RL6,#01H
+        CMPB RL6,#01H
+        JMPR cc_C,L_E2E5A
+        JNB R9.00H,L_E2EDC
+        MOVB RL6,#00H
+L_E2EAC:                 ; 0xe2eac
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#05AF8H]
+        MOVBZ R4,RL5
+        SHR R4,#04H
+        SHL R4,#01H
+        MOV R5,[R4+#0D70AH]
+        MOVBZ R4,RL6
+        MOVB RL3,[R4+#05AF8H]
+        ANDB RL3,#DATA16 0000FH
+        MOVBZ R4,RL3
+        MOV R2,#01H
+        SHL R2,R4
+        AND R5,R2
+        JMPR cc_EQ,L_E2ED4
+        MOVB RL6,#01H
+        JMPR cc_UC,L_E2ED6
+L_E2ED4:                 ; 0xe2ed4
+        BCLR obd_rdy_cont.01H
+L_E2ED6:                 ; 0xe2ed6
+        ADDB RL6,#01H
+        CMPB RL6,#01H
+        JMPR cc_C,L_E2EAC
+L_E2EDC:                 ; 0xe2edc
+        MOV R6,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Set__t_ast_obd_ee2  (@0xe2ee2) ========
+Set__t_ast_obd_ee2:
+        MOV t_ast_obd,ZEROS
+        RETS
+
+; ======== Calc_TAst_OBD  (@0xe2ee8) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Calc_TAst_OBD:
+        JNB lv_pl.09H,L_E2EFC
+        MOV R4,t_ast_obd
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_NC,L_E2EFC
+        ADD R4,#01H
+        MOV t_ast_obd,R4
+L_E2EFC:                 ; 0xe2efc
+        MOVB RL4,obd_c4f4
+        CMPB RL4,#DATA16 0003BH
+        JMPR cc_C,L_E2F1C
+        MOV R4,t_dtc_clr
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_NC,L_E2F16
+        ADD R4,#01H
+        MOV t_dtc_clr,R4
+L_E2F16:                 ; 0xe2f16
+        MOVB obd_c4f4,ZEROS
+        JMPR cc_UC,L_E2F20
+L_E2F1C:                 ; 0xe2f1c
+        SUBB obd_c4f4,ONES
+L_E2F20:                 ; 0xe2f20
+        JNB can_fd58.09H,L_E2F94
+        JNB obd_sf.0AH,L_E2F94
+        MOV R4,obd_sf
+        AND R4,#DATA16 0C000H
+        JMPR cc_EQ,L_E2F78
+        JB obd_sf.0CH,L_E2F78
+        MOVB RL4,obd_c4f3
+        CMPB RL4,#01H
+        JMPR cc_NE,L_E2F68
+        SUBB obd_c4f2,ONES
+        MOVBZ R4,obd_c4f2
+        CMP R4,#DATA16 0003BH
+        JMPR cc_ULE,L_E2F94
+        MOVB obd_c4f2,ZEROS
+        MOV R4,t_act_mil
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_NC,L_E2F62
+        ADD R4,#01H
+        MOV t_act_mil,R4
+        RETS
+L_E2F62:                 ; 0xe2f62
+        MOV t_act_mil,ONES
+        RETS
+L_E2F68:                 ; 0xe2f68
+        MOVB obd_c4f2,ZEROS
+        MOV t_act_mil,ZEROS
+        MOVB RL4,#01H
+        MOVB obd_c4f3,RL4
+        RETS
+L_E2F78:                 ; 0xe2f78
+        JNB obd_sf.0BH,L_E2F8C
+        MOVB obd_c4f2,ZEROS
+        MOV t_act_mil,ZEROS
+        MOVB RL4,#01H
+        MOVB obd_c4f3,RL4
+        RETS
+L_E2F8C:                 ; 0xe2f8c
+        JB obd_sf.0CH,L_E2F94
+        MOVB obd_c4f3,ZEROS
+L_E2F94:                 ; 0xe2f94
+        RETS
+
+; ======== Restore_OBD_Stat  (@0xe2f96) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS31, verified): Statistical data NVM restore (dist_dtc_clr/t_act_mil/t_dtc_clr)
+        ; ------------------------------------------------------------
+Restore_OBD_Stat:
+        JB can_fd58.02H,L_E3034
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        ADD R12,#DATA16 001C2H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#0AH
+        CALLS 00DH,xor_routine
+        EXTP #03H, #02H
+        MOV R10,DPP0:diag_f890
+        MOV R11,DPP0:diag_f892
+        EXTP R11, #02H
+        MOV R5,[R10+#01CCH]
+        NOP
+        CMP R5,R4
+        JMPR cc_NE,L_E3034
+        EXTP R11, #02H
+        MOVB RL4,[R10+#01CAH]
+        NOP
+        MOVB ctr_wup_dtc_clr,RL4
+        EXTP R11, #03H
+        MOV R4,[R10+#01C2H]
+        MOV R5,[R10+#01C4H]
+        NOP
+        MOV obd_d720,R4
+        MOV obd_d722,R5
+        MOV R4,obd_d722
+        MOV dist_dtc_clr,R4
+        EXTP R11, #02H
+        MOV R5,[R10+#01C6H]
+        NOP
+        MOV t_act_mil,R5
+        EXTP R11, #02H
+        MOVB RL4,[R10+#01CBH]
+        NOP
+        MOVB obd_c4f3,RL4
+        EXTP R11, #02H
+        MOV R4,[R10+#01C8H]
+        NOP
+        MOV t_dtc_clr,R4
+        RETS
+L_E3034:                 ; 0xe3034
+        CALLS 00EH,Reset_OBD_Stat
+        RETS
+
+; ======== Reset_OBD_Stat  (@0xe303a) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS31, verified): Statistical data (reset)
+        ; ------------------------------------------------------------
+Reset_OBD_Stat:
+        MOVB ctr_wup_dtc_clr,ZEROS
+        MOV obd_d720,ZEROS
+        MOV obd_d722,ZEROS
+        MOV dist_dtc_clr,ZEROS
+        BCLR lv_maf_trim.01H
+        MOV t_dtc_clr,ZEROS
+        MOVB obd_c4f4,ZEROS
+        MOV t_act_mil,ZEROS
+        MOVB obd_c4f2,ZEROS
+        MOVB RL4,#01H
+        MOVB obd_c4f3,RL4
+        RETS
+
+; ======== NVM_Save_s1c2  (@0xe3064) ========
+        ; ------------------------------------------------------------
+        ; NVM adaptation I/O: saves RAM-> validated NVM block (DAT_00f890 base) section; xor_routine checksum.
+        ; Section offset in name.
+        ; ------------------------------------------------------------
+NVM_Save_s1c2:
+        SUB R0,#02H
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        ADD R12,#DATA16 001CAH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0C4F1H
+        MOV R15,#01H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        ADD R12,#DATA16 001C2H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0D720H
+        MOV R15,#04H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        ADD R12,#DATA16 001C6H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0D728H
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        ADD R12,#DATA16 001CBH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0C4F3H
+        MOV R15,#01H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        ADD R12,#DATA16 001C8H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0D72AH
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        ADD R12,#DATA16 001C2H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#0AH
+        CALLS 00DH,xor_routine
+        MOV [R0],R4
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        ADD R12,#DATA16 001CCH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,R0
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        ADD R0,#02H
+        RETS
+
+; ======== Inc_Ctr_Wup_DTC_Clr  (@0xe319a) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by dtc/obd_sf signals): Increment warm-up-since-DTC-clear counter ctr_wup_dtc_clr.
+        ; ------------------------------------------------------------
+Inc_Ctr_Wup_DTC_Clr:
+        MOVB RL4,ctr_wup_dtc_clr
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NC,L_E31AA
+        ADDB RL4,#01H
+        MOVB ctr_wup_dtc_clr,RL4
+L_E31AA:                 ; 0xe31aa
+        RETS
+
+; ======== Set_lv_maf_trim_e31a  (@0xe31ac) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Set_lv_maf_trim_e31a:
+        MOV [-R0],R9
+        JNB can_fd58.09H,L_E3212
+        MOVB RL4,conf_vs
+        CMPB RL4,#03H
+        JMPR cc_EQ,L_E3212
+        JNB lv_maf_trim.01H,L_E3202
+        MOV R4,p_vs_meas
+        MOV R5,[R4+#04H]
+        MOV R9,[R5]
+        MOV R5,R9
+        SUB R5,lv_maf_d726
+        MOV lv_maf_d724,R5
+        MOV lv_maf_d726,R9
+        MOV R12,R5
+        MOV R13,#00H
+        MOV R13,R12
+        MOV R12,0FF1CH
+        MOV R14,vs_fac
+        CALLS 00FH,Div_U32_U16_Round32
+        MOV R14,R4
+        MOV R15,R5
+        MOV R12,obd_d720
+        MOV R13,obd_d722
+        CALLS 00FH,Sat_Add_U32
+        MOV obd_d720,R4
+        MOV obd_d722,R5
+        JMPR cc_UC,L_E3214
+L_E3202:                 ; 0xe3202
+        MOV R4,p_vs_meas
+        MOV R5,[R4+#04H]
+        MOV lv_maf_d726,[R5]
+        BSET lv_maf_trim.01H
+        JMPR cc_UC,L_E3214
+L_E3212:                 ; 0xe3212
+        BCLR lv_maf_trim.01H
+L_E3214:                 ; 0xe3214
+        MOV R4,obd_d722
+        MOV dist_dtc_clr,R4
+        MOV R9,[R0+]
+        RETS
+
+S_E2D72 ENDS
+        END

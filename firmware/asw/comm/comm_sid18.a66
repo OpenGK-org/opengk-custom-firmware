@@ -1,0 +1,263 @@
+; asw/comm/comm_sid18.a66
+; 0xDF41E-0xDF638  (538 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  KWP_GetDTCRecordByStatus, KWP_SID18_ReadDTCByStatus
+EXTERN  DTC_Status_Proc_4:NEAR, Get_DTC_Record_1:NEAR
+
+S_DF41E SECTION CODE AT 0DF41EH
+
+; ======== KWP_SID18_ReadDTCByStatus  (@0xdf41e) ========
+KWP_SID18_ReadDTCByStatus:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        SUB R0,#04H
+        MOVB RL6,#00H
+        MOV R9,kwp_buf_base
+        MOVB kwp_nrc,ZEROS
+        MOV R4,kwp_msg_len
+        CMP R4,#04H
+        JMPA cc_NE,L_DF51A
+        MOV R4,kwp_req_ptr
+        MOVB RL5,[R4+#01H]
+        MOVBZ R5,RL5
+        SHL R5,#08H
+        MOV [R0],R5
+        MOVB RL5,[R4+#02H]
+        MOVBZ R5,RL5
+        MOV R2,[R0]
+        OR R2,R5
+        MOV [R0],R2
+        CMP R2,#00H
+        JMPR cc_EQ,L_DF460
+        CMP R2,#DATA16 0FF00H
+        JMPR cc_NE,L_DF500
+L_DF460:                 ; 0xdf460
+        MOV R4,kwp_req_ptr
+        MOVB RL5,[R4]
+        JMPR cc_EQ,L_DF482
+        CMPB RL5,#01H
+        JMPR cc_EQ,L_DF486
+        CMPB RL5,#02H
+        JMPR cc_EQ,L_DF48A
+        CMPB RL5,#03H
+        JMPR cc_EQ,L_DF48E
+        CMPB RL5,#DATA16 000FAH
+        JMPR cc_EQ,L_DF492
+        CMPB RL5,#DATA16 000FBH
+        JMPR cc_EQ,L_DF496
+        JMPR cc_UC,L_DF49A
+L_DF482:                 ; 0xdf482
+        MOVB RL6,#00H
+        JMPR cc_UC,L_DF4A2
+L_DF486:                 ; 0xdf486
+        MOVB RL6,#01H
+        JMPR cc_UC,L_DF4A2
+L_DF48A:                 ; 0xdf48a
+        MOVB RL6,#03H
+        JMPR cc_UC,L_DF4A2
+L_DF48E:                 ; 0xdf48e
+        MOVB RL6,#04H
+        JMPR cc_UC,L_DF4A2
+L_DF492:                 ; 0xdf492
+        MOVB RL6,#05H
+        JMPR cc_UC,L_DF4A2
+L_DF496:                 ; 0xdf496
+        MOVB RL6,#06H
+        JMPR cc_UC,L_DF4A2
+L_DF49A:                 ; 0xdf49a
+        MOVB RL4,#DATA16 00012H
+        MOVB kwp_nrc,RL4
+L_DF4A2:                 ; 0xdf4a2
+        MOVB RL4,kwp_nrc
+        JMPR cc_NE,L_DF522
+        MOV R12,R9
+        MOVBZ R13,RL6
+        MOV R14,#DATA16 000FFH
+        CALLS 00DH,KWP_GetDTCRecordByStatus
+        MOV R8,R4
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_EQ,L_DF4F6
+        MOV R4,R8
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB RL7,#00H
+        MOV R4,#02H
+        MOV kwp_msg_len,R4
+        JMPR cc_UC,L_DF4E2
+L_DF4CE:                 ; 0xdf4ce
+        MOV R12,R9
+        MOVBZ R13,RL6
+        MOVBZ R14,RL7
+        CALLS 00DH,KWP_GetDTCRecordByStatus
+        ADD R9,#03H
+        MOV R4,#03H
+        ADD kwp_msg_len,R4
+        ADDB RL7,#01H
+L_DF4E2:                 ; 0xdf4e2
+        MOV R4,kwp_msg_len
+        ADD R4,#03H
+        CMP R4,kwp_buf_limit
+        JMPR cc_UGT,L_DF522
+        MOV R4,R8
+        CMPB RL7,RL4
+        JMPR cc_C,L_DF4CE
+        JMPR cc_UC,L_DF522
+L_DF4F6:                 ; 0xdf4f6
+        MOVB RL4,#DATA16 00012H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_DF522
+L_DF500:                 ; 0xdf500
+        MOV R4,[R0]
+        CMP R4,#00H
+        JMPR cc_NC,L_DF510
+        MOVB RL4,#DATA16 00012H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_DF522
+L_DF510:                 ; 0xdf510
+        MOVB RL4,#DATA16 00031H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_DF522
+L_DF51A:                 ; 0xdf51a
+        MOVB RL4,#DATA16 00079H
+        MOVB kwp_nrc,RL4
+L_DF522:                 ; 0xdf522
+        ADD R0,#04H
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== KWP_GetDTCRecordByStatus  (@0xdf52e) ========
+KWP_GetDTCRecordByStatus:
+        MOV [-R0],R12
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R8,R13
+        MOV R9,R14
+        MOV R4,R8
+        CMPB RL4,#00H
+        JMPR cc_EQ,L_DF550
+        MOV R4,R8
+        CMPB RL4,#03H
+        JMPR cc_EQ,L_DF550
+        MOV R4,R8
+        CMPB RL4,#05H
+        JMPA cc_NE,L_DF626
+L_DF550:                 ; 0xdf550
+        MOVB RL4,kwp_c360
+        JMPR cc_EQ,L_DF55C
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_DF56E
+        JMPR cc_UC,L_DF572
+L_DF55C:                 ; 0xdf55c
+        MOV R4,R8
+        CMPB RL4,#00H
+        JMPR cc_NE,L_DF568
+        MOVB RL6,fmy_f_anz
+        JMPR cc_UC,L_DF572
+L_DF568:                 ; 0xdf568
+        MOVB RL6,fmy_s_f_anz
+        JMPR cc_UC,L_DF572
+L_DF56E:                 ; 0xdf56e
+        MOVB RL6,diag_c35f
+L_DF572:                 ; 0xdf572
+        MOV R4,R9
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_EQ,L_DF62A
+        MOVB RL4,kwp_c360
+        JMPR cc_EQ,L_DF586
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_DF5A0
+        JMPR cc_UC,L_DF5AA
+L_DF586:                 ; 0xdf586
+        MOV R4,R8
+        CMPB RL4,#00H
+        JMPR cc_NE,L_DF596
+        MOV R4,R9
+        MOVBZ R4,RL4
+        MOVB RL7,[R4+#0C3DBH]
+        JMPR cc_UC,L_DF5AA
+L_DF596:                 ; 0xdf596
+        MOV R4,R9
+        MOVBZ R4,RL4
+        MOVB RL7,[R4+#0C441H]
+        JMPR cc_UC,L_DF5AA
+L_DF5A0:                 ; 0xdf5a0
+        MOV R4,R9
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        MOVB RL7,[R4+#0CE8CH]
+L_DF5AA:                 ; 0xdf5aa
+        CMPB RL6,#00H
+        JMPR cc_EQ,L_DF62A
+        MOVBZ R12,RL7
+        CALLS 00DH,Get_DTC_Record_1
+        SHR R4,#08H
+        MOV R5,[R0+#08H]
+        ADD R5,#01H
+        MOV [R0+#08H],R5
+        SUB R5,#01H
+        MOVB [R5],RL4
+        MOVBZ R12,RL7
+        CALLS 00DH,Get_DTC_Record_1
+        MOV R5,[R0+#08H]
+        ADD R5,#01H
+        MOV [R0+#08H],R5
+        SUB R5,#01H
+        MOVB [R5],RL4
+        MOVB RL4,kwp_c360
+        JMPR cc_EQ,L_DF5E4
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_DF600
+        JMPR cc_UC,L_DF62A
+L_DF5E4:                 ; 0xdf5e4
+        MOV R12,#DATA16 0D0D0H
+        MOVBZ R4,RL7
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        ADD R12,R5
+        CALLS 00DH,DTC_Status_Proc_4
+        MOV R5,[R0+#08H]
+        MOVB [R5],RL4
+        JMPR cc_UC,L_DF62A
+L_DF600:                 ; 0xdf600
+        MOV R4,R9
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        MOVB RL5,[R4+#0CE8CH]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOV R12,#DATA16 0CE00H
+        ADD R12,R5
+        CALLS 00DH,DTC_Status_Proc_4
+        MOV R5,[R0+#08H]
+        MOVB [R5],RL4
+        JMPR cc_UC,L_DF62A
+L_DF626:                 ; 0xdf626
+        MOVB RL6,#DATA16 000FFH
+L_DF62A:                 ; 0xdf62a
+        MOVB RL4,RL6
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        ADD R0,#02H
+        RETS
+
+S_DF41E ENDS
+        END

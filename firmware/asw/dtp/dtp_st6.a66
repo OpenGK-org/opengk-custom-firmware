@@ -1,0 +1,220 @@
+; asw/dtp/dtp_st6.a66
+; 0xD2222-0xD2454  (562 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_abc_inc_cps_mecha                  EQU  0900A5H
+c_abc_max_cps_mecha                  EQU  0900D9H
+c_t_1_diagcp                         EQU  090311H
+c_diagcp_mdl_bas_max                 EQU  090514H
+c_diagcp_mdl_bas_min                 EQU  090518H
+c_dtp_dyw_1                          EQU  090522H
+c_maf_cps_sp_inc_diagcp              EQU  0905B2H
+c_dtp_bas_cor                        EQU  090866H
+c_dtp_dif_cps_diagcp                 EQU  09086AH
+c_hys_neg_dtp_diagcp                 EQU  09088EH
+c_hys_pos_dtp_diagcp                 EQU  090890H
+
+PUBLIC  DiagCP_St4, DiagCP_St5, DiagCP_St6
+EXTERN  Calc_DiagCP_Dtp:NEAR, Calc_DiagCP_Scale:NEAR, DTC_Update_Immediate:NEAR, Delay_Dc397:NEAR
+EXTERN  DiagCP_Calc_DtpDyw:NEAR, DiagCP_SetFaultState:NEAR, Get_IP_Word_3D_Table_DWord_XByte_YWord:NEAR, L_D3586:NEAR
+EXTERN  Sat_Add_U8:NEAR, Sat_Sub_S16:NEAR
+
+S_D2222 SECTION CODE AT 0D2222H
+
+; ======== DiagCP_St4  (@0xd2222) ========
+        ; ------------------------------------------------------------
+        ; DiagCP (EVAP leak-diag) state_diagcp==4 arm, via DiagCP_State_jmptab@0xa105e.
+        ; ------------------------------------------------------------
+DiagCP_St4:
+        JNB lv_err_maf_tps_ratio_2.06H,L_D2278
+        MOV R4,ctr_sum_dtp
+        CMP R4,#04H
+        JMPR cc_C,L_D2270
+        BCLR lv_err_maf_tps_ratio_2.06H
+        BSET lv_err_maf_tps_ratio_2.07H
+        MOV R5,dtp_mv
+        ADD dtp_ofs,R5
+        MOV R12,dtp_sword
+        MOV R13,R5
+        CALLS 00FH,Sat_Sub_S16
+        MOV dtp_sword,R4
+        MOV R12,dtp_sword
+        CALLA cc_UC,Delay_Dc397
+        MOVB RL4,#06H
+        MOVB state_diagcp,RL4
+        MOV ctr_sum_dtp,ZEROS
+        MOV tot_dif_sig_bas,ZEROS
+        MOV g_cffc,ZEROS
+        MOVBZ R4,DPP0:c_t_1_diagcp
+        SHL R4,#01H
+        MOV tot_sum_dtp,R4
+        JMPA cc_UC,L_D3586
+L_D2270:                 ; 0xd2270
+        SUB ctr_sum_dtp,ONES
+        JMPA cc_UC,L_D3586
+L_D2278:                 ; 0xd2278
+        BSET lv_err_maf_tps_ratio_2.06H
+        BCLR lv_err_maf_tps_ratio_2.07H
+        MOV ctr_sum_dtp,ZEROS
+        JMPA cc_UC,L_D3586
+
+; ======== DiagCP_St5  (@0xd2284) ========
+        ; ------------------------------------------------------------
+        ; DiagCP (EVAP leak-diag) state_diagcp==5 arm, via DiagCP_State_jmptab@0xa105e.
+        ; ------------------------------------------------------------
+DiagCP_St5:
+        MOV R12,DPP0:c_dtp_dyw_1
+        CALLA cc_UC,DiagCP_Calc_DtpDyw
+        CMPB RL4,#00H
+        JMPR cc_NE,L_D2296
+        MOV R4,#04H
+        OR intr_state_diagcp,R4
+L_D2296:                 ; 0xd2296
+        MOV R4,dtp_mv
+        MOV dtp_dif_cor_sword,R4
+        MOV R5,dtp_sword
+        CMP R5,DPP0:c_hys_neg_dtp_diagcp
+        JMPR cc_SLT,L_D22B6
+        MOV R5,dtp_sword
+        CMP R5,DPP0:c_hys_pos_dtp_diagcp
+        JMPR cc_SGT,L_D22B6
+        MOV dtp_sword,ZEROS
+L_D22B6:                 ; 0xd22b6
+        MOV R12,dtp_sword
+        MOV R13,DPP0:c_dtp_bas_cor
+        CALLS 00FH,Sat_Sub_S16
+        MOV dtp_cor,R4
+        MOV R5,ctr_sum_dtp
+        CMP R5,tot_sum_dtp
+        JMPR cc_NC,L_D2374
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,tot_dif_sig_bas
+        MOV R15,g_cffc
+        CALLA cc_UC,Calc_DiagCP_Dtp
+        MOV tot_dif_sig_bas,R4
+        MOV g_cffc,R5
+        SUB ctr_sum_dtp,ONES
+        MOV R2,dtp_dif_cor_sword
+        CMP R2,DPP0:c_dtp_dif_cps_diagcp
+        JMPR cc_SGE,L_D2362
+        MOVBZ R12,g_c39c
+        MOVBZ R13,DPP0:c_abc_inc_cps_mecha
+        CALLS 00FH,Sat_Add_U8
+        MOVB g_c39c,RL4
+        CMPB RL4,DPP0:c_abc_max_cps_mecha
+        JMPA cc_C,L_D3586
+        MOVB RL5,DPP0:c_abc_max_cps_mecha
+        MOVB g_c39c,RL5
+        MOV R4,dtp_mv
+        MOV dtp_dif_cor_mod_6_sword,R4
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D2E4H
+        MOV R13,#DATA16 05572H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.06H,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_4
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D2346
+        MOV R4,#DATA16 0FFBFH
+        AND dtc_st_grp_cp,R4
+L_D2346:                 ; 0xd2346
+        MOV R4,#DATA16 0C3FFH
+        AND lv_cat_f874,R4
+        MOV R4,#DATA16 04000H
+        OR intr_state_diagcp,R4
+        BSET lv_diagcp_cdn_nok.0DH
+        MOV R12,#02H
+        CALLA cc_UC,DiagCP_SetFaultState
+        JMPA cc_UC,L_D3586
+L_D2362:                 ; 0xd2362
+        MOVB RL4,g_c39c
+        JMPA cc_EQ,L_D3586
+        SUBB RL4,#01H
+        MOVB g_c39c,RL4
+        JMPA cc_UC,L_D3586
+L_D2374:                 ; 0xd2374
+        MOV R12,tot_dif_sig_bas
+        MOV R13,g_cffc
+        CALLA cc_UC,Calc_DiagCP_Scale
+        MOV diagcp_mdl_bas,R4
+        MOV R12,#DATA16 0502EH
+        MOV R13,R4
+        MOVBZ R14,tam
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YWord
+        MOV diagcp_mdl_estim,R4
+        MOV R5,intr_state_diagcp
+        AND R5,#04H
+        JMPR cc_EQ,L_D23A8
+        MOV R12,#00H
+        CALLA cc_UC,DiagCP_SetFaultState
+        JMPA cc_UC,L_D3586
+L_D23A8:                 ; 0xd23a8
+        MOV R4,diagcp_mdl_bas
+        CMP R4,DPP0:c_diagcp_mdl_bas_max
+        JMPR cc_ULE,L_D23C4
+        MOV R5,#DATA16 00040H
+        OR intr_state_diagcp,R5
+        MOV R12,#01H
+        CALLA cc_UC,DiagCP_SetFaultState
+        JMPA cc_UC,L_D3586
+L_D23C4:                 ; 0xd23c4
+        MOV R4,diagcp_mdl_bas
+        CMP R4,DPP0:c_diagcp_mdl_bas_min
+        JMPR cc_ULE,L_D23D0
+        BSET lv_diagcp_cdn_nok.02H
+L_D23D0:                 ; 0xd23d0
+        MOV R4,dtp_mv
+        MOV dtp_dif_cor_mod_6_sword,R4
+        MOV R12,#DATA16 0D2E4H
+        MOV R13,#DATA16 05572H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.06H,dtc_status_work.06H
+        MOVBZ R4,dtc_done_cp_4
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D23FA
+        MOV R4,#DATA16 0FFBFH
+        AND dtc_st_grp_cp,R4
+L_D23FA:                 ; 0xd23fa
+        MOV R4,#DATA16 0FFBFH
+        AND obd_mode06_avail,R4
+        BCLR lv_err_maf_tps_ratio_2.08H
+        BCLR lv_err_maf_tps_ratio_2.09H
+        BCLR lv_diagcp_cdn_nok.09H
+        BCLR lv_diagcp_cdn_nok.0AH
+        MOV state_diagcp_F978,ZEROS
+        BSET lv_diagcp_cdn_nok.0EH
+        MOVB RL4,#07H
+        MOVB state_diagcp,RL4
+        MOV R4,DPP0:c_maf_cps_sp_inc_diagcp
+        MOV flow_sp_cps_ext,R4
+        JMPA cc_UC,L_D3586
+
+; ======== DiagCP_St6  (@0xd2422) ========
+        ; ------------------------------------------------------------
+        ; DiagCP (EVAP leak-diag) state_diagcp==6 arm, via DiagCP_State_jmptab@0xa105e.
+        ; ------------------------------------------------------------
+DiagCP_St6:
+        MOV R4,dtp_mv
+        MOV dtp_evac_beg_diagcp,R4
+        CMP R4,DPP0:c_hys_neg_dtp_diagcp
+        JMPR cc_SGT,L_D2442
+        MOV R5,#DATA16 04000H
+        OR intr_state_diagcp,R5
+        MOV R12,#00H
+        CALLA cc_UC,DiagCP_SetFaultState
+        JMPA cc_UC,L_D3586
+L_D2442:                 ; 0xd2442
+        MOV R4,maf_word
+        MOV maf_mmv_diagcp,R4
+        MOVB RL4,#08H
+        MOVB state_diagcp,RL4
+        JMPA cc_UC,L_D3586
+
+S_D2222 ENDS
+        END

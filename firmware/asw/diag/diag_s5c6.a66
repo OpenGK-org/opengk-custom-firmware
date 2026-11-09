@@ -1,0 +1,290 @@
+; asw/diag/diag_s5c6.a66
+; 0xB2EEA-0xB317C  (658 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Calc_Fcut_State, NVM_Restore_s5c6, NVM_Save_s1fa, NVM_Save_s5c6, Reset__ctr_km_mil_on_166
+EXTERN  Div_U32_U16_Round32:NEAR, Elevated_Write_Routine_prg_zone_wrapper:NEAR, Sat_Add_U32:NEAR, xor_routine:NEAR
+
+S_B2EEA SECTION CODE AT 0B2EEAH
+
+; ======== NVM_Save_s1fa  (@0xb2eea) ========
+        ; ------------------------------------------------------------
+        ; NVM adaptation I/O: saves RAM-> validated NVM block (DAT_00f890 base) section; xor_routine checksum.
+        ; Section offset in name.
+        ; ------------------------------------------------------------
+NVM_Save_s1fa:
+        SUB R0,#02H
+        MOVB RL4,conf_cp
+        JMPR cc_EQ,L_B2F3E
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 001FAH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0F6AAH
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 001FCH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0F6ACH
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+L_B2F3E:                 ; 0xb2f3e
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 001FAH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#04H
+        CALLS 00DH,xor_routine
+        MOV [R0],R4
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 001FEH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,R0
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        ADD R0,#02H
+        RETS
+
+; ======== Calc_Fcut_State  (@0xb2f98) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Calc_Fcut_State:
+        MOV [-R0],R9
+        JNB can_fd58.09H,L_B3036
+        MOVB RL4,conf_vs
+        CMPB RL4,#03H
+        JMPR cc_EQ,L_B3036
+        JNB obd_sf.0AH,L_B3036
+        MOV R4,obd_sf
+        AND R4,#DATA16 0C000H
+        JMPR cc_EQ,L_B301E
+        JB obd_sf.0CH,L_B301E
+        MOVB RL4,g_c223
+        CMPB RL4,#01H
+        JMPR cc_NE,L_B3018
+        JNB lv_fcut_fast.0FH,L_B3008
+        MOV R4,p_vs_meas
+        MOV R5,[R4+#04H]
+        MOV R9,[R5]
+        MOV R5,R9
+        SUB R5,g_c700
+        MOV vs_pulse_nr,R5
+        MOV g_c700,R9
+        MOV R12,R5
+        MOV R13,#00H
+        MOV R13,R12
+        MOV R12,0FF1CH
+        MOV R14,vs_fac
+        CALLS 00FH,Div_U32_U16_Round32
+        MOV R14,R4
+        MOV R15,R5
+        MOV R12,g_c6fa
+        MOV R13,g_c6fc
+        CALLS 00FH,Sat_Add_U32
+        MOV g_c6fa,R4
+        MOV g_c6fc,R5
+        JMPR cc_UC,L_B3038
+L_B3008:                 ; 0xb3008
+        MOV R4,p_vs_meas
+        MOV R5,[R4+#04H]
+        MOV g_c700,[R5]
+        BSET lv_fcut_fast.0FH
+        JMPR cc_UC,L_B3038
+L_B3018:                 ; 0xb3018
+        CALLS 00BH,Reset__ctr_km_mil_on_166
+        JMPR cc_UC,L_B3038
+L_B301E:                 ; 0xb301e
+        JNB obd_sf.0BH,L_B3028
+        CALLS 00BH,Reset__ctr_km_mil_on_166
+        JMPR cc_UC,L_B3038
+L_B3028:                 ; 0xb3028
+        JB obd_sf.0CH,L_B3032
+        MOVB g_c223,ZEROS
+        JMPR cc_UC,L_B3038
+L_B3032:                 ; 0xb3032
+        BCLR lv_fcut_fast.0FH
+        JMPR cc_UC,L_B3038
+L_B3036:                 ; 0xb3036
+        BCLR lv_fcut_fast.0FH
+L_B3038:                 ; 0xb3038
+        MOV R4,g_c6fc
+        MOV ctr_km_mil_on,R4
+        MOV R9,[R0+]
+        RETS
+
+; ======== NVM_Restore_s5c6  (@0xb3044) ========
+        ; ------------------------------------------------------------
+        ; NVM adaptation I/O: restores <- validated NVM block (DAT_00f890 base) section; xor_routine checksum.
+        ; Section offset in name.
+        ; ------------------------------------------------------------
+NVM_Restore_s5c6:
+        JB can_fd58.02H,L_B30B8
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 005C6H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#06H
+        CALLS 00DH,xor_routine
+        MOV R10,diag_f890
+        MOV R11,diag_f892
+        EXTP R11, #02H
+        MOV R5,[R10+#05CCH]
+        NOP
+        CMP R5,R4
+        JMPR cc_NE,L_B30B8
+        EXTP R11, #03H
+        MOV R4,[R10+#05C6H]
+        MOV R5,[R10+#05C8H]
+        NOP
+        MOV g_c6fa,R4
+        MOV g_c6fc,R5
+        MOV R4,g_c6fc
+        MOV ctr_km_mil_on,R4
+        EXTP R11, #02H
+        MOVB RL4,[R10+#05CAH]
+        NOP
+        MOVB g_c223,RL4
+        BCLR lv_fcut_fast.0FH
+        RETS
+L_B30B8:                 ; 0xb30b8
+        CALLS 00BH,Reset__ctr_km_mil_on_166
+        RETS
+
+; ======== NVM_Save_s5c6  (@0xb30be) ========
+        ; ------------------------------------------------------------
+        ; NVM adaptation I/O: saves RAM-> validated NVM block (DAT_00f890 base) section; xor_routine checksum.
+        ; Section offset in name.
+        ; ------------------------------------------------------------
+NVM_Save_s5c6:
+        SUB R0,#02H
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 005C6H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0C6FAH
+        MOV R15,#04H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 005CAH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0C223H
+        MOV R15,#01H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 005C6H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#06H
+        CALLS 00DH,xor_routine
+        MOV [R0],R4
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 005CCH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,R0
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        ADD R0,#02H
+        RETS
+
+; ======== Reset__ctr_km_mil_on_166  (@0xb3166) ========
+Reset__ctr_km_mil_on_166:
+        MOV ctr_km_mil_on,ZEROS
+        MOV g_c6fa,ZEROS
+        MOV g_c6fc,ZEROS
+        MOVB RL4,#01H
+        MOVB g_c223,RL4
+        BCLR lv_fcut_fast.0FH
+        RETS
+
+S_B2EEA ENDS
+        END

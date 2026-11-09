@@ -1,0 +1,153 @@
+; asw/lamb/lamb_afl.a66
+; 0xB05D6-0xB073A  (356 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_cam_ini_in                         EQU  09012EH
+ldp_n__lamb_ref                EQU  090CD3H
+ldp_maf__lamb_ref                EQU  090CDAH
+ldp_tco__lamb_ref_add               EQU  090CE1H
+ldp_lamb_dif__eff_lamb                         EQU  091268H
+ip_eff_lamb__lamb_dif                EQU  09247AH
+ip_lamb_ref__n__maf                  EQU  092D80H
+ip_lamb_ref_add__tco                 EQU  092DC8H
+
+PUBLIC  Calc_Cam_Sp_AFL, Calc_Eff_Lamb, Calc_Lamb_Ref_Add_TCO, Reset_Eff_Lamb
+EXTERN  Get_IP_Byte_X_Axis:NEAR, Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_2D_Table:NEAR, Get_IP_Word_3D_Table:NEAR
+EXTERN  Get_IP_Word_Y_Axis:NEAR, Sat_Add_S16_v2:NEAR, Sat_Sub_S16_v2:NEAR
+
+S_B05D6 SECTION CODE AT 0B05D6H
+
+; ======== Calc_Cam_Sp_AFL  (@0xb05d6) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signals): Cam setpoint during fuel-level/afterstart:
+        ; cam_sp_clc_afl_ivvt.
+        ; ------------------------------------------------------------
+Calc_Cam_Sp_AFL:
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_B05E4
+        MOVB RL5,DPP0:c_cam_ini_in
+        MOVB ivvt_in_struct_sp_afl_ivvt_cam_sp_clc_afl_ivvt,RL5
+L_B05E4:                 ; 0xb05e4
+        RETS
+
+; ======== Reset_Eff_Lamb  (@0xb05e6) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): Basic/Actual/Minimum Lambda Efficiency (eff_lamb_* reset)
+        ; ------------------------------------------------------------
+Reset_Eff_Lamb:
+        MOV R4,#DATA16 08000H
+        MOV eff_lamb_min,R4
+        MOV eff_lamb_av,R4
+        MOV eff_lamb_bas_cor,R4
+        MOV R5,#DATA16 00400H
+        MOV lamb_ref_cor,R5
+        RETS
+
+; ======== Calc_Eff_Lamb  (@0xb0600) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS31, verified): Basic, Actual, and Minimum Lambda Efficiency (eff_lamb_*)
+        ; ------------------------------------------------------------
+Calc_Eff_Lamb:
+        MOV [-R0],R9
+        MOV R12,#DATA16 POF ldp_n__lamb_ref
+        MOV R13,#DATA16 PAG ldp_n__lamb_ref
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_maf__lamb_ref
+        MOV R13,#DATA16 PAG ldp_maf__lamb_ref
+        MOVBZ R14,lv_iga_cc2b
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_lamb_ref__n__maf
+        MOV R13,#DATA16 PAG ip_lamb_ref__n__maf
+        CALLS 00FH,Get_IP_Word_3D_Table
+        MOV lamb_ref,R4
+        MOV R12,R4
+        MOV R13,lamb_ref_add_tco
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV R9,R4
+        CMP R9,#DATA16 07FFFH
+        JMPR cc_NC,L_B0648
+        MOV R4,R9
+        JMPR cc_UC,L_B064C
+L_B0648:                 ; 0xb0648
+        MOV R4,#DATA16 07FFFH
+L_B064C:                 ; 0xb064c
+        MOV lamb_ref_cor,R4
+        MOV R12,lamb_mv
+        MOV R13,R9
+        CALLS 00FH,Sat_Sub_S16_v2
+        MOV lamb_dif_bas,R4
+        MOV R12,#DATA16 POF ldp_lamb_dif__eff_lamb
+        MOV R13,#DATA16 PAG ldp_lamb_dif__eff_lamb
+        MOV R14,R4
+        ADD R14,#DATA16 08000H
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_eff_lamb__lamb_dif
+        MOV R13,#DATA16 PAG ip_eff_lamb__lamb_dif
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV eff_lamb_bas_cor,R4
+        MOV R12,lamb_sp
+        MOV R13,R9
+        CALLS 00FH,Sat_Sub_S16_v2
+        MOV lamb_dif_av,R4
+        MOV R12,#DATA16 POF ldp_lamb_dif__eff_lamb
+        MOV R13,#DATA16 PAG ldp_lamb_dif__eff_lamb
+        MOV R14,R4
+        ADD R14,#DATA16 08000H
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_eff_lamb__lamb_dif
+        MOV R13,#DATA16 PAG ip_eff_lamb__lamb_dif
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV eff_lamb_av,R4
+        MOV R12,lamb_mv_max
+        MOV R13,R9
+        CALLS 00FH,Sat_Sub_S16_v2
+        MOV lamb_dif_max,R4
+        MOV R12,#DATA16 POF ldp_lamb_dif__eff_lamb
+        MOV R13,#DATA16 PAG ldp_lamb_dif__eff_lamb
+        MOV R14,R4
+        ADD R14,#DATA16 08000H
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_eff_lamb__lamb_dif
+        MOV R13,#DATA16 PAG ip_eff_lamb__lamb_dif
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV eff_lamb_min,R4
+        MOV R12,lamb_sp_cp
+        MOV R13,R9
+        CALLS 00FH,Sat_Sub_S16_v2
+        MOV lamb_dif_sp_bas,R4
+        MOV R12,#DATA16 POF ldp_lamb_dif__eff_lamb
+        MOV R13,#DATA16 PAG ldp_lamb_dif__eff_lamb
+        MOV R14,R4
+        ADD R14,#DATA16 08000H
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_eff_lamb__lamb_dif
+        MOV R13,#DATA16 PAG ip_eff_lamb__lamb_dif
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV eff_lamb_sp_bas,R4
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_Lamb_Ref_Add_TCO  (@0xb0714) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signals): Lambda-reference enrichment by coolant temp:
+        ; lamb_ref_add_tco.
+        ; ------------------------------------------------------------
+Calc_Lamb_Ref_Add_TCO:
+        MOV R12,#DATA16 POF ldp_tco__lamb_ref_add
+        MOV R13,#DATA16 PAG ldp_tco__lamb_ref_add
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_lamb_ref_add__tco
+        MOV R13,#DATA16 PAG ip_lamb_ref_add__tco
+        CALLS 00FH,Get_IP_Word_2D_Table
+        ADD R4,#DATA16 08000H
+        MOV lamb_ref_add_tco,R4
+        RETS
+
+S_B05D6 ENDS
+        END

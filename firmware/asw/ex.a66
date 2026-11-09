@@ -1,0 +1,126 @@
+; asw/ex.a66
+; 0xC47AE-0xC48A2  (244 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_fac_prs_ex                         EQU  090542H
+ldp_maf_thr                        EQU  091340H
+ldp_amp                      EQU  0913A6H
+ip_fac_load                          EQU  0926CEH
+ip_fac_prs_ex                        EQU  0956C1H
+
+PUBLIC  Calc_Seg_T_Mes, Calc_prs_ex, Calc_prs_ex_c47b, Set_state_iv
+EXTERN  Add_r12_r13_Return_r4:NEAR, Calc_Drv0_Er_Osc:NEAR, Calc_ER_Seg_Nr:NEAR, Get_IP_Byte_2D_Table:NEAR
+EXTERN  Get_IP_Word_2D_Table:NEAR, Get_IP_Word_Y_Axis:NEAR, Mul_Frac_Sat_x2:NEAR, Mul_S16_Hi:NEAR
+EXTERN  Mul_Shift_U16_Sat32:NEAR, Sat_Add_S16_v2:NEAR, Sat_Sub_S16_v2:NEAR
+
+S_C47AE SECTION CODE AT 0C47AEH
+
+; ======== Calc_prs_ex  (@0xc47ae) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Calc_prs_ex:
+        MOV R4,amp
+        MOV prs_ex,R4
+        RETS
+
+; ======== Calc_prs_ex_c47b  (@0xc47b8) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Calc_prs_ex_c47b:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R6
+        MOV R12,#DATA16 POF ldp_amp
+        MOV R13,#DATA16 PAG ldp_amp
+        MOV R14,amp
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_fac_prs_ex
+        MOV R13,#DATA16 PAG ip_fac_prs_ex
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB RL6,RL4
+        MOV R12,#DATA16 POF ldp_maf_thr
+        MOV R13,#DATA16 PAG ldp_maf_thr
+        MOV R14,maf_thr
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_fac_load
+        MOV R13,#DATA16 PAG ip_fac_load
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV R12,R4
+        MOVBZ R13,RL6
+        CALLS 00FH,Mul_Frac_Sat_x2
+        MOV R8,R4
+        MOV R12,maf_thr
+        MOV R13,R8
+        MOV R14,#09H
+        CALLS 00FH,Mul_Shift_U16_Sat32
+        MOV R13,R4
+        MOV R12,maf_thr
+        MOV R14,#0DH
+        CALLS 00FH,Mul_Shift_U16_Sat32
+        MOV R8,R4
+        MOV R12,amp
+        MOV R13,R8
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV R12,R4
+        MOV R13,prs_ex
+        CALLS 00FH,Sat_Sub_S16_v2
+        MOV R9,R4
+        MOV R12,R9
+        MOV R13,DPP0:c_fac_prs_ex
+        CALLS 00FH,Mul_S16_Hi
+        MOV R13,R4
+        MOV R12,prs_ex
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV prs_ex,R4
+        MOV R6,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_Seg_T_Mes  (@0xc4852) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Calc_Seg_T_Mes:
+        MOV R4,seg_t_mes_bas
+        CMP R4,#DATA16 0BFFFH
+        JMPR cc_UGT,L_C487E
+        MOV R4,seg_t_mes_bas
+        MOV R2,#DATA16 0AAAAH
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0FH
+        SHR R5,#0FH
+        SHL R2,#01H
+        OR R4,R2
+        MOV seg_t_mes,R4
+        JMPR cc_UC,L_C4882
+L_C487E:                 ; 0xc487e
+        MOV seg_t_mes,ONES
+L_C4882:                 ; 0xc4882
+        MOVB RL4,prev_state_iv
+        MOVB state_iv,RL4
+        MOVB state_iv_mis,RL4
+        CALLS 00DH,Calc_ER_Seg_Nr
+        CALLS 00BH,Calc_Drv0_Er_Osc
+        RETS
+
+; ======== Set_state_iv  (@0xc4898) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Set_state_iv:
+        MOVB RL4,prev_state_iv
+        MOVB state_iv,RL4
+        RETS
+
+S_C47AE ENDS
+        END

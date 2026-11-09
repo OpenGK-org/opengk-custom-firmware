@@ -1,0 +1,90 @@
+; asw/sys/sys_axis.a66
+; 0xFF0D8-0xFF16C  (148 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Get_Byte_X_Axis, Get_Word_Y_Axis, Read_Table_Indexed
+
+S_FF0D8 SECTION CODE AT 0FF0D8H
+
+; ======== Get_Word_Y_Axis  (@0xff0d8) ========
+Get_Word_Y_Axis:
+        MOV DPP0_FE00,R13
+        MOV R1,R12
+        MOV R2,R1
+        ADD R2,[R1]
+        ADD R2,[R1+]
+        CMP R14,[R2]
+        JMPR cc_NC,L_FF102
+        CMP R14,[R1]
+        JMPR cc_ULE,L_FF100
+L_FF0EC:                 ; 0xff0ec
+        SUB R2,#02H
+        CMP R14,[R2]
+        JMPR cc_C,L_FF0EC
+        SUB R2,R1
+        SHR R2,#01H
+        MOVB ip_idx,RL2
+        MOV DPP0,#DATA16 00024H
+        RETS
+L_FF100:                 ; 0xff100
+        MOV R2,R1
+L_FF102:                 ; 0xff102
+        SUB R2,R1
+        SHR R2,#01H
+        MOVB ip_idx,RL2
+        MOV DPP0,#DATA16 00024H
+        RETS
+
+; ======== Read_Table_Indexed  (@0xff110) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib): Indexed 2D-table word read using global indices
+        ; DAT_00f516/f517/f518.
+        ; ------------------------------------------------------------
+Read_Table_Indexed:
+        MOVBZ R3,ip_idx
+        MOVBZ R2,knk_idx_base
+        MOVBZ R5,g_f518
+        MULU R3,R5
+        ADD R2,0FE0EH
+        SHL R2,#01H
+        ADD R12,R2
+        EXTP R13, #01H
+        MOV R4,[R12]
+        RETS
+
+; ======== Get_Byte_X_Axis  (@0xff12c) ========
+Get_Byte_X_Axis:
+        MOV DPP0_FE00,R13
+        MOV R1,R12
+        MOV R4,R14
+        MOV R2,R1
+        MOVB RL5,[R1+]
+        MOVBZ R5,RL5
+        ADD R2,R5
+        CMPB RL4,[R2]
+        JMPR cc_NC,L_FF15C
+        CMPB RL4,[R1]
+        JMPR cc_ULE,L_FF15A
+L_FF144:                 ; 0xff144
+        SUB R2,#01H
+        CMPB RL4,[R2]
+        JMPR cc_C,L_FF144
+        SUB R2,R1
+        MOVB knk_idx_base,RL2
+        MOVB g_f518,RL5
+        MOV DPP0,#DATA16 00024H
+        RETS
+L_FF15A:                 ; 0xff15a
+        MOV R2,R1
+L_FF15C:                 ; 0xff15c
+        SUB R2,R1
+        MOVB knk_idx_base,RL2
+        MOVB g_f518,RL5
+        MOV DPP0,#DATA16 00024H
+        RETS
+
+S_FF0D8 ENDS
+        END

@@ -1,0 +1,115 @@
+; asw/mwss/mwss_vdif.a66
+; 0xBEDA0-0xBEE6E  (206 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_abc_inc_mwss                       EQU  0900B6H
+c_abc_max_mwss                       EQU  0900EBH
+
+PUBLIC  Calc_MWSS_Vdif, Calc_MWSS_Vdif_2, Diag_DTC_dd140, NVM_Save_s642
+EXTERN  DTC_Update_Debounced_OBD:NEAR, DTC_Update_Immediate:NEAR, Elevated_Write_Routine_prg_zone_wrapper:NEAR, Reset_Df380_408:NEAR
+
+S_BEDA0 SECTION CODE AT 0BEDA0H
+
+; ======== Diag_DTC_dd140  (@0xbeda0) ========
+        ; ------------------------------------------------------------
+        ; Per-fault DTC setter: sets dtc_test_result and updates the DTC at status-address 0xd140. Name = DTC
+        ; status RAM address (unique per fault).
+        ; ------------------------------------------------------------
+Diag_DTC_dd140:
+        JNB lv_err_pres_mwss.03H,L_BEDAC
+        MOVB RL4,#04H
+        MOVB dtc_test_result,RL4
+        JMPR cc_UC,L_BEDB0
+L_BEDAC:                 ; 0xbedac
+        MOVB dtc_test_result,ZEROS
+L_BEDB0:                 ; 0xbedb0
+        MOV R12,#DATA16 0D140H
+        MOV R13,#DATA16 052DEH
+        MOVBZ R14,DPP0:c_abc_inc_mwss
+        MOVBZ R15,DPP0:c_abc_max_mwss
+        CALLS 00DH,DTC_Update_Debounced_OBD
+        BMOV lv_cam_err.08H,dtc_status_work.06H
+        MOVBZ R4,diag_d14a
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BEDDA
+        MOV R4,#DATA16 0FEFFH
+        AND dtc_grp_maf_dif,R4
+L_BEDDA:                 ; 0xbedda
+        JNB lv_cam_err.08H,L_BEDE6
+        MOVB RL4,#04H
+        MOVB dtc_test_result,RL4
+        JMPR cc_UC,L_BEDF8
+L_BEDE6:                 ; 0xbede6
+        JB lv_cam_err.07H,L_BEDF8
+        MOV R4,dtc_grp_maf_dif
+        AND R4,#DATA16 00080H
+        JMPR cc_NE,L_BEDF8
+        MOVB dtc_test_result,ZEROS
+L_BEDF8:                 ; 0xbedf8
+        MOV R12,#DATA16 0D14EH
+        MOV R13,#DATA16 052F4H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cam_err.09H,dtc_status_work.06H
+        MOVBZ R4,diag_d158
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BEE1A
+        MOV R4,#DATA16 0FDFFH
+        AND dtc_grp_maf_dif,R4
+L_BEE1A:                 ; 0xbee1a
+        RETS
+
+; ======== Calc_MWSS_Vdif  (@0xbee1c) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by vs/mwss/lv_ch output signals): Mass-air-flow signal-sensor voltage-diff diag:
+        ; v_dif_max_mwss_diag.
+        ; ------------------------------------------------------------
+Calc_MWSS_Vdif:
+        CALLS 00BH,Reset_Df380_408
+        MOVB v_dif_max_mwss_diag,ZEROS
+        RETS
+
+; ======== NVM_Save_s642  (@0xbee26) ========
+        ; ------------------------------------------------------------
+        ; NVM adaptation I/O: saves RAM-> validated NVM block (DAT_00f890 base) section; xor_routine checksum.
+        ; Section offset in name.
+        ; ------------------------------------------------------------
+NVM_Save_s642:
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 00642H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0F37EH
+        MOV R15,#01H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        RETS
+
+; ======== Calc_MWSS_Vdif_2  (@0xbee4e) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by vs/mwss/lv_ch output signals): MWSS voltage-diff diagnosis (variant).
+        ; ------------------------------------------------------------
+Calc_MWSS_Vdif_2:
+        JB can_fd58.02H,L_BEE68
+        MOV R4,diag_f890
+        MOV R5,diag_f892
+        EXTP R5, #02H
+        MOVB RL3,[R4+#0642H]
+        NOP
+        MOVB v_dif_max_mwss_diag,RL3
+        RETS
+L_BEE68:                 ; 0xbee68
+        MOVB v_dif_max_mwss_diag,ZEROS
+        RETS
+
+S_BEDA0 ENDS
+        END

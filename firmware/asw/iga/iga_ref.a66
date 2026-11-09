@@ -1,0 +1,177 @@
+; asw/iga/iga_ref.a66
+; 0xADF66-0xAE0D6  (368 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+ldpm_n_32__iga                    EQU  090C0AH
+ldpm_maf_hb__iga                  EQU  090C1BH
+ldpm_n_32__iga_temp               EQU  090C31H
+ldpm_maf_hb__iga_temp             EQU  090C3AH
+ldpm_tia__iga_temp_fac            EQU  090C41H
+ldpm_tco__iga_temp_fac            EQU  090C4AH
+ldpm_lamb_sp__iga                     EQU  0914CCH
+ip_iga_bas_temp__n_32__maf_hb        EQU  095ADDH
+ip_iga_bas_temp_fac__tia__tco        EQU  095B0DH
+ip_iga_ref__n_32__maf_hb             EQU  095CEDH
+ip_iga_ref_lamb__lamb_sp             EQU  095DADH
+ip_iga_ref_temp__n_32__maf_hb        EQU  095DB5H
+ip_iga_ref_temp_fac__tia__tco        EQU  095DE5H
+
+PUBLIC  Calc_IGA_Ref, Calc_IGA_Ref_Cor, Calc_IGA_TempFac, Calc_IGA_Temp_Cor, Set_iga_ref_cor_f66
+EXTERN  Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_3D_Table:NEAR, Get_IP_Byte_X_Axis:NEAR, Get_IP_Byte_Y_Axis:NEAR
+EXTERN  Get_IP_Word_Y_Axis:NEAR, Mul_S16_Q15_Round:NEAR
+
+S_ADF66 SECTION CODE AT 0ADF66H
+
+; ======== Set_iga_ref_cor_f66  (@0xadf66) ========
+Set_iga_ref_cor_f66:
+        MOVB RL4,#DATA16 0003FH
+        MOVB iga_ref_cor,RL4
+        RETS
+
+; ======== Calc_IGA_Ref_Cor  (@0xadf70) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by iga/igc/td output signals): Ignition reference correction iga_ref_cor.
+        ; ------------------------------------------------------------
+Calc_IGA_Ref_Cor:
+        JNB lv_ast.06H,L_ADFA4
+        MOVBZ R12,iga_ref
+        MOVBS R4,lv_lam_f494
+        ADD R12,R4
+        MOVBS R4,iga_ref_temp_cor
+        ADD R12,R4
+        MOVBS R4,iga_ref_vvt_cor
+        ADD R12,R4
+        CMP R12,#DATA16 000FFH
+        JMPR cc_SLE,L_ADF96
+        MOV R4,#DATA16 000FFH
+        JMPR cc_UC,L_ADFA0
+L_ADF96:                 ; 0xadf96
+        CMP R12,#00H
+        JMPR cc_SGE,L_ADF9E
+        MOV R4,#00H
+        JMPR cc_UC,L_ADFA0
+L_ADF9E:                 ; 0xadf9e
+        MOV R4,R12
+L_ADFA0:                 ; 0xadfa0
+        MOVB iga_ref_cor,RL4
+L_ADFA4:                 ; 0xadfa4
+        RETS
+
+; ======== Calc_IGA_TempFac  (@0xadfa6) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): Temperature corrections TIA&TCO (iga temp fac -> c208/c209)
+        ; ------------------------------------------------------------
+Calc_IGA_TempFac:
+        MOV R12,#DATA16 POF ldpm_tia__iga_temp_fac
+        MOV R13,#DATA16 PAG ldpm_tia__iga_temp_fac
+        MOVBZ R14,tia
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_tco__iga_temp_fac
+        MOV R13,#DATA16 PAG ldpm_tco__iga_temp_fac
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_iga_ref_temp_fac__tia__tco
+        MOV R13,#DATA16 PAG ip_iga_ref_temp_fac__tia__tco
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        SUBB RL4,#DATA16 00080H
+        MOVB lv_iga_c208,RL4
+        MOV R12,#DATA16 POF ip_iga_bas_temp_fac__tia__tco
+        MOV R13,#DATA16 PAG ip_iga_bas_temp_fac__tia__tco
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        SUBB RL4,#DATA16 00080H
+        MOVB lv_iga_c209,RL4
+        RETS
+
+; ======== Calc_IGA_Temp_Cor  (@0xadff0) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS2000, verified): Temperature corrections (TIA & TCO) for ignition
+        ; ------------------------------------------------------------
+Calc_IGA_Temp_Cor:
+        JNB lv_ast.06H,L_AE05C
+        MOV R12,#DATA16 POF ldpm_n_32__iga_temp
+        MOV R13,#DATA16 PAG ldpm_n_32__iga_temp
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_maf_hb__iga_temp
+        MOV R13,#DATA16 PAG ldpm_maf_hb__iga_temp
+        MOVBZ R14,lv_iga_cc2b
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_iga_ref_temp__n_32__maf_hb
+        MOV R13,#DATA16 PAG ip_iga_ref_temp__n_32__maf_hb
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        SUBB RL4,#DATA16 00080H
+        MOVBS R12,RL4
+        SHL R12,#08H
+        MOVBS R13,lv_iga_c208
+        SHL R13,#08H
+        CALLS 00FH,Mul_S16_Q15_Round
+        ASHR R4,#08H
+        MOVB iga_ref_temp_cor,RL4
+        MOV R12,#DATA16 POF ip_iga_bas_temp__n_32__maf_hb
+        MOV R13,#DATA16 PAG ip_iga_bas_temp__n_32__maf_hb
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        SUBB RL4,#DATA16 00080H
+        MOVBS R12,RL4
+        SHL R12,#08H
+        MOVBS R13,lv_iga_c209
+        SHL R13,#08H
+        CALLS 00FH,Mul_S16_Q15_Round
+        ASHR R4,#08H
+        MOVB iga_bas_temp_cor,RL4
+L_AE05C:                 ; 0xae05c
+        RETS
+
+; ======== Calc_IGA_Ref  (@0xae05e) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by iga/igc/td output signals): Base ignition reference angle iga_ref (from
+        ; n/load map).
+        ; ------------------------------------------------------------
+Calc_IGA_Ref:
+        MOV [-R0],R9
+        JNB lv_ast.06H,L_AE0D2
+        MOV R12,#DATA16 POF ldpm_lamb_sp__iga
+        MOV R13,#DATA16 PAG ldpm_lamb_sp__iga
+        MOV R14,lamb_sp
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_iga_ref_lamb__lamb_sp
+        MOV R13,#DATA16 PAG ip_iga_ref_lamb__lamb_sp
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVBZ R9,RL4
+        MOV R12,#DATA16 POF ldpm_n_32__iga
+        MOV R13,#DATA16 PAG ldpm_n_32__iga
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_maf_hb__iga
+        MOV R13,#DATA16 PAG ldpm_maf_hb__iga
+        MOVBZ R14,lv_iga_cc2b
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_iga_ref__n_32__maf_hb
+        MOV R13,#DATA16 PAG ip_iga_ref__n_32__maf_hb
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        ADD R4,R9
+        SUB R4,#DATA16 00080H
+        MOV R9,R4
+        CMP R9,#DATA16 000FFH
+        JMPR cc_SLE,L_AE0C4
+        MOV R4,#DATA16 000FFH
+        JMPR cc_UC,L_AE0CE
+L_AE0C4:                 ; 0xae0c4
+        CMP R9,#00H
+        JMPR cc_SGE,L_AE0CC
+        MOV R4,#00H
+        JMPR cc_UC,L_AE0CE
+L_AE0CC:                 ; 0xae0cc
+        MOV R4,R9
+L_AE0CE:                 ; 0xae0ce
+        MOVB iga_ref,RL4
+L_AE0D2:                 ; 0xae0d2
+        MOV R9,[R0+]
+        RETS
+
+S_ADF66 ENDS
+        END

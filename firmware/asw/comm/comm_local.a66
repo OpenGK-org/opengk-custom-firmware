@@ -1,0 +1,523 @@
+; asw/comm/comm_local.a66
+; 0xDF638-0xDFB62  (1322 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  KWP_SID21_ReadDataByLocalId, KWP_SID2C_DynamicallyDefineLocalId, KWP_SID3B_WriteDataByLocalId
+EXTERN  KWP_SID21_ResolveLID_Descriptor:NEAR, KWP_SID3B_WriteBlock90:NEAR, Push_To_System_Stack:NEAR
+
+S_DF638 SECTION CODE AT 0DF638H
+
+; ======== KWP_SID21_ReadDataByLocalId  (@0xdf638) ========
+KWP_SID21_ReadDataByLocalId:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        SUB R0,#04H
+        MOV R7,#00H
+        MOV R4,kwp_msg_len
+        CMP R4,#02H
+        JMPA cc_NE,L_DF7FA
+        MOV R8,kwp_buf_base
+        MOVB RL4,#01H
+        MOVB [R0],RL4
+        MOVB kwp_nrc,ZEROS
+        MOV R4,kwp_req_ptr
+        MOVB RL5,[R4]
+        CMPB RL5,#DATA16 000F0H
+        JMPA cc_NE,L_DF7DE
+        MOV R5,kwp_buf_base
+        MOVB [R5],[R4]
+        MOV R4,kwp_dyndef_len
+        JMPR cc_NE,L_DF680
+        MOVB RL4,#DATA16 00022H
+        MOVB kwp_nrc,RL4
+        JMPA cc_UC,L_DF7D2
+L_DF680:                 ; 0xdf680
+        MOVB RL4,kwp_dyndef_count
+        MOVB [R0+#02H],RL4
+        MOV R7,#02H
+        MOVB RL5,kwp_dyndef_fmt
+        MOVB [R0+#03H],RL5
+        MOV R9,#DATA16 0E668H
+        JMPA cc_UC,L_DF7C4
+L_DF69A:                 ; 0xdf69a
+        MOVB RL4,[R0+#02H]
+        SUBB RL4,#01H
+        MOVB [R0+#02H],RL4
+        ADD R9,#02H
+        MOVB RL5,[R9]
+        MOVB [R0+#01H],RL5
+        ADD R9,#01H
+        MOVB RL3,[R0+#03H]
+        CMPB RL3,#01H
+        JMPR cc_EQ,L_DF6BC
+        CMPB RL3,#03H
+        JMPR cc_EQ,L_DF6E8
+        JMPR cc_UC,L_DF75A
+L_DF6BC:                 ; 0xdf6bc
+        MOVB RL4,[R9]
+        MOVBZ R12,RL4
+        CALLS 00EH,KWP_SID21_ResolveLID_Descriptor
+        MOV R4,kwp_lid_desc_ptr
+        JMPR cc_EQ,L_DF6DE
+        ADD R9,#01H
+        SUB R4,#02H
+        MOVB RL5,[R9]
+        MOVBZ R5,RL5
+        SHL R5,#01H
+        ADD R4,R5
+        MOV kwp_lid_desc_ptr,R4
+        ADD R9,#01H
+        JMPR cc_UC,L_DF762
+L_DF6DE:                 ; 0xdf6de
+        MOVB RL4,#DATA16 00012H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_DF762
+L_DF6E8:                 ; 0xdf6e8
+        EXTP #03H, #01H
+        MOV DPP0:kwp_range_chk_ptr,R9
+        EXTP #03H, #02H
+        MOV DPP0:bl_mem_addr,ZEROS
+        MOV DPP0:bl_mem_addr_hi,ZEROS
+        EXTP #03H, #01H
+        MOVB RL6,DPP0:bl_addr_size
+        JMPR cc_UC,L_DF74A
+L_DF706:                 ; 0xdf706
+        EXTP #03H, #02H
+        MOV R4,DPP0:bl_mem_addr
+        MOV R5,DPP0:bl_mem_addr_hi
+        MOVB RH5,RL5
+        MOVB RL5,RH4
+        SHL R4,#08H
+        EXTP #03H, #02H
+        MOV DPP0:bl_mem_addr,R4
+        MOV DPP0:bl_mem_addr_hi,R5
+        EXTP #03H, #01H
+        MOV R2,DPP0:kwp_range_chk_ptr
+        MOVB RL4,[R2]
+        MOVBZ R10,RL4
+        MOV R11,#00H
+        EXTP #03H, #02H
+        ADD DPP0:bl_mem_addr,R10
+        ADDC DPP0:bl_mem_addr_hi,R11
+        ADD R2,#01H
+        EXTP #03H, #01H
+        MOV DPP0:kwp_range_chk_ptr,R2
+        SUBB RL6,#01H
+L_DF74A:                 ; 0xdf74a
+        CMPB RL6,#00H
+        JMPR cc_UGT,L_DF706
+        EXTP #03H, #01H
+        MOVBZ R4,DPP0:bl_addr_size
+        ADD R9,R4
+        JMPR cc_UC,L_DF762
+L_DF75A:                 ; 0xdf75a
+        MOVB RL4,#DATA16 00012H
+        MOVB kwp_nrc,RL4
+L_DF762:                 ; 0xdf762
+        MOVB RL6,#00H
+        JMPR cc_UC,L_DF7AE
+L_DF766:                 ; 0xdf766
+        MOVB RL4,[R0+#03H]
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_DF78A
+        CMPB RL4,#03H
+        JMPR cc_NE,L_DF7A0
+        EXTP #03H, #01H
+        MOV R4,DPP0:bl_mem_addr
+        MOVBZ R5,RL6
+        ADD R4,R5
+        MOV R5,R8
+        ADD R5,#01H
+        MOVBZ R2,RL6
+        ADD R5,R2
+        MOVB [R5],[R4]
+        JMPR cc_UC,L_DF7A0
+L_DF78A:                 ; 0xdf78a
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R5,kwp_lid_desc_ptr
+        ADD R5,R4
+        MOV R4,[R5]
+        MOV R5,R8
+        ADD R5,#01H
+        MOVBZ R2,RL6
+        ADD R5,R2
+        MOVB [R5],[R4]
+L_DF7A0:                 ; 0xdf7a0
+        MOVB RL4,[R0+#01H]
+        SUBB RL4,#01H
+        MOVB [R0+#01H],RL4
+        ADDB RL6,#01H
+        ADD R7,#01H
+L_DF7AE:                 ; 0xdf7ae
+        MOVB RL4,[R0+#01H]
+        JMPR cc_EQ,L_DF7C0
+        CMP R7,kwp_buf_limit
+        JMPR cc_UGT,L_DF7C0
+        MOVB RL5,kwp_nrc
+        JMPR cc_EQ,L_DF766
+L_DF7C0:                 ; 0xdf7c0
+        MOVBZ R4,RL6
+        ADD R8,R4
+L_DF7C4:                 ; 0xdf7c4
+        MOVB RL4,[R0+#02H]
+        JMPR cc_EQ,L_DF7D2
+        MOVB RL5,kwp_nrc
+        JMPA cc_EQ,L_DF69A
+L_DF7D2:                 ; 0xdf7d2
+        MOVB RL4,kwp_nrc
+        JMPR cc_NE,L_DF838
+        MOV kwp_msg_len,R7
+        JMPR cc_UC,L_DF838
+L_DF7DE:                 ; 0xdf7de
+        MOV R4,kwp_req_ptr
+        MOVB RL5,[R4]
+        MOVBZ R12,RL5
+        CALLS 00EH,KWP_SID21_ResolveLID_Descriptor
+        MOV R4,kwp_lid_desc_ptr
+        JMPR cc_NE,L_DF804
+        MOVB RL4,#DATA16 00012H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_DF838
+L_DF7FA:                 ; 0xdf7fa
+        MOVB RL4,#DATA16 00079H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_DF838
+L_DF804:                 ; 0xdf804
+        ADD R8,#01H
+        JMPR cc_UC,L_DF828
+L_DF808:                 ; 0xdf808
+        MOV R4,kwp_lid_desc_ptr
+        SUB R4,#02H
+        MOVB RL5,[R0]
+        MOVBZ R5,RL5
+        SHL R5,#01H
+        ADD R4,R5
+        MOV R5,[R4]
+        MOV R4,R8
+        ADD R8,#01H
+        MOVB [R4],[R5]
+        ADDB kwp_lid_len,ONES
+        MOVB RL4,[R0]
+        ADDB RL4,#01H
+        MOVB [R0],RL4
+L_DF828:                 ; 0xdf828
+        MOVB RL4,kwp_lid_len
+        JMPR cc_NE,L_DF808
+        MOVB RL5,[R0]
+        MOVBZ R4,RL5
+        ADD R4,#01H
+        MOV kwp_msg_len,R4
+L_DF838:                 ; 0xdf838
+        ADD R0,#04H
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== KWP_SID2C_DynamicallyDefineLocalId  (@0xdf844) ========
+        ; KWP2000 SID 0x2C DynamicallyDefineLocalIdentifier. Sub 0x04=clear. Mode 0x01=define-by-LID (5-byte
+        ; records: pos,size,lid,offset), mode 0x03=define-by-memory (DAT_00e7d2+3 byte records). Builds
+        ; definition into kwp_dyndef table; kwp_dyndef_len tracks active def.
+KWP_SID2C_DynamicallyDefineLocalId:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        SUB R0,#DATA16 0000AH
+        MOVB RL4,#00H
+        MOVB [R0+#06H],RL4
+        MOVB RL7,#00H
+        MOV R8,#00H
+        MOVB RL6,#00H
+        MOV R4,kwp_req_ptr
+        MOVB RL5,[R4]
+        CMPB RL5,#DATA16 000F0H
+        JMPA cc_NE,L_DFAEE
+        MOV R5,kwp_msg_len
+        CMP R5,#02H
+        JMPA cc_ULE,L_DFAE4
+        MOV R5,kwp_msg_len
+        CMP R5,#03H
+        JMPR cc_NE,L_DF896
+        MOVB RL5,[R4+#01H]
+        CMPB RL5,#04H
+        JMPR cc_NE,L_DF896
+        MOV kwp_dyndef_len,ZEROS
+        MOV R5,#02H
+        MOV kwp_msg_len,R5
+        MOVB kwp_nrc,ZEROS
+        JMPA cc_UC,L_DFAF6
+L_DF896:                 ; 0xdf896
+        MOV R4,kwp_dyndef_len
+        JMPR cc_NE,L_DF8DE
+        MOV R5,#DATA16 0E558H
+        MOV R2,kwp_req_ptr
+        SUB R2,R5
+        SUBB RL2,#01H
+        MOVB [R0+#06H],RL2
+        MOVB kwp_nrc,ZEROS
+        SUB kwp_req_ptr,ONES
+        MOV R5,kwp_req_ptr
+        MOVB RL7,[R5]
+        CMPB RL7,#01H
+        JMPR cc_EQ,L_DF8C4
+        CMPB RL7,#03H
+        JMPR cc_EQ,L_DF8C8
+        JMPR cc_UC,L_DF8D4
+L_DF8C4:                 ; 0xdf8c4
+        MOVB RL6,#05H
+        JMPR cc_UC,L_DF8E6
+L_DF8C8:                 ; 0xdf8c8
+        EXTP #03H, #01H
+        MOVB RL6,DPP0:bl_addr_size
+        ADDB RL6,#03H
+        JMPR cc_UC,L_DF8E6
+L_DF8D4:                 ; 0xdf8d4
+        MOVB RL4,#DATA16 00022H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_DF8E6
+L_DF8DE:                 ; 0xdf8de
+        MOVB RL4,#DATA16 00050H
+        MOVB kwp_nrc,RL4
+L_DF8E6:                 ; 0xdf8e6
+        MOVB RL4,kwp_nrc
+        JMPA cc_NE,L_DFA9C
+        MOV R4,kwp_msg_len
+        SUB R4,#02H
+        MOVBZ R5,RL6
+        MOV 0FE0EH,R4
+        DIVU R5
+        MOV R4,MDH_FE0C
+        JMPR cc_EQ,L_DF90E
+        MOVB RL4,#DATA16 00079H
+        MOVB kwp_nrc,RL4
+        JMPA cc_UC,L_DFA9C
+L_DF90E:                 ; 0xdf90e
+        MOV R4,kwp_msg_len
+        SUB R4,#02H
+        MOVBZ R5,RL6
+        MOV 0FE0EH,R4
+        DIVU R5
+        MOV R4,0FE0EH
+        MOV R8,R4
+        MOVB kwp_dyndef_count,RL4
+        JMPA cc_UC,L_DFA9C
+L_DF92A:                 ; 0xdf92a
+        MOV R4,kwp_req_ptr
+        MOVB RL5,[R4+#02H]
+        MOVBZ R10,RL5
+        MOV R11,#00H
+        EXTP #03H, #02H
+        MOV DPP0:bl_mem_len,R10
+        MOV DPP0:bl_mem_len_hi,R11
+        EXTP #03H, #02H
+        MOV R5,DPP0:bl_mem_len
+        OR R5,DPP0:bl_mem_len_hi
+        JMPR cc_EQ,L_DF99C
+        MOVB RL5,[R4]
+        CMPB RL5,RL7
+        JMPR cc_NE,L_DF99C
+        MOV R4,R8
+        CMPB RL4,#01H
+        JMPR cc_ULE,L_DF9A4
+        MOV R4,kwp_req_ptr
+        ADD R4,#01H
+        MOVBZ R5,RL6
+        ADD R4,R5
+        MOVB RL5,[R4]
+        MOVB [R0+#07H],RL5
+        MOV R4,kwp_req_ptr
+        MOVB RL3,[R4+#01H]
+        MOVBZ R4,RL3
+        MOV R5,#00H
+        EXTP #03H, #02H
+        ADD R4,DPP0:bl_mem_len
+        ADDC R5,DPP0:bl_mem_len_hi
+        MOVB RL3,[R0+#07H]
+        MOVBZ R10,RL3
+        MOV R11,#00H
+        SUB R4,R10
+        SUBC R5,R11
+        JMPR cc_EQ,L_DF9A4
+        MOVB RL4,#DATA16 00022H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_DF9A4
+L_DF99C:                 ; 0xdf99c
+        MOVB RL4,#DATA16 00022H
+        MOVB kwp_nrc,RL4
+L_DF9A4:                 ; 0xdf9a4
+        MOVB RL4,kwp_nrc
+        JMPA cc_NE,L_DFA94
+        CMPB RL7,#01H
+        JMPR cc_EQ,L_DF9B6
+        CMPB RL7,#03H
+        JMPR cc_EQ,L_DFA1A
+        JMPR cc_UC,L_DFA7E
+L_DF9B6:                 ; 0xdf9b6
+        MOV R4,kwp_req_ptr
+        MOVB RL5,[R4+#03H]
+        MOVBZ R12,RL5
+        CALLS 00EH,KWP_SID21_ResolveLID_Descriptor
+        MOV R4,kwp_lid_desc_ptr
+        JMPR cc_EQ,L_DFA10
+        MOVB RL4,kwp_lid_len
+        MOVB [R0+#08H],RL4
+        MOV R4,kwp_req_ptr
+        MOVB RL5,[R4+#04H]
+        MOVBZ R10,RL5
+        MOV R11,#00H
+        EXTP #03H, #02H
+        ADD R10,DPP0:bl_mem_len
+        ADDC R11,DPP0:bl_mem_len_hi
+        SUB R10,#01H
+        SUBC R11,#00H
+        MOVB RL4,[R0+#08H]
+        MOVBZ R2,RL4
+        MOV R3,#00H
+        SUB R10,R2
+        SUBC R11,R3
+        JMPR cc_UGT,L_DFA06
+        MOV R4,kwp_req_ptr
+        MOVB RL5,[R4+#04H]
+        JMPR cc_NE,L_DFA86
+L_DFA06:                 ; 0xdfa06
+        MOVB RL4,#DATA16 00031H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_DFA86
+L_DFA10:                 ; 0xdfa10
+        MOVB RL4,#DATA16 00012H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_DFA86
+L_DFA1A:                 ; 0xdfa1a
+        MOV R4,kwp_req_ptr
+        MOVB RL5,[R4+#02H]
+        MOVBZ R10,RL5
+        MOV R11,#00H
+        EXTP #03H, #02H
+        MOV DPP0:bl_mem_len,R10
+        MOV DPP0:bl_mem_len_hi,R11
+        ADD R4,#03H
+        EXTP #03H, #01H
+        MOV DPP0:kwp_range_chk_ptr,R4
+        EXTP #028H, #02H
+        MOV R4,DPP0:0A28FAH
+        MOV R5,DPP0:0A28FCH
+        MOV [R0],R4
+        MOV [R0+#02H],R5
+        EXTP #028H, #01H
+        MOVB RL4,DPP0:0A28FEH
+        MOVB [R0+#04H],RL4
+        MOV R12,#DATA16 027C8H
+        MOV R13,#DATA16 00003H
+        MOV R14,R0
+        AND R14,#DATA16 03FFFH
+        MOV R15,#DATA16 00003H
+        EXTP #00H, #02H
+        MOV R4,kwp_20a
+        MOV R5,kwp_20c
+        CALLS 00CH,Push_To_System_Stack
+        JMPR cc_UC,L_DFA86
+L_DFA7E:                 ; 0xdfa7e
+        MOVB RL4,#DATA16 00022H
+        MOVB kwp_nrc,RL4
+L_DFA86:                 ; 0xdfa86
+        MOV R4,R8
+        SUBB RL4,#01H
+        MOV R8,R4
+        MOVBZ R4,RL6
+        ADD kwp_req_ptr,R4
+        JMPR cc_UC,L_DFA9C
+L_DFA94:                 ; 0xdfa94
+        MOVB RL4,#DATA16 00022H
+        MOVB kwp_nrc,RL4
+L_DFA9C:                 ; 0xdfa9c
+        MOVB RL4,kwp_nrc
+        JMPR cc_NE,L_DFAAA
+        MOV R5,R8
+        CMPB RL5,#00H
+        JMPA cc_NE,L_DF92A
+L_DFAAA:                 ; 0xdfaaa
+        MOVB RL4,kwp_nrc
+        JMPR cc_NE,L_DFAF6
+        MOV R4,kwp_msg_len
+        MOV kwp_dyndef_len,R4
+        MOVB RL4,kwp_record_fmt
+        MOVB kwp_e666,RL4
+        MOV R9,#01H
+        JMPR cc_UC,L_DFAD6
+L_DFAC4:                 ; 0xdfac4
+        MOVB RL4,[R0+#06H]
+        MOVBZ R4,RL4
+        ADD R4,R9
+        MOVB RL5,[R4+#0E558H]
+        MOVB [R9+#0E666H],RL5
+        ADD R9,#01H
+L_DFAD6:                 ; 0xdfad6
+        CMP R9,kwp_msg_len
+        JMPR cc_C,L_DFAC4
+        MOV R4,#02H
+        MOV kwp_msg_len,R4
+        JMPR cc_UC,L_DFAF6
+L_DFAE4:                 ; 0xdfae4
+        MOVB RL4,#DATA16 00079H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_DFAF6
+L_DFAEE:                 ; 0xdfaee
+        MOVB RL4,#DATA16 00012H
+        MOVB kwp_nrc,RL4
+L_DFAF6:                 ; 0xdfaf6
+        MOV R4,kwp_buf_base
+        MOV kwp_req_ptr,R4
+        ADD R0,#DATA16 0000AH
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== KWP_SID3B_WriteDataByLocalId  (@0xdfb0c) ========
+        ; KWP2000 SID 0x3B WriteDataByLocalIdentifier. Only record 0x90 supported, gated by feature flag
+        ; DAT_00fd58&0x200, requires msg_len 0x13 (19 bytes). Delegates to KWP_SID3B_WriteBlock90; NRC 0x40 on
+        ; write failure.
+KWP_SID3B_WriteDataByLocalId:
+        MOV R4,kwp_req_ptr
+        MOVB RL5,[R4]
+        CMPB RL5,#DATA16 00090H
+        JMPR cc_NE,L_DFB5E
+        JNB can_fd58.09H,L_DFB54
+        MOV R4,kwp_msg_len
+        CMP R4,#DATA16 00013H
+        JMPR cc_NE,L_DFB4A
+        MOV R12,kwp_req_ptr
+        ADD R12,#01H
+        CALLS 00AH,KWP_SID3B_WriteBlock90
+        JNB PSW.06H,L_DFB40
+        MOV R4,#02H
+        MOV kwp_msg_len,R4
+        MOVB kwp_nrc,ZEROS
+        RETS
+L_DFB40:                 ; 0xdfb40
+        MOVB RL4,#DATA16 00040H
+        MOVB kwp_nrc,RL4
+        RETS
+L_DFB4A:                 ; 0xdfb4a
+        MOVB RL4,#DATA16 00079H
+        MOVB kwp_nrc,RL4
+        RETS
+L_DFB54:                 ; 0xdfb54
+        MOVB RL4,#DATA16 00022H
+        MOVB kwp_nrc,RL4
+        RETS
+L_DFB5E:                 ; 0xdfb5e
+        BCLR kwp_comms_flags.0FH
+        RETS
+
+S_DF638 ENDS
+        END

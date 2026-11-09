@@ -1,0 +1,310 @@
+; asw/ivvt/ivvt_transition.a66
+; 0xAE40A-0xAE6B6  (684 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_cam_inh_ivvt                       EQU  09012CH
+c_dly_is_ad                          EQU  09018CH
+c_sum_cyc_cam_diag_ivvt              EQU  09030CH
+c_tco_ad_max_is                      EQU  09036AH
+c_tco_ad_min_is                      EQU  09036BH
+c_toil_hys_ivvt                      EQU  0903C7H
+c_toil_min_ivvt                      EQU  0903D2H
+c_vb_max_ivvt                        EQU  090408H
+c_vb_min_ivvt                        EQU  090411H
+c_n_delta                            EQU  090632H
+
+PUBLIC  IVVT_Set_Inhibit, IVVT_State_Transition, IdleSpeedAdapt_Cond, Reset_state_ivvt_4c0, Reset_uVar1_4a2
+EXTERN  Get_Byte_2D_Table_DWord_YByte:NEAR, Get_IP_Byte_2D_Table_DWord_YByte:NEAR, sub_r12_13_ret_r4:NEAR
+
+S_AE40A SECTION CODE AT 0AE40AH
+
+; ======== IdleSpeedAdapt_Cond  (@0xae40a) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (MS42, verified): idle-adapt enable: |n_dif|<c_n_delta for c_dly_is_ad & tco in
+        ; [c_tco_ad_min_is,max] -> lv_ct
+        ; (was FUN_0ae40a)
+        ; ------------------------------------------------------------
+IdleSpeedAdapt_Cond:
+        MOV R4,n_dif
+        CMP R4,#00H
+        JMPR cc_SGE,L_AE41A
+        MOV R4,n_dif
+        NEG R4
+        JMPR cc_UC,L_AE41E
+L_AE41A:                 ; 0xae41a
+        MOV R4,n_dif
+L_AE41E:                 ; 0xae41e
+        CMP R4,DPP0:c_n_delta
+        JMPR cc_NC,L_AE43A
+        MOVB RL4,lv_isc_c20d
+        CMPB RL4,DPP0:c_dly_is_ad
+        JMPR cc_NC,L_AE436
+        ADDB RL4,#01H
+        MOVB lv_isc_c20d,RL4
+        JMPR cc_UC,L_AE440
+L_AE436:                 ; 0xae436
+        BSET lv_ct.0CH
+        JMPR cc_UC,L_AE440
+L_AE43A:                 ; 0xae43a
+        BCLR lv_ct.0CH
+        MOVB lv_isc_c20d,ZEROS
+L_AE440:                 ; 0xae440
+        MOVB RL4,tco
+        CMPB RL4,DPP0:c_tco_ad_min_is
+        JMPR cc_C,L_AE454
+        CMPB RL4,DPP0:c_tco_ad_max_is
+        JMPR cc_UGT,L_AE454
+        BSET lv_ct.0BH
+        JMPR cc_UC,L_AE456
+L_AE454:                 ; 0xae454
+        BCLR lv_ct.0BH
+L_AE456:                 ; 0xae456
+        JNB lv_dc_rbm.0AH,L_AE472
+        JNB lv_ct.0BH,L_AE472
+        JB lv_cp_set_close.00H,L_AE472
+        JB lv_err_tps_det.0FH,L_AE472
+        JNB lv_ct.0CH,L_AE472
+        JB lv_cp_set_close.01H,L_AE472
+        BSET lv_ct.0AH
+        RETS
+L_AE472:                 ; 0xae472
+        BCLR lv_ct.0AH
+        RETS
+
+; ======== IVVT_Set_Inhibit  (@0xae476) ========
+        ; ------------------------------------------------------------
+        ; Named from dominant IVVT struct field (auto-derived).
+        ; ------------------------------------------------------------
+IVVT_Set_Inhibit:
+        MOV state_ivvt,ZEROS
+        MOV state_ivvt_tran,ZEROS
+        MOVB RL4,DPP0:c_cam_inh_ivvt
+        CMPB RL4,#01H
+        JMPR cc_NE,L_AE48E
+        MOVB RL5,#01H
+        MOVB ivvt_in_1_struct_ivvt_lv_inh_ivvt,RL5
+        RETS
+L_AE48E:                 ; 0xae48e
+        MOVB RL4,DPP0:c_cam_inh_ivvt
+        CMPB RL4,#02H
+        JMPR cc_NE,L_AE49C
+        MOVB ivvt_in_1_struct_ivvt_lv_inh_ivvt,ZEROS
+        RETS
+L_AE49C:                 ; 0xae49c
+        MOVB ivvt_in_1_struct_ivvt_lv_inh_ivvt,ZEROS
+        RETS
+
+; ======== Reset_uVar1_4a2  (@0xae4a2) ========
+Reset_uVar1_4a2:
+        MOV R12,#DATA16 04520H
+        MOVBZ R13,toil
+        CALLS 00FH,Get_Byte_2D_Table_DWord_YByte
+        MOVBZ R4,RL4
+        MOV lv_ivvt_f980,R4
+        BCLR lv_ct.0DH
+        MOVB RL4,DPP0:c_sum_cyc_cam_diag_ivvt
+        MOVB lv_ivvt_c20e,RL4
+        RETS
+
+; ======== Reset_state_ivvt_4c0  (@0xae4c0) ========
+Reset_state_ivvt_4c0:
+        MOV state_ivvt,ZEROS
+        MOV state_ivvt_tran,ZEROS
+        MOV lv_ivvt_f980,ZEROS
+        BCLR lv_ct.0DH
+        RETS
+
+; ======== IVVT_State_Transition  (@0xae4d0) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified: state_ivvt SM + jmptab@0xa079e): state_ivvt TRANSITION manager: states 0=idle,
+        ; 1=active, 2=reduced, 3=fault, 4=adaptation. Gated by oil temp toil/battery vb/lv_ct; fault on
+        ; lv_diag_trip_avl_ivvt.2; writes state_ivvt_tran reason codes 1..0xe.
+        ; ------------------------------------------------------------
+IVVT_State_Transition:
+        MOV R4,state_ivvt
+        JMPR cc_EQ,L_AE4EA
+        CMP R4,#01H
+        JMPR cc_EQ,L_AE540
+        CMP R4,#04H
+        JMPA cc_EQ,L_AE5BE
+        CMP R4,#02H
+        JMPA cc_EQ,L_AE638
+        JMPA cc_UC,L_AE6AA
+L_AE4EA:                 ; 0xae4ea
+        JNB lv_diag_trip_avl_ivvt.01H,L_AE4FC
+        MOV R4,#03H
+        MOV state_ivvt,R4
+        MOV R5,#0AH
+        MOV state_ivvt_tran,R5
+        RETS
+L_AE4FC:                 ; 0xae4fc
+        JNB lv_ct.0DH,L_AE52E
+        MOVB RL4,lv_ivvt_c20e
+        JMPR cc_NE,L_AE52E
+        MOVB RL5,toil
+        CMPB RL5,DPP0:c_toil_min_ivvt
+        JMPR cc_C,L_AE52E
+        MOVB RL3,vb
+        CMPB RL3,DPP0:c_vb_min_ivvt
+        JMPR cc_C,L_AE52E
+        CMPB RL3,DPP0:c_vb_max_ivvt
+        JMPR cc_UGT,L_AE52E
+        MOV R4,#01H
+        MOV state_ivvt,R4
+        MOV R5,#09H
+        MOV state_ivvt_tran,R5
+        RETS
+L_AE52E:                 ; 0xae52e
+        MOVB RL4,lv_ivvt_c20e
+        CMPB RL4,#00H
+        JMPA cc_ULE,L_AE6B0
+        SUBB RL4,#01H
+        MOVB lv_ivvt_c20e,RL4
+        RETS
+L_AE540:                 ; 0xae540
+        JNB lv_diag_trip_avl_ivvt.01H,L_AE552
+        MOV R4,#03H
+        MOV state_ivvt,R4
+        MOV R5,#0DH
+        MOV state_ivvt_tran,R5
+        RETS
+L_AE552:                 ; 0xae552
+        MOVBZ R12,DPP0:c_toil_min_ivvt
+        MOVBZ R13,DPP0:c_toil_hys_ivvt
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL4,toil
+        JMPR cc_UGT,L_AE574
+        MOVB RL4,vb
+        CMPB RL4,DPP0:c_vb_min_ivvt
+        JMPR cc_C,L_AE574
+        CMPB RL4,DPP0:c_vb_max_ivvt
+        JMPR cc_ULE,L_AE580
+L_AE574:                 ; 0xae574
+        MOV state_ivvt,ZEROS
+        MOV R4,#0EH
+        MOV state_ivvt_tran,R4
+        RETS
+L_AE580:                 ; 0xae580
+        JB lv_dc_rbm.0FH,L_AE592
+        MOV R4,#04H
+        MOV state_ivvt,R4
+        MOV R5,#0CH
+        MOV state_ivvt_tran,R5
+        RETS
+L_AE592:                 ; 0xae592
+        MOV R12,#DATA16 04528H
+        MOVBZ R13,n_32
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        MOVBZ R12,RL4
+        MOVBZ R13,DPP0:c_toil_hys_ivvt
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL4,toil
+        JMPA cc_ULE,L_AE6B0
+        MOV R4,#02H
+        MOV state_ivvt,R4
+        MOV R5,#0BH
+        MOV state_ivvt_tran,R5
+        RETS
+L_AE5BE:                 ; 0xae5be
+        JNB lv_diag_trip_avl_ivvt.01H,L_AE5D0
+        MOV R4,#03H
+        MOV state_ivvt,R4
+        MOV R5,#04H
+        MOV state_ivvt_tran,R5
+        RETS
+L_AE5D0:                 ; 0xae5d0
+        MOVBZ R12,DPP0:c_toil_min_ivvt
+        MOVBZ R13,DPP0:c_toil_hys_ivvt
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL4,toil
+        JMPR cc_UGT,L_AE5F2
+        MOVB RL4,vb
+        CMPB RL4,DPP0:c_vb_min_ivvt
+        JMPR cc_C,L_AE5F2
+        CMPB RL4,DPP0:c_vb_max_ivvt
+        JMPR cc_ULE,L_AE5FE
+L_AE5F2:                 ; 0xae5f2
+        MOV state_ivvt,ZEROS
+        MOV R4,#01H
+        MOV state_ivvt_tran,R4
+        RETS
+L_AE5FE:                 ; 0xae5fe
+        JNB lv_dc_rbm.0FH,L_AE61A
+        MOV R4,state_ivvt_tran
+        CMP R4,#DATA16 0000CH
+        JMPR cc_NE,L_AE61A
+        MOV R5,#01H
+        MOV state_ivvt,R5
+        MOV R2,#02H
+        MOV state_ivvt_tran,R2
+        RETS
+L_AE61A:                 ; 0xae61a
+        MOV R4,state_ivvt_tran
+        CMP R4,#05H
+        JMPR cc_NE,L_AE6B0
+        JB lv_cam_ad_di_ivvt.01H,L_AE62A
+        JB lv_cam_ad_di_ivvt.00H,L_AE6B0
+L_AE62A:                 ; 0xae62a
+        MOV R4,#02H
+        MOV state_ivvt,R4
+        MOV R5,#03H
+        MOV state_ivvt_tran,R5
+        RETS
+L_AE638:                 ; 0xae638
+        JNB lv_diag_trip_avl_ivvt.01H,L_AE64A
+        MOV R4,#03H
+        MOV state_ivvt,R4
+        MOV R5,#06H
+        MOV state_ivvt_tran,R5
+        RETS
+L_AE64A:                 ; 0xae64a
+        MOVBZ R12,DPP0:c_toil_min_ivvt
+        MOVBZ R13,DPP0:c_toil_hys_ivvt
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL4,toil
+        JMPR cc_UGT,L_AE66C
+        MOVB RL4,vb
+        CMPB RL4,DPP0:c_vb_max_ivvt
+        JMPR cc_UGT,L_AE66C
+        CMPB RL4,DPP0:c_vb_min_ivvt
+        JMPR cc_NC,L_AE678
+L_AE66C:                 ; 0xae66c
+        MOV state_ivvt,ZEROS
+        MOV R4,#07H
+        MOV state_ivvt_tran,R4
+        RETS
+L_AE678:                 ; 0xae678
+        MOV R12,#DATA16 04528H
+        MOVBZ R13,n_32
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        CMPB RL4,toil
+        JMPR cc_NC,L_AE698
+        MOV R4,#01H
+        MOV state_ivvt,R4
+        MOV R5,#08H
+        MOV state_ivvt_tran,R5
+        RETS
+L_AE698:                 ; 0xae698
+        JNB lv_cam_ad_di_ivvt.00H,L_AE6B0
+        MOV R4,#04H
+        MOV state_ivvt,R4
+        MOV R5,#05H
+        MOV state_ivvt_tran,R5
+        RETS
+L_AE6AA:                 ; 0xae6aa
+        MOV R4,#03H
+        MOV state_ivvt,R4
+L_AE6B0:                 ; 0xae6b0
+        RETS
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xae6b2 [dpp]  W:{-}  R:{-}
+        ; ------------------------------------------------------------
+        BSET lv_ct.0DH
+        RETS
+
+S_AE40A ENDS
+        END

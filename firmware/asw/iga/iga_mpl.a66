@@ -1,0 +1,309 @@
+; asw/iga/iga_mpl.a66
+; 0xBFC7E-0xBFF28  (682 bytes, 7 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+lc_tq_iga_inh                        EQU  090493H
+c_eff_iga_thd_1                      EQU  09052CH
+c_eff_iga_thd_aj                     EQU  09052EH
+c_eff_iga_thd_is                     EQU  090530H
+sstm_n_4_4                        EQU  090A16H
+sst_n_tab_zw_wetl                 EQU  090A1FH
+sstm_tkw_1_4                      EQU  090A24H
+sst_lm_tab_zw_inst_kr             EQU  090A2BH
+sst_tal_tab_zw_inst_fak                         EQU  090C75H
+id_iga_cycnr_tra_knk__n              EQU  0952AAH
+id_iga_cycnr_tra_knk_at__n           EQU  0952AEH
+id_iga_rpl__n__tco                   EQU  0952B8H
+id_iga_tra_knk__n__maf               EQU  0952D8H
+id_iga_tra_knk_at__n__maf            EQU  0952E8H
+ip_iga_tra_fac__tia                  EQU  095E4DH
+ip_iga_tra_fac_at__tia               EQU  095E51H
+
+PUBLIC  Calc_EFF_IGA_SP, Calc_IGA_Tra_Knk, Calc_Inh_IGC, Lookup_Df389_Tia, Reset_ign_mpl_crk_max_c7e, Reset_mpl_iga_act_c8a
+PUBLIC  Set_iga_sp_e36
+EXTERN  Div_Frac_U16_Q16:NEAR, Get_Byte_X_Axis:NEAR, Get_Byte_Y_Axis:NEAR, Get_IP_Byte_2D_Table:NEAR
+EXTERN  Get_IP_Byte_2D_Table_DWord_YWord:NEAR, Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_3D_Table_DWord_XWord_YByte:NEAR, Mul_Q15_Sat:NEAR
+EXTERN  Read_Byte_Far:NEAR, Read_Byte_Far_Scaled:NEAR, SignByBit7_fe0f:NEAR, sub_r12_13_ret_r4:NEAR
+EXTERN  sub_r12_r13_rets_r4:NEAR
+
+S_BFC7E SECTION CODE AT 0BFC7EH
+
+; ======== Reset_ign_mpl_crk_max_c7e  (@0xbfc7e) ========
+Reset_ign_mpl_crk_max_c7e:
+        MOVB RL4,#03H
+        MOVB ign_mpl_crk_max,RL4
+        MOVB ign_mpl_nr,ONES
+        RETS
+
+; ======== Reset_mpl_iga_act_c8a  (@0xbfc8a) ========
+Reset_mpl_iga_act_c8a:
+        MOVB mpl_iga_act,ZEROS
+        MOVB inh_igc,ZEROS
+        BCLR lv_cdn_diag_maf_dif_ch_int.0FH
+        MOVB iga_tra_knk,ZEROS
+        BCLR lv_iga_tra_knk.02H
+        BCLR lv_iga_tra_knk.03H
+        BCLR lv_iga_tra_knk.01H
+        RETS
+
+; ======== Calc_Inh_IGC  (@0xbfca0) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by iga/igc/td output signals): Ignition inhibit flag inh_igc (spark cut-out
+        ; conditions).
+        ; ------------------------------------------------------------
+Calc_Inh_IGC:
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_BFCE2
+        JNB can_fd58.09H,L_BFCC4
+        JB lv_crk_tooth_err.09H,L_BFCB6
+        MOVB g_f38b,ZEROS
+        MOVB inh_igc,ZEROS
+        RETS
+L_BFCB6:                 ; 0xbfcb6
+        MOVB RL4,inh_igc
+        ORB RL4,#DATA16 0000FH
+        MOVB inh_igc,RL4
+        RETS
+L_BFCC4:                 ; 0xbfcc4
+        MOVB RL4,g_f38b
+        CMPB RL4,#DATA16 00008H
+        JMPR cc_NC,L_BFCD6
+        ADDB RL4,#01H
+        MOVB g_f38b,RL4
+        RETS
+L_BFCD6:                 ; 0xbfcd6
+        MOVB RL4,inh_igc
+        ORB RL4,#DATA16 0000FH
+        MOVB inh_igc,RL4
+L_BFCE2:                 ; 0xbfce2
+        RETS
+
+; ======== Calc_IGA_Tra_Knk  (@0xbfce4) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by iga/igc/td output signals): Ignition transition handling during knock:
+        ; lv_iga_tra_knk / iga_tra_knk.
+        ; ------------------------------------------------------------
+Calc_IGA_Tra_Knk:
+        MOV [-R0],R7
+        MOV [-R0],R6
+        JB lv_pl.00H,L_BFCF0
+        JMPA cc_UC,L_BFDDE
+L_BFCF0:                 ; 0xbfcf0
+        JNB lv_iga_tra_knk.01H,L_BFCFC
+        JB lv_err_tps_det.09H,L_BFCFC
+        BCLR lv_iga_tra_knk.01H
+        BCLR lv_iga_tra_knk.03H
+L_BFCFC:                 ; 0xbfcfc
+        JB lv_err_tps_det.08H,L_BFD04
+        JMPA cc_UC,L_BFDDE
+L_BFD04:                 ; 0xbfd04
+        JB lv_iga_tra_knk.01H,L_BFDDE
+        MOV R12,#DATA16 POF sstm_n_4_4
+        MOV R13,#DATA16 PAG sstm_n_4_4
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_Byte_Y_Axis
+        MOV R12,#DATA16 POF sst_lm_tab_zw_inst_kr
+        MOV R13,#DATA16 PAG sst_lm_tab_zw_inst_kr
+        MOVBZ R14,lv_iga_cc2b
+        CALLS 00FH,Get_Byte_X_Axis
+        JNB lv_conf_mis.0AH,L_BFD3C
+        MOV R12,#DATA16 POF id_iga_tra_knk_at__n__maf
+        MOV R13,#DATA16 PAG id_iga_tra_knk_at__n__maf
+        CALLS 00FH,Read_Byte_Far_Scaled
+        MOVB RL6,RL4
+        JMPR cc_UC,L_BFD4A
+L_BFD3C:                 ; 0xbfd3c
+        MOV R12,#DATA16 POF id_iga_tra_knk__n__maf
+        MOV R13,#DATA16 PAG id_iga_tra_knk__n__maf
+        CALLS 00FH,Read_Byte_Far_Scaled
+        MOVB RL6,RL4
+L_BFD4A:                 ; 0xbfd4a
+        MOVB RL4,RL6
+        SUBB RL4,#DATA16 00080H
+        MOVBS R12,RL4
+        MOVBZ R13,lv_knk_f389
+        CALLS 00FH,SignByBit7_fe0f
+        MOVB RL7,RL4
+        MOV R12,#DATA16 POF sst_n_tab_zw_wetl
+        MOV R13,#DATA16 PAG sst_n_tab_zw_wetl
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_Byte_Y_Axis
+        MOV R12,#DATA16 POF sstm_tkw_1_4
+        MOV R13,#DATA16 PAG sstm_tkw_1_4
+        MOVBZ R14,tco
+        CALLS 00FH,Get_Byte_X_Axis
+        JNB eng_state_marker.0DH,L_BFD98
+        JNB lv_err_tps_det.09H,L_BFD98
+        MOV R12,#DATA16 POF id_iga_rpl__n__tco
+        MOV R13,#DATA16 PAG id_iga_rpl__n__tco
+        CALLS 00FH,Read_Byte_Far_Scaled
+        SUBB RL4,#DATA16 00080H
+        CMPB RL7,RL4
+        JMPR cc_SGT,L_BFDDE
+L_BFD98:                 ; 0xbfd98
+        BSET lv_iga_tra_knk.02H
+        CMPB RL7,iga_tra_knk
+        JMPR cc_SGE,L_BFDDE
+        MOVB iga_tra_knk,RL7
+        MOV R12,#DATA16 POF sstm_n_4_4
+        MOV R13,#DATA16 PAG sstm_n_4_4
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_Byte_Y_Axis
+        JNB lv_conf_mis.0AH,L_BFDCA
+        MOV R12,#DATA16 POF id_iga_cycnr_tra_knk_at__n
+        MOV R13,#DATA16 PAG id_iga_cycnr_tra_knk_at__n
+        CALLS 00FH,Read_Byte_Far
+        MOVB lv_knk_f38a,RL4
+        JMPR cc_UC,L_BFDDA
+L_BFDCA:                 ; 0xbfdca
+        MOV R12,#DATA16 POF id_iga_cycnr_tra_knk__n
+        MOV R13,#DATA16 PAG id_iga_cycnr_tra_knk__n
+        CALLS 00FH,Read_Byte_Far
+        MOVB lv_knk_f38a,RL4
+L_BFDDA:                 ; 0xbfdda
+        BCLR lv_iga_tra_knk.01H
+        BCLR lv_iga_tra_knk.03H
+L_BFDDE:                 ; 0xbfdde
+        JNB lv_iga_tra_knk.02H,L_BFDF8
+        MOVB RL4,lv_knk_f38a
+        JMPR cc_NE,L_BFDF4
+        MOVB iga_tra_knk,ZEROS
+        BCLR lv_iga_tra_knk.02H
+        BCLR lv_iga_tra_knk.03H
+        BSET lv_iga_tra_knk.01H
+        JMPR cc_UC,L_BFDF8
+L_BFDF4:                 ; 0xbfdf4
+        ADDB lv_knk_f38a,ONES
+L_BFDF8:                 ; 0xbfdf8
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        RETS
+
+; ======== Lookup_Df389_Tia  (@0xbfdfe) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Lookup_Df389_Tia:
+        MOV R12,#DATA16 POF sst_tal_tab_zw_inst_fak
+        MOV R13,#DATA16 PAG sst_tal_tab_zw_inst_fak
+        MOVBZ R14,tia
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        JNB lv_conf_mis.0AH,L_BFE24
+        MOV R12,#DATA16 POF ip_iga_tra_fac_at__tia
+        MOV R13,#DATA16 PAG ip_iga_tra_fac_at__tia
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB lv_knk_f389,RL4
+        RETS
+L_BFE24:                 ; 0xbfe24
+        MOV R12,#DATA16 POF ip_iga_tra_fac__tia
+        MOV R13,#DATA16 PAG ip_iga_tra_fac__tia
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB lv_knk_f389,RL4
+        RETS
+
+; ======== Set_iga_sp_e36  (@0xbfe36) ========
+Set_iga_sp_e36:
+        MOVB iga_sp,ONES
+        RETS
+
+; ======== Calc_EFF_IGA_SP  (@0xbfe3c) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (ThetaII, verified): TQM setpoint ignition efficiency eff_iga_sp from eff_lamb/egr/scc +
+        ; tqi_sp (c_eff_iga_thd)
+        ; (was FUN_0bfe3c)
+        ; ------------------------------------------------------------
+Calc_EFF_IGA_SP:
+        MOV [-R0],R9
+        JB lv_ast.06H,L_BFE46
+        JMPA cc_UC,L_BFF24
+L_BFE46:                 ; 0xbfe46
+        MOV R12,eff_lamb_av
+        MOV R13,eff_egr_hom
+        CALLS 00FH,Mul_Q15_Sat
+        MOV R13,R4
+        MOV R12,eff_scc_av
+        CALLS 00FH,Mul_Q15_Sat
+        MOV [-R0],R4
+        MOV R12,#DATA16 049C2H
+        MOVBZ R13,n_32
+        MOV R14,maf_tqi_ref
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XWord_YByte
+        MOV R12,R4
+        MOV R13,[R0+]
+        CALLS 00FH,Mul_Q15_Sat
+        MOV R13,R4
+        MOV R12,tqi_sp
+        SHR R12,#01H
+        CALLS 00FH,Div_Frac_U16_Q16
+        MOV eff_iga_sp_1,R4
+        CMP R4,#DATA16 08000H
+        JMPR cc_NC,L_BFE92
+        MOV R4,eff_iga_sp_1
+        JMPR cc_UC,L_BFE96
+L_BFE92:                 ; 0xbfe92
+        MOV R4,#DATA16 08000H
+L_BFE96:                 ; 0xbfe96
+        MOV eff_iga_sp,R4
+        JNB lv_act_aj.01H,L_BFEA4
+        MOV R9,DPP0:c_eff_iga_thd_aj
+        JMPR cc_UC,L_BFEA8
+L_BFEA4:                 ; 0xbfea4
+        MOV R9,DPP0:c_eff_iga_thd_1
+L_BFEA8:                 ; 0xbfea8
+        JNB lv_dc_rbm.0AH,L_BFEB8
+        CMP R9,DPP0:c_eff_iga_thd_is
+        JMPR cc_ULE,L_BFEC2
+        MOV R9,DPP0:c_eff_iga_thd_is
+        JMPR cc_UC,L_BFEC2
+L_BFEB8:                 ; 0xbfeb8
+        CMP R9,DPP0:c_eff_iga_thd_1
+        JMPR cc_ULE,L_BFEC2
+        MOV R9,DPP0:c_eff_iga_thd_1
+L_BFEC2:                 ; 0xbfec2
+        MOV R12,eff_iga_bas_cor
+        MOV R13,R9
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV R9,R4
+        CMP R9,eff_iga_sp
+        JMPR cc_ULE,L_BFED8
+        BSET lv_iga_tra_knk.05H
+        JMPR cc_UC,L_BFEE4
+L_BFED8:                 ; 0xbfed8
+        MOV R4,eff_iga_sp
+        CMP R4,eff_iga_bas_cor
+        JMPR cc_C,L_BFEE4
+        BCLR lv_iga_tra_knk.05H
+L_BFEE4:                 ; 0xbfee4
+        MOVB RL4,DPP0:lc_tq_iga_inh
+        JMPR cc_NE,L_BFEF8
+        JB lv_asr_act.06H,L_BFEF0
+        JMPR cc_UC,L_BFEF8
+L_BFEF0:                 ; 0xbfef0
+        JNB lv_iga_tra_knk.05H,L_BFEF8
+        BSET PSW.06H
+        JMPR cc_UC,L_BFEFA
+L_BFEF8:                 ; 0xbfef8
+        BCLR PSW.06H
+L_BFEFA:                 ; 0xbfefa
+        BMOV lv_iga_tra_knk.04H,PSW.06H
+        JMPR cc_N,L_BFF06
+        MOVB iga_sp,ONES
+        JMPR cc_UC,L_BFF24
+L_BFF06:                 ; 0xbff06
+        MOV R12,#DATA16 049BAH
+        MOV R13,eff_iga_sp
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YWord
+        MOVB iga_dif_sp,RL4
+        MOVBZ R12,iga_ref_cor
+        MOVBZ R13,RL4
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB iga_sp,RL4
+L_BFF24:                 ; 0xbff24
+        MOV R9,[R0+]
+        RETS
+
+S_BFC7E ENDS
+        END

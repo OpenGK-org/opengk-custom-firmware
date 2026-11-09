@@ -1,0 +1,117 @@
+; asw/comm/comm_flash_3.a66
+; 0xCBD4A-0xCBE36  (236 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  KWP_Flash_Cmd09_arm, KWP_Flash_Cmd12_arm, KWP_Flash_Cmd13_arm
+EXTERN  L_CC708:NEAR, RetC_90000_160:NEAR
+
+S_CBD4A SECTION CODE AT 0CBD4AH
+
+; ======== KWP_Flash_Cmd09_arm  (@0xcbd4a) ========
+        ; ------------------------------------------------------------
+        ; KWP flash-service dispatcher arm, command id 0x09 (kwp_cmd_id@d780) via
+        ; KWP_Flash_Svc_jmptab@0xa0fa8.
+        ; ------------------------------------------------------------
+KWP_Flash_Cmd09_arm:
+        MOVB RL4,kwp_sec_level
+        CMPB RL4,#02H
+        JMPR cc_C,L_CBD86
+        CALLS 00BH,RetC_90000_160
+        MOV [R0],R4
+        MOV [R0+#02H],R5
+        MOVB kwp_resp_status2,ZEROS
+        MOVB RL4,[R0+#03H]
+        MOVB kwp_resp_cnt_hi,RL4
+        MOVB RL5,[R0+#02H]
+        MOVB kwp_resp_cnt_lo,RL5
+        MOVB RL3,[R0+#01H]
+        MOVB kwp_resp_addr_hi,RL3
+        MOVB kwp_resp_addr_lo,[R0]
+        MOVB RL2,#08H
+        MOVB kwp_resp_status,RL2
+        JMPA cc_UC,L_CC708
+L_CBD86:                 ; 0xcbd86
+        MOVB RL4,#DATA16 00031H
+        MOVB kwp_nrc_D78B,RL4
+        JMPA cc_UC,L_CC708
+
+; ======== KWP_Flash_Cmd12_arm  (@0xcbd92) ========
+        ; ------------------------------------------------------------
+        ; KWP flash-service dispatcher arm, command id 0x0C (kwp_cmd_id@d780) via
+        ; KWP_Flash_Svc_jmptab@0xa0fa8.
+        ; ------------------------------------------------------------
+KWP_Flash_Cmd12_arm:
+        MOVB RL4,kwp_sec_level
+        CMPB RL4,#03H
+        JMPR cc_C,L_CBE00
+        MOVBZ R9,kwp_dl_buf
+        MOV R4,#DATA16 000C7H
+        AND R4,R9
+        CMP R9,R4
+        JMPR cc_NE,L_CBDF4
+        MOV R4,R9
+        MOVB kwp_c36c,RL4
+        MOV R4,#DATA16 00040H
+        AND R4,R9
+        JMPR cc_EQ,L_CBDC2
+        MOVB RL4,kwp_dl_mask
+        ANDB RL4,#01H
+        JMPR cc_EQ,L_CBDC2
+        BSET ccp_engine_flags.07H
+        JMPR cc_UC,L_CBDC4
+L_CBDC2:                 ; 0xcbdc2
+        BCLR ccp_engine_flags.07H
+L_CBDC4:                 ; 0xcbdc4
+        MOV R4,#04H
+        AND R4,R9
+        JMPR cc_EQ,L_CBDE0
+        MOVB RL4,kwp_dl_mask
+        ANDB RL4,#01H
+        JMPR cc_EQ,L_CBDE0
+        BSET ccp_engine_flags.08H
+        MOVB RL4,#01H
+        MOVB kwp_c365,RL4
+        MOVB kwp_c366,ZEROS
+        JMPR cc_UC,L_CBDEA
+L_CBDE0:                 ; 0xcbde0
+        BCLR ccp_engine_flags.08H
+        MOVB kwp_c366,ZEROS
+        MOVB kwp_c365,ZEROS
+L_CBDEA:                 ; 0xcbdea
+        MOVB RL4,#03H
+        MOVB kwp_resp_status,RL4
+        JMPA cc_UC,L_CC708
+L_CBDF4:                 ; 0xcbdf4
+        MOVB RL4,#DATA16 00032H
+        MOVB kwp_nrc_D78B,RL4
+        JMPA cc_UC,L_CC708
+L_CBE00:                 ; 0xcbe00
+        MOVB RL4,#DATA16 00031H
+        MOVB kwp_nrc_D78B,RL4
+        JMPA cc_UC,L_CC708
+
+; ======== KWP_Flash_Cmd13_arm  (@0xcbe0c) ========
+        ; ------------------------------------------------------------
+        ; KWP flash-service dispatcher arm, command id 0x0D (kwp_cmd_id@d780) via
+        ; KWP_Flash_Svc_jmptab@0xa0fa8.
+        ; ------------------------------------------------------------
+KWP_Flash_Cmd13_arm:
+        MOVB RL4,kwp_sec_level
+        CMPB RL4,#02H
+        JMPR cc_C,L_CBE2A
+        MOVB RL5,kwp_c36c
+        MOVB kwp_resp_status2,RL5
+        MOVB kwp_resp_addr_lo,ZEROS
+        MOVB RL3,#05H
+        MOVB kwp_resp_status,RL3
+        JMPA cc_UC,L_CC708
+L_CBE2A:                 ; 0xcbe2a
+        MOVB RL4,#DATA16 00031H
+        MOVB kwp_nrc_D78B,RL4
+        JMPA cc_UC,L_CC708
+
+S_CBD4A ENDS
+        END

@@ -1,0 +1,148 @@
+; asw/is/is_ti.a66
+; 0xB9A78-0xB9BDA  (354 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_tco_st_ti_is                       EQU  09039DH
+c_ti_is_crlc_neg                     EQU  0903B0H
+c_ti_is_crlc_pos                     EQU  0903B1H
+c_ti_is_mmv_min                      EQU  090977H
+c_ti_is_pos                          EQU  090978H
+
+PUBLIC  Calc_TI_IS, Reset_TI_IS
+EXTERN  Abs_S16_Safe:NEAR, Get_IP_Byte_3D_Table_DWord_XWord_YWord:NEAR, Interp_S16:NEAR
+
+S_B9A78 SECTION CODE AT 0B9A78H
+
+; ======== Reset_TI_IS  (@0xb9a78) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): Full Load Enrichment (ti_is/ti_is_mmv reset)
+        ; ------------------------------------------------------------
+Reset_TI_IS:
+        MOVB ti_is_mmv,ZEROS
+        MOVB st_ti_is,ZEROS
+        MOVB ti_is,ZEROS
+        RETS
+
+; ======== Calc_TI_IS  (@0xb9a86) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signal): Injection individual/idle-smoothing: computes ti_is &
+        ; ti_is_mmv from n_dif_cor/tq_add_ch 3D maps; gated by crank-pressure plausibility lv_err_pres_mwss.
+        ; ------------------------------------------------------------
+Calc_TI_IS:
+        JB lv_cam_err.00H,L_B9AE6
+        JB lv_cam_err.01H,L_B9AE6
+        JB lv_cam_err.02H,L_B9AE6
+        JB lv_cam_err.03H,L_B9AE6
+        JB lv_dur_igc_0_err.0DH,L_B9AE6
+        JB lv_dur_igc_0_err.0EH,L_B9AE6
+        JB lv_ecu_err.00H,L_B9AE6
+        JB lv_dur_igc_0_err.0FH,L_B9AE6
+        JB lv_cps_err.05H,L_B9AE6
+        JB lv_cps_err.06H,L_B9AE6
+        JB lv_dur_igc_0_err.00H,L_B9AE6
+        JB lv_dur_igc_0_err.01H,L_B9AE6
+        JB lv_dur_igc_0_err.02H,L_B9AE6
+        JB lv_dur_igc_0_err.03H,L_B9AE6
+        JB lv_ecu_err.07H,L_B9AE6
+        JB lv_ecu_err.08H,L_B9AE6
+        JB lv_ecu_err.09H,L_B9AE6
+        JB lv_ecu_err.0AH,L_B9AE6
+        JB lv_lam_lim_1_err.03H,L_B9AE6
+        JB lv_lam_lim_1_err.04H,L_B9AE6
+        JB lv_cps_err.00H,L_B9AE6
+        JB lv_cps_err.01H,L_B9AE6
+        JB lv_lam_lim_1_err.0BH,L_B9AE6
+        JNB lv_lam_lim_1_err.0DH,L_B9AEA
+L_B9AE6:                 ; 0xb9ae6
+        BCLR lv_err_pres_mwss.0CH
+        JMPR cc_UC,L_B9AEC
+L_B9AEA:                 ; 0xb9aea
+        BSET lv_err_pres_mwss.0CH
+L_B9AEC:                 ; 0xb9aec
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_B9B42
+        JNB lv_dc_rbm.0AH,L_B9B42
+        MOVB RL4,tco_st
+        CMPB RL4,DPP0:c_tco_st_ti_is
+        JMPR cc_NC,L_B9B20
+        MOV R12,#DATA16 04844H
+        MOV R13,n_dif_cor
+        ADD R13,#DATA16 08000H
+        MOV R14,tq_add_ch
+        ADD R14,#DATA16 08000H
+        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YWord
+        ADDB RL4,#DATA16 00080H
+        MOVB ti_is,RL4
+        JMPR cc_UC,L_B9B46
+L_B9B20:                 ; 0xb9b20
+        MOV R12,#DATA16 04850H
+        MOV R13,n_dif_cor
+        ADD R13,#DATA16 08000H
+        MOV R14,tq_add_ch
+        ADD R14,#DATA16 08000H
+        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YWord
+        ADDB RL4,#DATA16 00080H
+        MOVB ti_is,RL4
+        JMPR cc_UC,L_B9B46
+L_B9B42:                 ; 0xb9b42
+        MOVB ti_is,ZEROS
+L_B9B46:                 ; 0xb9b46
+        MOVB RL4,st_ti_is
+        CMPB RL4,#00H
+        JMPR cc_SLT,L_B9B7C
+        CMPB RL4,ti_is
+        JMPR cc_SGE,L_B9B5E
+        MOVB RL5,ti_is
+        MOVB st_ti_is,RL5
+        JMPR cc_UC,L_B9BB6
+L_B9B5E:                 ; 0xb9b5e
+        MOVBS R12,st_ti_is
+        SHL R12,#08H
+        MOVBS R13,ti_is
+        SHL R13,#08H
+        MOVBZ R14,DPP0:c_ti_is_crlc_pos
+        SHL R14,#08H
+        CALLS 00FH,Interp_S16
+        ASHR R4,#08H
+        MOVB st_ti_is,RL4
+        JMPR cc_UC,L_B9BB6
+L_B9B7C:                 ; 0xb9b7c
+        MOVB RL4,st_ti_is
+        CMPB RL4,ti_is
+        JMPR cc_SGT,L_B9B90
+        MOVB RL5,ti_is
+        CMPB RL5,DPP0:c_ti_is_pos
+        JMPR cc_SLE,L_B9B9A
+L_B9B90:                 ; 0xb9b90
+        MOVB RL4,ti_is
+        MOVB st_ti_is,RL4
+        JMPR cc_UC,L_B9BB6
+L_B9B9A:                 ; 0xb9b9a
+        MOVBS R12,st_ti_is
+        SHL R12,#08H
+        MOVBS R13,ti_is
+        SHL R13,#08H
+        MOVBZ R14,DPP0:c_ti_is_crlc_neg
+        SHL R14,#08H
+        CALLS 00FH,Interp_S16
+        ASHR R4,#08H
+        MOVB st_ti_is,RL4
+L_B9BB6:                 ; 0xb9bb6
+        JNB lv_err_pres_mwss.0CH,L_B9BD4
+        MOVBS R12,st_ti_is
+        CALLS 00FH,Abs_S16_Safe
+        MOVBS R5,DPP0:c_ti_is_mmv_min
+        CMP R4,R5
+        JMPR cc_SLE,L_B9BD4
+        MOVB RL4,st_ti_is
+        MOVB ti_is_mmv,RL4
+        RETS
+L_B9BD4:                 ; 0xb9bd4
+        MOVB ti_is_mmv,ZEROS
+        RETS
+
+S_B9A78 ENDS
+        END

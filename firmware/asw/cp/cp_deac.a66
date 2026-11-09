@@ -1,0 +1,176 @@
+; asw/cp/cp_deac.a66
+; 0xB1D1A-0xB1E56  (316 bytes, 7 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_t_wait_ramp_open                   EQU  090750H
+
+PUBLIC  CanPurge_Ctl_Entry, CanPurge_Deac_State, CanPurge_Lookup_State, CanPurge_Reset_Gated, CanPurge_Trans_Act, CanPurge_Trans_Deac
+PUBLIC  Reset_cp_norm_deac_state_d74
+EXTERN  CanPurge_Calc_RelFlow:NEAR, CanPurge_Control_SM:NEAR, CanPurge_Reset:NEAR, CanPurge_SetAct_3:NEAR
+EXTERN  L_B1FEE:NEAR, Set_cp_state_fe8:NEAR
+
+S_B1D1A SECTION CODE AT 0B1D1AH
+
+; ======== CanPurge_Deac_State  (@0xb1d1a) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signals): Canister-purge normal-deactivation state:
+        ; cp_state/cp_tra_state/cp_norm_deac_state.
+        ; ------------------------------------------------------------
+CanPurge_Deac_State:
+        MOVB RL4,conf_cp
+        JMPR cc_EQ,L_B1D30
+        MOV cp_state,ZEROS
+        MOV cp_tra_state,ZEROS
+        MOV cp_norm_deac_state,ZEROS
+        MOV state_cp_ctl,ZEROS
+L_B1D30:                 ; 0xb1d30
+        RETS
+
+; ======== CanPurge_Reset_Gated  (@0xb1d32) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+CanPurge_Reset_Gated:
+        MOVB RL4,conf_cp
+        JMPR cc_EQ,L_B1D3C
+        CALLA cc_UC,CanPurge_Reset
+L_B1D3C:                 ; 0xb1d3c
+        RETS
+
+; ======== CanPurge_Ctl_Entry  (@0xb1d3e) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+CanPurge_Ctl_Entry:
+        MOVB RL4,conf_cp
+        JMPR cc_EQ,L_B1D5E
+        CALLS 00CH,CanPurge_SetAct_3
+        CALLA cc_UC,CanPurge_Lookup_State
+        JNB lv_cp_act.05H,L_B1D5A
+        CALLA cc_UC,CanPurge_Control_SM
+        CALLA cc_UC,CanPurge_Calc_RelFlow
+        RETS
+L_B1D5A:                 ; 0xb1d5a
+        CALLA cc_UC,CanPurge_Reset
+L_B1D5E:                 ; 0xb1d5e
+        RETS
+
+; ======== CanPurge_Lookup_State  (@0xb1d60) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+CanPurge_Lookup_State:
+        MOV R4,cp_state
+        CMP R4,#06H
+        JMPA cc_UGT,Set_cp_state_fe8
+        SHL R4,#01H
+        ADD R4,#DATA16 046A6H
+        MOV R4,[R4]
+        JMPI cc_UC,[R4]
+
+; ======== Reset_cp_norm_deac_state_d74  (@0xb1d74) ========
+Reset_cp_norm_deac_state_d74:
+        MOV cp_norm_deac_state,ZEROS
+        MOV state_cp_ctl,ZEROS
+        MOV cp_tra_state,ZEROS
+        RET
+
+; ======== CanPurge_Trans_Deac  (@0xb1d82) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+CanPurge_Trans_Deac:
+        JB lv_cp_act.09H,L_B1D8C
+        BCMP lv_cp_act.07H,lv_cp_act.08H
+        JMPR cc_NV,L_B1DAA
+L_B1D8C:                 ; 0xb1d8c
+        JNB lv_cp_act.09H,L_B1D94
+        JMPA cc_UC,L_B1FEE
+L_B1D94:                 ; 0xb1d94
+        MOV cp_tra_state,ZEROS
+        JB lv_cp_act.07H,L_B1DA0
+        JMPA cc_UC,L_B1FEE
+L_B1DA0:                 ; 0xb1da0
+        MOV state_cp_ctl,ZEROS
+        MOV cp_norm_deac_state,ZEROS
+        RET
+L_B1DAA:                 ; 0xb1daa
+        JNB lv_cp_act.0AH,L_B1DBC
+        MOV R4,#02H
+        MOV cp_state,R4
+        MOV R5,#01H
+        MOV cp_tra_state,R5
+        RET
+L_B1DBC:                 ; 0xb1dbc
+        JNB lv_cp_act.0CH,L_B1DC6
+        MOV cp_norm_deac_state,ZEROS
+        RET
+L_B1DC6:                 ; 0xb1dc6
+        MOV R4,cp_norm_deac_state
+        CMP R4,#01H
+        JMPR cc_NE,L_B1DD4
+        MOV cp_norm_deac_state,ZEROS
+        RET
+L_B1DD4:                 ; 0xb1dd4
+        CALLA cc_UC,CanPurge_Reset
+        MOV R4,#03H
+        MOV cp_state,R4
+        MOV cp_tra_state,ZEROS
+        RET
+
+; ======== CanPurge_Trans_Act  (@0xb1de4) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+CanPurge_Trans_Act:
+        JNB lv_cp_act.0AH,L_B1DEC
+        JMPA cc_UC,L_B1FEE
+L_B1DEC:                 ; 0xb1dec
+        JB lv_cp_act.09H,L_B1DF6
+        BCMP lv_cp_act.07H,lv_cp_act.08H
+        JMPR cc_NV,L_B1E1E
+L_B1DF6:                 ; 0xb1df6
+        MOV R4,#01H
+        MOV cp_state,R4
+        JNB lv_cp_act.09H,L_B1E08
+        MOV R5,#02H
+        MOV cp_tra_state,R5
+        RET
+L_B1E08:                 ; 0xb1e08
+        MOV cp_tra_state,ZEROS
+        JB lv_cp_act.07H,L_B1E14
+        JMPA cc_UC,L_B1FEE
+L_B1E14:                 ; 0xb1e14
+        MOV state_cp_ctl,ZEROS
+        MOV cp_norm_deac_state,ZEROS
+        RET
+L_B1E1E:                 ; 0xb1e1e
+        JNB lv_cp_act.0CH,L_B1E28
+        MOV cp_norm_deac_state,ZEROS
+        RET
+L_B1E28:                 ; 0xb1e28
+        MOV R4,cp_norm_deac_state
+        CMP R4,#01H
+        JMPR cc_NE,L_B1E36
+        MOV cp_norm_deac_state,ZEROS
+        RET
+L_B1E36:                 ; 0xb1e36
+        MOV R4,DPP0:c_t_wait_ramp_open
+        JMPR cc_NE,L_B1E48
+        MOV R5,#03H
+        MOV cp_state,R5
+        MOV cp_tra_state,ZEROS
+        RET
+L_B1E48:                 ; 0xb1e48
+        MOV R4,#06H
+        MOV cp_state,R4
+        MOV R5,#0BH
+        MOV cp_tra_state,R5
+        RET
+
+S_B1D1A ENDS
+        END

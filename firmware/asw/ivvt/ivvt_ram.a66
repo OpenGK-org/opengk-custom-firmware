@@ -1,0 +1,191 @@
+; asw/ivvt/ivvt_ram.a66
+; 0xB46D4-0xB4874  (416 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_ivvthpwm_ad_max                    EQU  09058AH
+c_ivvthpwm_ad_min                    EQU  09058CH
+ldpm_tmag_ivvt_1_ivvt                        EQU  09814DH
+
+PUBLIC  IVVT_CamAd_State, IVVT_Set_RamPtr_1, IVVT_Set_RamPtr_2, Nop_b4872, Set_Idx_Cam_Ad
+EXTERN  Clamp_U16:NEAR, Get_IP_Byte_Y_Axis:NEAR, Sat_Add_S16_v2:NEAR
+
+S_B46D4 SECTION CODE AT 0B46D4H
+
+; ======== IVVT_Set_RamPtr_1  (@0xb46d4) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IVVT_Set_RamPtr_1:
+        MOV [-R0],R6
+        MOV R12,p_ivvt_cam_m
+        CMP R12,#DATA16 0CADAH
+        JMPR cc_NE,L_B46E8
+        MOV R4,#DATA16 0F6B0H
+        MOV [R12+#0C0H],R4
+L_B46E8:                 ; 0xb46e8
+        MOVB RL6,#00H
+L_B46EA:                 ; 0xb46ea
+        MOV R4,#DATA16 08000H
+        MOV R5,[R12+#0C0H]
+        MOVBZ R2,RL6
+        SHL R2,#01H
+        ADD R5,R2
+        MOV [R5],R4
+        ADDB RL6,#01H
+        CMPB RL6,#DATA16 00010H
+        JMPR cc_C,L_B46EA
+        MOV R6,[R0+]
+        RETS
+
+; ======== IVVT_Set_RamPtr_2  (@0xb4706) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IVVT_Set_RamPtr_2:
+        MOV R12,p_ivvt_cam_m
+        CMP R12,#DATA16 0CADAH
+        JMPR cc_NE,L_B4718
+        MOV R4,#DATA16 0F6B0H
+        MOV [R12+#0C0H],R4
+L_B4718:                 ; 0xb4718
+        RETS
+
+; ======== IVVT_CamAd_State  (@0xb471a) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IVVT_CamAd_State:
+        MOV [-R0],R9
+        MOV R9,p_ivvt_cam_m
+        MOV R4,state_ivvt
+        CMP R4,#02H
+        JMPR cc_NE,L_B47E6
+        MOVB RL4,[R9+#0C4H]
+        JMPR cc_NE,L_B473C
+        MOVB RL4,#01H
+        MOVB [R9+#0C4H],RL4
+        MOVB [R9+#0C3H],RL4
+        MOVB [R9+#0C2H],RL4
+L_B473C:                 ; 0xb473c
+        MOV R12,#DATA16 POF ldpm_tmag_ivvt_1_ivvt
+        MOV R13,#DATA16 PAG ldpm_tmag_ivvt_1_ivvt
+        MOVBZ R14,tmag_ivvt
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R4,[R9+#0B6H]
+        JMPR cc_NE,L_B475A
+        MOVB RL4,#00H
+        MOVB [R9+#0C2H],RL4
+        JMPR cc_UC,L_B4798
+L_B475A:                 ; 0xb475a
+        MOVB RL4,[R9+#0C2H]
+        JMPR cc_NE,L_B4798
+        MOV R4,[R9+#0C0H]
+        MOVBZ R5,ip_idx
+        SHL R5,#01H
+        ADD R4,R5
+        MOV R12,[R4]
+        MOV R13,[R9+#0B6H]
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV R12,R4
+        MOV R13,DPP0:c_ivvthpwm_ad_min
+        MOV R14,DPP0:c_ivvthpwm_ad_max
+        CALLS 00FH,Clamp_U16
+        MOV R5,[R9+#0C0H]
+        MOVBZ R2,ip_idx
+        SHL R2,#01H
+        ADD R5,R2
+        MOV [R5],R4
+        MOVB RL4,#01H
+        MOVB [R9+#0C2H],RL4
+L_B4798:                 ; 0xb4798
+        MOV R4,[R9+#0CCH]
+        JMPR cc_NE,L_B47A6
+        MOVB RL4,#00H
+        MOVB [R9+#0C3H],RL4
+        JMPR cc_UC,L_B47EC
+L_B47A6:                 ; 0xb47a6
+        MOVB RL4,[R9+#0C3H]
+        JMPR cc_NE,L_B47EC
+        MOV R4,[R9+#0C0H]
+        MOVBZ R5,ip_idx
+        SHL R5,#01H
+        ADD R4,R5
+        MOV R12,[R4]
+        MOV R13,[R9+#0CCH]
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV R12,R4
+        MOV R13,DPP0:c_ivvthpwm_ad_min
+        MOV R14,DPP0:c_ivvthpwm_ad_max
+        CALLS 00FH,Clamp_U16
+        MOV R5,[R9+#0C0H]
+        MOVBZ R2,ip_idx
+        SHL R2,#01H
+        ADD R5,R2
+        MOV [R5],R4
+        MOVB RL4,#01H
+        MOVB [R9+#0C3H],RL4
+        JMPR cc_UC,L_B47EC
+L_B47E6:                 ; 0xb47e6
+        MOVB RL4,#00H
+        MOVB [R9+#0C4H],RL4
+L_B47EC:                 ; 0xb47ec
+        MOV R9,[R0+]
+        RETS
+
+; ======== Set_Idx_Cam_Ad  (@0xb47f0) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by ivvt/cam output signals + DTC): Set cam-adaptation table index
+        ; idx_cam_ad_ivvt.
+        ; ------------------------------------------------------------
+Set_Idx_Cam_Ad:
+        MOV R14,p_ivvt_cam_m
+        MOV R13,p_ivvt_cam_s
+        CMP R14,#DATA16 0CADAH
+        JMPR cc_NE,L_B4826
+        MOV R4,#DATA16 0F6D0H
+        MOV [R14+#08H],R4
+        MOV R4,#DATA16 0F6D2H
+        MOV [R14+#0AH],R4
+        MOV R4,#DATA16 0F6D4H
+        MOV [R14+#010H],R4
+        MOV R4,cam_ad_ivvt_in_1
+        MOV [R14+#012H],R4
+        MOV R4,#DATA16 0C23AH
+        MOV [R14+#022H],R4
+L_B4826:                 ; 0xb4826
+        MOVB RL4,#00H
+        MOVB [R14+#01EH],RL4
+        MOV R4,[R14+#08H]
+        MOVB RL5,[R4+#01H]
+        MOVBZ R4,RL5
+        MOV R5,[R12]
+        MOVB RL3,[R5]
+        MOVBZ R5,RL3
+        SUB R5,R4
+        MOV [R14+#0EH],R5
+        CMP R13,#DATA16 0CBCAH
+        JMPR cc_NE,L_B4850
+        MOV R4,[R14+#0EH]
+        MOV [R14+#0CH],R4
+L_B4850:                 ; 0xb4850
+        MOV R4,[R12]
+        MOVB RL5,[R4]
+        MOVB [R13+#021H],RL5
+        MOVB [R13+#020H],RL5
+        MOVB [R14+#017H],RL5
+        MOVB [R14+#016H],RL5
+        MOVB [R14+#014H],RL5
+        MOVB RL4,#DATA16 00040H
+        MOVB idx_cam_ad_ivvt,RL4
+        RETS
+
+; ======== Nop_b4872  (@0xb4872) ========
+Nop_b4872:
+        RETS
+
+S_B46D4 ENDS
+        END

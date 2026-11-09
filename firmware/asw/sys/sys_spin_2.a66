@@ -1,0 +1,350 @@
+; asw/sys/sys_spin_2.a66
+; 0xA3BBC-0xA3F1A  (862 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Init_ECU_Ports, Read_Coding_Nibble, Reset_Dfbae_e8e, SpinHalt_a3d48, SpinHalt_a3eae
+
+S_A3BBC SECTION CODE AT 0A3BBCH
+
+; ======== Read_Coding_Nibble  (@0xa3bbc) ========
+        ; ------------------------------------------------------------
+        ; Seg-A helper (verified): Read variant-coding nibble: DAT_00e7e0 = ~coding_byte[8] & 0xf.
+        ; ------------------------------------------------------------
+Read_Coding_Nibble:
+        MOVB RL4,DPP1:0A25EAH
+        CPLB RL4
+        ANDB RL4,#DATA16 0000FH
+        MOVB inj_cc_1,RL4
+        RETS
+        BCLR P2.00H
+        BCLR P2.01H
+        BCLR P2.02H
+        BCLR P2.03H
+        RETS
+        MOV R4,R12
+        CMPB RL4,#00H
+        JMPR cc_EQ,L_A3BEC
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_A3C2C
+        CMPB RL4,#02H
+        JMPR cc_EQ,L_A3C6C
+        CMPB RL4,#03H
+        JMPR cc_EQ,L_A3CAC
+        JMPA cc_UC,L_A3CEA
+L_A3BEC:                 ; 0xa3bec
+        MOV CC0IC,#DATA16 00000H
+        BFLDL 0FF52H,#0FH,#00H
+        EXTR #01H
+        BCLR ODP2.00H
+        BSET P2.00H
+        BSET DP2.00H
+        MOV CC0IC,#DATA16 0005CH
+        BCLR P2.00H
+        MOV R4,T1_FE52
+        ADD R4,R13
+        MOV CC0_FE80,R4
+        BFLDL 0FF52H,#0FH,#0DH
+        CMP R13,#DATA16 08000H
+        JMPR cc_NC,L_A3CEA
+        MOV R4,T1_FE52
+        SUB R4,CC0_FE80
+        CMP R4,#DATA16 07FFFH
+        JMPR cc_UGT,L_A3CEA
+        BFLDL 0FF52H,#0FH,#00H
+        BSET P2.00H
+        RETS
+L_A3C2C:                 ; 0xa3c2c
+        MOV CC1IC,#DATA16 00000H
+        BFLDL 0FF52H,#0F0H,#00H
+        EXTR #01H
+        BCLR ODP2.01H
+        BSET P2.01H
+        BSET DP2.01H
+        MOV CC1IC,#DATA16 0005DH
+        BCLR P2.01H
+        MOV R4,T1_FE52
+        ADD R4,R13
+        MOV CC1_FE82,R4
+        BFLDL 0FF52H,#0F0H,#0D0H
+        CMP R13,#DATA16 08000H
+        JMPR cc_NC,L_A3CEA
+        MOV R4,T1_FE52
+        SUB R4,CC1_FE82
+        CMP R4,#DATA16 07FFFH
+        JMPR cc_UGT,L_A3CEA
+        BFLDL 0FF52H,#0F0H,#00H
+        BSET P2.01H
+        RETS
+L_A3C6C:                 ; 0xa3c6c
+        MOV CC2IC,#DATA16 00000H
+        BFLDH CCM0_FF52,#0FH,#00H
+        EXTR #01H
+        BCLR ODP2.02H
+        BSET P2.02H
+        BSET DP2.02H
+        MOV CC2IC,#DATA16 0005EH
+        BCLR P2.02H
+        MOV R4,T1_FE52
+        ADD R4,R13
+        MOV CC2_FE84,R4
+        BFLDH CCM0_FF52,#0FH,#0DH
+        CMP R13,#DATA16 08000H
+        JMPR cc_NC,L_A3CEA
+        MOV R4,T1_FE52
+        SUB R4,CC2_FE84
+        CMP R4,#DATA16 07FFFH
+        JMPR cc_UGT,L_A3CEA
+        BFLDH CCM0_FF52,#0FH,#00H
+        BSET P2.02H
+        RETS
+L_A3CAC:                 ; 0xa3cac
+        MOV CC3IC,#DATA16 00000H
+        BFLDH CCM0_FF52,#0F0H,#00H
+        EXTR #01H
+        BCLR ODP2.03H
+        BSET P2.03H
+        BSET DP2.03H
+        MOV CC3IC,#DATA16 0005FH
+        BCLR P2.03H
+        MOV R4,T1_FE52
+        ADD R4,R13
+        MOV CC3_FE86,R4
+        BFLDH CCM0_FF52,#0F0H,#0D0H
+        CMP R13,#DATA16 08000H
+        JMPR cc_NC,L_A3CEA
+        MOV R4,T1_FE52
+        SUB R4,CC3_FE86
+        CMP R4,#DATA16 07FFFH
+        JMPR cc_UGT,L_A3CEA
+        BFLDH CCM0_FF52,#0F0H,#00H
+        BSET P2.03H
+L_A3CEA:                 ; 0xa3cea
+        RETS
+        MOV R4,R12
+        CMPB RL4,#00H
+        JMPR cc_EQ,L_A3D00
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_A3D12
+        CMPB RL4,#02H
+        JMPR cc_EQ,L_A3D24
+        CMPB RL4,#03H
+        JMPR cc_EQ,L_A3D36
+        JMPR cc_UC,L_A3D46
+L_A3D00:                 ; 0xa3d00
+        MOV CC0IC,#DATA16 00000H
+        BFLDL 0FF52H,#0FH,#00H
+        EXTR #01H
+        BCLR ODP2.00H
+        BSET P2.00H
+        BSET DP2.00H
+        RETS
+L_A3D12:                 ; 0xa3d12
+        MOV CC1IC,#DATA16 00000H
+        BFLDL 0FF52H,#0F0H,#00H
+        EXTR #01H
+        BCLR ODP2.01H
+        BSET P2.01H
+        BSET DP2.01H
+        RETS
+L_A3D24:                 ; 0xa3d24
+        MOV CC2IC,#DATA16 00000H
+        BFLDH CCM0_FF52,#0FH,#00H
+        EXTR #01H
+        BCLR ODP2.02H
+        BSET P2.02H
+        BSET DP2.02H
+        RETS
+L_A3D36:                 ; 0xa3d36
+        MOV CC3IC,#DATA16 00000H
+        BFLDH CCM0_FF52,#0F0H,#00H
+        EXTR #01H
+        BCLR ODP2.03H
+        BSET P2.03H
+        BSET DP2.03H
+L_A3D46:                 ; 0xa3d46
+        RETS
+
+; ======== SpinHalt_a3d48  (@0xa3d48) ========
+        ; ------------------------------------------------------------
+        ; Seg-A helper (verified): Infinite spin loop (unused-vector/fatal halt stub).
+        ; ------------------------------------------------------------
+SpinHalt_a3d48:
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R13,P3_FFC4
+        XOR R13,lv_im_acin
+        AND R13,#DATA16 0085AH
+        MOV R4,can_fd9e
+        ASHR R4,#08H
+        MOVBZ R4,RL4
+        XOR R4,P4_FFC8
+        AND R4,#DATA16 00080H
+        MOVB RL6,RL4
+        MOVB RL4,can_fd9e
+        MOVBZ R4,RL4
+        XOR R4,P6_FFCC
+        AND R4,#DATA16 00020H
+        MOVB RL7,RL4
+        MOV R4,imob_fda0
+        ASHR R4,#08H
+        MOVBZ R4,RL4
+        XOR R4,P7_FFD0
+        AND R4,#DATA16 00080H
+        MOV R12,R4
+        MOV R14,T1_FE52
+L_A3D90:                 ; 0xa3d90
+        MOV R4,T1_FE52
+        SUB R4,R14
+        CMP R4,#03H
+        JMPR cc_C,L_A3D90
+        CMP R13,#00H
+        JMPR cc_EQ,L_A3DB4
+        MOV R4,P3_FFC4
+        XOR R4,lv_im_acin
+        AND R4,R13
+        AND R4,#DATA16 0085AH
+        XOR R4,lv_im_acin
+        MOV lv_im_acin,R4
+L_A3DB4:                 ; 0xa3db4
+        CMPB RL6,#00H
+        JMPR cc_EQ,L_A3DD6
+        MOV R4,can_fd9e
+        ASHR R4,#08H
+        MOVBZ R4,RL4
+        XOR R4,P4_FFC8
+        MOVBZ R5,RL6
+        AND R4,R5
+        AND R4,#DATA16 00080H
+        SHL R4,#08H
+        XOR R4,can_fd9e
+        MOV can_fd9e,R4
+L_A3DD6:                 ; 0xa3dd6
+        CMPB RL7,#00H
+        JMPR cc_EQ,L_A3DF4
+        MOVB RL4,can_fd9e
+        MOVBZ R4,RL4
+        XOR R4,P6_FFCC
+        MOVBZ R5,RL7
+        AND R4,R5
+        AND R4,#DATA16 00020H
+        XOR R4,can_fd9e
+        MOV can_fd9e,R4
+L_A3DF4:                 ; 0xa3df4
+        MOV R4,R12
+        CMPB RL4,#00H
+        JMPR cc_EQ,L_A3E1A
+        MOV R4,imob_fda0
+        ASHR R4,#08H
+        MOVBZ R4,RL4
+        XOR R4,P7_FFD0
+        MOV R5,R12
+        MOVBZ R5,RL5
+        AND R4,R5
+        AND R4,#DATA16 00080H
+        SHL R4,#08H
+        XOR R4,imob_fda0
+        MOV imob_fda0,R4
+L_A3E1A:                 ; 0xa3e1a
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        RETS
+
+; ======== Init_ECU_Ports  (@0xa3e20) ========
+        ; ------------------------------------------------------------
+        ; Seg-A helper (verified): Power-on port/pin direction init: P2/DP2/P3/P4/DP4/P6/DP6 + output latch
+        ; DAT_00fd94=0xff.
+        ; ------------------------------------------------------------
+Init_ECU_Ports:
+        BFLDH state_out_diag,#0FFH,#00H
+        BFLDL 0FD94H,#0FFH,#00H
+        BFLDH P2_FFC0,#02H,#00H
+        BFLDH DP2_FFC2,#02H,#02H
+        BFLDH P3_FFC4,#014H,#04H
+        BFLDH DP3_FFC6,#014H,#014H
+        BFLDL 0FFC8H,#060H,#020H
+        BFLDL 0FFCAH,#060H,#060H
+        BFLDL 0FFCCH,#0CFH,#08FH
+        BFLDL 0FFCEH,#0CFH,#0CFH
+        BFLDL 0FFD4H,#057H,#03H
+        BFLDL 0FFD6H,#057H,#057H
+        MOV R4,#DATA16 0003BH
+        MOV lv_iga_fd06,R4
+        MOV R4,lv_iga_fd06
+        EXTP #02H, #01H
+        MOV DPP0:g_a000,R4
+        EXTR #02H
+        BFLDL 0F1C2H,#0FFH,#00H
+        BFLDL 0F1C6H,#0FFH,#00H
+        EXTR #02H
+        BFLDH ODP2_F1C2,#0FFH,#00H
+        BFLDH DP3_FFC6,#0FFH,#00H
+        EXTR #02H
+        BFLDL 0F1CAH,#0FFH,#00H
+        BFLDL 0F1CEH,#0FFH,#00H
+        EXTR #02H
+        BFLDL 0F1D2H,#0FFH,#00H
+        BFLDL 0F1D6H,#0FFH,#00H
+        RETS
+
+; ======== Reset_Dfbae_e8e  (@0xa3e8e) ========
+Reset_Dfbae_e8e:
+        MOV R4,#DATA16 00FFFH
+        MOV g_fbae,R4
+        MOV R4,#DATA16 0F000H
+        MOV g_fbac,R4
+        BFLDL 0FF74H,#0FFH,#069H
+        BFLDL 0FF76H,#0FFH,#068H
+        EXTR #01H
+        BFLDL 0F196H,#0FFH,#06AH
+        RETS
+
+; ======== SpinHalt_a3eae  (@0xa3eae) ========
+        ; ------------------------------------------------------------
+        ; Seg-A helper (verified): Atomic-prefixed infinite spin (trap/halt stub).
+        ; ------------------------------------------------------------
+SpinHalt_a3eae:
+        BCLR SSCCON.0FH
+        ATOMIC #04H
+        BFLDL 0FF74H,#0FFH,#00H
+        BFLDL 0FF72H,#0FFH,#00H
+        BFLDL 0FF76H,#0FFH,#00H
+        EXTR #01H
+        BFLDL 0FF96H,#0FFH,#00H
+        BSET P6.07H
+        BSET lv_iga_fd06.04H
+        ATOMIC #03H
+        MOV R4,lv_iga_fd06
+        EXTP #02H, #01H
+        MOV DPP0:g_a000,R4
+        BSET lv_iga_fd06.04H
+        ATOMIC #03H
+        MOV R5,lv_iga_fd06
+        EXTP #02H, #01H
+        MOV DPP0:g_a000,R5
+        BSET lv_iga_fd06.03H
+        ATOMIC #03H
+        MOV R4,lv_iga_fd06
+        EXTP #02H, #01H
+        MOV DPP0:g_a000,R4
+        MOV R12,T1_FE52
+L_A3EFA:                 ; 0xa3efa
+        MOV R4,T1_FE52
+        SUB R4,R12
+        CMP R4,#05H
+        JMPR cc_C,L_A3EFA
+        BCLR DP3.08H
+        NOP
+        BSET P3.09H
+        BSET DP3.09H
+        NOP
+        BSET P3.0DH
+        BSET DP3.0DH
+        BCLR sched_flags2.06H
+        MOV capcom_12,ZEROS
+        RETS
+
+S_A3BBC ENDS
+        END

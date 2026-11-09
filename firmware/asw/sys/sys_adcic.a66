@@ -1,0 +1,131 @@
+; asw/sys/sys_adcic.a66
+; 0xA3424-0xA3554  (304 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Reset_ADCIC_4da, Reset_CC10IC_514, Reset_P3_4f0, Set_lv_err_com_resp_imob
+
+S_A3424 SECTION CODE AT 0A3424H
+
+; ======== Set_lv_err_com_resp_imob  (@0xa3424) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Set_lv_err_com_resp_imob:
+        MOV R5,#DATA16 01B8AH
+        MOV R4,R5
+        AND R4,#DATA16 03FFFH
+        MOV p_maf_lin_tab,R4
+        MOV R3,#DATA16 01B8AH
+        MOV R2,R3
+        SHR R2,#0EH
+        SHL R2,#01H
+        MOV R2,[R2+#0FE00H]
+        MOV imob_fa8c,R2
+        BCLR can_fd58.0EH
+        MOVB RL4,#03H
+        MOVB ctr_maf_rng,RL4
+        BCLR can_fd58.0DH
+        MOVB RL5,#08H
+        MOVB div_maf_avg2,RL5
+        MOV maf_avg_acc,ZEROS
+        MOV maf_avg2_acc,ZEROS
+        MOVB RL3,#08H
+        MOVB div_acp_avg,RL3
+        MOV acp_avg_acc,ZEROS
+        MOVB RL2,#02H
+        MOVB div_adc_ch1,RL2
+        MOVB RL1,#DATA16 00015H
+        MOVB div_adc_ch2,RL1
+        MOV maf_raw,ADDAT
+        EXTR #01H
+        MOV maf_raw,ADDAT
+        MOV maf_raw,ADDAT
+        EXTR #01H
+        MOV maf_raw,ADDAT
+        MOV maf_raw,ZEROS
+        MOVB ctr_maf_fault,ZEROS
+        BCLR lv_err_com_resp_imob.07H
+        MOV R13,#00H
+L_A3494:                 ; 0xa3494
+        BCLR ADCON.07H
+        MOV R4,#DATA16 00080H
+        OR R4,R13
+        MOV ADCON_FFA0,R4
+        MOV R12,T1_FE52
+L_A34A4:                 ; 0xa34a4
+        JNB ADCON.08H,L_A34B4
+        MOV R4,T1_FE52
+        SUB R4,R12
+        CMP R4,#DATA16 0002EH
+        JMPR cc_C,L_A34A4
+L_A34B4:                 ; 0xa34b4
+        MOV R4,ADDAT_FEA0
+        MOV R5,R13
+        SHL R5,#01H
+        MOV [R5+#0FA6AH],R4
+        ADD R13,#01H
+        CMP R13,#DATA16 00010H
+        JMPR cc_C,L_A3494
+        MOV ADDAT,#DATA16 00000H
+        MOVB RL4,#0CH
+        MOVB adc_ch_sel,RL4
+        BSET lv_err_com_resp_imob.09H
+        BFLDL 0FF98H,#0FFH,#07AH
+        RETS
+
+; ======== Reset_ADCIC_4da  (@0xa34da) ========
+Reset_ADCIC_4da:
+        BFLDL 0FF98H,#0FFH,#00H
+        BFLDH ADCON_FFA0,#0FFH,#00H
+        BFLDL 0FFA0H,#0FFH,#00H
+        BFLDH ADCON_FFA0,#0FFH,#00H
+        BFLDL 0FFA0H,#0FFH,#00H
+        RETS
+
+; ======== Reset_P3_4f0  (@0xa34f0) ========
+Reset_P3_4f0:
+        BCLR P2.0AH
+        EXTR #01H
+        BCLR ODP2.0AH
+        BCLR DP2.0AH
+        BSET P3.0CH
+        EXTR #01H
+        BSET DP3.0CH
+        BSET DP3.0CH
+        BCLR P2.09H
+        EXTR #01H
+        BCLR ODP2.09H
+        BSET DP2.09H
+        BCLR lv_err_com_resp_imob.04H
+        BFLDL 0FF8CH,#0FFH,#047H
+        BFLDH CCM2_FF56,#0FH,#0AH
+        RETS
+
+; ======== Reset_CC10IC_514  (@0xa3514) ========
+Reset_CC10IC_514:
+        BFLDL 0FF8CH,#0FFH,#00H
+        BFLDH CCM2_FF56,#0FH,#00H
+        EXTR #01H
+        BFLDL 0F162H,#0FFH,#00H
+        BFLDL 0FF22H,#0F0H,#00H
+        RETS
+        MOVB RL4,#0FH
+        MOVB capcom_7,RL4
+        MOVB RL4,#01H
+        MOVB g_f5e6,RL4
+        MOV CC22,T7_F050
+        BFLDH CCM5_FF24,#0FH,#06H
+        EXTR #01H
+        MOV CC22IC,#DATA16 000CDH
+        RETS
+        EXTR #01H
+        MOV CC22IC,#DATA16 00000H
+        BFLDH CCM5_FF24,#0FH,#00H
+        MOVB g_f5e6,ZEROS
+        RETS
+
+S_A3424 ENDS
+        END

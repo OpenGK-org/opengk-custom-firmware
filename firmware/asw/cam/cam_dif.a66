@@ -1,0 +1,94 @@
+; asw/cam/cam_dif.a66
+; 0xC1650-0xC16E6  (150 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Calc_RBM_CamDif_IVVT, ClrBits_state_rbm_cam_dif_ivvt_in_65e, Nop_c1650, Nop_c1652, Reset_state_rbm_cam_dif_ivvt_in_654
+EXTERN  Div_U32_U16_Round32:NEAR
+
+S_C1650 SECTION CODE AT 0C1650H
+
+; ======== Nop_c1650  (@0xc1650) ========
+Nop_c1650:
+        RETS
+
+; ======== Nop_c1652  (@0xc1652) ========
+Nop_c1652:
+        RETS
+
+; ======== Reset_state_rbm_cam_dif_ivvt_in_654  (@0xc1654) ========
+Reset_state_rbm_cam_dif_ivvt_in_654:
+        MOVB state_rbm_cam_dif_ivvt_in,ZEROS
+        MOV rate_rbm_cam_dif_ivvt_in,ONES
+        RETS
+
+; ======== ClrBits_state_rbm_cam_dif_ivvt_in_65e  (@0xc165e) ========
+ClrBits_state_rbm_cam_dif_ivvt_in_65e:
+        MOVB RL4,#DATA16 000FDH
+        ANDB state_rbm_cam_dif_ivvt_in,RL4
+        RETS
+
+; ======== Calc_RBM_CamDif_IVVT  (@0xc1668) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by ivvt/cam output signals + DTC): IVVT cam-diff ratio-monitor (IUMPR):
+        ; rate_rbm_cam_dif_ivvt_in / state_rbm_cam_dif_ivvt_in.
+        ; ------------------------------------------------------------
+Calc_RBM_CamDif_IVVT:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        JNB obd_sf.0DH,L_C16E0
+        MOVB RL4,state_rbm_cam_dif_ivvt_in
+        ANDB RL4,#01H
+        JMPR cc_NE,L_C1686
+        MOV R4,diag_f86e
+        AND R4,#02H
+        JMPR cc_NE,L_C1686
+        MOVB RL4,#01H
+        ORB state_rbm_cam_dif_ivvt_in,RL4
+L_C1686:                 ; 0xc1686
+        MOVB RL4,state_rbm_cam_dif_ivvt_in
+        ANDB RL4,#02H
+        JMPR cc_NE,L_C169A
+        MOVB RL4,ivvt_in_1_struct_diag_mec_inci_ivvt_lv_inh_rbm_cam_dif_ivvt
+        JMPR cc_EQ,L_C169A
+        MOVB RL5,#02H
+        ORB state_rbm_cam_dif_ivvt_in,RL5
+L_C169A:                 ; 0xc169a
+        MOVB RL4,state_rbm_cam_dif_ivvt_in
+        ANDB RL4,#04H
+        JMPR cc_NE,L_C16A8
+        MOVB RL4,#04H
+        ORB state_rbm_cam_dif_ivvt_in,RL4
+L_C16A8:                 ; 0xc16a8
+        MOV R12,ctr_comp_rbm_cam_dif_ivvt_in
+        MOV R13,#00H
+        MOV R13,R12
+        MOV R12,0FF1CH
+        MOV R14,ctr_cdn_rbm_cam_dif_ivvt_in
+        CALLS 00FH,Div_U32_U16_Round32
+        MOV R8,R4
+        MOV R9,R5
+        MOV R4,R9
+        SHR R8,#03H
+        SHR R9,#03H
+        SHL R4,#0DH
+        OR R8,R4
+        CMP R9,#00H
+        JMPR cc_NE,L_C16D2
+        CMP R8,#DATA16 0FFFFH
+L_C16D2:                 ; 0xc16d2
+        JMPR cc_C,L_C16DA
+        MOV rate_rbm_cam_dif_ivvt_in,ONES
+        JMPR cc_UC,L_C16E0
+L_C16DA:                 ; 0xc16da
+        MOV R4,R8
+        MOV rate_rbm_cam_dif_ivvt_in,R4
+L_C16E0:                 ; 0xc16e0
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_C1650 ENDS
+        END

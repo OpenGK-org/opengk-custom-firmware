@@ -1,0 +1,252 @@
+; asw/imob/imob_fail.a66
+; 0xBC6A0-0xBC8E8  (584 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_dly_secu_2_imob                    EQU  090197H
+c_max_dly_act_imob                   EQU  09023BH
+
+PUBLIC  Diag_DTC_dd506, Imob_CmdFail_WarnLamp, Imob_Ctl_Data, Imob_State_Tick, Log_Event_f948
+EXTERN  Diag_DTC_dd506bbbbbb:NEAR, Imob_DTC_Fmy:NEAR, Imob_Update_WarnLamp:NEAR, L_BCB50:NEAR
+EXTERN  L_BCC10:NEAR, SMARTRA_runtime_cmd_sm:NEAR, xor_routine:NEAR
+
+S_BC6A0 SECTION CODE AT 0BC6A0H
+
+; ======== Imob_Ctl_Data  (@0xbc6a0) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by imob/smartra output signals): Immobilizer security control data:
+        ; imob_data_ctl_n_32/vs_imob (rpm/speed) + imob_bw.
+        ; ------------------------------------------------------------
+Imob_Ctl_Data:
+        MOV R4,#01H
+        MOV req_imob_b,R4
+        MOVB RL4,imob_data_ram_state_imob
+        CMPB RL4,#02H
+        JMPR cc_NE,L_BC6BE
+        MOVB RL5,imob_c292
+        CMPB RL5,#DATA16 000FFH
+        JMPR cc_NC,L_BC6BE
+        ADDB RL5,#01H
+        MOVB imob_c292,RL5
+L_BC6BE:                 ; 0xbc6be
+        MOVB RL4,imob_resp_ready
+        CMPB RL4,#00H
+        JMPR cc_ULE,L_BC6CC
+        SUBB RL4,#01H
+        MOVB imob_resp_ready,RL4
+L_BC6CC:                 ; 0xbc6cc
+        MOVB RL4,n_32
+        MOVB imob_data_ctl_n_32_imob,RL4
+        MOVB RL5,vs
+        MOVB imob_data_ctl_vs_imob,RL5
+        BMOV imob_bw.00H,lv_cam_err.07H
+        MOV R4,imob_bw
+        AND R4,#DATA16 00F1FH
+        MOV bw_imob_nvm,R4
+        MOV R12,#DATA16 0E7E2H
+        MOV R13,#DATA16 00000H
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#08H
+        CALLS 00DH,xor_routine
+        MOV cks_imob_nvm,R4
+        MOVB RL4,imob_c295
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NC,L_BC71C
+        ADDB RL4,#01H
+        MOVB imob_c295,RL4
+L_BC71C:                 ; 0xbc71c
+        JNB lv_fmy_imob.01H,L_BC736
+        BXOR lv_er_carb_b4.01H,ONES.00H
+        MOV R4,imob_ca42
+        CMP R4,#00H
+        JMPR cc_ULE,L_BC736
+        JB lv_er_carb_b4.01H,L_BC736
+        SUB R4,#01H
+        MOV imob_ca42,R4
+L_BC736:                 ; 0xbc736
+        JB imob_bw.08H,L_BC74C
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_BC74C
+        BCLR lv_fmy_imob.06H
+        MOV R4,#01H
+        MOV imob_ca44,R4
+        MOV R5,#01H
+        MOV g_f974,R5
+L_BC74C:                 ; 0xbc74c
+        RETS
+
+; ======== Imob_State_Tick  (@0xbc74e) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): Immobilizer: ram-state machine tick + delay
+        ; (c_max_dly_act_imob)
+        ; ------------------------------------------------------------
+Imob_State_Tick:
+        MOV R4,#01H
+        MOV req_imob_c,R4
+        MOVB RL4,#DATA16 0003DH
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_BC788
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_BC788:                 ; 0xbc788
+        MOVB RL4,imob_data_ram_state_imob
+        CMPB RL4,#04H
+        JMPR cc_NE,L_BC7C6
+        MOV R4,imob_ca40
+        JMPR cc_NE,L_BC7C2
+        MOV R12,#00H
+        CALLS 00BH,Imob_Update_WarnLamp
+        MOVB ctr_imob_nvm_1,ZEROS
+        MOVB ctr_imob_nvm_2,ZEROS
+        MOVB RL4,#01H
+        MOVB imob_data_ram_state_imob,RL4
+        MOVB RL5,lv_crank_c289
+        MOVB imob_sdr_ctr,RL5
+        MOVB RL3,#01H
+        MOVB smartra_cmd,RL3
+        MOVB RL2,DPP0:c_max_dly_act_imob
+        MOVB imob_resp_ready,RL2
+        JMPR cc_UC,L_BC7C6
+L_BC7C2:                 ; 0xbc7c2
+        ADD imob_ca40,ONES
+L_BC7C6:                 ; 0xbc7c6
+        JB can_fd58.09H,L_BC7F0
+        JNB imob_bw.02H,L_BC7F0
+        MOVB RL4,imob_c290
+        CMPB RL4,DPP0:c_dly_secu_2_imob
+        JMPR cc_NC,L_BC7E0
+        ADDB RL4,#01H
+        MOVB imob_c290,RL4
+        JMPR cc_UC,L_BC7F0
+L_BC7E0:                 ; 0xbc7e0
+        MOV R12,#00H
+        CALLS 00BH,Imob_Update_WarnLamp
+        MOV imob_ca44,ZEROS
+        BCLR imob_bw.02H
+        BSET imob_bw.08H
+        BCLR lv_fmy_imob.01H
+L_BC7F0:                 ; 0xbc7f0
+        JB lv_fmy_imob.0DH,L_BC814
+        JB imob_bw.08H,L_BC814
+        JNB can_fd58.09H,L_BC814
+        MOVB RL4,n_32
+        JMPR cc_NE,L_BC814
+        JB lv_fmy_imob.01H,L_BC814
+        MOVB RL5,imob_c298
+        JMPR cc_NE,L_BC810
+        BSET lv_fmy_imob.0DH
+        RETS
+L_BC810:                 ; 0xbc810
+        ADDB imob_c298,ONES
+L_BC814:                 ; 0xbc814
+        RETS
+
+; ======== Log_Event_f948  (@0xbc816) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Log_Event_f948:
+        MOV R4,#01H
+        MOV req_imob_a,R4
+        MOVB RL4,#DATA16 00039H
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_BC850
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_BC850:                 ; 0xbc850
+        MOVB RL4,#DATA16 0003AH
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_BC884
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_BC884:                 ; 0xbc884
+        RETS
+
+; ======== Imob_CmdFail_WarnLamp  (@0xbc886) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by imob/smartra output signals): Immobilizer command-fail handling: lv_fmy_imob +
+        ; smartra_cmd + Imob_Update_WarnLamp.
+        ; ------------------------------------------------------------
+Imob_CmdFail_WarnLamp:
+        MOVB RL4,imob_data_ram_state_imob
+        CMPB RL4,#04H
+        JMPA cc_UGT,Imob_DTC_Fmy
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        ADD R4,#DATA16 04902H
+        MOV R4,[R4]
+        JMPI cc_UC,[R4]
+
+; ======== Diag_DTC_dd506  (@0xbc89c) ========
+        ; ------------------------------------------------------------
+        ; Per-fault DTC setter: sets dtc_test_result and updates the DTC at status-address 0xd506. Name = DTC
+        ; status RAM address (unique per fault).
+        ; ------------------------------------------------------------
+Diag_DTC_dd506:
+        MOVB RL4,imob_data_ram_state_imob
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_BC8BA
+        CMPB RL4,#02H
+        JMPA cc_EQ,Diag_DTC_dd506bbbbbb
+        CMPB RL4,#03H
+        JMPA cc_EQ,SMARTRA_runtime_cmd_sm
+        CMPB RL4,#04H
+        JMPA cc_EQ,SMARTRA_runtime_cmd_sm
+        JMPA cc_UC,L_BCC10
+L_BC8BA:                 ; 0xbc8ba
+        JB lv_ecu_err.0FH,L_BC8CA
+        JB imob_bw.0BH,L_BC8CA
+        JB lv_fmy_imob.0BH,L_BC8CA
+        JMPA cc_UC,L_BCB50
+L_BC8CA:                 ; 0xbc8ca
+        JNB lv_fmy_imob.01H,L_BC8D2
+        JMPA cc_UC,L_BCB50
+L_BC8D2:                 ; 0xbc8d2
+        MOVB RL4,diag_c283
+        CMPB RL4,#05H
+        JMPA cc_UGT,L_BCB50
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        ADD R4,#DATA16 0490CH
+        MOV R4,[R4]
+        JMPI cc_UC,[R4]
+
+S_BC6A0 ENDS
+        END

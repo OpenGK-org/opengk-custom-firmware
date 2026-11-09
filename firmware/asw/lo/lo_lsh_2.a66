@@ -1,0 +1,146 @@
+; asw/lo/lo_lsh_2.a66
+; 0xB673C-0xB6880  (324 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_t_lshpwm_up_fast_vb_cor            EQU  090345H
+ldp_tco_temp_ls_ini           EQU  090E6DH
+ldp_tia_temp_ls_ini           EQU  090E74H
+ldp_temp_ls_ini_v_efc_lsh_ini   EQU  090FEFH
+ip_temp_ls_ini__tco__tia             EQU  09660EH
+ip_v_efc_lsh_up_ini__temp_ls_ini     EQU  096B76H
+
+PUBLIC  Calc_LSH_Up_Init, Calc_LSH_Up_PWM, Calc_LSH_Up_State, Log_Event_f95e
+EXTERN  Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_3D_Table:NEAR, Get_IP_Byte_X_Axis:NEAR, Get_IP_Byte_Y_Axis:NEAR
+
+S_B673C SECTION CODE AT 0B673CH
+
+; ======== Log_Event_f95e  (@0xb673c) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Log_Event_f95e:
+        MOV R4,#05H
+        MOV g_f95e,R4
+        MOVB RL4,#DATA16 00015H
+        MOVBZ R5,tq_lo_wr
+        MOVB [R5+#0F66EH],RL4
+        MOVB RL4,tq_lo_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_wr,RL4
+        MOVB RL4,tq_lo_wr
+        CMPB RL4,tq_lo_rd
+        JMPR cc_NE,L_B6776
+        BSET sched_flags.03H
+        MOVB RL4,tq_lo_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_rd,RL4
+L_B6776:                 ; 0xb6776
+        RETS
+
+; ======== Calc_LSH_Up_Init  (@0xb6778) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by lsh/ls_cur/n_grd/mtv output signals): Front O2 heater init: temp_ls_ini,
+        ; lsh_up state, v_efc_lsh_up.
+        ; ------------------------------------------------------------
+Calc_LSH_Up_Init:
+        MOVB RL4,conf_lam
+        JMPR cc_EQ,L_B6822
+        MOV R12,#DATA16 POF ldp_tco_temp_ls_ini
+        MOV R13,#DATA16 PAG ldp_tco_temp_ls_ini
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_tia_temp_ls_ini
+        MOV R13,#DATA16 PAG ldp_tia_temp_ls_ini
+        MOVBZ R14,tia
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_temp_ls_ini__tco__tia
+        MOV R13,#DATA16 PAG ip_temp_ls_ini__tco__tia
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB temp_ls_ini,RL4
+        MOV R12,#DATA16 POF ldp_temp_ls_ini_v_efc_lsh_ini
+        MOV R13,#DATA16 PAG ldp_temp_ls_ini_v_efc_lsh_ini
+        MOVBZ R14,RL4
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_v_efc_lsh_up_ini__temp_ls_ini
+        MOV R13,#DATA16 PAG ip_v_efc_lsh_up_ini__temp_ls_ini
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB lv_iga_c246,RL4
+        MOVB lsh_up_bank_1_v_efc_lsh_up,RL4
+        MOV R4,#01H
+        MOV lsh_up_bank_1_state_lsh_up,R4
+        MOV R5,#01H
+        MOV g_f98a,R5
+        MOVB RL4,#DATA16 00016H
+        MOVBZ R2,tq_lo_wr
+        MOVB [R2+#0F66EH],RL4
+        MOVB RL4,tq_lo_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_wr,RL4
+        MOVB RL4,tq_lo_wr
+        CMPB RL4,tq_lo_rd
+        JMPR cc_NE,L_B6810
+        BSET sched_flags.03H
+        MOVB RL4,tq_lo_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_rd,RL4
+L_B6810:                 ; 0xb6810
+        MOVB RL4,DPP0:c_t_lshpwm_up_fast_vb_cor
+        CMPB RL4,#00H
+        JMPR cc_ULE,L_B6822
+        MOVB g_c247,RL4
+        MOV R4,#01H
+        MOV g_f950,R4
+L_B6822:                 ; 0xb6822
+        RETS
+
+; ======== Calc_LSH_Up_State  (@0xb6824) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by lsh/ls_cur/n_grd/mtv output signals): Front O2 heater state/timing: lsh_up
+        ; state, t_lsh_up(_lim/_tol).
+        ; ------------------------------------------------------------
+Calc_LSH_Up_State:
+        MOV g_f98a,ZEROS
+        MOV lsh_up_bank_1_state_lsh_up,ZEROS
+        MOVB lsh_up_bank_1_t_lsh_up,ZEROS
+        MOVB lsh_up_bank_1_t_lsh_up_lim,ZEROS
+        MOVB lsh_up_bank_1_t_lsh_up_tol,ZEROS
+        MOVB lsh_up_bank_1_v_efc_lsh_up,ZEROS
+        MOVB lsh_up_bank_1_lshpwm_up,ZEROS
+        MOVBZ R4,lsh_up_bank_1_lshpwm_up
+        SHL R4,#08H
+        MOV R2,#DATA16 0493EH
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV g_f9c6,R4
+        RETS
+
+; ======== Calc_LSH_Up_PWM  (@0xb685c) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by lsh/ls_cur/n_grd/mtv output signals): Front O2 heater PWM: v_efc_lsh_up,
+        ; lshpwm_up.
+        ; ------------------------------------------------------------
+Calc_LSH_Up_PWM:
+        MOVB lsh_up_bank_1_v_efc_lsh_up,ZEROS
+        MOVB lsh_up_bank_1_lshpwm_up,ZEROS
+        MOVBZ R4,lsh_up_bank_1_lshpwm_up
+        SHL R4,#08H
+        MOV R2,#DATA16 0493EH
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV g_f9c6,R4
+        RETS
+
+S_B673C ENDS
+        END

@@ -1,0 +1,143 @@
+; asw/comm/comm_function.a66
+; 0xE4E38-0xE4F38  (256 bytes, 9 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  KWP_App_SubFn_0_case, KWP_App_SubFn_1_case, KWP_App_SubFn_4_case, KWP_App_SubFn_6_case, KWP_App_SubFn_7_case, KWP_App_SubFn_8_case
+PUBLIC  KWP_App_SubFn_reject_NRC12, KWP_App_SubFunction_Dispatcher, KWP_SID31_StartRoutineByLocalId
+EXTERN  Calc_Inh_IV_AS:NEAR, ClrBits_kwp_comms_flags_a80:NEAR, KWP_App_Handler_0e4644:NEAR, KWP_App_Handler_0e46bc:NEAR
+EXTERN  KWP_App_Handler_0e4d00:NEAR, KWP_App_IOControl_By_LocalId:NEAR, KWP_App_SID_reject_NRC11:NEAR, KWP_io_adaptive_values_adjustment:NEAR
+
+S_E4E38 SECTION CODE AT 0E4E38H
+
+; ======== KWP_App_SubFunction_Dispatcher  (@0xe4e38) ========
+        ; KWP2000 SID 0x30 InputOutputControlByLocalId. req[1]=sub-function via table @0x0A2126: 0=FUN_0e3ba8,
+        ; 1=IOControl by local id, 4=adaptive-values adjustment (LIDs 0x50..0x5C), 6/7/8=extra handlers.
+        ; Default NRC 0x12.
+KWP_App_SubFunction_Dispatcher:
+        MOV [-R0],R9
+        MOV [-R0],R6
+        MOV R4,kwp_req_ptr
+        SUB kwp_req_ptr,ONES
+        MOVB RL6,[R4]
+        MOV R4,kwp_req_ptr
+        SUB kwp_req_ptr,ONES
+        MOVB RL5,[R4]
+        CMPB RL5,#DATA16 00008H
+        JMPR cc_UGT,KWP_App_SubFn_reject_NRC12
+        MOVBZ R5,RL5
+        SHL R5,#01H
+        ADD R5,#DATA16 06126H
+        MOV R5,[R5]
+        JMPI cc_UC,[R5]
+
+; ======== KWP_App_SubFn_0_case  (@0xe4e62) ========
+KWP_App_SubFn_0_case:
+        MOV R4,kwp_msg_len
+        CMP R4,#03H
+        JMPR cc_NE,L_E4E76
+        MOVBZ R12,RL6
+        CALLS 00EH,Calc_Inh_IV_AS
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_E4F00
+L_E4E76:                 ; 0xe4e76
+        MOVB RL4,#DATA16 00079H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_E4F00
+
+; ======== KWP_App_SubFn_1_case  (@0xe4e80) ========
+KWP_App_SubFn_1_case:
+        MOVBZ R12,RL6
+        MOV R13,kwp_req_ptr
+        CALLS 00EH,KWP_App_IOControl_By_LocalId
+        MOV R9,R4
+        SHR R4,#08H
+        MOVB kwp_nrc,RL4
+        CMPB RL4,#00H
+        JMPR cc_NE,L_E4EA2
+        MOV R5,R9
+        MOVBZ R4,RL5
+        ADD R4,#03H
+        MOV kwp_msg_len,R4
+        JMPR cc_UC,L_E4F00
+L_E4EA2:                 ; 0xe4ea2
+        MOV R4,#03H
+        MOV kwp_msg_len,R4
+        JMPR cc_UC,L_E4F00
+
+; ======== KWP_App_SubFn_4_case  (@0xe4eaa) ========
+KWP_App_SubFn_4_case:
+        MOV R4,kwp_msg_len
+        CMP R4,#03H
+        JMPR cc_NE,L_E4EBE
+        MOVBZ R12,RL6
+        CALLS 00EH,KWP_io_adaptive_values_adjustment
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_E4F00
+L_E4EBE:                 ; 0xe4ebe
+        MOVB RL4,#DATA16 00079H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_E4F00
+
+; ======== KWP_App_SubFn_6_case  (@0xe4ec8) ========
+KWP_App_SubFn_6_case:
+        MOVBZ R12,RL6
+        MOV R13,kwp_req_ptr
+        CALLS 00EH,KWP_App_Handler_0e4644
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_E4F00
+
+; ======== KWP_App_SubFn_7_case  (@0xe4ed8) ========
+KWP_App_SubFn_7_case:
+        MOVBZ R12,RL6
+        MOV R13,kwp_req_ptr
+        CALLS 00EH,KWP_App_Handler_0e46bc
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_E4F00
+
+; ======== KWP_App_SubFn_8_case  (@0xe4ee8) ========
+KWP_App_SubFn_8_case:
+        MOVBZ R12,RL6
+        MOV R13,kwp_req_ptr
+        CALLS 00EH,KWP_App_Handler_0e4d00
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_E4F00
+
+; ======== KWP_App_SubFn_reject_NRC12  (@0xe4ef8) ========
+KWP_App_SubFn_reject_NRC12:
+        MOVB RL4,#DATA16 00012H
+        MOVB kwp_nrc,RL4
+L_E4F00:                 ; 0xe4f00
+        MOV R4,kwp_buf_base
+        MOV kwp_req_ptr,R4
+        MOV R6,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== KWP_SID31_StartRoutineByLocalId  (@0xe4f0e) ========
+        ; KWP2000 SID 0x31 StartRoutineByLocalId -> SMARTRA immobilizer routine dispatcher. Switches on req[0]
+        ; sub-function 0x12..0x21: key/PIN learning, immobilizer state query, limp-home counter, neutralise.
+        ; Gated by DAT_00fd0a&0x10 (diag comms active). Operates on imob_data_* state (key_state_imob,
+        ; imob_data_ram_state_imob, lv_fmy_imob). Mem services 0x23/0x3D live in the bootloader stack
+        ; (KWP_BL_SID_23 @08E1DC, KWP_BL_SID_3D @08EBB4).
+KWP_SID31_StartRoutineByLocalId:
+        MOV [-R0],R9
+        BSET kwp_comms_flags.0FH
+        MOV R9,kwp_req_ptr
+        JB bl_mode_status_flags.04H,L_E4F1E
+        JMPA cc_UC,ClrBits_kwp_comms_flags_a80
+L_E4F1E:                 ; 0xe4f1e
+        MOVB RL4,[R9+]
+        SUBB RL4,#DATA16 00012H
+        CMPB RL4,#DATA16 0000FH
+        JMPA cc_UGT,KWP_App_SID_reject_NRC11
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        ADD R4,#DATA16 06138H
+        MOV R4,[R4]
+        JMPI cc_UC,[R4]
+
+S_E4E38 ENDS
+        END

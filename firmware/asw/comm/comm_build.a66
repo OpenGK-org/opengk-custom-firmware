@@ -1,0 +1,329 @@
+; asw/comm/comm_build.a66
+; 0xA65B8-0xA68D2  (794 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  CCP_Check_Checksum, CCP_DAQ_BuildDTO, Init_CommObj_States, KWP_Build_NegResponse, Tail_f0a6818_5b8
+EXTERN  CCP_Calc_Checksum:NEAR, CCP_Set_EngineFlags:NEAR, CCP_Svc_Prog_DAQ:NEAR
+
+S_A65B8 SECTION CODE AT 0A65B8H
+
+; ======== Tail_f0a6818_5b8  (@0xa65b8) ========
+Tail_f0a6818_5b8:
+        CALLS 00AH,Init_CommObj_States
+        RETS
+        MOVB RL4,#DATA16 00028H
+        MOVB ccp_svc_cmd,RL4
+        MOVB ccp_svc_param,ZEROS
+        MOV R12,#DATA16 0D740H
+        CALLS 00AH,CCP_Svc_Prog_DAQ
+        MOVB RL4,g_d743
+        MOVB kwp_sec_level,RL4
+        MOVB RL5,ccp_svc_arg
+        MOVB kwp_cmd_id,RL5
+        MOVB RL3,g_d745
+        MOVB kwp_cmd_param,RL3
+        MOVB RL2,g_d746
+        MOVB kwp_dl_buf,RL2
+        MOVB RL1,g_d747
+        MOVB kwp_dl_data1,RL1
+        MOVB RL4,g_d748
+        MOVB kwp_dl_data2,RL4
+        MOVB RL4,g_d749
+        MOVB kwp_dl_data3,RL4
+        MOVB RL4,g_d74a
+        MOVB kwp_dl_data4,RL4
+        MOVB RL4,g_d74b
+        MOVB kwp_dl_data5,RL4
+        BSET sched_flags2.00H
+        BOR can_sched_flags1.0DH,can_sched_flags0.0DH
+        BMOV can_sched_flags0.0DH,can_sched_flags2.0DH
+        RETS
+        BSET sched_flags2.01H
+        BOR can_sched_flags1.0DH,can_sched_flags0.0DH
+        BMOV can_sched_flags0.0DH,can_sched_flags2.0DH
+        RETS
+        MOV R12,#00H
+        CALLS 008H,CommObj_Tp_TxStateMachine
+        RETS
+        MOV R12,#01H
+        CALLS 008H,CommObj_Tp_OnRxFrame
+        RETS
+        MOV R12,#02H
+        CALLS 008H,CommObj_Tp_OnRxFrame
+        RETS
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa664a [dpp]  W:{-}  R:{CC3INT_Handler}
+        ; ------------------------------------------------------------
+        MOVB RL4,#DATA16 00030H
+        MOVB g_d768,RL4
+        MOVB RL5,#DATA16 00096H
+        MOVB g_d76a,RL5
+        MOV R12,#DATA16 0D768H
+        CALLS 00AH,CCP_Set_EngineFlags
+        RETS
+
+; ======== CCP_DAQ_BuildDTO  (@0xa6664) ========
+        ; CCP_DAQ_BuildDTO(srcPtr, daqList, count): builds DAQ Object Descriptor Table (ODT) DTOs for a DAQ
+        ; list and queues them for transmit (internal op 0x26 to CCP_Svc_Prog_DAQ). Gated by ccp_engine_flags
+        ; bit 0xb. ODT entry table @0xa2436 (6-byte stride); copies up to 7 element bytes per ODT from the
+        ; measurement pointers. Returns remaining count.
+CCP_DAQ_BuildDTO:
+        MOV [-R0],R14
+        MOV [-R0],R13
+        MOV [-R0],R12
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        SUB R0,#02H
+        JB ccp_engine_flags.0BH,L_A667C
+        JMPA cc_UC,L_A6806
+L_A667C:                 ; 0xa667c
+        MOV R4,R13
+        SHL R4,#02H
+        SUB R4,R13
+        SHL R4,#01H
+        MOV R5,[R4+#06436H]
+        MOV [R0],R5
+        MOV R4,R13
+        SHL R4,#02H
+        SUB R4,R13
+        SHL R4,#01H
+        MOVB RL6,[R4+#06438H]
+        JMPR cc_UC,L_A66B0
+L_A6698:                 ; 0xa6698
+        MOV R4,[R0]
+        MOVB RL5,[R4+#0BH]
+        CMPB RL5,#03H
+        JMPR cc_NE,L_A66A6
+        MOV R7,R4
+        JMPR cc_UC,L_A66B4
+L_A66A6:                 ; 0xa66a6
+        SUBB RL6,#01H
+        MOV R4,[R0]
+        ADD R4,#DATA16 0000CH
+        MOV [R0],R4
+L_A66B0:                 ; 0xa66b0
+        CMPB RL6,#00H
+        JMPR cc_NE,L_A6698
+L_A66B4:                 ; 0xa66b4
+        CMPB RL6,#00H
+        JMPR cc_EQ,L_A678E
+        MOVB RL4,#DATA16 00026H
+        MOVB ccp_svc_cmd,RL4
+        MOV R4,[R0+#0CH]
+        MOV R5,R4
+        SHL R5,#02H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#06439H]
+        MOVB ccp_svc_param,RL4
+        MOV R4,[R0]
+        MOV ccp_svc_arg,R4
+        JMPR cc_UC,L_A6750
+L_A66DC:                 ; 0xa66dc
+        MOVB RL4,[R7+#0BH]
+        CMPB RL4,#03H
+        JMPR cc_NE,L_A674A
+        MOVB RL4,#00H
+        MOVB [R7+#02H],RL4
+        MOVB RL4,#05H
+        MOVB [R7+#0BH],RL4
+        MOV R9,R7
+        ADD R9,#03H
+        MOV R8,[R0+#0AH]
+        ADD R8,#02H
+        MOV R4,[R0+#0AH]
+        MOVB RL5,[R4+#01H]
+        MOVB [R9],RL5
+        ADD R9,#01H
+        MOV R4,[R8+]
+        MOVB [R9],[R4]
+        ADD R9,#01H
+        MOV R4,[R8+]
+        MOVB [R9],[R4]
+        ADD R9,#01H
+        MOV R4,[R8+]
+        MOVB [R9],[R4]
+        ADD R9,#01H
+        MOV R4,[R8+]
+        MOVB [R9],[R4]
+        ADD R9,#01H
+        MOV R4,[R8+]
+        MOVB [R9],[R4]
+        ADD R9,#01H
+        MOV R4,[R8+]
+        MOVB [R9],[R4]
+        ADD R9,#01H
+        MOV R4,[R8+]
+        MOVB [R9],[R4]
+        MOV R4,[R0]
+        MOV [R4],R7
+        MOV [R0],R7
+        MOV R4,[R0+#0AH]
+        ADD R4,#DATA16 00010H
+        MOV [R0+#0AH],R4
+        MOV R5,[R0+#0EH]
+        SUB R5,#01H
+        MOV [R0+#0EH],R5
+L_A674A:                 ; 0xa674a
+        ADD R7,#DATA16 0000CH
+        SUBB RL6,#01H
+L_A6750:                 ; 0xa6750
+        CMPB RL6,#00H
+        JMPR cc_EQ,L_A675A
+        MOV R4,[R0+#0EH]
+        JMPR cc_NE,L_A66DC
+L_A675A:                 ; 0xa675a
+        MOV R4,#00H
+        MOV R5,[R0]
+        MOV [R5],R4
+        MOV R4,[R0+#0CH]
+        MOV R5,R4
+        SHL R5,#02H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL6,[R5+#0643AH]
+        MOV R5,[R0+#0EH]
+        JMPR cc_EQ,L_A6786
+        CMPB RL6,#00H
+        JMPR cc_EQ,L_A6786
+        MOV R2,[R0]
+        ADD R2,#02H
+        MOVB RL4,[R2]
+        ORB RL4,#DATA16 00080H
+        MOVB [R2],RL4
+L_A6786:                 ; 0xa6786
+        MOV R12,#DATA16 0D740H
+        CALLS 00AH,CCP_Svc_Prog_DAQ
+L_A678E:                 ; 0xa678e
+        MOV R4,[R0+#0EH]
+        JMPR cc_EQ,L_A6806
+        CMPB RL6,#00H
+        JMPR cc_NE,L_A6806
+        MOV R5,#00H
+        MOV ccp_dto_err0,R5
+        MOVB RL4,#01H
+        MOVB ccp_dto_err2,RL4
+        MOVB RL5,#DATA16 000FEH
+        MOVB ccp_dto_err3,RL5
+        MOVB RL3,#01H
+        MOVB ccp_dto_err4,RL3
+        MOVB ccp_dto_err5,ZEROS
+        MOV R4,[R0+#0AH]
+        MOVB RL2,[R4+#01H]
+        MOVB ccp_dto_err6,RL2
+        MOVB RL4,#DATA16 00044H
+        MOVB ccp_dto_err7,RL4
+        MOVB RL1,#DATA16 00045H
+        MOVB ccp_dto_err8,RL1
+        MOVB RL4,#DATA16 00041H
+        MOVB ccp_dto_err9,RL4
+        MOVB RL4,#DATA16 00044H
+        MOVB ccp_dto_err10,RL4
+        MOVB RL4,#05H
+        MOVB ccp_dto_err11,RL4
+        MOVB RL4,#DATA16 00026H
+        MOVB ccp_svc_cmd,RL4
+        MOVB RL4,#03H
+        MOVB ccp_svc_param,RL4
+        MOV R4,#DATA16 0E01AH
+        MOV ccp_svc_arg,R4
+        MOV R12,#DATA16 0D740H
+        CALLS 00AH,CCP_Svc_Prog_DAQ
+L_A6806:                 ; 0xa6806
+        MOVB RL4,[R0+#0EH]
+        ADD R0,#02H
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        ADD R0,#06H
+        RETS
+
+; ======== Init_CommObj_States  (@0xa6818) ========
+        ; ------------------------------------------------------------
+        ; Seg-A ISR helper (verified by SFR/CCP usage): Initialize comms-object state table (0x10 entries,
+        ; stride 0xc, state=3).
+        ; ------------------------------------------------------------
+Init_CommObj_States:
+        MOV R13,#DATA16 0E02AH
+        MOV R12,#DATA16 00010H
+L_A6820:                 ; 0xa6820
+        MOVB RL4,#03H
+        MOVB [R13+#0BH],RL4
+        ADD R13,#DATA16 0000CH
+        SUB R12,#01H
+        JMPR cc_NE,L_A6820
+        MOV R13,#DATA16 0E0EAH
+        MOV R12,#08H
+L_A6834:                 ; 0xa6834
+        MOVB RL4,#03H
+        MOVB [R13+#0BH],RL4
+        ADD R13,#DATA16 0000CH
+        SUB R12,#01H
+        JMPR cc_NE,L_A6834
+        MOV R13,#DATA16 0E14AH
+        MOV R12,#01H
+L_A6848:                 ; 0xa6848
+        MOVB RL4,#03H
+        MOVB [R13+#0BH],RL4
+        ADD R13,#DATA16 0000CH
+        SUB R12,#01H
+        JMPR cc_NE,L_A6848
+        RETS
+
+; ======== KWP_Build_NegResponse  (@0xa6858) ========
+        ; ------------------------------------------------------------
+        ; Seg-A helper (verified): Build KWP negative-response message (d740/d742 + e00a buffer with kwp_nrc /
+        ; d78a / d78c).
+        ; ------------------------------------------------------------
+KWP_Build_NegResponse:
+        MOVB RL4,#DATA16 00026H
+        MOVB ccp_svc_cmd,RL4
+        MOVB RL5,#03H
+        MOVB ccp_svc_param,RL5
+        MOV R4,#DATA16 0E00AH
+        MOV ccp_svc_arg,R4
+        MOV R5,#00H
+        MOV kwp_nrsp0,R5
+        MOVB RL4,#01H
+        MOVB kwp_nrsp_len,RL4
+        MOVB RL5,kwp_resp_pad
+        MOVB kwp_nrsp_pad,RL5
+        MOVB RL3,kwp_nrc_D78B
+        MOVB kwp_nrsp_nrc,RL3
+        MOVB RL2,kwp_resp_cmd_echo
+        MOVB kwp_nrsp_cmd,RL2
+        MOVB RL1,kwp_resp_status2
+        MOVB kwp_nrsp_status,RL1
+        MOVB RL4,kwp_resp_addr_lo
+        MOVB kwp_nrsp_addr_lo,RL4
+        MOVB RL4,kwp_resp_addr_hi
+        MOVB kwp_nrsp_addr_hi,RL4
+        MOVB RL4,kwp_resp_cnt_lo
+        MOVB kwp_nrsp_cnt_lo,RL4
+        MOVB RL4,kwp_resp_cnt_hi
+        MOVB kwp_nrsp_cnt_hi,RL4
+        MOVB RL4,#05H
+        MOVB kwp_nrsp_end,RL4
+        RETS
+
+; ======== CCP_Check_Checksum  (@0xa68c2) ========
+        ; ------------------------------------------------------------
+        ; Seg-A ISR helper (verified by SFR/CCP usage): Checksum check gate: if DAT_00e79e.0x4000 clear,
+        ; compute via CCP_Calc_Checksum.
+        ; ------------------------------------------------------------
+CCP_Check_Checksum:
+        MOV R4,ccp_e79e
+        AND R4,#DATA16 04000H
+        JMPR cc_NE,L_A68D0
+        CALLS 00AH,CCP_Calc_Checksum
+L_A68D0:                 ; 0xa68d0
+        RETS
+
+S_A65B8 ENDS
+        END

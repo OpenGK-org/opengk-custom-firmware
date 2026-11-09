@@ -1,0 +1,66 @@
+; asw/co.a66
+; 0xB9BDA-0xB9C42  (104 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Calc_TI_CO_IS, NVM_Save_s63e, Reset_Dc97a_c38
+EXTERN  Elevated_Write_Routine_prg_zone_wrapper:NEAR
+
+S_B9BDA SECTION CODE AT 0B9BDAH
+
+; ======== Calc_TI_CO_IS  (@0xb9bda) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tam/toil/teg/th output signals): Injection-time CO/idle adaptation ti_co_is.
+        ; ------------------------------------------------------------
+Calc_TI_CO_IS:
+        JB lv_conf_mis.00H,L_B9C06
+        JNB can_fd58.02H,L_B9BE8
+        CALLS 00BH,Reset_Dc97a_c38
+        RETS
+L_B9BE8:                 ; 0xb9be8
+        EXTP #03H, #02H
+        MOV R4,DPP0:diag_f890
+        MOV R5,DPP0:diag_f892
+        EXTP R5, #02H
+        MOV R2,[R4+#063EH]
+        NOP
+        MOV lv_ti_c97a,R2
+        MOV ti_co_is,R2
+        RETS
+L_B9C06:                 ; 0xb9c06
+        CALLS 00BH,Reset_Dc97a_c38
+        RETS
+
+; ======== NVM_Save_s63e  (@0xb9c0c) ========
+        ; ------------------------------------------------------------
+        ; NVM adaptation I/O: saves RAM-> validated NVM block (DAT_00f890 base) section; xor_routine checksum.
+        ; Section offset in name.
+        ; ------------------------------------------------------------
+NVM_Save_s63e:
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        ADD R12,#DATA16 0063EH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0C97AH
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        RETS
+
+; ======== Reset_Dc97a_c38  (@0xb9c38) ========
+Reset_Dc97a_c38:
+        MOV lv_ti_c97a,ZEROS
+        MOV ti_co_is,ZEROS
+        RETS
+
+S_B9BDA ENDS
+        END

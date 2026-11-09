@@ -1,0 +1,330 @@
+; asw/comm/comm_ccp.a66
+; 0xA53A0-0xA56DE  (830 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  CCP_Init, CCP_Resp_Dispatch, CCP_Svc_Prog_DAQ
+EXTERN  CCP_Cmd_StateMachine:NEAR, CCP_DAQ_Security:NEAR, CCP_Prog_State:NEAR, CCP_Reset_State:NEAR
+EXTERN  CCP_Set_EngineFlags:NEAR, CCP_Svc_Conn_Security:NEAR, Move_xFF_items__from_PTR_R12_to_PTR_R13:NEAR
+
+S_A53A0 SECTION CODE AT 0A53A0H
+
+; ======== CCP_Init  (@0xa53a0) ========
+        ; CCP_Init(): CCP slave init - calls flush helpers (0a5efa, 0a5eaa) then CCP_Reset_State.
+CCP_Init:
+        CALLS 00AH,CCP_Prog_State
+        CALLS 00AH,CCP_DAQ_Security
+        CALLS 00AH,CCP_Reset_State
+        RETS
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa53ae [dpp]  W:{-}  R:{-}
+        ; ------------------------------------------------------------
+        MOV R12,#DATA16 0FAF4H
+        CALLS 00AH,CCP_Svc_Conn_Security
+        RETS
+
+; ======== CCP_Resp_Dispatch  (@0xa53b8) ========
+        ; CCP_Resp_Dispatch(bufPtr): builds/queues CCP DTO responses by internal op code bufPtr[0]: 0x11/0x0e
+        ; -> checksum DTO via CCP_Svc(0a5f7c), 0x1d -> EXCHANGE_ID (op 0x17 to CCP_Svc_Prog_DAQ + op 0x1a to
+        ; CCP_Svc_Conn_Security), 0x1e -> PROGRAM (0x18/0x1b), 0x1f -> MOVE (0x19), 0x20 -> cal-page (0x1c).
+        ; Unknown -> err cnt DAT_00c51a++.
+CCP_Resp_Dispatch:
+        MOV [-R0],R9
+        MOV R9,R12
+        MOVB RL4,[R9]
+        CMPB RL4,#DATA16 00011H
+        JMPR cc_EQ,L_A53E4
+        CMPB RL4,#DATA16 0000EH
+        JMPR cc_EQ,L_A53FE
+        CMPB RL4,#DATA16 0001DH
+        JMPR cc_EQ,L_A5418
+        CMPB RL4,#DATA16 0001EH
+        JMPR cc_EQ,L_A543A
+        CMPB RL4,#DATA16 0001FH
+        JMPR cc_EQ,L_A545C
+        CMPB RL4,#DATA16 00020H
+        JMPR cc_EQ,L_A546E
+        JMPR cc_UC,L_A5488
+L_A53E4:                 ; 0xa53e4
+        MOVB RL4,#DATA16 00016H
+        MOVB ccp_d7be,RL4
+        MOVB RL5,[R9+#02H]
+        MOVB ccp_d7c0,RL5
+        MOV R12,#DATA16 0D7BEH
+        CALLS 00AH,CCP_Cmd_StateMachine
+        JMPR cc_UC,L_A548C
+L_A53FE:                 ; 0xa53fe
+        MOVB RL4,#DATA16 00016H
+        MOVB ccp_d7be,RL4
+        MOVB RL5,#DATA16 00050H
+        MOVB ccp_d7c0,RL5
+        MOV R12,#DATA16 0D7BEH
+        CALLS 00AH,CCP_Cmd_StateMachine
+        JMPR cc_UC,L_A548C
+L_A5418:                 ; 0xa5418
+        MOVB RL4,#DATA16 00017H
+        MOVB ccp_d7bc,RL4
+        MOV R12,#DATA16 0D7BCH
+        CALLS 00AH,CCP_Svc_Prog_DAQ
+        MOVB RL4,#DATA16 0001AH
+        MOVB ccp_d7b8,RL4
+        MOV R12,#DATA16 0D7B8H
+        CALLS 00AH,CCP_Svc_Conn_Security
+        JMPR cc_UC,L_A548C
+L_A543A:                 ; 0xa543a
+        MOVB RL4,#DATA16 00018H
+        MOVB ccp_d7bc,RL4
+        MOV R12,#DATA16 0D7BCH
+        CALLS 00AH,CCP_Svc_Prog_DAQ
+        MOVB RL4,#DATA16 0001BH
+        MOVB ccp_d7b8,RL4
+        MOV R12,#DATA16 0D7B8H
+        CALLS 00AH,CCP_Svc_Conn_Security
+        JMPR cc_UC,L_A548C
+L_A545C:                 ; 0xa545c
+        MOVB RL4,#DATA16 00019H
+        MOVB ccp_d7b8,RL4
+        MOV R12,#DATA16 0D7B8H
+        CALLS 00AH,CCP_Svc_Conn_Security
+        JMPR cc_UC,L_A548C
+L_A546E:                 ; 0xa546e
+        MOVB RL4,#DATA16 0001CH
+        MOVB ccp_d7b8,RL4
+        MOV R12,#DATA16 0D7B8H
+        CALLS 00AH,CCP_Svc_Conn_Security
+        MOVB RL4,ccp_d7ba
+        MOVB [R9+#02H],RL4
+        JMPR cc_UC,L_A548C
+L_A5488:                 ; 0xa5488
+        SUBB ccp_c51a,ONES
+L_A548C:                 ; 0xa548c
+        MOV R9,[R0+]
+        RETS
+
+; ======== CCP_Svc_Prog_DAQ  (@0xa5490) ========
+        ; CCP_Svc_Prog_DAQ(opBufPtr): CCP service handler keyed by internal op opBuf[0], gated by
+        ; ccp_prog_state (0->expects 0x17 EXCHANGE_ID to arm, then 0x20). Ops: 0x18=PROGRAM, 0x26/0x27=send
+        ; DAQ-DTO (ODT via SET_DAQ_PTR table @0xa23d2), 0x28/0x29=WRITE/read DAQ list slot (&DAT_00c512),
+        ; 0x10=SET_DAQ list ptr, 0x0f=WRITE_DAQ element; arms periodic DAQ via CCP_DAQ_queue(0a6352). Errors
+        ; -> DAT_00c511++.
+CCP_Svc_Prog_DAQ:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R6
+        MOV R8,R12
+        MOVB RL6,#00H
+        MOV R4,ccp_prog_state_D798
+        JMPR cc_EQ,L_A54AA
+        CMP R4,#DATA16 00020H
+        JMPR cc_EQ,L_A54C6
+        JMPA cc_UC,L_A56D0
+L_A54AA:                 ; 0xa54aa
+        MOVB RL4,[R8]
+        CMPB RL4,#DATA16 00017H
+        JMPR cc_NE,L_A54BE
+        MOV R4,#DATA16 00020H
+        MOV ccp_prog_state_D798,R4
+        JMPA cc_UC,L_A56D4
+L_A54BE:                 ; 0xa54be
+        SUBB ccp_c511,ONES
+        JMPA cc_UC,L_A56D4
+L_A54C6:                 ; 0xa54c6
+        MOVB RL4,[R8]
+        CMPB RL4,#DATA16 00018H
+        JMPR cc_EQ,L_A54FC
+        CMPB RL4,#DATA16 00026H
+        JMPR cc_EQ,L_A5504
+        CMPB RL4,#DATA16 00027H
+        JMPR cc_EQ,L_A556A
+        CMPB RL4,#DATA16 00028H
+        JMPR cc_EQ,L_A55B6
+        CMPB RL4,#DATA16 00029H
+        JMPA cc_EQ,L_A5604
+        CMPB RL4,#DATA16 00010H
+        JMPA cc_EQ,L_A5614
+        CMPB RL4,#DATA16 0000FH
+        JMPA cc_EQ,L_A5656
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa54f8 [dpp]  W:{-}  R:{-}
+        ; ------------------------------------------------------------
+        JMPA cc_UC,L_A56CA
+L_A54FC:                 ; 0xa54fc
+        CALLS 00AH,CCP_Prog_State
+        JMPA cc_UC,L_A56D4
+L_A5504:                 ; 0xa5504
+        MOVB RL4,#DATA16 00013H
+        MOVB ccp_e1a8,RL4
+        MOVB RL5,[R8+#02H]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#02H
+        SUB R5,R4
+        SHL R5,#02H
+        MOV R4,[R5+#063D2H]
+        MOV ccp_e1aa,R4
+        MOVB RL4,[R8+#03H]
+        MOVB ccp_e1ac,RL4
+        MOV R4,[R8+#04H]
+        MOV ccp_e1ae,R4
+        MOV R5,[R8+#04H]
+        MOVB RL4,[R5+#02H]
+        CMPB RL4,#01H
+        JMPR cc_NE,L_A555C
+        MOV R4,ccp_e1aa
+        MOV R5,[R4]
+        MOV R2,[R8+#04H]
+        MOV [R2+#0CH],R5
+        MOV R4,ccp_e1aa
+        MOV R5,[R4+#02H]
+        MOV R2,[R8+#04H]
+        MOV [R2+#0EH],R5
+L_A555C:                 ; 0xa555c
+        MOV R12,#DATA16 0E1A8H
+        CALLS 00AH,CCP_Svc_Conn_Security
+        MOVB RL6,RL4
+        JMPA cc_UC,L_A56D4
+L_A556A:                 ; 0xa556a
+        MOVB RL4,[R8+#02H]
+        MOVBZ R9,RL4
+        MOVB RL4,#04H
+        MOVB [R9+#0C512H],RL4
+        MOVB RL4,#DATA16 00012H
+        MOVB ccp_e1a8,RL4
+        MOV R4,R9
+        SHL R4,#02H
+        SUB R4,R9
+        SHL R4,#02H
+        MOV R5,[R4+#063D2H]
+        MOV ccp_e1aa,R5
+        MOVB RL4,[R8+#03H]
+        MOVB ccp_e1ac,RL4
+        MOV R12,#DATA16 0E1ADH
+        MOV R13,R8
+        ADD R13,#04H
+        MOVB RL5,[R8+#03H]
+        MOVBZ R14,RL5
+        CALLS 00AH,Move_xFF_items__from_PTR_R12_to_PTR_R13
+        MOV R12,#DATA16 0E1A8H
+        CALLS 00AH,CCP_Svc_Conn_Security
+        MOVB RL6,RL4
+        JMPA cc_UC,L_A56D4
+L_A55B6:                 ; 0xa55b6
+        MOVB RL4,[R8+#02H]
+        MOVBZ R9,RL4
+        MOVB RL4,[R9+#0C512H]
+        JMPR cc_EQ,L_A55FE
+        MOVB RL4,#02H
+        MOVB [R9+#0C512H],RL4
+        MOV R4,R9
+        SHL R4,#02H
+        ADD R4,R9
+        SHL R4,#01H
+        MOVB RL5,[R4+#0D79AH]
+        MOVB [R8+#03H],RL5
+        MOV R12,R8
+        ADD R12,#04H
+        MOV R13,#DATA16 0D79BH
+        MOV R4,R9
+        SHL R4,#02H
+        ADD R4,R9
+        SHL R4,#01H
+        ADD R13,R4
+        MOV R4,R9
+        SHL R4,#02H
+        ADD R4,R9
+        SHL R4,#01H
+        MOVB RL5,[R4+#0D79AH]
+        MOVBZ R14,RL5
+        CALLS 00AH,Move_xFF_items__from_PTR_R12_to_PTR_R13
+        JMPR cc_UC,L_A56D4
+L_A55FE:                 ; 0xa55fe
+        SUBB ccp_c511,ONES
+        JMPR cc_UC,L_A56D4
+L_A5604:                 ; 0xa5604
+        MOVB RL4,[R8+#02H]
+        MOVBZ R4,RL4
+        MOVB RL5,[R4+#0C512H]
+        MOVB [R8+#03H],RL5
+        JMPR cc_UC,L_A56D4
+L_A5614:                 ; 0xa5614
+        MOV R4,[R8+#02H]
+        MOV R5,[R4+#06H]
+        MOVB RL4,[R5]
+        MOVBZ R9,RL4
+        MOVB RL4,[R8+#04H]
+        MOVB [R9+#0C512H],RL4
+        MOV R4,[R8+#02H]
+        MOV R5,[R4+#06H]
+        MOV R10,[R5+#04H]
+        MOV R11,[R5+#06H]
+        MOV R4,R10
+        OR R4,R11
+        JMPR cc_EQ,L_A56D4
+        MOVB RL4,#DATA16 00015H
+        MOVB ccp_d794,RL4
+        MOV R5,R9
+        MOVB ccp_d796,RL5
+        MOV R12,#DATA16 0D794H
+        CALLS 00AH,CCP_Set_EngineFlags
+        JMPR cc_UC,L_A56D4
+L_A5656:                 ; 0xa5656
+        MOV R4,[R8+#02H]
+        MOV R5,[R4+#06H]
+        MOVB RL4,[R5]
+        MOVBZ R9,RL4
+        MOVB RL4,[R8+#04H]
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa5666 [dpp]  W:{-}  R:{-}
+        ; ------------------------------------------------------------
+        MOV R5,R9
+        SHL R5,#02H
+        ADD R5,R9
+        SHL R5,#01H
+        MOVB [R5+#0D79AH],RL4
+        MOV R12,#DATA16 0D79BH
+        MOV R4,R9
+        SHL R4,#02H
+        ADD R4,R9
+        SHL R4,#01H
+        ADD R12,R4
+        MOV R13,R8
+        ADD R13,#05H
+        MOV R4,R9
+        SHL R4,#02H
+        ADD R4,R9
+        SHL R4,#01H
+        MOVB RL5,[R4+#0D79AH]
+        MOVBZ R14,RL5
+        CALLS 00AH,Move_xFF_items__from_PTR_R12_to_PTR_R13
+        MOVB RL4,#01H
+        MOVB [R9+#0C512H],RL4
+        MOV R4,[R8+#02H]
+        MOV R5,[R4+#06H]
+        MOV R10,[R5+#04H]
+        MOV R11,[R5+#06H]
+        MOV R4,R10
+        OR R4,R11
+        JMPR cc_EQ,L_A56D4
+        MOVB RL4,#DATA16 00014H
+        MOVB ccp_d794,RL4
+        MOV R5,R9
+        MOVB ccp_d796,RL5
+        MOV R12,#DATA16 0D794H
+        CALLS 00AH,CCP_Set_EngineFlags
+        JMPR cc_UC,L_A56D4
+L_A56CA:                 ; 0xa56ca
+        SUBB ccp_c511,ONES
+        JMPR cc_UC,L_A56D4
+L_A56D0:                 ; 0xa56d0
+        SUBB ccp_c511,ONES
+L_A56D4:                 ; 0xa56d4
+        MOVB RL4,RL6
+        MOV R6,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_A53A0 ENDS
+        END

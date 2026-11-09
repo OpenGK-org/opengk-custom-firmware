@@ -1,0 +1,148 @@
+; asw/cp/cp_hb.a66
+; 0xCB588-0xCB6CC  (324 bytes, 7 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Calc_maf_sp_hb, Diag_VS_Purge_Cond, Nop_cb6c0, Nop_cb6c2, Nop_cb6c4, Nop_cb6c8
+PUBLIC  Nop_cb6ca
+
+S_CB588 SECTION CODE AT 0CB588H
+
+; ======== Diag_VS_Purge_Cond  (@0xcb588) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by dominant output signals): Vehicle-speed + purge condition gating:
+        ; lv_cdn_diag_vs_plaus / lv_cp_act.
+        ; ------------------------------------------------------------
+Diag_VS_Purge_Cond:
+        MOV cp_vsdiag_lim,ONES
+        BCLR lv_cdn_diag_vs_plaus.04H
+        BSET lv_cdn_diag_vs_plaus.05H
+        BSET lv_cdn_diag_vs_plaus.06H
+        BCLR lv_cdn_diag_vs_plaus.07H
+        BCLR lv_cdn_diag_vs_plaus.08H
+        BCLR lv_cdn_diag_vs_plaus.0DH
+        BCLR lv_cdn_diag_vs_plaus.0EH
+        BCLR lv_cdn_diag_vs_plaus.0FH
+        BSET lv_cdn_diag_vs_plaus.09H
+        BSET lv_cdn_diag_vs_plaus.0AH
+        BCLR lv_cdn_diag_vs_plaus.0BH
+        BCLR lv_cdn_diag_vs_plaus.0CH
+        MOVB cp_vsmdl_2,ZEROS
+        MOV R4,#DATA16 04000H
+        MOV cp_vsmdl_1,R4
+        MOV cp_vsmdl_0,ZEROS
+        MOV R5,#DATA16 07FFFH
+        MOV cp_vsmdl_3,R5
+        MOV R2,#DATA16 00400H
+        MOV cp_vsmdl_4,R2
+        MOV R3,#DATA16 00400H
+        MOV cp_vsmdl_5,R3
+        MOV R1,#DATA16 00400H
+        MOV cp_vsmdl_6,R1
+        MOV R2,#DATA16 07FFFH
+        MOV cp_vsdiag_max,R2
+        MOV cp_vsdiag_acc0,ZEROS
+        MOV cp_vsdiag_acc1,ZEROS
+        MOV cp_vsdiag_acc2,ZEROS
+        MOV cp_vsdiag_acc3,ZEROS
+        MOV cp_vsdiag_acc4,ZEROS
+        MOV cp_vsdiag_acc5,ZEROS
+        MOV cp_vsdiag_acc6,ZEROS
+        MOV cp_vsdiag_acc7,ZEROS
+        BSET lv_cp_act.01H
+        MOV cp_vsmdl_7,ZEROS
+        MOV cp_vsmdl_8,ZEROS
+        MOV R2,#DATA16 00400H
+        MOV lamb_sp_cp,R2
+        MOV R2,#01H
+        OR lv_cp_diag_stat,R2
+        MOV R2,#DATA16 00400H
+        MOV cp_sp_lim,R2
+        MOV R2,#DATA16 08000H
+        MOV cp_flowmdl_p0,R2
+        MOV cp_flowmdl_p1,R2
+        MOV cp_flowmdl_p2,R2
+        MOV R2,#DATA16 06000H
+        MOV R1,#00H
+        MULU R2,R1
+        MOV R3,MDH_FE0C
+        MOV R2,0FE0EH
+        MOV R1,R3
+        SHR R2,#0FH
+        SHR R3,#0FH
+        SHL R1,#01H
+        OR R2,R1
+        MOV cp_flowmdl_i0,R2
+        MOV R2,#DATA16 06000H
+        MOV R1,#00H
+        MULU R2,R1
+        MOV R3,MDH_FE0C
+        MOV R2,0FE0EH
+        MOV R1,R3
+        SHR R2,#0FH
+        SHR R3,#0FH
+        SHL R1,#01H
+        OR R2,R1
+        MOV cp_flowmdl_i1,R2
+        MOV R2,#DATA16 06000H
+        MOV R1,#00H
+        MULU R2,R1
+        MOV R3,MDH_FE0C
+        MOV R2,0FE0EH
+        MOV R1,R3
+        SHR R2,#0FH
+        SHR R3,#0FH
+        SHL R1,#01H
+        OR R2,R1
+        MOV cp_flowmdl_i2,R2
+        MOV R2,#DATA16 08000H
+        MOV cp_flowmdl_p3,R2
+        MOV R2,#DATA16 06000H
+        MOV R1,#00H
+        MULU R2,R1
+        MOV R3,MDH_FE0C
+        MOV R2,0FE0EH
+        MOV R1,R3
+        SHR R2,#0FH
+        SHR R3,#0FH
+        SHL R1,#01H
+        OR R2,R1
+        MOV cp_flowmdl_i3,R2
+        RETS
+
+; ======== Calc_maf_sp_hb  (@0xcb6ae) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Calc_maf_sp_hb:
+        MOV R4,maf_sp
+        MOV lv_maf_f7c4,R4
+        MOVB RL4,lv_maf_f7c5
+        MOVB maf_sp_hb,RL4
+        RETS
+
+; ======== Nop_cb6c0  (@0xcb6c0) ========
+Nop_cb6c0:
+        RETS
+
+; ======== Nop_cb6c2  (@0xcb6c2) ========
+Nop_cb6c2:
+        RETS
+
+; ======== Nop_cb6c4  (@0xcb6c4) ========
+Nop_cb6c4:
+        RETS
+        RETS
+
+; ======== Nop_cb6c8  (@0xcb6c8) ========
+Nop_cb6c8:
+        RETS
+
+; ======== Nop_cb6ca  (@0xcb6ca) ========
+Nop_cb6ca:
+        RETS
+
+S_CB588 ENDS
+        END

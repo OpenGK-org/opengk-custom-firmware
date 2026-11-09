@@ -1,0 +1,75 @@
+; asw/opg.a66
+; 0xB97DC-0xB9874  (152 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Calc_ISA_Opening_Start, Set_opg_sp_st_isa_7dc
+EXTERN  Add_r12_r13_Return_r4:NEAR, Get_IP_Byte_2D_Table_DWord_YByte:NEAR, Get_IP_Byte_3D_Table_DWord_XWord_YWord:NEAR, Get_IP_Word_2D_Table_DWord_YByte:NEAR
+EXTERN  Get_IP_Word_3D_Table_DWord_XByte_YWord:NEAR, Get_IP_Word_3D_Table_DWord_XWord_YWord:NEAR, Mul_Frac_Sat_x2:NEAR
+
+S_B97DC SECTION CODE AT 0B97DCH
+
+; ======== Set_opg_sp_st_isa_7dc  (@0xb97dc) ========
+Set_opg_sp_st_isa_7dc:
+        MOV opg_sp_st_isa,ZEROS
+        RETS
+
+; ======== Calc_ISA_Opening_Start  (@0xb97e2) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tam/toil/teg/th output signals): Idle-air actuator opening at start:
+        ; opg_rel_st / opg_sp_st_isa.
+        ; ------------------------------------------------------------
+Calc_ISA_Opening_Start:
+        MOV [-R0],R9
+        JNB lv_pl.04H,L_B9870
+        JNB abs_def.04H,L_B9800
+        MOV R12,#DATA16 04804H
+        MOV R13,n_C93C
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YWord
+        MOV R9,R4
+        JMPR cc_UC,L_B9812
+L_B9800:                 ; 0xb9800
+        MOV R12,#DATA16 04810H
+        MOV R13,n_C93C
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YWord
+        MOV R9,R4
+L_B9812:                 ; 0xb9812
+        MOV R12,#DATA16 0482CH
+        MOV R13,n_C93C
+        MOV R14,amp
+        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YWord
+        MOVBZ R4,RL4
+        MOV [-R0],R4
+        MOV R12,#DATA16 04824H
+        MOVBZ R13,tia
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        MOVBZ R4,RL4
+        MOV [-R0],R4
+        MOV R12,#DATA16 0481CH
+        MOVBZ R13,pv_av
+        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        MOV R13,R4
+        MOV R12,R9
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV R12,R4
+        MOV R13,[R0+]
+        CALLS 00FH,Mul_Frac_Sat_x2
+        MOV R12,R4
+        MOV R13,[R0+]
+        CALLS 00FH,Mul_Frac_Sat_x2
+        MOV opg_rel_st,R4
+        MOV R12,#DATA16 04838H
+        MOV R13,n_C93C
+        MOV R14,R4
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XWord_YWord
+        MOV opg_sp_st_isa,R4
+L_B9870:                 ; 0xb9870
+        MOV R9,[R0+]
+        RETS
+
+S_B97DC ENDS
+        END

@@ -1,0 +1,167 @@
+; asw/ar/ar_kgh.a66
+; 0xD0744-0xD0896  (338 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+lc_maf_tqi_ref                       EQU  09047FH
+c_maf_tqi_ref_lgrd                   EQU  09060EH
+
+PUBLIC  Calc_MAF_HB, Calc_MAF_Kgh_Fac, Calc_MAF_TQI_Ref, Set_lv_cp_set_close_d074
+EXTERN  Add_Clamp_U8:NEAR, Add_r12_r13_Return_r4:NEAR, Detect_MAF_Puls:NEAR, Div_S32_Signed:NEAR
+EXTERN  Get_IP_Byte_2D_Table_DWord_YWord:NEAR, Get_IP_Byte_3D_Table_DWord_XWord_YWord:NEAR, MulDiv_S16_PSW:NEAR, Mul_S16_S32:NEAR
+EXTERN  Sat_Sub_S16_v2:NEAR, sub_r12_r13_rets_r4:NEAR
+
+S_D0744 SECTION CODE AT 0D0744H
+
+; ======== Set_lv_cp_set_close_d074  (@0xd0744) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Set_lv_cp_set_close_d074:
+        CALLS 00CH,Detect_MAF_Puls
+        JB lv_amp_ad_rst.0BH,L_D0758
+        JB lv_maf_puls.00H,L_D0758
+        JB lv_cam_err.03H,L_D0758
+        BSET lv_cp_set_close.0EH
+        RETS
+L_D0758:                 ; 0xd0758
+        BCLR lv_cp_set_close.0EH
+        RETS
+
+; ======== Calc_MAF_Kgh_Fac  (@0xd075c) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by maf/tps output signals + DTC): MAF mass-flow scaling factor maf_kgh_mes_fac.
+        ; ------------------------------------------------------------
+Calc_MAF_Kgh_Fac:
+        MOV [-R0],R6
+        MOV R12,#DATA16 04FF6H
+        MOV R13,n_C93C
+        MOV R14,tps_seg
+        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YWord
+        MOVB RL6,RL4
+        MOV R12,#DATA16 05002H
+        MOV R13,maf_bas
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YWord
+        MOVBZ R4,RL4
+        MOV [-R0],R4
+        MOV R12,#DATA16 00080H
+        MOVBZ R13,fac_maf_trim
+        CALLS 00FH,Sat_Sub_S16_v2
+        MOV R12,R4
+        MOV R13,[R0+]
+        CALLS 00FH,Mul_S16_S32
+        MOV R12,R4
+        MOV R13,R5
+        MOVBZ R14,RL6
+        CALLS 00FH,MulDiv_S16_PSW
+        MOV R10,#00H
+        MOV R11,#01H
+        CALLS 00DH,Div_S32_Signed
+        MOVBS R13,RL4
+        MOVBZ R12,RL6
+        CALLS 00FH,Add_Clamp_U8
+        MOVB maf_kgh_mes_fac,RL4
+        MOV R6,[R0+]
+        RETS
+
+; ======== Calc_MAF_HB  (@0xd07b6) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by maf/tps output signals + DTC): MAF hot-bridge raw value maf_hb.
+        ; ------------------------------------------------------------
+Calc_MAF_HB:
+        MOVB RL4,lv_iga_cc2b
+        MOVB maf_hb,RL4
+        RETS
+
+; ======== Calc_MAF_TQI_Ref  (@0xd07c0) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by maf/tps output signals + DTC): MAF-based indicated-torque reference
+        ; maf_tqi_ref.
+        ; ------------------------------------------------------------
+Calc_MAF_TQI_Ref:
+        JNB lv_pl.00H,L_D07E4
+        MOVB RL4,DPP0:lc_maf_tqi_ref
+        JMPR cc_EQ,L_D07E4
+        MOV R4,maf_word
+        CMP R4,maf_sp
+        JMPR cc_NC,L_D07DA
+        MOV R4,maf_word
+        JMPR cc_UC,L_D07DE
+L_D07DA:                 ; 0xd07da
+        MOV R4,maf_sp
+L_D07DE:                 ; 0xd07de
+        MOV lv_maf_f7ec,R4
+        JMPR cc_UC,L_D07EC
+L_D07E4:                 ; 0xd07e4
+        MOV R4,maf_word
+        MOV lv_maf_f7ec,R4
+L_D07EC:                 ; 0xd07ec
+        JNB lv_pl.00H,L_D07F6
+        BCLR lv_amp_ad_rst.08H
+        BCLR lv_amp_ad_rst.0AH
+        JMPR cc_UC,L_D0806
+L_D07F6:                 ; 0xd07f6
+        JNB lv_amp_ad_rst.07H,L_D0806
+        MOV R4,lv_maf_f7ec
+        CMP R4,maf_sp
+        JMPR cc_NE,L_D0806
+        BSET lv_amp_ad_rst.08H
+L_D0806:                 ; 0xd0806
+        JNB lv_amp_ad_rst.08H,L_D0888
+        JB lv_amp_ad_rst.0AH,L_D0820
+        MOV R4,maf_tqi_ref
+        CMP R4,lv_maf_f7ec
+        JMPR cc_ULE,L_D081C
+        BSET lv_amp_ad_rst.09H
+        JMPR cc_UC,L_D081E
+L_D081C:                 ; 0xd081c
+        BCLR lv_amp_ad_rst.09H
+L_D081E:                 ; 0xd081e
+        BSET lv_amp_ad_rst.0AH
+L_D0820:                 ; 0xd0820
+        JNB lv_amp_ad_rst.09H,L_D0856
+        MOV R12,maf_tqi_ref
+        MOV R13,lv_maf_f7ec
+        CALLS 00FH,sub_r12_r13_rets_r4
+        CMP R4,DPP0:c_maf_tqi_ref_lgrd
+        JMPR cc_ULE,L_D0848
+        MOV R12,maf_tqi_ref
+        MOV R13,DPP0:c_maf_tqi_ref_lgrd
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV maf_tqi_ref,R4
+        JMPR cc_UC,L_D0890
+L_D0848:                 ; 0xd0848
+        MOV R4,lv_maf_f7ec
+        MOV maf_tqi_ref,R4
+        BCLR lv_amp_ad_rst.0AH
+        BCLR lv_amp_ad_rst.08H
+        JMPR cc_UC,L_D0890
+L_D0856:                 ; 0xd0856
+        MOV R12,lv_maf_f7ec
+        MOV R13,maf_tqi_ref
+        CALLS 00FH,sub_r12_r13_rets_r4
+        CMP R4,DPP0:c_maf_tqi_ref_lgrd
+        JMPR cc_ULE,L_D087A
+        MOV R12,maf_tqi_ref
+        MOV R13,DPP0:c_maf_tqi_ref_lgrd
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV maf_tqi_ref,R4
+        JMPR cc_UC,L_D0890
+L_D087A:                 ; 0xd087a
+        MOV R4,lv_maf_f7ec
+        MOV maf_tqi_ref,R4
+        BCLR lv_amp_ad_rst.0AH
+        BCLR lv_amp_ad_rst.08H
+        JMPR cc_UC,L_D0890
+L_D0888:                 ; 0xd0888
+        MOV R4,lv_maf_f7ec
+        MOV maf_tqi_ref,R4
+L_D0890:                 ; 0xd0890
+        BMOV lv_amp_ad_rst.07H,lv_pl.00H
+        RETS
+
+S_D0744 ENDS
+        END

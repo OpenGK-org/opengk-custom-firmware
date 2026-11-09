@@ -1,0 +1,216 @@
+; asw/mpl.a66
+; 0xAE0D6-0xAE28C  (438 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_td_as                              EQU  090094H
+c_ign_mpl_crk_max                    EQU  0901E5H
+c_n_max_ign_mpl                      EQU  0902A9H
+c_tco_max_mpl                        EQU  09037BH
+c_vb_max_mpl                         EQU  09040CH
+c_vb_wdt_max                         EQU  09041DH
+c_td_ini                             EQU  09075AH
+c_td_t_mpl                           EQU  09075CH
+c_td_wdt_fac_ini                     EQU  09075EH
+c_td_wdt_fac_max                     EQU  090760H
+ldpm_tco_8                         EQU  090DB8H
+ip_nr_mpl_is__tco                    EQU  096118H
+ip_nr_mpl_st__tco                    EQU  096120H
+
+PUBLIC  Calc_MPL_IGA_ACT, Calc_TD_Dwell_Base, Calc_TD_Dwell_Base_2, Lookup_Dc20c_Tco
+EXTERN  Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_2D_Table_DWord_YByte:NEAR, Get_IP_Word_3D_Table_DWord_XByte_YByte:NEAR
+EXTERN  Sat_Add_S16_v2:NEAR
+
+S_AE0D6 SECTION CODE AT 0AE0D6H
+
+; ======== Calc_TD_Dwell_Base  (@0xae0d6) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by iga/igc/td output signals): Ignition dwell (transistor-drive) base time
+        ; td_bas + td_wdt_fac (Vbat/temp comp).
+        ; ------------------------------------------------------------
+Calc_TD_Dwell_Base:
+        MOV R4,DPP0:c_td_ini
+        MOV R5,#00H
+        SUB R4,#DATA16 05553H
+        SUBC R5,#01H
+        JMPR cc_UGT,L_AE106
+        MOV R4,DPP0:c_td_ini
+        MOV R2,#DATA16 06000H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0FH
+        SHR R5,#0FH
+        SHL R2,#01H
+        OR R4,R2
+        MOV td_bas,R4
+        JMPR cc_UC,L_AE10A
+L_AE106:                 ; 0xae106
+        MOV td_bas,ONES
+L_AE10A:                 ; 0xae10a
+        MOV R4,DPP0:c_td_wdt_fac_ini
+        MOV td_wdt_fac,R4
+        RETS
+
+; ======== Calc_TD_Dwell_Base_2  (@0xae114) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by iga/igc/td output signals): Ignition dwell base time (second path): td_bas /
+        ; td_wdt_fac.
+        ; ------------------------------------------------------------
+Calc_TD_Dwell_Base_2:
+        MOV [-R0],R9
+        MOV R12,#DATA16 0450CH
+        MOVBZ R13,vb
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YByte
+        MOV R12,R4
+        MOV R13,DPP0:c_td_as
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV R9,R4
+        MOV R5,#00H
+        SUB R4,#DATA16 05553H
+        SUBC R5,#01H
+        JMPR cc_UGT,L_AE15C
+        MOV R4,R9
+        MOV R2,#DATA16 06000H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0FH
+        SHR R5,#0FH
+        SHL R2,#01H
+        OR R4,R2
+        MOV td_bas,R4
+        JMPR cc_UC,L_AE160
+L_AE15C:                 ; 0xae15c
+        MOV td_bas,ONES
+L_AE160:                 ; 0xae160
+        MOVB RL4,vb
+        CMPB RL4,DPP0:c_vb_wdt_max
+        JMPR cc_ULE,L_AE174
+        MOV R4,#DATA16 08000H
+        MOV td_wdt_fac,R4
+        JMPR cc_UC,L_AE17C
+L_AE174:                 ; 0xae174
+        MOV R4,DPP0:c_td_wdt_fac_max
+        MOV td_wdt_fac,R4
+L_AE17C:                 ; 0xae17c
+        MOV R9,[R0+]
+        RETS
+
+; ======== Lookup_Dc20c_Tco  (@0xae180) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Lookup_Dc20c_Tco:
+        MOV R12,#DATA16 POF ldpm_tco_8
+        MOV R13,#DATA16 PAG ldpm_tco_8
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_nr_mpl_is__tco
+        MOV R13,#DATA16 PAG ip_nr_mpl_is__tco
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB lv_tco_c20c,RL4
+        MOV R12,#DATA16 POF ip_nr_mpl_st__tco
+        MOV R13,#DATA16 PAG ip_nr_mpl_st__tco
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB lv_tco_c20b,RL4
+        RETS
+
+; ======== Calc_MPL_IGA_ACT  (@0xae1b2) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (MS42, verified): multi-pulse ignition enable: mpl_iga_act + td_mpl from tco/vb/n
+        ; thresholds
+        ; (was FUN_0ae1b2)
+        ; ------------------------------------------------------------
+Calc_MPL_IGA_ACT:
+        MOV [-R0],R9
+        MOVB RL4,tco
+        CMPB RL4,DPP0:c_tco_max_mpl
+        JMPR cc_NC,L_AE284
+        JB lv_pl.04H,L_AE1C6
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_AE1DA
+L_AE1C6:                 ; 0xae1c6
+        MOVB RL4,tco_st
+        CMPB RL4,DPP0:c_tco_max_mpl
+        JMPR cc_NC,L_AE1DA
+        MOVB RL5,vb
+        CMPB RL5,DPP0:c_vb_max_mpl
+        JMPR cc_C,L_AE1E8
+L_AE1DA:                 ; 0xae1da
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_AE27E
+        MOVB RL4,n_32
+        CMPB RL4,DPP0:c_n_max_ign_mpl
+        JMPR cc_NC,L_AE27E
+L_AE1E8:                 ; 0xae1e8
+        MOVB RL4,#01H
+        MOVB mpl_iga_act,RL4
+        MOV R12,#DATA16 04518H
+        MOVBZ R13,vb
+        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        MOV R9,R4
+        MOV R5,#00H
+        SUB R4,#DATA16 05553H
+        SUBC R5,#01H
+        JMPR cc_UGT,L_AE226
+        MOV R4,R9
+        MOV R2,#DATA16 06000H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0FH
+        SHR R5,#0FH
+        SHL R2,#01H
+        OR R4,R2
+        MOV td_mpl_bas,R4
+        JMPR cc_UC,L_AE22A
+L_AE226:                 ; 0xae226
+        MOV td_mpl_bas,ONES
+L_AE22A:                 ; 0xae22a
+        MOV R4,DPP0:c_td_t_mpl
+        MOV R5,#00H
+        SUB R4,#DATA16 05553H
+        SUBC R5,#01H
+        JMPR cc_UGT,L_AE25A
+        MOV R4,DPP0:c_td_t_mpl
+        MOV R2,#DATA16 06000H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0FH
+        SHR R5,#0FH
+        SHL R2,#01H
+        OR R4,R2
+        MOV td_mpl_dly_bas,R4
+        JMPR cc_UC,L_AE25E
+L_AE25A:                 ; 0xae25a
+        MOV td_mpl_dly_bas,ONES
+L_AE25E:                 ; 0xae25e
+        MOVB RL4,DPP0:c_ign_mpl_crk_max
+        MOVB ign_mpl_crk_max,RL4
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_AE274
+        MOVB RL5,lv_tco_c20c
+        MOVB ign_mpl_nr,RL5
+        JMPR cc_UC,L_AE288
+L_AE274:                 ; 0xae274
+        MOVB RL4,lv_tco_c20b
+        MOVB ign_mpl_nr,RL4
+        JMPR cc_UC,L_AE288
+L_AE27E:                 ; 0xae27e
+        MOVB mpl_iga_act,ZEROS
+        JMPR cc_UC,L_AE288
+L_AE284:                 ; 0xae284
+        MOVB mpl_iga_act,ZEROS
+L_AE288:                 ; 0xae288
+        MOV R9,[R0+]
+        RETS
+
+S_AE0D6 ENDS
+        END

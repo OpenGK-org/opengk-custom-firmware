@@ -1,0 +1,326 @@
+; asw/lsh/lsh_di.a66
+; 0xB6464-0xB673C  (728 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_lshpwm_down_as                     EQU  09009DH
+c_lsh_down_lgrd                      EQU  090224H
+c_lshpwm_down_min                    EQU  090225H
+c_lshpwm_down_prev_1                 EQU  090226H
+c_lshpwm_down_prev_2                 EQU  090227H
+c_lshpwm_down_prev_3                 EQU  090228H
+c_t_lsh_down_prev_1                  EQU  09033CH
+c_t_lsh_down_prev_2                  EQU  09033DH
+c_t_lsh_down_prev_3                  EQU  09033EH
+c_t_lsh_down_prev_max                EQU  09033FH
+c_t_lshpwm_down_lim_max              EQU  090344H
+c_vb_lsh_max                         EQU  090405H
+c_fac_lshpwm_down_i_max              EQU  09053EH
+c_fac_lshpwm_down_i_min              EQU  090540H
+c_r_down_min_prev                    EQU  090684H
+c_r_down_sp_ls                       EQU  090686H
+c_temp_cat_lsh_down                  EQU  09076EH
+ldp_n_lshpwm_down             EQU  090CE8H
+ldp_maf_lshpwm_down             EQU  090CEFH
+ldp_r_dif_down_ls_1_lshpwm_i       EQU  0915E0H
+ip_lshpwm_i__r_dif_down_ls_1         EQU  092DD4H
+ip_lshpwm_down__n__maf               EQU  095F99H
+
+PUBLIC  Set_lv_cam_ad_di_ivvt_6464, Set_lv_cam_ad_di_ivvt_b64a, Set_lv_cam_ad_di_ivvt_b64b, Set_lv_cam_ad_di_ivvt_b64f
+EXTERN  Add_Clamp_U8:NEAR, Get_IP_Byte_3D_Table:NEAR, Get_IP_Byte_X_Axis:NEAR, Get_IP_Byte_Y_Axis:NEAR
+EXTERN  Get_IP_Word_2D_Table:NEAR, Get_IP_Word_Y_Axis:NEAR, Mul_Q15_Sat:NEAR, Sat_Add_S16_v2:NEAR
+EXTERN  Sat_Add_U8:NEAR, Sat_Sub_S16_v2:NEAR, sub_r12_13_ret_r4:NEAR, subtract_r12_r13_negate_if_not_rets_r4:NEAR
+
+S_B6464 SECTION CODE AT 0B6464H
+
+; ======== Set_lv_cam_ad_di_ivvt  (@0xb6464) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Set_lv_cam_ad_di_ivvt_6464:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R6
+        JNB lv_cam_ad_di_ivvt.0CH,L_B6474
+        MOV R9,#DATA16 0C74CH
+        JMPR cc_UC,L_B6478
+L_B6474:                 ; 0xb6474
+        MOV R9,#DATA16 0C74CH
+L_B6478:                 ; 0xb6478
+        JB lv_cam_ad_di_ivvt.0CH,L_B6486
+        MOVB RL4,conf_lam
+        CMPB RL4,#02H
+        JMPA cc_NE,L_B6730
+L_B6486:                 ; 0xb6486
+        MOVB RL4,vb
+        CMPB RL4,DPP0:c_vb_lsh_max
+        JMPR cc_ULE,L_B6498
+        MOV R4,#05H
+        MOV [R9+#0106H],R4
+        JMPR cc_UC,L_B6500
+L_B6498:                 ; 0xb6498
+        MOV R4,[R9+#0106H]
+        SUB R4,#01H
+        CMP R4,#04H
+        JMPR cc_UGT,Set_lv_cam_ad_di_ivvt_b64f
+        SHL R4,#01H
+        ADD R4,#DATA16 047BEH
+        MOV R4,[R4]
+        JMPI cc_UC,[R4]
+
+; ======== Set_lv_cam_ad_di_ivvt_b64a  (@0xb64ac) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Set_lv_cam_ad_di_ivvt_b64a:
+        MOV R4,temp_cat_word
+        CMP R4,DPP0:c_temp_cat_lsh_down
+        JMPR cc_ULE,L_B6500
+        MOV R4,#02H
+        MOV [R9+#0106H],R4
+        JMPR cc_UC,L_B6500
+
+; ======== Set_lv_cam_ad_di_ivvt_b64b  (@0xb64be) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Set_lv_cam_ad_di_ivvt_b64b:
+        MOVB RL4,vb
+        CMPB RL4,DPP0:c_vb_lsh_max
+        JMPR cc_UGT,L_B64D4
+        MOVB RL5,#00H
+        MOVB [R9+#0109H],RL5
+        MOV R4,#02H
+        MOV [R9+#0106H],R4
+L_B64D4:                 ; 0xb64d4
+        MOV R4,[R9+#0E8H]
+        CMP R4,DPP0:c_r_down_min_prev
+        JMPR cc_C,L_B64E8
+        MOVB RL4,[R9+#0109H]
+        CMPB RL4,DPP0:c_t_lsh_down_prev_max
+        JMPR cc_NE,L_B6500
+L_B64E8:                 ; 0xb64e8
+        MOV R4,#03H
+        MOV [R9+#0106H],R4
+        JMPR cc_UC,L_B6500
+
+; ======== Set_lv_cam_ad_di_ivvt_b64f  (@0xb64f0) ========
+        ; ------------------------------------------------------------
+        ; Named from dominant output signal (auto-derived).
+        ; ------------------------------------------------------------
+Set_lv_cam_ad_di_ivvt_b64f:
+        MOV R4,#02H
+        MOV [R9+#0106H],R4
+        MOVB RL4,#00H
+        MOVB [R9+#0109H],RL4
+        MOVB [R9+#0108H],RL4
+L_B6500:                 ; 0xb6500
+        MOV R4,[R9+#0106H]
+        CMP R4,#03H
+        JMPR cc_EQ,L_B6518
+        CMP R4,#04H
+        JMPR cc_EQ,L_B6518
+        CMP R4,#05H
+        JMPR cc_NE,L_B6528
+        MOV R4,#00H
+        MOV [R9+#010EH],R4
+        JMPR cc_UC,L_B6528
+L_B6518:                 ; 0xb6518
+        MOV R12,DPP0:c_r_down_sp_ls
+        MOV R13,[R9+#0E8H]
+        CALLS 00FH,Sat_Sub_S16_v2
+        MOV [R9+#010EH],R4
+L_B6528:                 ; 0xb6528
+        MOV R12,#DATA16 POF ldp_n_lshpwm_down
+        MOV R13,#DATA16 PAG ldp_n_lshpwm_down
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_maf_lshpwm_down
+        MOV R13,#DATA16 PAG ldp_maf_lshpwm_down
+        MOVBZ R14,lv_iga_cc2b
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_lshpwm_down__n__maf
+        MOV R13,#DATA16 PAG ip_lshpwm_down__n__maf
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB RL6,RL4
+        MOV R4,[R9+#0106H]
+        CMP R4,#02H
+        JMPR cc_EQ,L_B6570
+        CMP R4,#03H
+        JMPR cc_EQ,L_B65C4
+        CMP R4,#04H
+        JMPR cc_EQ,L_B6626
+        CMP R4,#05H
+        JMPA cc_EQ,L_B6708
+        JMPA cc_UC,L_B6710
+L_B6570:                 ; 0xb6570
+        MOVB RL4,[R9+#0109H]
+        CMPB RL4,DPP0:c_t_lsh_down_prev_3
+        JMPR cc_ULE,L_B6584
+        MOVB RL4,#DATA16 000FFH
+        MOVB [R9+#0108H],RL4
+        JMPR cc_UC,L_B65B4
+L_B6584:                 ; 0xb6584
+        MOVB RL4,[R9+#0109H]
+        CMPB RL4,DPP0:c_t_lsh_down_prev_2
+        JMPR cc_ULE,L_B6598
+        MOVB RL4,DPP0:c_lshpwm_down_prev_3
+        MOVB [R9+#0108H],RL4
+        JMPR cc_UC,L_B65B4
+L_B6598:                 ; 0xb6598
+        MOVB RL4,[R9+#0109H]
+        CMPB RL4,DPP0:c_t_lsh_down_prev_1
+        JMPR cc_ULE,L_B65AC
+        MOVB RL4,DPP0:c_lshpwm_down_prev_2
+        MOVB [R9+#0108H],RL4
+        JMPR cc_UC,L_B65B4
+L_B65AC:                 ; 0xb65ac
+        MOVB RL4,DPP0:c_lshpwm_down_prev_1
+        MOVB [R9+#0108H],RL4
+L_B65B4:                 ; 0xb65b4
+        MOV R4,R9
+        ADD R4,#DATA16 00109H
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+        JMPA cc_UC,L_B6710
+L_B65C4:                 ; 0xb65c4
+        MOVBZ R12,RL6
+        MOVB RL4,[R9+#0108H]
+        MOVBZ R13,RL4
+        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CMPB RL4,DPP0:c_lsh_down_lgrd
+        JMPR cc_ULE,L_B660A
+        MOVB RL4,[R9+#0108H]
+        CMPB RL4,RL6
+        JMPR cc_ULE,L_B65F4
+        MOVB RL4,[R9+#0108H]
+        MOVBZ R12,RL4
+        MOVBZ R13,DPP0:c_lsh_down_lgrd
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB [R9+#0108H],RL4
+        JMPA cc_UC,L_B6710
+L_B65F4:                 ; 0xb65f4
+        MOVB RL4,[R9+#0108H]
+        MOVBZ R12,RL4
+        MOVBZ R13,DPP0:c_lsh_down_lgrd
+        CALLS 00FH,Sat_Add_U8
+        MOVB [R9+#0108H],RL4
+        JMPA cc_UC,L_B6710
+L_B660A:                 ; 0xb660a
+        MOVB [R9+#0108H],RL6
+        MOV R4,#04H
+        MOV [R9+#0106H],R4
+        MOV R4,#DATA16 08000H
+        MOV [R9+#010CH],R4
+        MOVB RL4,#00H
+        MOVB [R9+#010AH],RL4
+        JMPA cc_UC,L_B6710
+L_B6626:                 ; 0xb6626
+        MOV R12,#DATA16 POF ldp_r_dif_down_ls_1_lshpwm_i
+        MOV R13,#DATA16 PAG ldp_r_dif_down_ls_1_lshpwm_i
+        MOV R14,[R9+#010EH]
+        ADD R14,#DATA16 08000H
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_lshpwm_i__r_dif_down_ls_1
+        MOV R13,#DATA16 PAG ip_lshpwm_i__r_dif_down_ls_1
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV R13,R4
+        ADD R13,#DATA16 08000H
+        MOV R12,[R9+#010CH]
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV R8,R4
+        CMP R8,DPP0:c_fac_lshpwm_down_i_max
+        JMPR cc_C,L_B6664
+        MOV R8,DPP0:c_fac_lshpwm_down_i_max
+        BSET lv_cam_ad_di_ivvt.0BH
+        JMPR cc_UC,L_B6670
+L_B6664:                 ; 0xb6664
+        CMP R8,DPP0:c_fac_lshpwm_down_i_min
+        JMPR cc_UGT,L_B6670
+        MOV R8,DPP0:c_fac_lshpwm_down_i_min
+        BSET lv_cam_ad_di_ivvt.0BH
+L_B6670:                 ; 0xb6670
+        BSET PSW.06H
+        JBC lv_cam_ad_di_ivvt.0BH,L_B6678
+        BCLR PSW.06H
+L_B6678:                 ; 0xb6678
+        JNB PSW.06H,L_B669A
+        MOVB RL4,[R9+#010AH]
+        CMPB RL4,DPP0:c_t_lshpwm_down_lim_max
+        JMPR cc_C,L_B668C
+        MOV R8,#DATA16 08000H
+        JMPR cc_UC,L_B66A0
+L_B668C:                 ; 0xb668c
+        MOV R4,R9
+        ADD R4,#DATA16 0010AH
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+        JMPR cc_UC,L_B66A0
+L_B669A:                 ; 0xb669a
+        MOVB RL4,#00H
+        MOVB [R9+#010AH],RL4
+L_B66A0:                 ; 0xb66a0
+        MOV [R9+#010CH],R8
+        MOV R12,[R9+#010CH]
+        MOVBZ R13,RL6
+        SHL R13,#08H
+        CALLS 00FH,Mul_Q15_Sat
+        MOV R8,R4
+        SHR R4,#08H
+        MOVBZ R12,RL4
+        MOVBS R13,DPP0:c_lshpwm_down_as
+        CALLS 00FH,Add_Clamp_U8
+        MOVB RL6,RL4
+        MOVBZ R12,RL6
+        MOVB RL4,[R9+#0108H]
+        MOVBZ R13,RL4
+        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CMPB RL4,DPP0:c_lsh_down_lgrd
+        JMPR cc_ULE,L_B6702
+        MOVB RL4,[R9+#0108H]
+        CMPB RL4,RL6
+        JMPR cc_ULE,L_B66EE
+        MOVB RL4,[R9+#0108H]
+        MOVBZ R12,RL4
+        MOVBZ R13,DPP0:c_lsh_down_lgrd
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB [R9+#0108H],RL4
+        JMPR cc_UC,L_B6710
+L_B66EE:                 ; 0xb66ee
+        MOVB RL4,[R9+#0108H]
+        MOVBZ R12,RL4
+        MOVBZ R13,DPP0:c_lsh_down_lgrd
+        CALLS 00FH,Sat_Add_U8
+        MOVB [R9+#0108H],RL4
+        JMPR cc_UC,L_B6710
+L_B6702:                 ; 0xb6702
+        MOVB [R9+#0108H],RL6
+        JMPR cc_UC,L_B6710
+L_B6708:                 ; 0xb6708
+        MOVB RL4,DPP0:c_lshpwm_down_min
+        MOVB [R9+#0108H],RL4
+L_B6710:                 ; 0xb6710
+        JNB lv_cam_ad_di_ivvt.0CH,L_B6730
+        MOVB RL4,[R9+#0108H]
+        MOVBZ R4,RL4
+        SHL R4,#08H
+        MOV R2,#DATA16 0493EH
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV lv_ivvt_f9c8,R4
+L_B6730:                 ; 0xb6730
+        BXOR lv_cam_ad_di_ivvt.0CH,ONES.00H
+        MOV R6,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_B6464 ENDS
+        END

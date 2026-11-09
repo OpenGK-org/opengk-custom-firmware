@@ -1,0 +1,294 @@
+; asw/fcut.a66
+; 0xB073A-0xB09F0  (694 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_add_n_max_fcut                     EQU  0904A6H
+c_crlc_n_grd_fil_1                   EQU  0904F6H
+c_crlc_n_grd_fil_2                   EQU  0904F8H
+c_tqi_max_pas                        EQU  090956H
+c_tqi_n_max_inc                      EQU  090958H
+c_n_grd_hys                          EQU  09096EH
+ldpm_gear                        EQU  0909C7H
+id_fac_n_max_i_at__gear              EQU  091AF6H
+id_fac_n_max_i_mt__gear              EQU  091B08H
+id_fac_n_max_p_at__gear              EQU  095114H
+id_fac_n_max_p_mt__gear              EQU  09511DH
+id_t_n_max_pred_at__gear             EQU  0954DDH
+id_t_n_max_pred_mt__gear             EQU  0954E6H
+
+PUBLIC  Calc_N_PRED_MAX_LIM, Reset_pv_av_h_9d8, Set_TQI_N_Max
+EXTERN  Add_r12_r13_Return_r4:NEAR, Get_IP_Byte_2D_Table_DWord_YByte:NEAR, Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_2D_Table_DWord_YWord:NEAR
+EXTERN  Interp_S16:NEAR, Mul_S16_Sat16:NEAR, Read_Byte_Far:NEAR, Read_Word_Far:NEAR
+EXTERN  Sat_Add_S16:NEAR, Sat_Add_S16_v2:NEAR, Sat_Add_S32:NEAR, Sat_S8:NEAR
+EXTERN  Sat_Sub_S16:NEAR, Sat_Sub_S16_v2:NEAR
+
+S_B073A SECTION CODE AT 0B073AH
+
+; ======== Set_TQI_N_Max  (@0xb073a) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): Engine Speed Limitation Controller (tqi_n_max=c_tqi_max_pas)
+        ; ------------------------------------------------------------
+Set_TQI_N_Max:
+        MOV R4,DPP0:c_tqi_max_pas
+        MOV tqi_n_max,R4
+        RETS
+
+; ======== Calc_N_PRED_MAX_LIM  (@0xb0744) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (MS42, verified): engine-speed gradient filter (c_crlc_n_grd_fil) + predicted max rev
+        ; limit n_pred_max_lim
+        ; (was FUN_0b0744)
+        ; ------------------------------------------------------------
+Calc_N_PRED_MAX_LIM:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R6
+        MOV R12,#DATA16 045C6H
+        MOVBZ R13,n_32
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        ADDB RL4,#DATA16 00080H
+        MOVBS R9,RL4
+        MOVBS R4,n_grd
+        CMP R4,R9
+        JMPR cc_SLE,L_B076E
+        MOVB RL4,n_grd
+        MOVB n_grd_fil,RL4
+        JMPR cc_UC,L_B0780
+L_B076E:                 ; 0xb076e
+        MOVBS R4,DPP0:c_n_grd_hys
+        SUB R9,R4
+        MOVBS R4,n_grd
+        CMP R4,R9
+        JMPR cc_SGE,L_B0780
+        MOVB n_grd_fil,ZEROS
+L_B0780:                 ; 0xb0780
+        JNB lv_act_cle_slv_ivvt.02H,L_B078A
+        MOV R8,DPP0:c_crlc_n_grd_fil_2
+        JMPR cc_UC,L_B078E
+L_B078A:                 ; 0xb078a
+        MOV R8,DPP0:c_crlc_n_grd_fil_1
+L_B078E:                 ; 0xb078e
+        MOVBS R12,n_grd_fil_fil
+        MOVBS R13,n_grd_fil
+        MOV R14,R8
+        CALLS 00FH,Interp_S16
+        MOV R12,R4
+        CALLS 00FH,Sat_S8
+        MOVB n_grd_fil_fil,RL4
+        MOV R12,#DATA16 POF ldpm_gear
+        MOV R13,#DATA16 PAG ldpm_gear
+        MOVBZ R14,gear
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOVB RL4,n_grd_fil_fil
+        CMPB RL4,#00H
+        JMPR cc_SLE,L_B07FA
+        JNB abs_def.04H,L_B07D2
+        MOV R12,#DATA16 POF id_t_n_max_pred_at__gear
+        MOV R13,#DATA16 PAG id_t_n_max_pred_at__gear
+        CALLS 00FH,Read_Byte_Far
+        MOVB RL6,RL4
+        JMPR cc_UC,L_B07E0
+L_B07D2:                 ; 0xb07d2
+        MOV R12,#DATA16 POF id_t_n_max_pred_mt__gear
+        MOV R13,#DATA16 PAG id_t_n_max_pred_mt__gear
+        CALLS 00FH,Read_Byte_Far
+        MOVB RL6,RL4
+L_B07E0:                 ; 0xb07e0
+        MOVBS R12,n_grd_fil_fil
+        MOVBZ R13,RL6
+        CALLS 00FH,Mul_S16_Sat16
+        MOV R13,R4
+        MOV R12,n_C93C
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV n_pred_max_lim,R4
+        JMPR cc_UC,L_B0802
+L_B07FA:                 ; 0xb07fa
+        MOV R4,n_C93C
+        MOV n_pred_max_lim,R4
+L_B0802:                 ; 0xb0802
+        BMOV lv_act_cle_slv_ivvt.06H,lv_act_cle_slv_ivvt.03H
+        MOV R12,n_max_thd
+        MOV R13,DPP0:c_add_n_max_fcut
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV R8,R4
+        CMP R8,n_C93C
+        JMPR cc_NC,L_B081E
+        BSET lv_act_cle_slv_ivvt.03H
+        JMPR cc_UC,L_B082A
+L_B081E:                 ; 0xb081e
+        MOV R4,n_C93C
+        CMP R4,n_max_thd
+        JMPR cc_UGT,L_B082A
+        BCLR lv_act_cle_slv_ivvt.03H
+L_B082A:                 ; 0xb082a
+        MOV R12,n_max_thd
+        MOV R13,n_pred_max_lim
+        CALLS 00FH,Sat_Sub_S16_v2
+        MOV n_dif_max_lim,R4
+        JNB abs_def.04H,L_B084E
+        MOV R12,#DATA16 POF id_fac_n_max_p_at__gear
+        MOV R13,#DATA16 PAG id_fac_n_max_p_at__gear
+        CALLS 00FH,Read_Byte_Far
+        MOVB RL6,RL4
+        JMPR cc_UC,L_B085C
+L_B084E:                 ; 0xb084e
+        MOV R12,#DATA16 POF id_fac_n_max_p_mt__gear
+        MOV R13,#DATA16 PAG id_fac_n_max_p_mt__gear
+        CALLS 00FH,Read_Byte_Far
+        MOVB RL6,RL4
+L_B085C:                 ; 0xb085c
+        MOV R12,n_dif_max_lim
+        MOVBZ R13,RL6
+        CALLS 00FH,Mul_S16_Sat16
+        MOV tq_n_max_dif_p,R4
+        BMOV lv_act_cle_slv_ivvt.07H,lv_act_cle_slv_ivvt.02H
+        MOV R5,n_dif_max_lim
+        CMP R5,#00H
+        JMPR cc_SGE,L_B087A
+        BSET lv_act_cle_slv_ivvt.02H
+        JMPR cc_UC,L_B0886
+L_B087A:                 ; 0xb087a
+        MOV R4,tqi_n_max
+        CMP R4,tqi_req_tra
+        JMPR cc_SLT,L_B0886
+        BCLR lv_act_cle_slv_ivvt.02H
+L_B0886:                 ; 0xb0886
+        BMOV lv_act_cle_slv_ivvt.05H,lv_act_cle_slv_ivvt.04H
+        JNB lv_act_cle_slv_ivvt.03H,L_B0890
+        JMPR cc_UC,L_B0894
+L_B0890:                 ; 0xb0890
+        JB lv_act_cle_slv_ivvt.06H,L_B089C
+L_B0894:                 ; 0xb0894
+        JNB lv_act_cle_slv_ivvt.02H,L_B08A0
+        JB lv_act_cle_slv_ivvt.07H,L_B08A0
+L_B089C:                 ; 0xb089c
+        BSET PSW.06H
+        JMPR cc_UC,L_B08A2
+L_B08A0:                 ; 0xb08a0
+        BCLR PSW.06H
+L_B08A2:                 ; 0xb08a2
+        BMOV lv_act_cle_slv_ivvt.04H,PSW.06H
+        JB lv_act_cle_slv_ivvt.03H,L_B08C2
+        JNB lv_act_cle_slv_ivvt.06H,L_B08C2
+        MOV R12,tqi_n_max_ref
+        NEG R12
+        MOV R13,tq_n_max_dif_p
+        CALLS 00FH,Sat_Sub_S16
+        MOV g_c5b6,R4
+        JMPR cc_UC,L_B08C6
+L_B08C2:                 ; 0xb08c2
+        MOV g_c5b6,ZEROS
+L_B08C6:                 ; 0xb08c6
+        JNB lv_act_cle_slv_ivvt.02H,L_B0948
+        JNB abs_def.04H,L_B08DE
+        MOV R12,#DATA16 POF id_fac_n_max_i_at__gear
+        MOV R13,#DATA16 PAG id_fac_n_max_i_at__gear
+        CALLS 00FH,Read_Word_Far
+        MOV R8,R4
+        JMPR cc_UC,L_B08EC
+L_B08DE:                 ; 0xb08de
+        MOV R12,#DATA16 POF id_fac_n_max_i_mt__gear
+        MOV R13,#DATA16 PAG id_fac_n_max_i_mt__gear
+        CALLS 00FH,Read_Word_Far
+        MOV R8,R4
+L_B08EC:                 ; 0xb08ec
+        MOV R12,n_dif_max_lim
+        MOV R13,R8
+        CALLS 00FH,Mul_S16_Sat16
+        MOV tq_n_max_inp_i,R4
+        MOV R5,tqi_n_max_1
+        CMP R5,#00H
+        JMPR cc_SGE,L_B090A
+        CMP R4,#00H
+        JMPR cc_SGT,L_B090A
+        MOV tq_n_max_inp_i,ZEROS
+L_B090A:                 ; 0xb090a
+        JNB lv_act_cle_slv_ivvt.04H,L_B0920
+        JB lv_act_cle_slv_ivvt.05H,L_B0920
+        MOV R4,g_c5b6
+        MOV g_c5ae,R4
+        MOV tq_n_max_dif_i,ZEROS
+        JMPR cc_UC,L_B095C
+L_B0920:                 ; 0xb0920
+        MOV R12,tq_n_max_dif_i
+        MOV R13,g_c5ae
+        MOV R14,tq_n_max_inp_i
+        MOV R15,R14
+        ASHR R15,#0FH
+        MOV R4,R14
+        SHL R14,#08H
+        SHL R15,#08H
+        SHR R4,#08H
+        OR R15,R4
+        CALLS 00FH,Sat_Add_S32
+        MOV tq_n_max_dif_i,R4
+        MOV g_c5ae,R5
+        JMPR cc_UC,L_B095C
+L_B0948:                 ; 0xb0948
+        MOV R4,tqi_av
+        MOV tqi_n_max_ref,R4
+        MOV tq_n_max_dif_p,ZEROS
+        MOV tq_n_max_dif_i,ZEROS
+        MOV g_c5ae,ZEROS
+L_B095C:                 ; 0xb095c
+        MOV R12,g_c5ae
+        MOV R13,tq_n_max_dif_p
+        CALLS 00FH,Sat_Add_S16
+        MOV tq_n_max_dif,R4
+        MOV R12,tqi_n_max_ref
+        MOV R13,R4
+        CALLS 00FH,Sat_Add_S16
+        MOV tqi_n_max_1,R4
+        JNB lv_act_cle_slv_ivvt.03H,L_B0984
+        MOV tqi_n_max_2,ZEROS
+        JMPR cc_UC,L_B09A8
+L_B0984:                 ; 0xb0984
+        JNB lv_act_cle_slv_ivvt.02H,L_B09A0
+        MOV R4,tqi_n_max_1
+        CMP R4,#00H
+        JMPR cc_SGE,L_B0996
+        MOV tqi_n_max_2,ZEROS
+        JMPR cc_UC,L_B09A8
+L_B0996:                 ; 0xb0996
+        MOV R4,tqi_n_max_1
+        MOV tqi_n_max_2,R4
+        JMPR cc_UC,L_B09A8
+L_B09A0:                 ; 0xb09a0
+        MOV R4,DPP0:c_tqi_max_pas
+        MOV tqi_n_max_2,R4
+L_B09A8:                 ; 0xb09a8
+        MOV R9,DPP0:c_tqi_n_max_inc
+        MOV R4,tqi_req_tra
+        CMP R4,tqi_n_max_2
+        JMPR cc_SGE,L_B09C8
+        MOV R5,tqi_n_max_2
+        SUB R5,R9
+        CMP R5,tqi_n_max
+        JMPR cc_SLE,L_B09C8
+        ADD tqi_n_max,R9
+        JMPR cc_UC,L_B09D0
+L_B09C8:                 ; 0xb09c8
+        MOV R4,tqi_n_max_2
+        MOV tqi_n_max,R4
+L_B09D0:                 ; 0xb09d0
+        MOV R6,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Reset_pv_av_h_9d8  (@0xb09d8) ========
+Reset_pv_av_h_9d8:
+        MOV R12,#DATA16 045CEH
+        MOV R13,tps_av
+        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YWord
+        MOV pv_av_h,R4
+        SHR R4,#02H
+        MOVB pv_av,RL4
+        RETS
+
+S_B073A ENDS
+        END

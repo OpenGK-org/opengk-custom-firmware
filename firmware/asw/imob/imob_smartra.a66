@@ -1,0 +1,451 @@
+; asw/imob/imob_smartra.a66
+; 0xBC8E8-0xBCCAC  (964 bytes, 11 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_dly_lih_5_imob                     EQU  09018DH
+c_dly_lih_imob                       EQU  09018EH
+c_dly_lih_max_2_imob                 EQU  09018FH
+c_dly_lih_max_3_imob                 EQU  090190H
+c_dly_lih_max_4_imob                 EQU  090191H
+c_dly_lih_min_1_imob                 EQU  090192H
+c_dly_lih_min_2_imob                 EQU  090193H
+c_dly_lih_min_3_imob                 EQU  090194H
+c_dly_lih_min_4_imob                 EQU  090195H
+c_dly_lock_imob                      EQU  090196H
+c_dly_secu_a_imob                    EQU  090198H
+c_max_dly_act_imob                   EQU  09023BH
+c_n_secu_b_imob                      EQU  0902C7H
+c_vs_secu_b_imob                     EQU  090447H
+
+PUBLIC  Diag_DTC_dd506b, Diag_DTC_dd506bb, Diag_DTC_dd506bbb, Diag_DTC_dd506bbbb, Diag_DTC_dd506bbbbb, Diag_DTC_dd506bbbbbb
+PUBLIC  Imob_LockState, L_BCB50, L_BCC10, SMARTRA_cmd_Init, SMARTRA_cmd_RuntimeAuth, SMARTRA_eval_comms_result
+PUBLIC  SMARTRA_runtime_cmd_sm
+EXTERN  Imob_Update_WarnLamp:NEAR, L_BCF10:NEAR, L_BCF16:NEAR, SMARTRA_clear_comms_timeout_flags:NEAR
+EXTERN  SMARTRA_flush_RX_buffers:NEAR, SMARTRA_runtime_auth_sm:NEAR
+
+S_BC8E8 SECTION CODE AT 0BC8E8H
+
+; ======== Diag_DTC_dd506b  (@0xbc8e8) ========
+        ; ------------------------------------------------------------
+        ; Per-fault DTC setter: sets dtc_test_result and updates the DTC at status-address 0xd506. Name = DTC
+        ; status RAM address (unique per fault).
+        ; ------------------------------------------------------------
+Diag_DTC_dd506b:
+        JB can_fd58.09H,L_BC8F0
+        JMPA cc_UC,L_BCB50
+L_BC8F0:                 ; 0xbc8f0
+        MOV diag_ca48,ZEROS
+        MOVB diag_c293,ZEROS
+        MOVB diag_c294,ZEROS
+        BCLR lv_fmy_imob.0FH
+        BCLR lv_er_carb_b4.00H
+        MOVB imob_c295,ZEROS
+        BSET lv_fmy_imob.06H
+        MOVBZ R4,DPP0:c_dly_lih_5_imob
+        MOV R5,#05H
+        MOV 0FE0EH,R4
+        DIVU R5
+        MOV imob_ca44,MDL
+        MOV R4,0FE0EH
+        MOV R2,#01H
+        MOV g_f974,R2
+        MOVB RL4,#01H
+        MOVB diag_c283,RL4
+        JMPA cc_UC,L_BCB50
+
+; ======== Diag_DTC_dd506bb  (@0xbc92a) ========
+        ; ------------------------------------------------------------
+        ; Per-fault DTC setter: sets dtc_test_result and updates the DTC at status-address 0xd506. Name = DTC
+        ; status RAM address (unique per fault).
+        ; ------------------------------------------------------------
+Diag_DTC_dd506bb:
+        JB lv_fmy_imob.0FH,L_BC932
+        JMPA cc_UC,L_BCB50
+L_BC932:                 ; 0xbc932
+        MOVB RL4,imob_sdr_ctr
+        CMPB RL4,#01H
+        JMPA cc_NE,L_BCB50
+        MOVB RL5,imob_c297
+        CMPB RL5,DPP0:c_dly_lih_min_1_imob
+        JMPR cc_ULE,L_BC952
+        MOVB RL3,#04H
+        MOVB diag_c283,RL3
+        BCLR lv_fmy_imob.0FH
+        JMPA cc_UC,L_BCB50
+L_BC952:                 ; 0xbc952
+        MOVB diag_c283,ZEROS
+        JMPA cc_UC,L_BCB50
+
+; ======== Diag_DTC_dd506bbb  (@0xbc95a) ========
+        ; ------------------------------------------------------------
+        ; Per-fault DTC setter: sets dtc_test_result and updates the DTC at status-address 0xd506. Name = DTC
+        ; status RAM address (unique per fault).
+        ; ------------------------------------------------------------
+Diag_DTC_dd506bbb:
+        JB lv_er_carb_b4.00H,L_BC962
+        JMPA cc_UC,L_BCB50
+L_BC962:                 ; 0xbc962
+        MOVB RL4,imob_c296
+        CMPB RL4,DPP0:c_dly_lih_min_4_imob
+        JMPR cc_ULE,L_BC9B2
+        CMPB RL4,DPP0:c_dly_lih_max_4_imob
+        JMPR cc_NC,L_BC99A
+        MOVB RL5,#03H
+        MOVB diag_c283,RL5
+        BCLR lv_fmy_imob.06H
+        MOVBZ R4,DPP0:c_dly_lih_max_3_imob
+        MOV R5,#05H
+        MOV 0FE0EH,R4
+        DIVU R5
+        MOV imob_ca44,MDL
+        MOV R4,0FE0EH
+        MOV R2,#01H
+        MOV g_f974,R2
+        BCLR lv_er_carb_b4.00H
+        JMPA cc_UC,L_BCB50
+L_BC99A:                 ; 0xbc99a
+        MOVB RL4,diag_c293
+        JMPR cc_EQ,L_BC9AA
+        MOVB RL5,#02H
+        MOVB diag_c283,RL5
+        JMPA cc_UC,L_BCB50
+L_BC9AA:                 ; 0xbc9aa
+        MOVB diag_c283,ZEROS
+        JMPA cc_UC,L_BCB50
+L_BC9B2:                 ; 0xbc9b2
+        MOVB diag_c283,ZEROS
+        JMPA cc_UC,L_BCB50
+
+; ======== Diag_DTC_dd506bbbb  (@0xbc9ba) ========
+        ; ------------------------------------------------------------
+        ; Per-fault DTC setter: sets dtc_test_result and updates the DTC at status-address 0xd506. Name = DTC
+        ; status RAM address (unique per fault).
+        ; ------------------------------------------------------------
+Diag_DTC_dd506bbbb:
+        JB lv_er_carb_b4.00H,L_BC9C2
+        JMPA cc_UC,L_BCB50
+L_BC9C2:                 ; 0xbc9c2
+        SUBB diag_c294,ONES
+        MOV R4,diag_ca48
+        SHL R4,#04H
+        MOVBZ R5,diag_c293
+        OR R4,R5
+        MOV diag_ca48,R4
+        MOVB diag_c293,ZEROS
+        MOVB RL4,diag_c294
+        CMPB RL4,#03H
+        JMPR cc_UGT,L_BCA22
+        MOVB RL5,imob_c296
+        CMPB RL5,DPP0:c_dly_lih_min_2_imob
+        JMPR cc_ULE,L_BCA1A
+        CMPB RL5,DPP0:c_dly_lih_max_2_imob
+        JMPR cc_NC,L_BCA1A
+        MOVB RL3,#03H
+        MOVB diag_c283,RL3
+        BCLR lv_er_carb_b4.00H
+        BCLR lv_fmy_imob.06H
+        MOVBZ R4,DPP0:c_dly_lih_max_3_imob
+        MOV R5,#05H
+        MOV 0FE0EH,R4
+        DIVU R5
+        MOV imob_ca44,MDL
+        MOV R4,0FE0EH
+        MOV R2,#01H
+        MOV g_f974,R2
+        JMPA cc_UC,L_BCB50
+L_BCA1A:                 ; 0xbca1a
+        MOVB diag_c283,ZEROS
+        JMPA cc_UC,L_BCB50
+L_BCA22:                 ; 0xbca22
+        MOVB RL4,#05H
+        MOVB diag_c283,RL4
+        JMPA cc_UC,L_BCB50
+
+; ======== Diag_DTC_dd506bbbbb  (@0xbca2c) ========
+        ; ------------------------------------------------------------
+        ; Per-fault DTC setter: sets dtc_test_result and updates the DTC at status-address 0xd506. Name = DTC
+        ; status RAM address (unique per fault).
+        ; ------------------------------------------------------------
+Diag_DTC_dd506bbbbb:
+        JB lv_fmy_imob.0FH,L_BCA34
+        JMPA cc_UC,L_BCB50
+L_BCA34:                 ; 0xbca34
+        MOVB RL4,imob_c297
+        CMPB RL4,DPP0:c_dly_lih_min_3_imob
+        JMPR cc_ULE,L_BCA98
+        CMPB RL4,DPP0:c_dly_lih_max_3_imob
+        JMPR cc_NC,L_BCA98
+        SUBB diag_c293,ONES
+        MOVB RL5,diag_c293
+        CMPB RL5,#DATA16 0000AH
+        JMPR cc_NC,L_BCA72
+        MOVB RL3,#04H
+        MOVB diag_c283,RL3
+        MOVBZ R4,DPP0:c_dly_lih_max_4_imob
+        MOV R5,#0AH
+        MOV 0FE0EH,R4
+        DIVU R5
+        MOV R4,0FE0EH
+        MOV R12,R4
+        ADD R12,#02H
+        CALLS 00BH,Imob_Update_WarnLamp
+        JMPR cc_UC,L_BCA94
+L_BCA72:                 ; 0xbca72
+        MOVB diag_c293,ZEROS
+        MOVB RL4,#02H
+        MOVB diag_c283,RL4
+        MOVBZ R4,DPP0:c_dly_lih_max_2_imob
+        MOV R5,#0AH
+        MOV 0FE0EH,R4
+        DIVU R5
+        MOV R4,0FE0EH
+        MOV R12,R4
+        ADD R12,#02H
+        CALLS 00BH,Imob_Update_WarnLamp
+L_BCA94:                 ; 0xbca94
+        BCLR lv_fmy_imob.0FH
+        JMPR cc_UC,L_BCA9C
+L_BCA98:                 ; 0xbca98
+        MOVB diag_c283,ZEROS
+L_BCA9C:                 ; 0xbca9c
+        JB state_out_req.0AH,L_BCAB6
+        MOV R4,imob_pwm_base
+        MOV R2,#00H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV imob_f9de,R4
+L_BCAB6:                 ; 0xbcab6
+        BCLR lv_fmy_imob.08H
+        JMPR cc_UC,L_BCB50
+
+; ======== Imob_LockState  (@0xbcaba) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (ThetaII, verified): immobilizer lock/limp-home state (lv_fmy_imob, c_dly_lock/lih_imob,
+        ; Imob_Update_WarnLamp)
+        ; (was FUN_0bcaba)
+        ; ------------------------------------------------------------
+Imob_LockState:
+        BCLR lv_fmy_imob.0FH
+        BCLR lv_er_carb_b4.00H
+        MOVB RL4,ctr_imob_nvm_2
+        CMPB RL4,#03H
+        JMPR cc_NC,L_BCAFC
+        MOV R4,diag_ca48
+        CMP R4,imob_sdr_b5
+        JMPR cc_NE,L_BCAFC
+        BSET lv_fmy_imob.01H
+        BCLR lv_fmy_imob.02H
+        BCLR lv_fmy_imob.07H
+        MOVBZ R5,DPP0:c_dly_lih_imob
+        MOV imob_ca42,R5
+        MOVBZ R2,DPP0:c_dly_lih_imob
+        MOV R3,#05H
+        MOV 0FE0EH,R2
+        DIVU R3
+        MOV R2,0FE0EH
+        MOV R12,R2
+        ADD R12,#02H
+        CALLS 00BH,Imob_Update_WarnLamp
+        MOVB ctr_imob_nvm_2,ZEROS
+        JMPR cc_UC,L_BCB4C
+L_BCAFC:                 ; 0xbcafc
+        BCLR lv_fmy_imob.01H
+        MOVB RL4,ctr_imob_nvm_2
+        CMPB RL4,#02H
+        JMPR cc_C,L_BCB3C
+        MOVB RL5,#04H
+        MOVB imob_data_ram_state_imob,RL5
+        MOVB RL3,imob_sdr_ctr
+        MOVB lv_crank_c289,RL3
+        MOVB RL2,#04H
+        MOVB imob_sdr_ctr,RL2
+        MOVBZ R4,DPP0:c_dly_lock_imob
+        MOV R12,R4
+        SHL R12,#04H
+        SUB R12,R4
+        SHL R12,#02H
+        ADD R12,#02H
+        CALLS 00BH,Imob_Update_WarnLamp
+        MOVBZ R4,DPP0:c_dly_lock_imob
+        MOV R5,R4
+        SHL R5,#04H
+        SUB R5,R4
+        SHL R5,#02H
+        MOV imob_ca40,R5
+L_BCB3C:                 ; 0xbcb3c
+        MOVB RL4,ctr_imob_nvm_2
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NC,L_BCB4C
+        ADDB RL4,#01H
+        MOVB ctr_imob_nvm_2,RL4
+L_BCB4C:                 ; 0xbcb4c
+        MOVB diag_c283,ZEROS
+L_BCB50:                 ; 0xbcb50
+        JNB lv_fmy_imob.01H,L_BCB5A
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_BCB5A
+        BSET lv_fmy_imob.07H
+L_BCB5A:                 ; 0xbcb5a
+        JNB lv_fmy_imob.07H,L_BCB84
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_BCB84
+        BCLR lv_fmy_imob.07H
+        MOVBZ R4,DPP0:c_dly_lih_imob
+        MOV imob_ca42,R4
+        MOVBZ R5,DPP0:c_dly_lih_imob
+        MOV R2,#05H
+        MOV 0FE0EH,R5
+        DIVU R2
+        MOV R5,0FE0EH
+        MOV R12,R5
+        ADD R12,#02H
+        CALLS 00BH,Imob_Update_WarnLamp
+L_BCB84:                 ; 0xbcb84
+        JNB lv_fmy_imob.01H,L_BCBA2
+        JB lv_fmy_imob.07H,L_BCBA2
+        MOV R4,imob_ca42
+        JMPR cc_NE,L_BCBA2
+        JB lv_fmy_imob.0CH,L_BCBA2
+        JB imob_bw.02H,L_BCBA2
+        BCLR lv_fmy_imob.02H
+        BCLR lv_fmy_imob.01H
+        BCLR imob_bw.01H
+        BSET imob_bw.08H
+L_BCBA2:                 ; 0xbcba2
+        JNB lv_fmy_imob.0DH,L_BCBD0
+        MOVB RL4,n_32
+        JMPR cc_EQ,L_BCBD0
+        MOVB RL5,imob_e7c6
+        JMPR cc_NE,L_BCBD0
+        MOVB RL3,smartra_cmd
+        JMPR cc_NE,L_BCBD0
+        MOVB RL2,DPP0:c_dly_secu_a_imob
+        MOVB imob_c298,RL2
+        BCLR lv_fmy_imob.0DH
+        MOVB RL1,DPP0:c_max_dly_act_imob
+        MOVB imob_resp_ready,RL1
+        MOVB RL4,#01H
+        MOVB smartra_cmd,RL4
+L_BCBD0:                 ; 0xbcbd0
+        JNB imob_bw.09H,L_BCC10
+        JB lv_fmy_imob.01H,L_BCC10
+        MOVB RL4,imob_data_ctl_vs_imob
+        CMPB RL4,DPP0:c_vs_secu_b_imob
+        JMPR cc_UGT,L_BCBE6
+        JNB imob_bw.00H,L_BCBF0
+L_BCBE6:                 ; 0xbcbe6
+        MOVB RL4,imob_data_ctl_n_32_imob
+        CMPB RL4,DPP0:c_n_secu_b_imob
+        JMPR cc_UGT,L_BCC10
+L_BCBF0:                 ; 0xbcbf0
+        BSET imob_bw.08H
+        JMPR cc_UC,L_BCC10
+
+; ======== Diag_DTC_dd506bbbbbb  (@0xbcbf4) ========
+        ; ------------------------------------------------------------
+        ; Per-fault DTC setter: sets dtc_test_result and updates the DTC at status-address 0xd506. Name = DTC
+        ; status RAM address (unique per fault).
+        ; ------------------------------------------------------------
+Diag_DTC_dd506bbbbbb:
+        BCLR lv_fmy_imob.02H
+        BCLR lv_fmy_imob.01H
+        JNB imob_bw.04H,L_BCC02
+        BCLR imob_bw.08H
+        BSET imob_bw.01H
+        JMPR cc_UC,L_BCC10
+L_BCC02:                 ; 0xbcc02
+        BSET imob_bw.08H
+        BCLR imob_bw.01H
+        JMPR cc_UC,L_BCC10
+
+; ======== SMARTRA_runtime_cmd_sm  (@0xbcc08) ========
+        ; ------------------------------------------------------------
+        ; SMARTRA immobilizer RUN-TIME command state machine. switch(smartra_cmd) 0-7: 0=idle; 1=send init
+        ; query(0x06)->2; 2=SMARTRA_runtime_auth_sm(); 3=success: clear immob DTCs->6; 4=fail/anti-tamper->6;
+        ; 5=reset->0; 6=finalize warn-lamp+DTC->0; 7=err subcode->DTC->1. Tail enforces timeout/no-response ->
+        ; fmy|0x800,cmd=4. Runtime arms: SMARTRA_rt_VerifyResp, SMARTRA_rt_SetCmdFail.
+        ; ------------------------------------------------------------
+SMARTRA_runtime_cmd_sm:
+        BCLR lv_fmy_imob.02H
+        BCLR lv_fmy_imob.01H
+        BCLR imob_bw.01H
+        BSET imob_bw.08H
+L_BCC10:                 ; 0xbcc10
+        MOVB RL4,imob_data_ram_state_imob
+        CMPB RL4,#01H
+        JMPR cc_NE,L_BCC22
+        JNB lv_fmy_imob.01H,L_BCC22
+        MOVB RL5,#05H
+        MOVB smartra_cmd,RL5
+L_BCC22:                 ; 0xbcc22
+        MOVB RL4,smartra_send_state
+        CMPB RL4,#01H
+        JMPR cc_NE,L_BCC50
+        MOVB RL5,imob_c28f
+        CMPB RL5,#01H
+        JMPR cc_ULE,L_BCC50
+        JB smartra_comms_status.0DH,L_BCC42
+        JB smartra_comms_status.0EH,L_BCC42
+        JB smartra_comms_status.0FH,L_BCC42
+        JNB lv_err_com_resp_imob.00H,L_BCC50
+L_BCC42:                 ; 0xbcc42
+        ADDB imob_c28f,ONES
+        CALLS 00AH,SMARTRA_clear_comms_timeout_flags
+        MOVB RL4,#01H
+        MOVB smartra_cmd,RL4
+L_BCC50:                 ; 0xbcc50
+        JB can_fd58.09H,L_BCC64
+        MOVB RL4,smartra_cmd
+        JMPR cc_EQ,L_BCC64
+        MOVB smartra_cmd,ZEROS
+        JB imob_bw.02H,L_BCC64
+        BSET imob_bw.08H
+L_BCC64:                 ; 0xbcc64
+        MOVB RL4,smartra_cmd
+        CMPB RL4,#07H
+        JMPA cc_UGT,L_BCF10
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        ADD R4,#DATA16 04918H
+        MOV R4,[R4]
+        JMPI cc_UC,[R4]
+
+; ======== SMARTRA_cmd_Init  (@0xbcc7a) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by imob/smartra output signals): SMARTRA runtime cmd arm: init query (smartra_cmd,
+        ; flush RX, lv_fmy_imob).
+        ; ------------------------------------------------------------
+SMARTRA_cmd_Init:
+        BCLR lv_fmy_imob.00H
+        JB smartra_comms_status.0CH,L_BCC84
+        JMPA cc_UC,L_BCF16
+L_BCC84:                 ; 0xbcc84
+        MOVB RL4,#02H
+        MOVB smartra_frame_buf,RL4
+        MOVB RL4,#06H
+        MOVB smartra_tx_cmd,RL4
+
+; ======== SMARTRA_eval_comms_result  (@0xbcc90) ========
+SMARTRA_eval_comms_result:
+        CALLS 00AH,SMARTRA_flush_RX_buffers
+        MOVB RL4,#02H
+        MOVB smartra_cmd,RL4
+        MOVB RL5,#01H
+        MOVB smartra_send_state,RL5
+        JMPA cc_UC,L_BCF16
+
+; ======== SMARTRA_cmd_RuntimeAuth  (@0xbcca4) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by imob/smartra output signals): SMARTRA runtime cmd arm: calls
+        ; SMARTRA_runtime_auth_sm; sets ans_err_com_imob.
+        ; ------------------------------------------------------------
+SMARTRA_cmd_RuntimeAuth:
+        CALLS 00BH,SMARTRA_runtime_auth_sm      ; -> SMARTRA_runtime_auth_sm (run-time immobilizer auth dispatched from here)
+        JMPA cc_UC,L_BCF16
+
+S_BC8E8 ENDS
+        END

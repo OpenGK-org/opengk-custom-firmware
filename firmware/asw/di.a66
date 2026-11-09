@@ -1,0 +1,204 @@
+; asw/di.a66
+; 0xB1FF0-0xB21FA  (522 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_t_dly_cp_cl                        EQU  090320H
+c_t_di_max_cp                        EQU  0906D4H
+c_t_di_ramp_open_cp                  EQU  0906D6H
+c_t_wait_ramp_open                   EQU  090750H
+ldpm_maf_cyl_ip_rel_flow_inc_cp                     EQU  0914B4H
+ip_t_dly_cp__maf_cyl                 EQU  09380AH
+
+PUBLIC  CanPurge_Calc_RelFlow, CanPurge_Control_SM
+EXTERN  Get_IP_Word_2D_Table:NEAR, Get_IP_Word_Y_Axis:NEAR, Set_cp_state_68c:NEAR
+
+S_B1FF0 SECTION CODE AT 0B1FF0H
+
+; ======== CanPurge_Control_SM  (@0xb1ff0) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen signals, verified): Evaporative Emission Control: canister purge state
+        ; machine (cp_state)
+        ; ------------------------------------------------------------
+CanPurge_Control_SM:
+        MOV R4,cp_norm_deac_state
+        JMPR cc_EQ,L_B2006
+        CMP R4,#01H
+        JMPA cc_EQ,L_B2164
+        CMP R4,#02H
+        JMPA cc_EQ,L_B21AE
+        JMPA cc_UC,L_B21DE
+L_B2006:                 ; 0xb2006
+        MOV R4,state_cp_ctl
+        JMPA cc_EQ,L_B21DE
+        CMP R4,#02H
+        JMPR cc_EQ,L_B201A
+        CMP R4,#01H
+        JMPR cc_EQ,L_B20AA
+        JMPA cc_UC,L_B21DE
+L_B201A:                 ; 0xb201a
+        MOV R4,t_di_max_cp
+        CMP R4,DPP0:c_t_di_max_cp
+        JMPR cc_NC,L_B2082
+        MOV R5,cl_mmv_di
+        MOV cl_mmv,R5
+        MOV R2,rel_flow_cps_di
+        MOV rel_flow_cps,R2
+        MOV R3,lam_0_cp_di
+        MOV cp_flow,R3
+        MOV R1,#04H
+        MOV cp_state,R1
+        MOV cp_tra_state,ZEROS
+        MOV R2,maf_cyl
+        MOV maf_cyl_dly_old,R2
+        MOV maf_cyl_old2,R2
+        MOV maf_cyl_old,R2
+        MOV maf_dly_mmv,ZEROS
+        MOV R12,#DATA16 POF ldpm_maf_cyl_ip_rel_flow_inc_cp
+        MOV R13,#DATA16 PAG ldpm_maf_cyl_ip_rel_flow_inc_cp
+        MOV R14,maf_cyl
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_t_dly_cp__maf_cyl
+        MOV R13,#DATA16 PAG ip_t_dly_cp__maf_cyl
+        CALLS 00FH,Get_IP_Word_2D_Table
+        SHR R4,#0AH
+        ADDB RL4,DPP0:c_t_dly_cp_cl
+        MOVB lam_sum_cp,RL4
+        JMPR cc_UC,L_B20A0
+L_B2082:                 ; 0xb2082
+        BCLR lv_fcut_fast.07H
+        BCLR lv_cp_act.0CH
+        MOV R4,cp_state
+        CMP R4,#01H
+        JMPR cc_NE,L_B2094
+        MOV cp_tra_state,ZEROS
+        JMPR cc_UC,L_B20A0
+L_B2094:                 ; 0xb2094
+        MOV R4,#0BH
+        MOV cp_tra_state,R4
+        MOV R5,#06H
+        MOV cp_state,R5
+L_B20A0:                 ; 0xb20a0
+        MOV state_cp_ctl,ZEROS
+        MOV t_di_max_cp,ZEROS
+        RET
+L_B20AA:                 ; 0xb20aa
+        MOV R4,t_di_ramp_open_cp
+        CMP R4,DPP0:c_t_di_ramp_open_cp
+        JMPR cc_NC,L_B212E
+        MOV R5,cl_di
+        MOV cl,R5
+        MOV R2,cl_mmv_di
+        MOV cl_mmv,R2
+        MOV R3,cl_mmv_old_di
+        MOV cl_mmv_old,R3
+        MOV R1,rel_flow_cps_di
+        MOV rel_flow_cps,R1
+        MOV R2,rel_flow_cps_old_di
+        MOV rel_flow_cps_old,R2
+        MOV rel_flow_cps_old_min,R2
+        MOV R2,lam_0_cp_di
+        MOV cp_flow,R2
+        MOV R2,#03H
+        MOV cp_state,R2
+        MOV cp_tra_state,ZEROS
+        MOV R2,maf_cyl
+        MOV maf_cyl_dly_old,R2
+        MOV maf_cyl_old2,R2
+        MOV maf_cyl_old,R2
+        MOV maf_dly_mmv,ZEROS
+        MOV R12,#DATA16 POF ldpm_maf_cyl_ip_rel_flow_inc_cp
+        MOV R13,#DATA16 PAG ldpm_maf_cyl_ip_rel_flow_inc_cp
+        MOV R14,maf_cyl
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_t_dly_cp__maf_cyl
+        MOV R13,#DATA16 PAG ip_t_dly_cp__maf_cyl
+        CALLS 00FH,Get_IP_Word_2D_Table
+        SHR R4,#0AH
+        ADDB RL4,DPP0:c_t_dly_cp_cl
+        MOVB lam_sum_cp,RL4
+        JMPR cc_UC,L_B215A
+L_B212E:                 ; 0xb212e
+        MOV R4,cp_state
+        CMP R4,#01H
+        JMPR cc_NE,L_B213C
+        MOV cp_tra_state,ZEROS
+        JMPR cc_UC,L_B215A
+L_B213C:                 ; 0xb213c
+        MOV R4,DPP0:c_t_wait_ramp_open
+        JMPR cc_NE,L_B214E
+        MOV R5,#03H
+        MOV cp_state,R5
+        MOV cp_tra_state,ZEROS
+        JMPR cc_UC,L_B215A
+L_B214E:                 ; 0xb214e
+        MOV R4,#06H
+        MOV cp_state,R4
+        MOV R5,#0BH
+        MOV cp_tra_state,R5
+L_B215A:                 ; 0xb215a
+        MOV state_cp_ctl,ZEROS
+        MOV t_di_ramp_open_cp,ZEROS
+        RET
+L_B2164:                 ; 0xb2164
+        MOV R4,cp_norm_deac_state
+        CMP R4,state_cp_ctl
+        JMPR cc_NE,L_B2174
+        SUB t_di_ramp_open_cp,ONES
+        RET
+L_B2174:                 ; 0xb2174
+        MOV R4,cl
+        MOV cl_di,R4
+        MOV R5,cl_mmv
+        MOV cl_mmv_di,R5
+        MOV R2,cl_mmv_old
+        MOV cl_mmv_old_di,R2
+        MOV R3,rel_flow_cps
+        MOV rel_flow_cps_di,R3
+        MOV R1,rel_flow_cps_old
+        MOV rel_flow_cps_old_di,R1
+        MOV R2,cp_flow
+        MOV lam_0_cp_di,R2
+        MOV R2,cp_norm_deac_state
+        MOV state_cp_ctl,R2
+        RET
+L_B21AE:                 ; 0xb21ae
+        MOV R4,cp_norm_deac_state
+        CMP R4,state_cp_ctl
+        JMPR cc_NE,L_B21BE
+        SUB t_di_max_cp,ONES
+        RET
+L_B21BE:                 ; 0xb21be
+        MOV R4,cl_mmv
+        MOV cl_mmv_di,R4
+        MOV R5,rel_flow_cps
+        MOV rel_flow_cps_di,R5
+        MOV R2,cp_flow
+        MOV lam_0_cp_di,R2
+        MOV R3,cp_norm_deac_state
+        MOV state_cp_ctl,R3
+L_B21DE:                 ; 0xb21de
+        RET
+
+; ======== CanPurge_Calc_RelFlow  (@0xb21e0) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by cp/evap/dtp/diagcp output signals + DTC): Relative purge flow rel_flow_cps +
+        ; purge lambda offset lam_dif_cp / ti_lam_cp_1.
+        ; ------------------------------------------------------------
+CanPurge_Calc_RelFlow:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV R4,cp_state
+        SUB R4,#01H
+        CMP R4,#05H
+        JMPA cc_UGT,Set_cp_state_68c
+        SHL R4,#01H
+        ADD R4,#DATA16 046B4H
+        MOV R4,[R4]
+        JMPI cc_UC,[R4]
+
+S_B1FF0 ENDS
+        END

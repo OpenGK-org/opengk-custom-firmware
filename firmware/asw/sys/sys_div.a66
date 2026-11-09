@@ -1,0 +1,302 @@
+; asw/sys/sys_div.a66
+; 0xFE38E-0xFE592  (516 bytes, 8 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Div_Frac_U16_Q16, Div_Q16_Round, Div_Ratio_U8_Sat, Div_S16_Round_Sat, Div_S32_S16_Round, Div_U32_U16_Round
+PUBLIC  MulDiv_U16, multipied_r12_r13_UGT_r14_rets_r4
+
+S_FE38E SECTION CODE AT 0FE38EH
+
+; ======== MulDiv_U16  (@0xfe38e) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+MulDiv_U16:
+        MULU R12,R13
+        CMP R15,#00H
+        JMPR cc_EQ,L_FE404
+        MOV R12,0FE0EH
+        MOV R13,MDH_FE0C
+        MOV R4,R12
+        MOV R5,R13
+        CMP R15,#00H
+        JMPR cc_NN,L_FE3AC
+        MOV R4,R13
+        MOV R5,#00H
+        MOV R10,R15
+        JMPR cc_UC,L_FE3C4
+L_FE3AC:                 ; 0xfe3ac
+        PRIOR R2,R15
+        MOV R11,R15
+        SHL R11,R2
+        MOV R3,R13
+        SHL R3,R2
+        NEG R2
+        SHR R4,R2
+        SHR R5,R2
+        OR R4,R3
+        MOV R10,R14
+        SHR R10,R2
+        OR R10,R11
+L_FE3C4:                 ; 0xfe3c4
+        MOV MDH_FE0C,R5
+        JMPR cc_NE,L_FE3D2
+        MOV 0FE0EH,R4
+        JMPR cc_NE,L_FE3D6
+        RETS
+L_FE3D2:                 ; 0xfe3d2
+        MOV 0FE0EH,R4
+L_FE3D6:                 ; 0xfe3d6
+        DIVLU R10
+        MOV R4,0FE0EH
+        MOV R10,R15
+        MULU R4,R10
+        MOV R5,0FE0EH
+        MOV R10,R14
+        MULU R4,R10
+        MOV R11,0FE0EH
+        ADD R5,MDH_FE0C
+        JMPR cc_C,L_FE400
+        MOV R10,R13
+        CMP R5,R10
+        JMPR cc_UGT,L_FE400
+        JMPR cc_C,L_FE402
+        MOV R10,R12
+        CMP R11,R10
+        JMPR cc_ULE,L_FE402
+L_FE400:                 ; 0xfe400
+        SUB R4,#01H
+L_FE402:                 ; 0xfe402
+        RETS
+L_FE404:                 ; 0xfe404
+        CMP R14,#00H
+        JMPR cc_EQ,L_FE416
+        CMP R14,MDH_FE0C
+        JMPR cc_ULE,L_FE416
+        DIVLU R14
+        MOV R4,0FE0EH
+        RETS
+L_FE416:                 ; 0xfe416
+        MOV R4,#DATA16 0FFFFH
+        RETS
+
+; ======== Div_Q16_Round  (@0xfe41c) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Div_Q16_Round:
+        MOV MDL,#DATA16 00000H
+        JB R12.0FH,L_FE448
+        MOV MDH_FE0C,R12
+        DIVLU R13
+        JMPR cc_V,L_FE442
+        MOV R4,0FE0EH
+        JB R4.0FH,L_FE442
+        SUB R13,MDH_FE0C
+        CMP R13,MDH_FE0C
+        JMPR cc_UGT,L_FE440
+        ADD R4,#01H
+L_FE440:                 ; 0xfe440
+        RETS
+L_FE442:                 ; 0xfe442
+        MOV R4,#DATA16 07FFFH
+        RETS
+L_FE448:                 ; 0xfe448
+        NEG R12
+        MOV MDH_FE0C,R12
+        DIVLU R13
+        JMPR cc_V,L_FE46A
+        MOV R4,0FE0EH
+        JB R4.0FH,L_FE46A
+        SUB R13,MDH_FE0C
+        CMP R13,MDH_FE0C
+        JMPR cc_UGT,L_FE466
+        ADD R4,#01H
+L_FE466:                 ; 0xfe466
+        NEG R4
+        RETS
+L_FE46A:                 ; 0xfe46a
+        MOV R4,#DATA16 08000H
+        RETS
+
+; ======== Div_S32_S16_Round  (@0xfe470) ========
+        ; ------------------------------------------------------------
+        ; Fixed-point math primitive (seg-0xf runtime lib). Named from verified decompiled body.
+        ; ------------------------------------------------------------
+Div_S32_S16_Round:
+        MOV MDH_FE0C,R13
+        MOV 0FE0EH,R12
+        DIVL R14
+        JMPR cc_V,L_FE4A8
+        MOV R4,0FE0EH
+        MOV R5,MDH_FE0C
+        JMPR cc_NN,L_FE488
+        NEG R5
+L_FE488:                 ; 0xfe488
+        MOV R12,R14
+        JMPR cc_NN,L_FE48E
+        NEG R12
+L_FE48E:                 ; 0xfe48e
+        SUB R12,R5
+        CMP R12,R5
+        JMPR cc_ULE,L_FE496
+        RETS
+L_FE496:                 ; 0xfe496
+        BCMP R13.0FH,R14.0FH
+        JMPR cc_NN,L_FE4A2
+        SUB R4,#01H
+        JMPR cc_V,L_FE4B4
+        RETS
+L_FE4A2:                 ; 0xfe4a2
+        ADD R4,#01H
+        JMPR cc_V,L_FE4AE
+        RETS
+L_FE4A8:                 ; 0xfe4a8
+        BCMP R13.0FH,R14.0FH
+        JMPR cc_N,L_FE4B4
+L_FE4AE:                 ; 0xfe4ae
+        MOV R4,#DATA16 07FFFH
+        RETS
+L_FE4B4:                 ; 0xfe4b4
+        MOV R4,#DATA16 08000H
+        RETS
+
+; ======== Div_Frac_U16_Q16  (@0xfe4ba) ========
+        ; short Div_Frac_U16_Q16(u16 num, u16 den): fractional divide (num<<16)/den, rounded; returns -1 on
+        ; div-by-0 or overflow. Result is num/den in Q16.
+Div_Frac_U16_Q16:
+        MOV MDH_FE0C,R12
+        MOV MDL,#DATA16 00000H
+        DIVLU R13
+        JMPR cc_V,L_FE4D8
+        MOV R4,0FE0EH
+        SUB R13,MDH_FE0C
+        CMP R13,MDH_FE0C
+        JMPR cc_UGT,L_FE4D6
+        ADD R4,#01H
+L_FE4D6:                 ; 0xfe4d6
+        RETS
+L_FE4D8:                 ; 0xfe4d8
+        MOV R4,#DATA16 0FFFFH
+        RETS
+
+; ======== multipied_r12_r13_UGT_r14_rets_r4  (@0xfe4de) ========
+        ; ------------------------------------------------------------
+        ; chatgpt incoming. i can _see_ what this routine
+        ; is doing, but i have no fucking idea what for
+        ;
+        ; Multiply the first two 16‑bit inputs (R12×R13)
+        ; → a 32‑bit intermediate.
+        ;
+        ; Check the third input (R14):
+        ;
+        ; If R14 ≤ 0xFE0C (too small), return −1 immediately.
+        ;
+        ; Divide the 32‑bit product by R14 → 16‑bit quotient in R14.
+        ;
+        ; Bucket that quotient against the same constant (0xFE0C):
+        ;
+        ; If quotient > 2×0xFE0C, return 0xFE0E.
+        ;
+        ; Otherwise return 0xFE0F.
+        ;
+        ; In any other (overflow) case, return −1.
+        ;
+        ;
+        ; ------------------------------------------------------------
+multipied_r12_r13_UGT_r14_rets_r4:
+        MULU R12,R13
+        MOV R5,MDH_FE0C
+        CMP R14,R5
+        JMPR cc_ULE,L_FE4FE
+        DIVLU R14
+        MOV R4,0FE0EH
+        SUB R14,MDH_FE0C
+        CMP R14,MDH_FE0C
+        JMPR cc_UGT,L_FE4FC
+        ADD R4,#01H
+        JMPR cc_C,L_FE4FE
+L_FE4FC:                 ; 0xfe4fc
+        RETS
+L_FE4FE:                 ; 0xfe4fe
+        MOV R4,#DATA16 0FFFFH
+        RETS
+
+; ======== Div_S16_Round_Sat  (@0xfe504) ========
+        ; Div_S16_Round_Sat(a, b): signed a/b with round-to-nearest; saturates to 0x7fff/0x8000 on
+        ; divide-by-zero. Sign from a.
+Div_S16_Round_Sat:
+        JNB R12.0FH,L_FE52C
+        NEG R12
+        MOV 0FE0EH,R12
+        DIVU R13
+        JMPR cc_V,L_FE526
+        MOV R4,0FE0EH
+        SUB R13,MDH_FE0C
+        CMP R13,MDH_FE0C
+        JMPR cc_UGT,L_FE522
+        ADD R4,#01H
+L_FE522:                 ; 0xfe522
+        NEG R4
+        RETS
+L_FE526:                 ; 0xfe526
+        MOV R4,#DATA16 08000H
+        RETS
+L_FE52C:                 ; 0xfe52c
+        MOV 0FE0EH,R12
+        DIVU R13
+        JMPR cc_V,L_FE546
+        MOV R4,0FE0EH
+        SUB R13,MDH_FE0C
+        CMP R13,MDH_FE0C
+        JMPR cc_UGT,L_FE544
+        ADD R4,#01H
+L_FE544:                 ; 0xfe544
+        RETS
+L_FE546:                 ; 0xfe546
+        MOV R4,#DATA16 07FFFH
+        RETS
+
+; ======== Div_Ratio_U8_Sat  (@0xfe54c) ========
+        ; Div_Ratio_U8_Sat(a, b): returns (a<<16)/b as a rounded byte ratio; returns 0xff (-1) on div-by-zero
+        ; or overflow (>=0x10000 or round carry).
+Div_Ratio_U8_Sat:
+        MOV MDH_FE0C,R12
+        MOV MDL,#DATA16 00000H
+        DIVLU R13
+        JMPR cc_V,L_FE564
+        MOV R4,0FE0EH
+        SHR R4,#08H
+        ADDCB RL4,#00H
+        JMPR cc_C,L_FE564
+        RETS
+L_FE564:                 ; 0xfe564
+        MOVB RL4,#DATA16 000FFH
+        RETS
+
+; ======== Div_U32_U16_Round  (@0xfe56a) ========
+        ; short Div_U32_U16_Round(u16 lo, u16 hi, u16 den): rounded unsigned 32/16 divide of (hi:lo)/den,
+        ; returns 16-bit quotient; -1 on overflow/div-by-0.
+Div_U32_U16_Round:
+        CMP R14,R13
+        JMPR cc_ULE,L_FE58C
+        MOV 0FE0EH,R12
+        MOV MDH_FE0C,R13
+        DIVLU R14
+        MOV R4,0FE0EH
+        SUB R14,MDH_FE0C
+        CMP R14,MDH_FE0C
+        JMPR cc_UGT,L_FE58A
+        ADD R4,#01H
+        JMPR cc_C,L_FE58C
+L_FE58A:                 ; 0xfe58a
+        RETS
+L_FE58C:                 ; 0xfe58c
+        MOV R4,#DATA16 0FFFFH
+        RETS
+
+S_FE38E ENDS
+        END

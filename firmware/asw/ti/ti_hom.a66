@@ -1,0 +1,827 @@
+; asw/ti/ti_hom.a66
+; 0xDCE40-0xDD6BA  (2170 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_cam_ini_in                         EQU  09012EH
+c_eoi_n_max                          EQU  09019DH
+c_soi_cam_diag                       EQU  09030AH
+c_tco_max_tipr_seq                   EQU  09037DH
+c_tipr_end                           EQU  0903C5H
+c_ti_cop_cor                         EQU  090788H
+c_ti_min                             EQU  090798H
+c_ti_n_ad_add_max                    EQU  09079AH
+c_ti_vs_max_cor                      EQU  0907A2H
+c_ti_ad_add_max                      EQU  0908F8H
+ldp_n_32_ti_dec_wf                        EQU  090AA4H
+ldp_tco_id_ti_tco_neg_wf                         EQU  090AADH
+sstm_n_3_3                        EQU  090B09H
+sst_n_kf_ebw_st                EQU  090DEFH
+sstm_tkw_4_4                      EQU  090DF4H
+ldpm_vb_1                  EQU  090E54H
+ldp_tco_ip_ti_lgrd_ast                EQU  090EDEH
+sst_tkw_st_ti_tkw_wl              EQU  090EF5H
+ldp_tco_ip_ti_tco_wup_asr     EQU  090EF9H
+ldp_tco_st_ip_ti_tco_wup_asr     EQU  090F00H
+sstm_ti_4_3                              EQU  0913B8H
+sst_ti_kf_ebw_st                           EQU  091732H
+id_ti_dec_wf__n_32                   EQU  091E0CH
+id_ti_inc_wf__n_32                   EQU  091E1CH
+id_ti_n_pos_rg__n_32                 EQU  091E2CH
+id_ti_tco_neg_wf__tco                EQU  091E3CH
+id_ti_tco_pos_wf__tco                EQU  091E4CH
+ip_ti_lgrd_ast__tco                  EQU  094394H
+ip_eoi__n                            EQU  0955C1H
+ip_fac_soi_ivvt__n_32__ti_mv         EQU  0956C9H
+ip_soi__n__ti_mv                     EQU  096132H
+ip_soi_st__n__ti_mv                  EQU  09615CH
+ip_soi_tco__tco                      EQU  09616CH
+ip_ti_add_dly__vb                    EQU  096664H
+ip_ti_tco_wup__tco__tco_st           EQU  0969A6H
+ip_ti_tco_wup_asr__tco__tco_st       EQU  0969BEH
+ip_ti_tco_wup_at__tco__tco_st        EQU  0969E2H
+
+PUBLIC  Calc_AST_Enrich, Calc_TI_ADD_DLY_VB, Calc_TI_Hom_Base, Calc_TI_Inj_SOI_EOI, Calc_TI_Pos_WallFilm
+EXTERN  Add_r12_r13_Return_r4:NEAR, Calc_AST_Enrich_2:NEAR, Calc_TI_ADD_WF:NEAR, Calc_TI_Base_Map:NEAR
+EXTERN  Calc_TI_CAST:NEAR, Calc_TI_FL:NEAR, Calc_TI_IS:NEAR, Calc_TI_RFU:NEAR
+EXTERN  Calc_TI_WUP:NEAR, Clamp_S16_SignedLimit:NEAR, Get_Byte_Y_Axis:NEAR, Get_IP_Byte_2D_Table:NEAR
+EXTERN  Get_IP_Byte_2D_Table_DWord_YWord:NEAR, Get_IP_Byte_3D_Table:NEAR, Get_IP_Byte_X_Axis:NEAR, Get_IP_Byte_Y_Axis:NEAR
+EXTERN  Get_IP_Word_2D_Table:NEAR, Get_IP_Word_X_Axis:NEAR, MulDiv_Round_S16:NEAR, Mul_Q15_Sat:NEAR
+EXTERN  Mul_S16_Q9_Sat:NEAR, Mul_Shift_U16_Sat32:NEAR, Read_MulDiv_MD:NEAR, Read_Word_Far:NEAR
+EXTERN  Sat_Add_S16_v2:NEAR, WallFilm_VO_Comp:NEAR, sub_r12_r13_rets_r4:NEAR
+
+S_DCE40 SECTION CODE AT 0DCE40H
+
+; ======== Calc_TI_Hom_Base  (@0xdce40) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by dominant output signals): Homogeneous base injection per cylinder: ti_hom_bas
+        ; / ti_cyl_sam / ti_fac_cor / tco_rest.
+        ; ------------------------------------------------------------
+Calc_TI_Hom_Base:
+        MOV R12,#DATA16 00032H
+        MOV R4,R12
+        MOV R2,#DATA16 06000H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0FH
+        SHR R5,#0FH
+        SHL R2,#01H
+        OR R4,R2
+        MOV ti_inj_min_pw,R4
+        MOVB RL4,tco
+        CMPB RL4,DPP0:c_tco_max_tipr_seq
+        JMPR cc_ULE,L_DCE72
+        MOVB lv_ti_f588,ZEROS
+        JMPR cc_UC,L_DCE78
+L_DCE72:                 ; 0xdce72
+        MOVB RL4,#01H
+        MOVB lv_ti_f588,RL4
+L_DCE78:                 ; 0xdce78
+        MOVB RL4,DPP0:c_tipr_end
+        JMPR cc_EQ,L_DCE86
+        MOVB RL5,#01H
+        MOVB lv_ti_f589,RL5
+        JMPR cc_UC,L_DCE8A
+L_DCE86:                 ; 0xdce86
+        MOVB lv_ti_f589,ZEROS
+L_DCE8A:                 ; 0xdce8a
+        MOV R4,t_max_rest
+        JMPR cc_EQ,L_DCE9C
+        MOV t_max_rest,ZEROS
+        MOVB RL4,tco
+        MOVB tco_rest,RL4
+L_DCE9C:                 ; 0xdce9c
+        MOVB RL4,tco
+        MOVB lv_ti_f4a6,RL4
+        MOV ti_cyl_sam,ZEROS
+        MOV ti1,ZEROS
+        MOV R4,#DATA16 06000H
+        MOV R2,#00H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0FH
+        SHR R5,#0FH
+        SHL R2,#01H
+        OR R4,R2
+        MOV ti_hom_bas_1,R4
+        MOV lv_ti_f8bc,ZEROS
+        MOVB soi,ZEROS
+        MOVB RL4,#DATA16 00028H
+        MOVB eoi,RL4
+        MOV R4,#DATA16 01000H
+        MOV ti_fac_cor,R4
+        MOV cycnr_st_ast,ZEROS
+        MOV ti_cast,ZEROS
+        BCLR lv_ast.01H
+        BCLR lv_ast.02H
+        BCLR lv_ast.03H
+        BCLR lv_ast.04H
+        BCLR lv_ast.00H
+        MOV R5,#DATA16 01000H
+        MOV ti_wup,R5
+        MOV tib,ZEROS
+        MOV ti_fl,ZEROS
+        MOV ti_cop,ZEROS
+        BCLR lv_iga_dif_max_er.0BH
+        BCLR lv_iga_dif_max_er.0DH
+        BCLR lv_iga_dif_max_er.0CH
+        MOVB RL4,iga_bas_temp_cor
+        ADDB RL4,#DATA16 00080H
+        MOVB iga_cop,RL4
+        MOVB fco_nr,ZEROS
+        MOV lv_ti_f89c,ZEROS
+        MOV fco_word_1_,ZEROS
+        MOV lv_ti_f8b6,ZEROS
+        MOV lv_ti_f8b8,ZEROS
+        RETS
+
+; ======== Calc_AST_Enrich  (@0xdcf30) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Calc_AST_Enrich:
+        BSET lv_ast.00H
+        MOV R12,#DATA16 POF sstm_tkw_4_4
+        MOV R13,#DATA16 PAG sstm_tkw_4_4
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF sst_tkw_st_ti_tkw_wl
+        MOV R13,#DATA16 PAG sst_tkw_st_ti_tkw_wl
+        MOVBZ R14,tco_st
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        JNB lv_conf_mis.0AH,L_DCF68
+        MOV R12,#DATA16 POF ip_ti_tco_wup_at__tco__tco_st
+        MOV R13,#DATA16 PAG ip_ti_tco_wup_at__tco__tco_st
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB lv_ti_f490,RL4
+        JMPR cc_UC,L_DCF78
+L_DCF68:                 ; 0xdcf68
+        MOV R12,#DATA16 POF ip_ti_tco_wup__tco__tco_st
+        MOV R13,#DATA16 PAG ip_ti_tco_wup__tco__tco_st
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB lv_ti_f490,RL4
+L_DCF78:                 ; 0xdcf78
+        MOV R12,#DATA16 POF ldp_tco_ip_ti_tco_wup_asr
+        MOV R13,#DATA16 PAG ldp_tco_ip_ti_tco_wup_asr
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_tco_st_ip_ti_tco_wup_asr
+        MOV R13,#DATA16 PAG ldp_tco_st_ip_ti_tco_wup_asr
+        MOVBZ R14,tco_st
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_ti_tco_wup_asr__tco__tco_st
+        MOV R13,#DATA16 PAG ip_ti_tco_wup_asr__tco__tco_st
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB lv_ti_f491,RL4
+        JNB lv_maf_trim.02H,L_DCFC0
+        MOV lv_ti_f94e,ZEROS
+        BCLR lv_maf_trim.02H
+        MOVB RL5,pwl_dly_ctr
+        JMPR cc_EQ,L_DCFC4
+        SUBB RL5,#01H
+        MOVB pwl_dly_ctr,RL5
+        RETS
+L_DCFC0:                 ; 0xdcfc0
+        MOV maf_wf_init,ZEROS
+L_DCFC4:                 ; 0xdcfc4
+        RETS
+
+; ======== Calc_TI_Inj_SOI_EOI  (@0xdcfc6) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): Injection time main (ti_cop/soi/eoi, calls wall-film
+        ; corrections)
+        ; ------------------------------------------------------------
+Calc_TI_Inj_SOI_EOI:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        CALLS 00BH,Calc_TI_ADD_WF
+        CALLS 00BH,WallFilm_VO_Comp
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_DCFDE
+        JMPA cc_UC,L_DD5DC
+L_DCFDE:                 ; 0xdcfde
+        JNB lv_pl.04H,L_DCFE6
+        JMPA cc_UC,L_DD396
+L_DCFE6:                 ; 0xdcfe6
+        MOV R12,#DATA16 POF ldp_n_32_ti_dec_wf
+        MOV R13,#DATA16 PAG ldp_n_32_ti_dec_wf
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_Byte_Y_Axis
+        MOV R12,#DATA16 POF id_ti_inc_wf__n_32
+        MOV R13,#DATA16 PAG id_ti_inc_wf__n_32
+        CALLS 00FH,Read_Word_Far
+        MOV R5,#00H
+        SUB R4,#DATA16 05553H
+        SUBC R5,#01H
+        JMPR cc_UGT,L_DD036
+        MOV R12,#DATA16 POF id_ti_inc_wf__n_32
+        MOV R13,#DATA16 PAG id_ti_inc_wf__n_32
+        CALLS 00FH,Read_Word_Far
+        MOV R2,#DATA16 06000H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0FH
+        SHR R5,#0FH
+        SHL R2,#01H
+        OR R4,R2
+        MOV ti_wf_inc,R4
+        JMPR cc_UC,L_DD03A
+L_DD036:                 ; 0xdd036
+        MOV ti_wf_inc,ONES
+L_DD03A:                 ; 0xdd03a
+        MOV R12,#DATA16 POF id_ti_dec_wf__n_32
+        MOV R13,#DATA16 PAG id_ti_dec_wf__n_32
+        CALLS 00FH,Read_Word_Far
+        MOV R5,#00H
+        SUB R4,#DATA16 05553H
+        SUBC R5,#01H
+        JMPR cc_UGT,L_DD07A
+        MOV R12,#DATA16 POF id_ti_dec_wf__n_32
+        MOV R13,#DATA16 PAG id_ti_dec_wf__n_32
+        CALLS 00FH,Read_Word_Far
+        MOV R2,#DATA16 06000H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0FH
+        SHR R5,#0FH
+        SHL R2,#01H
+        OR R4,R2
+        MOV ti_wf_dec,R4
+        JMPR cc_UC,L_DD07E
+L_DD07A:                 ; 0xdd07a
+        MOV ti_wf_dec,ONES
+L_DD07E:                 ; 0xdd07e
+        MOV R12,#DATA16 POF id_ti_n_pos_rg__n_32
+        MOV R13,#DATA16 PAG id_ti_n_pos_rg__n_32
+        CALLS 00FH,Read_Word_Far
+        MOV R5,#00H
+        SUB R4,#DATA16 05553H
+        SUBC R5,#01H
+        JMPR cc_UGT,L_DD0BE
+        MOV R12,#DATA16 POF id_ti_n_pos_rg__n_32
+        MOV R13,#DATA16 PAG id_ti_n_pos_rg__n_32
+        CALLS 00FH,Read_Word_Far
+        MOV R2,#DATA16 06000H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0FH
+        SHR R5,#0FH
+        SHL R2,#01H
+        OR R4,R2
+        MOV ti_n_pos_rg,R4
+        JMPR cc_UC,L_DD0C2
+L_DD0BE:                 ; 0xdd0be
+        MOV ti_n_pos_rg,ONES
+L_DD0C2:                 ; 0xdd0c2
+        MOV R12,tib
+        MOV R13,wf_sync_fac0
+        MOV R14,#0EH
+        CALLS 00FH,Mul_Shift_U16_Sat32
+        MOV R9,R4
+        CMP R9,#DATA16 07FFFH
+        JMPR cc_ULE,L_DD0DC
+        MOV R9,#DATA16 07FFFH
+L_DD0DC:                 ; 0xdd0dc
+        MOV R4,R9
+        MOV R5,#00H
+        SUB R4,#DATA16 05553H
+        SUBC R5,#01H
+        JMPR cc_UGT,L_DD108
+        MOV R4,R9
+        MOV R2,#DATA16 06000H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0FH
+        SHR R5,#0FH
+        SHL R2,#01H
+        OR R4,R2
+        MOV ti_wf_sync0,R4
+        JMPR cc_UC,L_DD10C
+L_DD108:                 ; 0xdd108
+        MOV ti_wf_sync0,ONES
+L_DD10C:                 ; 0xdd10c
+        MOV R12,tib
+        MOV R13,wf_sync_fac1
+        MOV R14,#0EH
+        CALLS 00FH,Mul_Shift_U16_Sat32
+        MOV R9,R4
+        CMP R9,#DATA16 07FFFH
+        JMPR cc_ULE,L_DD126
+        MOV R9,#DATA16 07FFFH
+L_DD126:                 ; 0xdd126
+        MOV R4,R9
+        MOV R5,#00H
+        SUB R4,#DATA16 05553H
+        SUBC R5,#01H
+        JMPR cc_UGT,L_DD152
+        MOV R4,R9
+        MOV R2,#DATA16 06000H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0FH
+        SHR R5,#0FH
+        SHL R2,#01H
+        OR R4,R2
+        MOV ti_wf_sync1,R4
+        JMPR cc_UC,L_DD156
+L_DD152:                 ; 0xdd152
+        MOV ti_wf_sync1,ONES
+L_DD156:                 ; 0xdd156
+        MOV R4,cycnr_st_ast
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_EQ,L_DD166
+        ADD R4,#01H
+        MOV cycnr_st_ast,R4
+L_DD166:                 ; 0xdd166
+        JNB lv_act_aj.09H,L_DD1C4
+        JNB lv_ast.00H,L_DD17C
+        CALLS 00CH,Calc_TI_WUP
+        MOV R4,ti_wup
+        MOV ti_fac_cor,R4
+        JMPR cc_UC,L_DD184
+L_DD17C:                 ; 0xdd17c
+        MOV R4,#DATA16 01000H
+        MOV ti_fac_cor,R4
+L_DD184:                 ; 0xdd184
+        JNB lv_ast.01H,L_DD194
+        CALLS 00CH,Calc_TI_CAST
+        MOV R4,ti_cast
+        ADD ti_fac_cor,R4
+L_DD194:                 ; 0xdd194
+        JNB lv_ch.04H,L_DD1A8
+        MOV R12,ti_fac_cor
+        MOV R13,ti_ch
+        CALLS 00FH,Mul_Q15_Sat
+        MOV ti_fac_cor,R4
+L_DD1A8:                 ; 0xdd1a8
+        JB lv_carb_err.0EH,L_DD1B0
+        JMPA cc_UC,L_DD2D6
+L_DD1B0:                 ; 0xdd1b0
+        MOV R12,ti_fac_cor
+        MOV R13,ti_er_ad
+        CALLS 00FH,Mul_Q15_Sat
+        MOV ti_fac_cor,R4
+        JMPA cc_UC,L_DD2D6
+L_DD1C4:                 ; 0xdd1c4
+        JNB lv_iga_dif_max_er.0BH,L_DD210
+        MOVB RL4,msk_inj_cyl_ok
+        JMPR cc_NE,L_DD1D4
+        MOV R4,lv_inj_pattern
+        JMPR cc_EQ,L_DD210
+L_DD1D4:                 ; 0xdd1d4
+        JB lv_n_max_isa_err.01H,L_DD1E8
+        MOV R4,#DATA16 01000H
+        SUB R4,DPP0:c_ti_cop_cor
+        MOV ti_fac_cor,R4
+        JMPA cc_UC,L_DD2D6
+L_DD1E8:                 ; 0xdd1e8
+        MOV R4,DPP0:c_ti_cop_cor
+        CMP R4,DPP0:c_ti_vs_max_cor
+        JMPR cc_ULE,L_DD202
+        MOV R5,#DATA16 01000H
+        SUB R5,DPP0:c_ti_cop_cor
+        MOV ti_fac_cor,R5
+        JMPA cc_UC,L_DD2D6
+L_DD202:                 ; 0xdd202
+        MOV R4,#DATA16 01000H
+        SUB R4,DPP0:c_ti_vs_max_cor
+        MOV ti_fac_cor,R4
+        JMPR cc_UC,L_DD2D6
+L_DD210:                 ; 0xdd210
+        JNB lv_n_max_isa_err.01H,L_DD222
+        MOV R4,#DATA16 01000H
+        SUB R4,DPP0:c_ti_vs_max_cor
+        MOV ti_fac_cor,R4
+        JMPR cc_UC,L_DD2D6
+L_DD222:                 ; 0xdd222
+        MOVB RL4,msk_inj_cyl_ok
+        JMPR cc_NE,L_DD22E
+        MOV R4,lv_inj_pattern
+        JMPR cc_EQ,L_DD238
+L_DD22E:                 ; 0xdd22e
+        MOV R4,#DATA16 01000H
+        MOV ti_fac_cor,R4
+        JMPR cc_UC,L_DD2D6
+L_DD238:                 ; 0xdd238
+        JNB lv_ast.00H,L_DD24A
+        CALLS 00CH,Calc_TI_WUP
+        MOV R4,ti_wup
+        MOV ti_fac_cor,R4
+        JMPR cc_UC,L_DD252
+L_DD24A:                 ; 0xdd24a
+        MOV R4,#DATA16 01000H
+        MOV ti_fac_cor,R4
+L_DD252:                 ; 0xdd252
+        JNB lv_ast.01H,L_DD262
+        CALLS 00CH,Calc_TI_CAST
+        MOV R4,ti_cast
+        ADD ti_fac_cor,R4
+L_DD262:                 ; 0xdd262
+        JNB lv_dc_rbm.0AH,L_DD280
+        CALLS 00BH,Calc_TI_IS
+        MOV R12,ti_fac_cor
+        MOVB RL4,ti_is_mmv
+        MOVBS R13,RL4
+        SHL R13,#04H
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV ti_fac_cor,R4
+        JMPR cc_UC,L_DD2AE
+L_DD280:                 ; 0xdd280
+        CALLS 00BH,Calc_TI_FL
+        MOV R4,ti_fl
+        CMP R4,ti_cop
+        JMPR cc_ULE,L_DD29E
+        MOV R12,ti_fac_cor
+        MOV R13,R4
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV ti_fac_cor,R4
+        JMPR cc_UC,L_DD2AE
+L_DD29E:                 ; 0xdd29e
+        MOV R12,ti_fac_cor
+        MOV R13,ti_cop
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV ti_fac_cor,R4
+L_DD2AE:                 ; 0xdd2ae
+        JNB lv_ch.04H,L_DD2C2
+        MOV R12,ti_fac_cor
+        MOV R13,ti_ch
+        CALLS 00FH,Mul_Q15_Sat
+        MOV ti_fac_cor,R4
+L_DD2C2:                 ; 0xdd2c2
+        JNB lv_carb_err.0EH,L_DD2D6
+        MOV R12,ti_fac_cor
+        MOV R13,ti_er_ad
+        CALLS 00FH,Mul_Q15_Sat
+        MOV ti_fac_cor,R4
+L_DD2D6:                 ; 0xdd2d6
+        JNB lv_conf_mis.00H,L_DD2EA
+        MOV R12,tib
+        MOV R13,ti_fac_mis
+        CALLS 00FH,Mul_Q15_Sat
+        MOV R9,R4
+        JMPR cc_UC,L_DD30C
+L_DD2EA:                 ; 0xdd2ea
+        MOV R9,tib
+        MOV R12,DPP0:c_ti_n_ad_add_max
+        MOV R13,ti_co_is
+        MOV R14,n_C93C
+        CALLS 00FH,MulDiv_Round_S16
+        MOV R12,R4
+        MOV R13,DPP0:c_ti_ad_add_max
+        CALLS 00FH,Clamp_S16_SignedLimit
+        MOV lam_bank_1_lam_up_ti_ad_add_mmv_rel,R4
+L_DD30C:                 ; 0xdd30c
+        MOV R12,R9
+        MOV R13,lam_bank_1_lam_up_ti_ad_add_mmv_rel
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV R9,R4
+        MOV R12,R9
+        MOV R13,ti_fac_cor
+        MOV R14,#0CH
+        CALLS 00FH,Mul_Shift_U16_Sat32
+        MOV R12,R4
+        MOV R13,ti_add_ad_cp_1
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV R9,R4
+        MOV R12,R9
+        MOV R13,ti_add_ad_diagcp
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV R9,R4
+        MOV R12,R9
+        MOV R13,ti_add_wf
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV R9,R4
+        MOV R12,R9
+        MOV R13,ti_add_wf_vo
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV R6,R4
+        CMP R6,DPP0:c_ti_min
+        JMPR cc_UGT,L_DD364
+        BSET lv_maf_trim.03H
+        BSET lv_maf_trim.04H
+        MOV R6,DPP0:c_ti_min
+        JMPR cc_UC,L_DD368
+L_DD364:                 ; 0xdd364
+        BCLR lv_maf_trim.03H
+        BCLR lv_maf_trim.04H
+L_DD368:                 ; 0xdd368
+        JNB lv_ast.03H,L_DD38A
+        MOV R12,ti1
+        MOV R13,ti_as_min_base
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV ti_as_min,R4
+        CMP R6,ti_as_min
+        JMPR cc_C,L_DD386
+        BCLR lv_ast.03H
+        JMPR cc_UC,L_DD38A
+L_DD386:                 ; 0xdd386
+        MOV R6,ti_as_min
+L_DD38A:                 ; 0xdd38a
+        MOV ti_mv,R6
+        MOV R4,R6
+        MOV ti1,R4
+        JMPR cc_UC,L_DD3AE
+L_DD396:                 ; 0xdd396
+        MOV ti_fl,ZEROS
+        MOV R4,#DATA16 01000H
+        MOV ti_fac_cor,R4
+        CALLS 00CH,Calc_TI_Base_Map
+        MOV ti_mv,R4
+        MOV ti1,R4
+L_DD3AE:                 ; 0xdd3ae
+        CALLS 00DH,Calc_TI_RFU
+        MOV R12,ti_rfu
+        MOVBZ R13,ti_as_0_
+        CALLS 00FH,Read_MulDiv_MD
+        SHR R4,#01H
+        MOV ti_as_cyl0,R4
+        MOV R12,ti_rfu
+        MOVBZ R13,ti_as_1_
+        CALLS 00FH,Read_MulDiv_MD
+        SHR R4,#01H
+        MOV ti_as_cyl1,R4
+        MOV R12,ti_rfu
+        MOVBZ R13,ti_as_2_
+        CALLS 00FH,Read_MulDiv_MD
+        SHR R4,#01H
+        MOV ti_as_cyl2,R4
+        MOV R12,ti_rfu
+        MOVBZ R13,ti_as_3_
+        CALLS 00FH,Read_MulDiv_MD
+        SHR R4,#01H
+        MOV ti_as_cyl3,R4
+        MOV R12,ti_mv
+        MOV R13,ti_mv_add
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV ti_mv,R4
+        MOVB RL4,cam_err_lih
+        BMOVN PSW.06H,PSW.03H
+        JNB PSW.06H,L_DD41A
+        JMPA cc_UC,L_DD52E
+L_DD41A:                 ; 0xdd41a
+        JB lv_pl.04H,L_DD4E0
+        MOV R12,#DATA16 POF sstm_n_3_3
+        MOV R13,#DATA16 PAG sstm_n_3_3
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF sstm_ti_4_3
+        MOV R13,#DATA16 PAG sstm_ti_4_3
+        MOV R14,ti_mv
+        CALLS 00FH,Get_IP_Word_X_Axis
+        MOVB RL4,n_32
+        CMPB RL4,DPP0:c_eoi_n_max
+        JMPR cc_UGT,L_DD480
+        MOV R12,#DATA16 POF ip_eoi__n
+        MOV R13,#DATA16 PAG ip_eoi__n
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVBZ R7,RL4
+        MOVBZ R4,ivvt_in_1_struct_pos_ivvt_cam
+        MOVBZ R5,DPP0:c_cam_ini_in
+        SUB R5,R4
+        ASHR R5,#04H
+        SUB R7,R5
+        MOVB RL4,soi_as
+        MOVBS R4,RL4
+        SUB R7,R4
+        CMP R7,#00H
+        JMPR cc_SGE,L_DD474
+        MOV R7,#00H
+        JMPR cc_UC,L_DD484
+L_DD474:                 ; 0xdd474
+        CMP R7,#DATA16 00028H
+        JMPR cc_SLE,L_DD484
+        MOV R7,#DATA16 00028H
+        JMPR cc_UC,L_DD484
+L_DD480:                 ; 0xdd480
+        MOV R7,#DATA16 00028H
+L_DD484:                 ; 0xdd484
+        MOV R12,#DATA16 POF ip_soi__n__ti_mv
+        MOV R13,#DATA16 PAG ip_soi__n__ti_mv
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R8,RL4
+        MOVBS R4,soi_cam_cor
+        SUB R8,R4
+        MOV R12,#DATA16 POF ip_fac_soi_ivvt__n_32__ti_mv
+        MOV R13,#DATA16 PAG ip_fac_soi_ivvt__n_32__ti_mv
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R13,RL4
+        MOVBZ R4,ivvt_in_1_struct_pos_ivvt_cam
+        MOVBZ R12,DPP0:c_cam_ini_in
+        SUB R12,R4
+        CALLS 00FH,Mul_S16_Q9_Sat
+        ASHR R4,#04H
+        SUB R8,R4
+        JB lv_ct.00H,L_DD4C6
+        MOVB RL4,#DATA16 00080H
+        MOVB soi_ast,RL4
+        JMPR cc_UC,L_DD512
+L_DD4C6:                 ; 0xdd4c6
+        MOV R12,#DATA16 05BAEH
+        MOV R13,cycnr_st_ast
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YWord
+        MOVB soi_ast,RL4
+        MOVBZ R4,RL4
+        SUB R4,#DATA16 00080H
+        SUB R8,R4
+        JMPR cc_UC,L_DD512
+L_DD4E0:                 ; 0xdd4e0
+        MOV R7,#DATA16 00028H
+        MOV R12,#DATA16 POF sst_n_kf_ebw_st
+        MOV R13,#DATA16 PAG sst_n_kf_ebw_st
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF sst_ti_kf_ebw_st
+        MOV R13,#DATA16 PAG sst_ti_kf_ebw_st
+        MOV R14,ti_mv
+        CALLS 00FH,Get_IP_Word_X_Axis
+        MOV R12,#DATA16 POF ip_soi_st__n__ti_mv
+        MOV R13,#DATA16 PAG ip_soi_st__n__ti_mv
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R8,RL4
+L_DD512:                 ; 0xdd512
+        MOVB RL4,soi_as
+        MOVBS R4,RL4
+        SUB R8,R4
+        CMP R8,#00H
+        JMPR cc_SGE,L_DD522
+        MOV R8,#00H
+        JMPR cc_UC,L_DD536
+L_DD522:                 ; 0xdd522
+        CMP R8,#DATA16 00064H
+        JMPR cc_SLE,L_DD536
+        MOV R8,#DATA16 00064H
+        JMPR cc_UC,L_DD536
+L_DD52E:                 ; 0xdd52e
+        MOV R7,#DATA16 00028H
+        MOVBZ R8,DPP0:c_soi_cam_diag
+L_DD536:                 ; 0xdd536
+        CMP R8,#DATA16 000FFH
+        JMPR cc_SLE,L_DD542
+        MOV R4,#DATA16 000FFH
+        JMPR cc_UC,L_DD54C
+L_DD542:                 ; 0xdd542
+        CMP R8,#00H
+        JMPR cc_SGE,L_DD54A
+        MOV R4,#00H
+        JMPR cc_UC,L_DD54C
+L_DD54A:                 ; 0xdd54a
+        MOV R4,R8
+L_DD54C:                 ; 0xdd54c
+        MOVB soi,RL4
+        CMP R7,#DATA16 000FFH
+        JMPR cc_SLE,L_DD55C
+        MOV R4,#DATA16 000FFH
+        JMPR cc_UC,L_DD566
+L_DD55C:                 ; 0xdd55c
+        CMP R7,#00H
+        JMPR cc_SGE,L_DD564
+        MOV R4,#00H
+        JMPR cc_UC,L_DD566
+L_DD564:                 ; 0xdd564
+        MOV R4,R7
+L_DD566:                 ; 0xdd566
+        MOVB eoi,RL4
+        MOV R4,ti1
+        MOV R5,#00H
+        SUB R4,#DATA16 05553H
+        SUBC R5,#01H
+        JMPR cc_UGT,L_DD59A
+        MOV R4,ti1
+        MOV R2,#DATA16 06000H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0FH
+        SHR R5,#0FH
+        SHL R2,#01H
+        OR R4,R2
+        MOV ti_hom_bas_1,R4
+        JMPR cc_UC,L_DD59E
+L_DD59A:                 ; 0xdd59a
+        MOV ti_hom_bas_1,ONES
+L_DD59E:                 ; 0xdd59e
+        TRAP #067H
+        MOVBZ R4,seg_nr
+        SHL R4,#01H
+        MOV R5,[R4+#0FA1AH]
+        CMP R5,#DATA16 0BFFFH
+        JMPR cc_UGT,L_DD5D8
+        MOVBZ R4,seg_nr
+        SHL R4,#01H
+        MOV R5,[R4+#0FA1AH]
+        MOV R2,#DATA16 0AAAAH
+        MULU R5,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0FH
+        SHR R5,#0FH
+        SHL R2,#01H
+        OR R4,R2
+        MOV ti_cyl_sam,R4
+        JMPR cc_UC,L_DD5DC
+L_DD5D8:                 ; 0xdd5d8
+        MOV ti_cyl_sam,ONES
+L_DD5DC:                 ; 0xdd5dc
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_TI_Pos_WallFilm  (@0xdd5e6) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Calc_TI_Pos_WallFilm:
+        MOV R12,#DATA16 POF ldp_tco_id_ti_tco_neg_wf
+        MOV R13,#DATA16 PAG ldp_tco_id_ti_tco_neg_wf
+        MOVBZ R14,tco
+        CALLS 00FH,Get_Byte_Y_Axis
+        MOV R12,#DATA16 POF id_ti_tco_pos_wf__tco
+        MOV R13,#DATA16 PAG id_ti_tco_pos_wf__tco
+        CALLS 00FH,Read_Word_Far
+        MOV wf_sync_fac1,R4
+        MOV R12,#DATA16 POF id_ti_tco_neg_wf__tco
+        MOV R13,#DATA16 PAG id_ti_tco_neg_wf__tco
+        CALLS 00FH,Read_Word_Far
+        MOV wf_sync_fac0,R4
+        MOV R12,#DATA16 POF ldp_tco_ip_ti_lgrd_ast
+        MOV R13,#DATA16 PAG ldp_tco_ip_ti_lgrd_ast
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_ti_lgrd_ast__tco
+        MOV R13,#DATA16 PAG ip_ti_lgrd_ast__tco
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV ti_as_min_base,R4
+        MOV R12,#DATA16 POF sstm_tkw_4_4
+        MOV R13,#DATA16 PAG sstm_tkw_4_4
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_soi_tco__tco
+        MOV R13,#DATA16 PAG ip_soi_tco__tco
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        SUBB RL4,#DATA16 00080H
+        MOVB soi_cam_cor,RL4
+        JNB lv_ast.00H,L_DD662
+        CALLS 00CH,Calc_AST_Enrich_2
+L_DD662:                 ; 0xdd662
+        RETS
+
+; ======== Calc_TI_ADD_DLY_VB  (@0xdd664) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (MS42, verified): injector battery-voltage dead-time comp: ti_add_dly from IP(vb)
+        ; (was FUN_0dd664)
+        ; ------------------------------------------------------------
+Calc_TI_ADD_DLY_VB:
+        MOV R12,#DATA16 POF ldpm_vb_1
+        MOV R13,#DATA16 PAG ldpm_vb_1
+        MOVBZ R14,vb
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_ti_add_dly__vb
+        MOV R13,#DATA16 PAG ip_ti_add_dly__vb
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVBZ R4,RL4
+        SHL R4,#03H
+        MOV ti_mv_add,R4
+        MOV R5,#00H
+        SUB R4,#DATA16 05553H
+        SUBC R5,#01H
+        JMPR cc_UGT,L_DD6B4
+        MOV R4,ti_mv_add
+        MOV R2,#DATA16 06000H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0FH
+        SHR R5,#0FH
+        SHL R2,#01H
+        OR R4,R2
+        MOV ti_inj_ext,R4
+        RETS
+L_DD6B4:                 ; 0xdd6b4
+        MOV ti_inj_ext,ONES
+        RETS
+
+S_DCE40 ENDS
+        END

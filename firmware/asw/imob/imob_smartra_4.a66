@@ -1,0 +1,104 @@
+; asw/imob/imob_smartra_4.a66
+; 0xBDA48-0xBDB38  (240 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  SMARTRA_Save_data_to_EEPROM, SMARTRA_disable
+EXTERN  Elevated_Write_Routine_prg_zone_wrapper:NEAR
+
+S_BDA48 SECTION CODE AT 0BDA48H
+
+; ======== SMARTRA_disable  (@0xbda48) ========
+SMARTRA_disable:
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOVB imob_data_ctl_key_nr_learn_imob,ZEROS
+        MOVB RL6,#00H
+L_BDA52:                 ; 0xbda52
+        MOVB RL7,#00H
+LAB_WIPE_LEARNT_KEYS:    ; 0xbda54
+        MOVB RL4,#DATA16 000FFH
+        MOVBZ R5,RL6
+        SHL R5,#02H
+        MOVBZ R2,RL7
+        ADD R2,R5
+        MOVB [R2+#0CA0CH],RL4
+        ADDB RL7,#01H
+        CMPB RL7,#03H
+        JMPR cc_ULE,LAB_WIPE_LEARNT_KEYS
+        ADDB RL6,#01H
+        CMPB RL6,#03H
+        JMPR cc_ULE,L_BDA52
+        MOV key_imob_1,ONES
+        MOV imob_ca50,ONES
+        MOV key_imob_2,ONES
+        MOV imob_ca54,ONES
+        MOV key_imob_3,ONES
+        MOV imob_ca58,ONES
+        MOV key_imob_4,ONES
+        MOV imob_ca5c,ONES
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        RETS
+
+; ======== SMARTRA_Save_data_to_EEPROM  (@0xbda96) ========
+SMARTRA_Save_data_to_EEPROM:
+        JNB lv_conf_mis.08H,L_BDB36
+        MOVB RL4,ctr_imob_nvm_1
+        MOVB ctr_dflt_imob_1,RL4
+        MOVB RL5,ctr_imob_nvm_2
+        MOVB ctr_dflt_imob_2,RL5
+        MOVB RL3,imob_data_ctl_key_nr_learn_imob
+        MOVB key_nr_learn_dflt_imob,RL3
+        MOV R4,imob_bw
+        AND R4,#DATA16 00E00H
+        MOV bw_imob_dflt,R4
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 00102H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0CA08H
+        MOV R15,#DATA16 00036H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 00138H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0CA08H
+        MOV R15,#DATA16 00036H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 0016EH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0CA08H
+        MOV R15,#DATA16 00036H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+L_BDB36:                 ; 0xbdb36
+        RETS
+
+S_BDA48 ENDS
+        END

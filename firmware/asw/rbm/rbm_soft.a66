@@ -1,0 +1,403 @@
+; asw/rbm/rbm_soft.a66
+; 0xB317C-0xB34E0  (868 bytes, 6 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_pv_av_is_rbm                       EQU  0902DEH
+c_tam_min_rbm                        EQU  090365H
+c_amp_min_rbm                        EQU  0904BCH
+c_dly_ast_rbm                        EQU  09051AH
+c_t_ast_rbm                          EQU  0906CCH
+c_t_is_rbm                           EQU  0906EEH
+c_t_vs_rbm                           EQU  09074EH
+c_vs_thd_is_cdn_rbm                  EQU  090836H
+c_vs_thd_rbm                         EQU  090838H
+
+PUBLIC  Calc_RBM_DriveCond, Calc_RBM_State, RBM_Inc_CDN_Ctr, RBM_Inc_IgnCyc_Ctr, Reset_RBM_Full, Reset_RBM_Soft
+EXTERN  NVM_Restore_s5dc:NEAR, Set_Cat_Diag_Inh:NEAR, Set_Cat_Diag_Inh_2:NEAR, Snapshot_RBM_States:NEAR
+
+S_B317C SECTION CODE AT 0B317CH
+
+; ======== Reset_RBM_Full  (@0xb317c) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS31, verified): Rate base monitoring (reset, zero denominators)
+        ; ------------------------------------------------------------
+Reset_RBM_Full:
+        MOV [-R0],R9
+        CALLS 00CH,NVM_Restore_s5dc
+        BCLR lv_dc_rbm.01H
+        BCLR lv_dc_rbm.00H
+        MOVB state_dc_rbm,ZEROS
+        MOV t_ast_rbm,ZEROS
+        MOV t_vs_rbm,ZEROS
+        MOV t_is_rbm,ZEROS
+        MOV R9,#00H
+L_B3198:                 ; 0xb3198
+        MOVB RL4,#00H
+        MOV R5,R9
+        SHL R5,#02H
+        MOV R2,[R5+#046C0H]
+        MOVB [R2+#04H],RL4
+        ADD R9,#01H
+        CMP R9,#DATA16 00013H
+        JMPR cc_C,L_B3198
+        MOV R9,[R0+]
+        RETS
+
+; ======== Reset_RBM_Soft  (@0xb31b2) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS31, verified): Rate base monitoring (reset, halve saturated denominators)
+        ; ------------------------------------------------------------
+Reset_RBM_Soft:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        BCLR lv_dc_rbm.01H
+        BCLR lv_dc_rbm.00H
+        MOVB state_dc_rbm,ZEROS
+        MOV t_ast_rbm,ZEROS
+        MOV t_vs_rbm,ZEROS
+        MOV t_is_rbm,ZEROS
+        MOV R8,#00H
+L_B31CC:                 ; 0xb31cc
+        MOV R4,R8
+        SHL R4,#02H
+        MOV R9,[R4+#046C0H]
+        MOVB RL4,#00H
+        MOVB [R9+#04H],RL4
+        MOV R4,[R9+#02H]
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_NC,L_B31EC
+        MOV R4,[R9]
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_C,L_B31FC
+L_B31EC:                 ; 0xb31ec
+        MOV R4,[R9+#02H]
+        SHR R4,#01H
+        MOV [R9+#02H],R4
+        MOV R4,[R9]
+        SHR R4,#01H
+        MOV [R9],R4
+L_B31FC:                 ; 0xb31fc
+        ADD R8,#01H
+        CMP R8,#DATA16 00013H
+        JMPR cc_C,L_B31CC
+        CALLS 00CH,Set_Cat_Diag_Inh
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== RBM_Inc_IgnCyc_Ctr  (@0xb320e) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by state_rbm_/rate_rbm_ output signals): Increment RBM ignition-cycle counter
+        ; ctr_igk_cyc_rbm; updates lv_dc_rbm.
+        ; ------------------------------------------------------------
+RBM_Inc_IgnCyc_Ctr:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        CALLS 00CH,Set_Cat_Diag_Inh_2
+        JNB obd_sf.0DH,L_B3240
+        JB lv_dc_rbm.01H,L_B324C
+        MOV R4,t_ast
+        CMP R4,DPP0:c_dly_ast_rbm
+        JMPR cc_C,L_B324C
+        MOV R5,ctr_igk_cyc_rbm
+        CMP R5,#DATA16 0FFFFH
+        JMPR cc_C,L_B3238
+        MOV ctr_igk_cyc_rbm,ZEROS
+        JMPR cc_UC,L_B323C
+L_B3238:                 ; 0xb3238
+        SUB ctr_igk_cyc_rbm,ONES
+L_B323C:                 ; 0xb323c
+        BSET lv_dc_rbm.01H
+        JMPR cc_UC,L_B324C
+L_B3240:                 ; 0xb3240
+        JB obd_sf.0DH,L_B324C
+        JNB lv_dc_rbm.02H,L_B324C
+        CALLS 00BH,Calc_RBM_DriveCond
+L_B324C:                 ; 0xb324c
+        MOVB RL4,cnt_prescale_rbm
+        CMPB RL4,#DATA16 00009H
+        JMPR cc_C,L_B32F8
+        MOVB cnt_prescale_rbm,ZEROS
+        JNB obd_sf.0DH,L_B32FC
+        MOV R9,#00H
+L_B3260:                 ; 0xb3260
+        MOV R4,R9
+        SHL R4,#02H
+        MOV R8,[R4+#046C0H]
+        JB lv_cat_diag_inh_1.0EH,L_B32EE
+        MOVB RL4,[R8+#04H]
+        ANDB RL4,#01H
+        JMPR cc_NE,L_B3294
+        MOVB RL4,[R9+#0C370H]
+        ANDB RL4,#01H
+        JMPR cc_EQ,L_B3294
+        MOVB RL4,[R9+#0C370H]
+        ANDB RL4,#02H
+        JMPR cc_NE,L_B3294
+        MOV R4,[R8]
+        ADD R4,#01H
+        MOV [R8],R4
+        MOV R4,R8
+        ADD R4,#04H
+        MOVB RL5,[R4]
+        ORB RL5,#01H
+        MOVB [R4],RL5
+L_B3294:                 ; 0xb3294
+        JNB lv_dc_rbm.00H,L_B32C4
+        MOVB RL4,[R8+#04H]
+        ANDB RL4,#02H
+        JMPR cc_NE,L_B32C4
+        MOVB RL4,[R9+#0C370H]
+        ANDB RL4,#02H
+        JMPR cc_NE,L_B32C4
+        MOVB RL4,[R9+#0C370H]
+        ANDB RL4,#04H
+        JMPR cc_EQ,L_B32C4
+        MOV R4,R8
+        ADD R4,#02H
+        MOV R5,[R4]
+        ADD R5,#01H
+        MOV [R4],R5
+        MOV R4,R8
+        ADD R4,#04H
+        MOVB RL5,[R4]
+        ORB RL5,#02H
+        MOVB [R4],RL5
+L_B32C4:                 ; 0xb32c4
+        MOV R4,R9
+        SHL R4,#02H
+        MOV R5,[R4+#046C0H]
+        MOV [R5],[R8]
+        MOV R4,[R8+#02H]
+        MOV R5,R9
+        SHL R5,#02H
+        MOV R2,[R5+#046C0H]
+        MOV [R2+#02H],R4
+        MOVB RL4,[R8+#04H]
+        MOV R5,R9
+        SHL R5,#02H
+        MOV R2,[R5+#046C0H]
+        MOVB [R2+#04H],RL4
+L_B32EE:                 ; 0xb32ee
+        ADD R9,#01H
+        CMP R9,#DATA16 00013H
+        JMPR cc_C,L_B3260
+        JMPR cc_UC,L_B32FC
+L_B32F8:                 ; 0xb32f8
+        SUBB cnt_prescale_rbm,ONES
+L_B32FC:                 ; 0xb32fc
+        BMOV lv_dc_rbm.02H,obd_sf.0DH
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_RBM_State  (@0xb3306) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS31, verified): Rate base monitoring (state_dc_rbm, t_*_rbm)
+        ; ------------------------------------------------------------
+Calc_RBM_State:
+        JB obd_sf.0DH,L_B330E
+        JMPA cc_UC,L_B341C
+L_B330E:                 ; 0xb330e
+        JNB lv_dc_rbm.00H,L_B3316
+        JMPA cc_UC,L_B341C
+L_B3316:                 ; 0xb3316
+        JNB lv_cat_diag_inh_1.0EH,L_B331E
+        JMPA cc_UC,L_B341C
+L_B331E:                 ; 0xb331e
+        MOVB RL4,tam
+        CMPB RL4,DPP0:c_tam_min_rbm
+        JMPR cc_C,L_B3330
+        MOVB RL5,#08H
+        ORB state_dc_rbm,RL5
+        JMPR cc_UC,L_B3338
+L_B3330:                 ; 0xb3330
+        MOVB RL4,#DATA16 000F7H
+        ANDB state_dc_rbm,RL4
+L_B3338:                 ; 0xb3338
+        MOV R4,amp
+        CMP R4,DPP0:c_amp_min_rbm
+        JMPR cc_ULE,L_B334C
+        MOVB RL4,#DATA16 00010H
+        ORB state_dc_rbm,RL4
+        JMPR cc_UC,L_B3354
+L_B334C:                 ; 0xb334c
+        MOVB RL4,#DATA16 000EFH
+        ANDB state_dc_rbm,RL4
+L_B3354:                 ; 0xb3354
+        MOVB RL4,state_dc_rbm
+        ANDB RL4,#DATA16 00008H
+        JMPR cc_EQ,L_B3410
+        MOVB RL4,state_dc_rbm
+        ANDB RL4,#DATA16 00010H
+        JMPR cc_EQ,L_B3410
+        MOVB RL4,state_dc_rbm
+        ANDB RL4,#01H
+        JMPR cc_NE,L_B338C
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_B338C
+        MOV R4,t_ast_rbm
+        CMP R4,DPP0:c_t_ast_rbm
+        JMPR cc_NC,L_B3386
+        ADD R4,#01H
+        MOV t_ast_rbm,R4
+        JMPR cc_UC,L_B338C
+L_B3386:                 ; 0xb3386
+        MOVB RL4,#01H
+        ORB state_dc_rbm,RL4
+L_B338C:                 ; 0xb338c
+        MOVB RL4,state_dc_rbm
+        ANDB RL4,#02H
+        JMPR cc_NE,L_B33B4
+        MOV R4,vs_rbm
+        CMP R4,DPP0:c_vs_thd_rbm
+        JMPR cc_C,L_B33B4
+        MOV R5,DPP0:c_t_vs_rbm
+        CMP R5,t_vs_rbm
+        JMPR cc_ULE,L_B33AE
+        SUB t_vs_rbm,ONES
+        JMPR cc_UC,L_B33B4
+L_B33AE:                 ; 0xb33ae
+        MOVB RL4,#02H
+        ORB state_dc_rbm,RL4
+L_B33B4:                 ; 0xb33b4
+        MOVB RL4,state_dc_rbm
+        ANDB RL4,#04H
+        JMPR cc_NE,L_B3400
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_B33F6
+        MOVB RL4,pv_av
+        CMPB RL4,DPP0:c_pv_av_is_rbm
+        JMPR cc_UGT,L_B33F6
+        MOV R4,vs_rbm
+        CMP R4,DPP0:c_vs_thd_is_cdn_rbm
+        JMPR cc_UGT,L_B33F6
+        MOV R5,t_is
+        CMP R5,t_is_rbm
+        JMPR cc_C,L_B33FC
+        MOV R2,t_is_rbm
+        CMP R2,DPP0:c_t_is_rbm
+        JMPR cc_C,L_B33F0
+        MOVB RL4,#04H
+        ORB state_dc_rbm,RL4
+        JMPR cc_UC,L_B3400
+L_B33F0:                 ; 0xb33f0
+        SUB t_is_rbm,ONES
+        JMPR cc_UC,L_B3400
+L_B33F6:                 ; 0xb33f6
+        MOV t_is_rbm,ZEROS
+        JMPR cc_UC,L_B3400
+L_B33FC:                 ; 0xb33fc
+        MOV t_is_rbm,ZEROS
+L_B3400:                 ; 0xb3400
+        MOVBZ R4,state_dc_rbm
+        AND R4,#DATA16 0001FH
+        CMP R4,#DATA16 0001FH
+        JMPR cc_NE,L_B341C
+        JMPR cc_UC,L_B3416
+L_B3410:                 ; 0xb3410
+        MOV t_is_rbm,ZEROS
+        RETS
+L_B3416:                 ; 0xb3416
+        BSET lv_dc_rbm.00H
+        CALLS 00BH,RBM_Inc_CDN_Ctr
+L_B341C:                 ; 0xb341c
+        RETS
+
+; ======== RBM_Inc_CDN_Ctr  (@0xb341e) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by state_rbm_/rate_rbm_ output signals): Increment RBM denominator counter
+        ; ctr_cdn_obd_rbm (IUMPR general-denominator).
+        ; ------------------------------------------------------------
+RBM_Inc_CDN_Ctr:
+        MOV R4,ctr_cdn_obd_rbm
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_C,L_B342E
+        MOV ctr_cdn_obd_rbm,ZEROS
+        RETS
+L_B342E:                 ; 0xb342e
+        SUB ctr_cdn_obd_rbm,ONES
+        RETS
+
+; ======== Calc_RBM_DriveCond  (@0xb3434) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by state_rbm_/rate_rbm_ output signals): RBM driving-condition gate: lv_dc_rbm /
+        ; state_dc_rbm (general OBD monitoring preconditions shared by all RBM monitors).
+        ; ------------------------------------------------------------
+Calc_RBM_DriveCond:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        CALLS 00CH,Snapshot_RBM_States
+        MOV R9,#00H
+L_B343E:                 ; 0xb343e
+        MOV R4,R9
+        SHL R4,#02H
+        MOV R8,[R4+#046C0H]
+        JB lv_cat_diag_inh_1.0EH,L_B34CC
+        MOVB RL4,[R8+#04H]
+        ANDB RL4,#01H
+        JMPR cc_NE,L_B3472
+        MOVB RL4,[R9+#0C370H]
+        ANDB RL4,#01H
+        JMPR cc_EQ,L_B3472
+        MOVB RL4,[R9+#0C370H]
+        ANDB RL4,#02H
+        JMPR cc_NE,L_B3472
+        MOV R4,[R8]
+        ADD R4,#01H
+        MOV [R8],R4
+        MOV R4,R8
+        ADD R4,#04H
+        MOVB RL5,[R4]
+        ORB RL5,#01H
+        MOVB [R4],RL5
+L_B3472:                 ; 0xb3472
+        JNB lv_dc_rbm.00H,L_B34A2
+        MOVB RL4,[R8+#04H]
+        ANDB RL4,#02H
+        JMPR cc_NE,L_B34A2
+        MOVB RL4,[R9+#0C370H]
+        ANDB RL4,#02H
+        JMPR cc_NE,L_B34A2
+        MOVB RL4,[R9+#0C370H]
+        ANDB RL4,#04H
+        JMPR cc_EQ,L_B34A2
+        MOV R4,R8
+        ADD R4,#02H
+        MOV R5,[R4]
+        ADD R5,#01H
+        MOV [R4],R5
+        MOV R4,R8
+        ADD R4,#04H
+        MOVB RL5,[R4]
+        ORB RL5,#02H
+        MOVB [R4],RL5
+L_B34A2:                 ; 0xb34a2
+        MOV R4,R9
+        SHL R4,#02H
+        MOV R5,[R4+#046C0H]
+        MOV [R5],[R8]
+        MOV R4,[R8+#02H]
+        MOV R5,R9
+        SHL R5,#02H
+        MOV R2,[R5+#046C0H]
+        MOV [R2+#02H],R4
+        MOVB RL4,[R8+#04H]
+        MOV R5,R9
+        SHL R5,#02H
+        MOV R2,[R5+#046C0H]
+        MOVB [R2+#04H],RL4
+L_B34CC:                 ; 0xb34cc
+        ADD R9,#01H
+        CMP R9,#DATA16 00013H
+        JMPR cc_C,L_B343E
+        BCLR lv_dc_rbm.00H
+        MOVB state_dc_rbm,ZEROS
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_B317C ENDS
+        END

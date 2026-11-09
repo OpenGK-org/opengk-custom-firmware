@@ -1,0 +1,105 @@
+; asw/tq/tq_req.a66
+; 0xB1A64-0xB1B34  (208 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Calc_Fac_TQ_Req, Calc_TQ_Req_Clu
+EXTERN  Mul_Q15_Sat_Signed:NEAR, Sat_Add_S16:NEAR, Sat_Sub_S16:NEAR
+
+S_B1A64 SECTION CODE AT 0B1A64H
+
+; ======== Calc_TQ_Req_Clu  (@0xb1a64) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signals): Clutch torque request: tq_req_clu / fac_tq_req_clu /
+        ; tqi_min_req.
+        ; ------------------------------------------------------------
+Calc_TQ_Req_Clu:
+        MOV [-R0],R9
+        MOV R4,fac_tq_req
+        CMP R4,#DATA16 08000H
+        JMPR cc_NC,L_B1A76
+        MOV fac_tq_req_clu,R4
+        JMPR cc_UC,L_B1A7E
+L_B1A76:                 ; 0xb1a76
+        MOV R4,#DATA16 08000H
+        MOV fac_tq_req_clu,R4
+L_B1A7E:                 ; 0xb1a7e
+        MOV R12,tq_max_clu
+        MOV R13,tq_min_clu
+        CALLS 00FH,Sat_Sub_S16
+        MOV R12,R4
+        MOV R13,fac_tq_req_clu
+        CALLS 00FH,Mul_Q15_Sat_Signed
+        MOV R12,R4
+        MOV R13,tq_min_clu
+        CALLS 00FH,Sat_Add_S16
+        MOV tq_req_clu,R4
+        MOV R12,tq_min_clu
+        MOV R13,tq_loss
+        CALLS 00FH,Sat_Sub_S16
+        MOV R9,R4
+        CMP R9,#00H
+        JMPR cc_SLT,L_B1ABE
+        JB lv_ch.06H,L_B1ABE
+        MOV tqi_min_req,R9
+        JMPR cc_UC,L_B1AC2
+L_B1ABE:                 ; 0xb1abe
+        MOV tqi_min_req,ZEROS
+L_B1AC2:                 ; 0xb1ac2
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_Fac_TQ_Req  (@0xb1ac6) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signals): Torque-request factor + cruise sub + fast fuel-cut:
+        ; fac_tq_req / fac_tq_cru_sub / lv_fcut_fast.
+        ; ------------------------------------------------------------
+Calc_Fac_TQ_Req:
+        JNB lv_lam_fd2c.0BH,L_B1AFA
+        MOV R4,lv_tq_f744
+        CMP R4,fac_tq_req_driv
+        JMPR cc_ULE,L_B1ADE
+        MOV fac_tq_cru_sub,R4
+        BSET lv_fcut_fast.02H
+        BSET lv_fcut_fast.04H
+        JMPR cc_UC,L_B1B06
+L_B1ADE:                 ; 0xb1ade
+        MOV R4,fac_tq_req_driv
+        MOV fac_tq_cru_sub,R4
+        BCLR lv_fcut_fast.04H
+        MOV R5,lv_tq_f744
+        CMP R5,fac_tq_req_driv
+        JMPR cc_NE,L_B1AF6
+        BSET lv_fcut_fast.02H
+        JMPR cc_UC,L_B1B06
+L_B1AF6:                 ; 0xb1af6
+        BCLR lv_fcut_fast.02H
+        JMPR cc_UC,L_B1B06
+L_B1AFA:                 ; 0xb1afa
+        MOV R4,fac_tq_req_driv
+        MOV fac_tq_cru_sub,R4
+        BCLR lv_fcut_fast.02H
+        BCLR lv_fcut_fast.04H
+L_B1B06:                 ; 0xb1b06
+        JNB lv_lam_fd2c.0CH,L_B1B28
+        MOV R4,lv_tq_f752
+        CMP R4,fac_tq_cru_sub
+        JMPR cc_NC,L_B1B1C
+        MOV fac_tq_req,R4
+        BSET lv_fcut_fast.03H
+        RETS
+L_B1B1C:                 ; 0xb1b1c
+        MOV R4,fac_tq_cru_sub
+        MOV fac_tq_req,R4
+        BCLR lv_fcut_fast.03H
+        RETS
+L_B1B28:                 ; 0xb1b28
+        MOV R4,fac_tq_cru_sub
+        MOV fac_tq_req,R4
+        BCLR lv_fcut_fast.03H
+        RETS
+
+S_B1A64 ENDS
+        END

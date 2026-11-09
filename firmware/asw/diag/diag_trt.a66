@@ -1,0 +1,287 @@
+; asw/diag/diag_trt.a66
+; 0xDA842-0xDAB06  (708 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Calc_TRT_Upd, Calc_TRT_Word, NVM_Restore_s00c, NVM_Restore_s56a
+EXTERN  BL_Arm_Exec_Magic:NEAR, Backup_ER_Adapt_Seg:NEAR, CCP_Checksum_Gate:NEAR, Calc_ECU_Diag_SF:NEAR
+EXTERN  Calc_ER_Adapt_Upd:NEAR, Calc_IGA_Ad2_Knk:NEAR, Calc_MWSS_Vdif_2:NEAR, Calc_Ratio_TQI_Max_Stnd:NEAR
+EXTERN  Calc_TI_AS:NEAR, Calc_TI_CO_IS:NEAR, CanPurge_Adapt_Flow:NEAR, DTC_Calc_Activation_MIL:NEAR
+EXTERN  DiagCP_Collect_Samples:NEAR, DiagCP_Precond:NEAR, Imob_Init:NEAR, LamAdapt_TI_NVM_Restore:NEAR
+EXTERN  NVM_Restore_s1a4:NEAR, NVM_Restore_s1a8:NEAR, NVM_Restore_s1ce_MisCtr:NEAR, NVM_Restore_s210:NEAR
+EXTERN  NVM_Restore_s3da:NEAR, NVM_Restore_s4c2:NEAR, NVM_Restore_s56e:NEAR, NVM_Restore_s574:NEAR
+EXTERN  NVM_Restore_s578:NEAR, NVM_Restore_s5c6:NEAR, NVM_Restore_s5ce:NEAR, NVM_Restore_s62e:NEAR
+EXTERN  NVM_Restore_s62eb:NEAR, NVM_Restore_s63a:NEAR, Parse_Serial_Nibbles:NEAR, Reset_Adaptive_LearnedValues:NEAR
+EXTERN  Restore_Cam_Ad_NVM:NEAR, Restore_ER_Adapt:NEAR, Restore_Evap_Ctrs:NEAR, Restore_Knks_Gain_NVM:NEAR
+EXTERN  Restore_OBD_Stat:NEAR, Restore_TAM_NVM:NEAR, Restore_TPS_AdMmv_IS:NEAR, Restore_TQ_Dif_IS_Ad:NEAR
+EXTERN  Set_Conf_VS:NEAR, Set_Dc341_CamErr:NEAR, Set_opg_sp_st_isa_7dc:NEAR, xor_routine:NEAR
+
+S_DA842 SECTION CODE AT 0DA842H
+
+; ======== Calc_TRT_Word  (@0xda842) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by trt/ecu_diag/dtc output signals): Total-run-time / ECU diag status: trt_word /
+        ; ecu_diag_sf_word / lv_pl.
+        ; ------------------------------------------------------------
+Calc_TRT_Word:
+        MOV R12,#DATA16 0005CH
+        MOV R13,#DATA16 00028H
+        CALLS 00DH,BL_Arm_Exec_Magic
+        JNB can_fd58.00H,L_DA864
+        MOV R4,bl_cur_addr_lo
+        MOV R5,bl_cur_addr_hi
+        MOV diag_f890,R4
+        MOV diag_f892,R5
+        JMPR cc_UC,L_DA870
+L_DA864:                 ; 0xda864
+        MOV R4,#00H
+        MOV R5,#01H
+        MOV diag_f890,R4
+        MOV diag_f892,R5
+L_DA870:                 ; 0xda870
+        CALLS 00DH,NVM_Restore_s00c
+        BMOV lv_pl.0DH,lv_im_acin.03H
+        CALLS 00DH,NVM_Restore_s210
+        MOV R4,#DATA16 0FFE0H
+        AND ecu_diag_sf_word,R4
+        MOV R4,ccp_e79e
+        AND R4,#DATA16 0001FH
+        OR ecu_diag_sf_word,R4
+        CALLS 00CH,NVM_Restore_s3da
+        CALLS 00CH,Backup_ER_Adapt_Seg
+        CALLS 00DH,Calc_ECU_Diag_SF
+        MOVB RL4,lv_sched_diag_inh
+        ANDB RL4,#01H
+        JMPR cc_NE,L_DA94C
+        CALLS 00DH,Set_Conf_VS
+        JNB lv_pl.0EH,L_DA8B2
+        JNB lv_pl.0DH,L_DA8B2
+        BSET lv_pl.0CH
+L_DA8B2:                 ; 0xda8b2
+        CALLS 00DH,Calc_TI_AS
+        CALLS 00DH,Calc_TRT_Upd
+        CALLS 00DH,NVM_Restore_s1a8
+        CALLS 00CH,NVM_Restore_s1a4
+        CALLS 00CH,Calc_IGA_Ad2_Knk
+        CALLS 00CH,Restore_Knks_Gain_NVM
+        CALLS 00CH,Restore_TPS_AdMmv_IS
+        CALLS 00DH,NVM_Restore_s56a
+        JNB lv_conf_mis.02H,L_DA8DA
+        CALLS 00CH,Restore_ER_Adapt
+L_DA8DA:                 ; 0xda8da
+        CALLS 00BH,Calc_ER_Adapt_Upd
+        CALLS 00DH,NVM_Restore_s56e
+        CALLS 00DH,NVM_Restore_s574
+        CALLS 00CH,Restore_TQ_Dif_IS_Ad
+        CALLS 00CH,LamAdapt_TI_NVM_Restore
+        CALLS 00BH,CanPurge_Adapt_Flow
+        CALLS 00DH,Restore_Evap_Ctrs
+        CALLS 00BH,Calc_TI_CO_IS
+        CALLS 00BH,Imob_Init
+        CALLS 00BH,Calc_MWSS_Vdif_2
+        CALLS 00CH,Restore_Cam_Ad_NVM
+        CALLS 00CH,Calc_Ratio_TQI_Max_Stnd
+        CALLS 00BH,NVM_Restore_s5c6
+        CALLS 00BH,NVM_Restore_s63a
+        CALLS 00AH,CCP_Checksum_Gate
+        CALLS 00EH,NVM_Restore_s1ce_MisCtr
+        CALLS 00EH,Restore_OBD_Stat
+        JNB lv_pl.0CH,L_DA926
+        CALLS 00DH,Reset_Adaptive_LearnedValues
+L_DA926:                 ; 0xda926
+        CALLS 00BH,Restore_TAM_NVM
+        CALLS 00BH,Set_opg_sp_st_isa_7dc
+        CALLS 00BH,NVM_Restore_s62e
+        CALLS 00CH,NVM_Restore_s62eb
+        CALLS 00DH,NVM_Restore_s5ce
+        CALLS 00CH,Set_Dc341_CamErr
+        JB lv_conf_mis.09H,L_DA954
+        MOV R4,#DATA16 0FFEFH
+        AND ecu_diag_sf_word,R4
+        JMPR cc_UC,L_DA954
+L_DA94C:                 ; 0xda94c
+        MOV trt_word,ZEROS
+        MOVB g_c4a7,ZEROS
+L_DA954:                 ; 0xda954
+        JB lv_pl.0CH,L_DA95C
+        CALLS 00DH,NVM_Restore_s4c2
+L_DA95C:                 ; 0xda95c
+        CALLS 00DH,DiagCP_Collect_Samples
+        CALLS 00DH,DiagCP_Precond
+        CALLS 00BH,NVM_Restore_s578
+        MOVB eng_state,ZEROS
+        BSET lv_cdn_diag_maf_dif_ch_int.0BH
+        MOV R4,g_fa80
+        AND R4,#DATA16 003FFH
+        SHL R4,#06H
+        MOV v_tco_word,R4
+        MOV R12,#DATA16 0003FH
+        CALLS 00DH,DTC_Calc_Activation_MIL
+        BMOV lv_ecu_err.03H,dtc_status_work.06H
+        MOVBZ R4,dtc_ecu_flags
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_DA99A
+        MOV R4,#DATA16 0FFF7H
+        AND dtc_st_grp_ecu,R4
+L_DA99A:                 ; 0xda99a
+        MOV R4,#DATA16 01084H
+        OR crc_status,R4
+        RETS
+
+; ======== NVM_Restore_s00c  (@0xda9a4) ========
+        ; ------------------------------------------------------------
+        ; NVM adaptation I/O: restores <- validated NVM block (DAT_00f890 base) section; xor_routine checksum.
+        ; Section offset in name.
+        ; ------------------------------------------------------------
+NVM_Restore_s00c:
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        ADD R12,#DATA16 0000AH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#02H
+        CALLS 00DH,xor_routine
+        EXTP #03H, #02H
+        MOV R10,DPP0:diag_f890
+        MOV R11,DPP0:diag_f892
+        EXTP R11, #02H
+        MOV R5,[R10+#0CH]
+        NOP
+        CMP R5,R4
+        JMPR cc_NE,L_DAA0C
+        CALLA cc_UC,Parse_Serial_Nibbles
+        EXTP #03H, #02H
+        MOV R10,DPP0:diag_f890
+        MOV R11,DPP0:diag_f892
+        EXTP R11, #02H
+        MOV R5,[R10+#0AH]
+        NOP
+        CMP R5,R4
+        JMPR cc_EQ,L_DAA0E
+L_DAA0C:                 ; 0xdaa0c
+        BSET can_fd58.02H
+L_DAA0E:                 ; 0xdaa0e
+        RETS
+
+; ======== Calc_TRT_Upd  (@0xdaa10) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by trt/ecu_diag/dtc output signals): Total-run-time counter update trt_word.
+        ; ------------------------------------------------------------
+Calc_TRT_Upd:
+        EXTP #03H, #02H
+        MOV R4,DPP0:diag_f890
+        MOV R5,DPP0:diag_f892
+        EXTP R5, #02H
+        MOV R2,[R4+#02H]
+        NOP
+        EXTP R5, #01H
+        MOV R3,[R4]
+        ADD R3,#01H
+        CMP R3,R2
+        JMPR cc_EQ,L_DAA40
+        EXTP R5, #02H
+        MOV R2,[R4+#04H]
+        NOP
+        EXTP R5, #01H
+        MOV R3,[R4]
+        ADD R3,#02H
+        CMP R3,R2
+        JMPR cc_NE,L_DAA56
+L_DAA40:                 ; 0xdaa40
+        EXTP #03H, #02H
+        MOV R4,DPP0:diag_f890
+        MOV R5,DPP0:diag_f892
+        EXTP R5, #01H
+        MOV R2,[R4]
+        MOV trt_word,R2
+        RETS
+L_DAA56:                 ; 0xdaa56
+        EXTP #03H, #02H
+        MOV R4,DPP0:diag_f890
+        MOV R5,DPP0:diag_f892
+        EXTP R5, #02H
+        MOV R2,[R4+#04H]
+        NOP
+        EXTP R5, #02H
+        MOV R3,[R4+#02H]
+        NOP
+        ADD R3,#01H
+        CMP R3,R2
+        JMPR cc_NE,L_DAA88
+        EXTP R5, #02H
+        MOV R2,[R4+#02H]
+        NOP
+        SUB R2,#01H
+        MOV trt_word,R2
+        RETS
+L_DAA88:                 ; 0xdaa88
+        MOV trt_word,ZEROS
+        RETS
+
+; ======== NVM_Restore_s56a  (@0xdaa8e) ========
+        ; ------------------------------------------------------------
+        ; NVM adaptation I/O: restores <- validated NVM block (DAT_00f890 base) section; xor_routine checksum.
+        ; Section offset in name.
+        ; ------------------------------------------------------------
+NVM_Restore_s56a:
+        JB lv_pl.0CH,L_DAAFC
+        JB can_fd58.02H,L_DAAFC
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        ADD R12,#DATA16 0056AH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#02H
+        CALLS 00DH,xor_routine
+        EXTP #03H, #02H
+        MOV R10,DPP0:diag_f890
+        MOV R11,DPP0:diag_f892
+        EXTP R11, #02H
+        MOV R5,[R10+#056CH]
+        NOP
+        CMP R5,R4
+        JMPR cc_NE,L_DAAFC
+        EXTP R11, #02H
+        MOVB RL4,[R10+#056AH]
+        NOP
+        MOVB tco_rest,RL4
+        EXTP R11, #02H
+        MOVB RL5,[R10+#056BH]
+        NOP
+        MOVB lv_ti_f4a6,RL5
+        RETS
+L_DAAFC:                 ; 0xdaafc
+        MOVB tco_rest,ONES
+        MOVB lv_ti_f4a6,ZEROS
+        RETS
+
+S_DA842 ENDS
+        END

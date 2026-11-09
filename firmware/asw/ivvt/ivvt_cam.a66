@@ -1,0 +1,795 @@
+; asw/ivvt/ivvt_cam.a66
+; 0xB48DE-0xB507E  (1952 bytes, 8 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_cam_grd_ad_max_ivvt                EQU  090122H
+c_cam_grd_ad_max_st_ivvt             EQU  090123H
+c_cam_hys_ad_ivvt                    EQU  090124H
+c_cam_hys_ref_ivvt                   EQU  090129H
+c_cam_ini_in                         EQU  09012EH
+c_cam_raw_grd_max_ivvt               EQU  090132H
+c_crlc_cam_ad_ivvt                   EQU  090163H
+c_crlc_cam_ad_st_ivvt                EQU  090164H
+c_crlc_ref_ivvt                      EQU  09016CH
+c_t_min_ref_req_ivvt                 EQU  090349H
+c_tco_add_cam_ref_ivvt               EQU  09036CH
+
+PUBLIC  Calc_Cam_Ad_IVVT, Calc_IVVT_CamAd_Pos, IVVT_CamAd_Arm_1, IVVT_CamAd_Arm_2, IVVT_CamAd_Arm_3, IVVT_Set_RamPtr_3
+PUBLIC  SetBits_lv_cam_ad_di_ivvt_066, Set_lv_cam_ad_di_ivvt
+EXTERN  Clamp_S16:NEAR, Clamp_S16_SignedLimit:NEAR, Diag_IVVT_Elec_SetDTC:NEAR, Get_Byte_2D_Table_DWord_YByte:NEAR
+EXTERN  Interp_U16:NEAR, Mul_S16_Sat16:NEAR, Sat_Add_S16:NEAR, Sat_Add_S16_v2:NEAR
+EXTERN  Sat_Add_S8:NEAR, Sat_Add_U8:NEAR, Sat_HiByte_ff:NEAR, Sat_Sub_S8:NEAR
+EXTERN  sub_r12_13_ret_r4:NEAR, subtract_r12_r13_negate_if_not_rets_r4:NEAR
+
+S_B48DE SECTION CODE AT 0B48DEH
+
+; ======== Calc_IVVT_CamAd_Pos  (@0xb48de) ========
+        ; ------------------------------------------------------------
+        ; ivvt_cam_t field map (base=p_ivvt_cam_m=0xcada / p_ivvt_cam_s=0xcbca per channel).
+        ; +02 cam_raw +03 mode +08 p_map_a +0a p_map_b +0c off_prev +0e off_hys +10 p_out
+        ; +12 integ +13 adj +14 cam_out +15 flag_run +16 cam_ref +17 cam_prev_set
+        ; +18/19 out_h1/2 +1a/1b raw_h1/2 +1d cnt +1e tran_prev +1f sub_cnt
+        ; +20 flag_a +21 flag_dtc +22 p_x +34 phase
+        ; accessed as (base+off & 0x3fff)+0x90000 (C167 window; Ghidra cannot self-name). Type ivvt_cam_t in
+        ; /ems.
+        ; ------------------------------------------------------------
+Calc_IVVT_CamAd_Pos:
+        MOV [-R0],R12
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        SUB R0,#02H
+        MOV R8,p_ivvt_cam_m
+        MOV R9,p_ivvt_cam_s
+        CMP R8,#DATA16 0CADAH
+        JMPR cc_NE,L_B48FC
+        BCLR lv_cam_ad_di_ivvt.03H
+        JMPR cc_UC,L_B48FE
+L_B48FC:                 ; 0xb48fc
+        BSET lv_cam_ad_di_ivvt.03H
+L_B48FE:                 ; 0xb48fe
+        MOVB RL4,[R8+#01EH]
+        MOVB RL5,state_ivvt_tran
+        CMPB RL4,RL5
+        JMPR cc_EQ,L_B493C
+        MOV R4,state_ivvt_tran
+        CMP R4,#03H
+        JMPR cc_EQ,L_B493A
+        CMP R4,#01H
+        JMPR cc_EQ,L_B4920
+        CMP R4,#07H
+        JMPR cc_EQ,L_B4920
+        CMP R4,#DATA16 0000EH
+        JMPR cc_NE,L_B493C
+L_B4920:                 ; 0xb4920
+        BCLR lv_cam_ad_di_ivvt.02H
+        MOV t_ref_req_ivvt,ZEROS
+        BCLR lv_cam_ad_di_ivvt.00H
+        BCLR lv_dc_rbm.0FH
+        MOVB RL4,#00H
+        MOVB [R8+#01FH],RL4
+        MOVB RL4,#DATA16 00040H
+        MOVB idx_cam_ad_ivvt,RL4
+        JMPR cc_UC,L_B493C
+L_B493A:                 ; 0xb493a
+        BCLR lv_cam_ad_di_ivvt.02H
+L_B493C:                 ; 0xb493c
+        MOVB RL4,state_ivvt_tran
+        MOVB [R8+#01EH],RL4
+        MOV R4,state_ivvt
+        CMP R4,#04H
+        JMPA cc_UGT,L_B5038
+        SHL R4,#01H
+        ADD R4,#DATA16 0477EH
+        MOV R4,[R4]
+        JMPI cc_UC,[R4]
+
+; ======== IVVT_CamAd_Arm_1  (@0xb4958) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IVVT_CamAd_Arm_1:
+        MOVB RL4,[R8+#03H]
+        JMPR cc_NE,L_B4996
+        MOVB RL4,[R8+#02H]
+        MOVB [R8+#017H],RL4
+        MOVB RL4,lv_cam_ad_avl_dc_ivvt
+        JMPR cc_NE,L_B497A
+        MOV R4,[R0+#0AH]
+        MOV R5,[R4]
+        MOVB RL4,[R5]
+        MOVB [R8+#014H],RL4
+        JMPR cc_UC,L_B49CC
+L_B497A:                 ; 0xb497a
+        MOVB RL4,[R8+#02H]
+        MOVBZ R12,RL4
+        MOV R4,[R8+#0EH]
+        ADD R12,R4
+        MOV R13,#00H
+        MOV R14,#DATA16 000FFH
+        CALLS 00FH,Clamp_S16
+        MOVB [R8+#014H],RL4
+        JMPR cc_UC,L_B49CC
+L_B4996:                 ; 0xb4996
+        MOVB RL4,lv_cam_ad_avl_dc_ivvt
+        JMPR cc_NE,L_B49AA
+        MOV R4,[R0+#0AH]
+        MOV R5,[R4]
+        MOVB RL4,[R5]
+        MOVB [R8+#014H],RL4
+        JMPR cc_UC,L_B49CC
+L_B49AA:                 ; 0xb49aa
+        MOVB RL4,[R8+#02H]
+        MOVBZ R12,RL4
+        MOV R4,[R8+#0EH]
+        ADD R12,R4
+        MOVB RL4,[R8+#013H]
+        MOVBS R4,RL4
+        ADD R12,R4
+        MOV R13,#00H
+        MOV R14,#DATA16 000FFH
+        CALLS 00FH,Clamp_S16
+        MOVB [R8+#014H],RL4
+L_B49CC:                 ; 0xb49cc
+        MOVB RL4,[R8+#014H]
+        MOVBZ R4,RL4
+        MOVB [R9+#020H],RL4
+        JMPA cc_UC,L_B5038
+
+; ======== Calc_Cam_Ad_IVVT  (@0xb49da) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by dominant output signals): IVVT cam-position adaptation: ctr_cam_ad_ivvt /
+        ; idx_cam_ad_ivvt / lv_cam_ad_avl_dc_ivvt.
+        ; ------------------------------------------------------------
+Calc_Cam_Ad_IVVT:
+        MOVB RL4,[R8+#01DH]
+        CMPB RL4,#02H
+        JMPA cc_C,L_B4DA0
+        MOV R12,#DATA16 04770H
+        MOVBZ R13,toil
+        CALLS 00FH,Get_Byte_2D_Table_DWord_YByte
+        MOVB RL7,RL4
+        MOVB RL4,[R8+#03H]
+        JMPA cc_NE,L_B4B9C
+        MOVB RL4,[R8+#01FH]
+        JMPR cc_NE,L_B4A0E
+        MOVB RL4,#01H
+        MOVB [R8+#01FH],RL4
+        MOVB RL4,[R8+#02H]
+        MOVB [R8+#016H],RL4
+L_B4A0E:                 ; 0xb4a0e
+        MOVB RL4,[R8+#01FH]
+        CMPB RL4,RL7
+        JMPR cc_UGT,L_B4A94
+        MOVB RL4,[R8+#016H]
+        MOVBZ R12,RL4
+        MOVB RL4,[R8+#02H]
+        MOVBZ R13,RL4
+        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        MOV R5,[R0+#0AH]
+        MOV R2,[R5+#02H]
+        CMPB RL4,[R2]
+        JMPR cc_UGT,L_B4A3A
+        MOVB RL4,#01H
+        MOVB [R8+#015H],RL4
+        JMPR cc_UC,L_B4A44
+L_B4A3A:                 ; 0xb4a3a
+        MOVB RL4,#00H
+        MOVB [R8+#015H],RL4
+        MOVB [R8+#01FH],RL4
+L_B4A44:                 ; 0xb4a44
+        JB lv_diag_trip_avl_ivvt.08H,L_B4A68
+        MOVB RL4,[R8+#015H]
+        JMPR cc_EQ,L_B4A68
+        MOVB RL4,[R8+#02H]
+        MOVBZ R12,RL4
+        MOVB RL4,[R8+#01BH]
+        MOVBZ R13,RL4
+        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        MOVBZ R4,RL4
+        SHR R4,#01H
+        CMPB RL4,DPP0:c_cam_grd_ad_max_st_ivvt
+        JMPR cc_ULE,L_B4A70
+L_B4A68:                 ; 0xb4a68
+        MOVB RL4,#00H
+        MOVB [R8+#020H],RL4
+        JMPR cc_UC,L_B4A94
+L_B4A70:                 ; 0xb4a70
+        MOV R4,[R8+#08H]
+        MOV R12,[R4]
+        MOVB RL4,[R8+#02H]
+        MOVBZ R13,RL4
+        SHL R13,#08H
+        MOVBZ R14,DPP0:c_crlc_ref_ivvt
+        SHL R14,#08H
+        CALLS 00FH,Interp_U16
+        MOV R5,[R8+#08H]
+        MOV [R5],R4
+        MOVB RL4,#01H
+        MOVB [R8+#020H],RL4
+L_B4A94:                 ; 0xb4a94
+        MOVB RL4,[R8+#01FH]
+        CMPB RL4,RL7
+        JMPR cc_C,L_B4B1A
+        MOV R4,[R0+#0AH]
+        MOV R5,[R4]
+        MOVB RL4,[R5]
+        MOVBZ R12,RL4
+        MOVBZ R13,DPP0:c_cam_hys_ref_ivvt
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOV R5,[R8+#08H]
+        MOVB RL3,[R5+#01H]
+        CMPB RL3,RL4
+        JMPR cc_C,L_B4AD8
+        MOV R4,[R0+#0AH]
+        MOV R5,[R4]
+        MOVB RL4,[R5]
+        MOVBZ R12,RL4
+        MOVBZ R13,DPP0:c_cam_hys_ref_ivvt
+        CALLS 00FH,Sat_Add_U8
+        MOV R5,[R8+#08H]
+        MOVB RL3,[R5+#01H]
+        CMPB RL3,RL4
+        JMPR cc_ULE,L_B4B00
+L_B4AD8:                 ; 0xb4ad8
+        MOV R4,[R8+#08H]
+        MOVB RL5,[R4+#01H]
+        MOV R4,[R0+#0AH]
+        MOV R2,[R4]
+        CMPB RL5,[R2]
+        JMPR cc_ULE,L_B4AF6
+        MOVBZ R5,DPP0:c_cam_hys_ref_ivvt
+        NEG R5
+        MOV [R8+#0EH],R5
+        JMPR cc_UC,L_B4B1A
+L_B4AF6:                 ; 0xb4af6
+        MOVBZ R4,DPP0:c_cam_hys_ref_ivvt
+        MOV [R8+#0EH],R4
+        JMPR cc_UC,L_B4B1A
+L_B4B00:                 ; 0xb4b00
+        MOV R4,[R8+#08H]
+        MOVB RL5,[R4+#01H]
+        MOVBZ R4,RL5
+        MOV R5,[R0+#0AH]
+        MOV R2,[R5]
+        MOVB RL5,[R2]
+        MOVBZ R5,RL5
+        SUB R5,R4
+        MOV [R8+#0EH],R5
+L_B4B1A:                 ; 0xb4b1a
+        MOVB RL6,[R8+#021H]
+        MOVB RL4,[R8+#01FH]
+        CMPB RL4,RL7
+        JMPR cc_C,L_B4B88
+        MOV R4,[R8+#022H]
+        MOVB RL5,[R4]
+        JMPR cc_EQ,L_B4B68
+        MOV R4,[R8+#0AH]
+        MOVB RL5,[R4+#01H]
+        MOVBZ R12,RL5
+        MOV R4,[R8+#08H]
+        MOVB RL5,[R4+#01H]
+        MOVBZ R13,RL5
+        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        MOVB [R0],RL4
+        MOV R4,[R0+#0AH]
+        MOV R2,[R4+#04H]
+        MOVB RL4,[R0]
+        CMPB RL4,[R2]
+        JMPR cc_NC,L_B4B60
+        MOV R4,[R8+#08H]
+        MOV R5,[R8+#0AH]
+        MOV [R5],[R4]
+L_B4B60:                 ; 0xb4b60
+        MOVB RL4,#01H
+        MOVB [R8+#021H],RL4
+        JMPR cc_UC,L_B4B8E
+L_B4B68:                 ; 0xb4b68
+        MOV R4,[R0+#0AH]
+        MOV R5,[R4+#04H]
+        MOVB RL4,[R5]
+        JMPR cc_EQ,L_B4B8E
+        MOV R4,[R8+#08H]
+        MOV R5,[R8+#0AH]
+        MOV [R5],[R4]
+        MOVB RL4,#01H
+        MOV R5,[R8+#022H]
+        MOVB [R5],RL4
+        JMPR cc_UC,L_B4B8E
+L_B4B88:                 ; 0xb4b88
+        MOVB RL4,#00H
+        MOVB [R8+#021H],RL4
+L_B4B8E:                 ; 0xb4b8e
+        CMPB RL6,#00H
+        JMPR cc_NE,L_B4B9C
+        MOVB RL4,[R8+#021H]
+        JMPR cc_EQ,L_B4B9C
+        CALLS 00BH,Diag_IVVT_Elec_SetDTC
+L_B4B9C:                 ; 0xb4b9c
+        MOVB RL4,[R8+#03H]
+        JMPA cc_EQ,L_B4CB2
+        MOVB RL4,[R8+#01FH]
+        CMPB RL4,#00H
+        JMPR cc_ULE,L_B4C18
+        MOVB RL4,[R8+#01FH]
+        CMPB RL4,RL7
+        JMPR cc_UGT,L_B4C18
+        MOVB RL4,[R8+#020H]
+        JMPR cc_EQ,L_B4C18
+        MOVB RL4,[R8+#013H]
+        CMPB RL4,#DATA16 00080H
+        JMPR cc_NE,L_B4BCC
+        MOVB RL4,#DATA16 00081H
+        MOVB [R8+#013H],RL4
+L_B4BCC:                 ; 0xb4bcc
+        MOVB RL4,[R8+#01AH]
+        MOVBZ R12,RL4
+        MOVB RL4,[R8+#02H]
+        MOVBZ R13,RL4
+        CALLS 00FH,Sat_Sub_S8
+        MOVBS R12,RL4
+        MOVB RL4,[R8+#013H]
+        NEGB RL4
+        MOVBS R13,RL4
+        CALLS 00FH,Sat_Add_S8
+        MOVBS R13,RL4
+        MOVBZ R4,DPP0:c_crlc_cam_ad_st_ivvt
+        MUL R13,R4
+        MOV R13,0FE0EH
+        MOV R12,[R8+#012H]
+        CALLS 00FH,Sat_Add_S16
+        MOV [R8+#012H],R4
+        MOVB RL4,[R8+#01FH]
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NC,L_B4C18
+        MOV R4,R8
+        ADD R4,#DATA16 0001FH
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+L_B4C18:                 ; 0xb4c18
+        JB lv_cam_ad_di_ivvt.03H,L_B4CB2
+        MOVB RL4,#01H
+        MOVB [R0],RL4
+        MOVB RL5,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_B4C3C
+        MOVBZ R4,ivvt_in_1_struct_pos_ivvt_ctr_cam_ad_ivvt
+        MOVBZ R5,RL7
+        ADD R5,#01H
+        CMP R4,R5
+        JMPR cc_SLT,L_B4C38
+        MOVB RL4,#01H
+        MOVB [R0],RL4
+        JMPR cc_UC,L_B4C3C
+L_B4C38:                 ; 0xb4c38
+        MOVB RL4,#00H
+        MOVB [R0],RL4
+L_B4C3C:                 ; 0xb4c3c
+        MOVB RL4,[R0]
+        JMPR cc_EQ,L_B4CB2
+        MOVB RL5,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_B4C4A
+        MOVB ivvt_in_1_struct_pos_ivvt_ctr_cam_ad_ivvt,ZEROS
+L_B4C4A:                 ; 0xb4c4a
+        MOVB RL4,idx_cam_ad_ivvt
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NC,L_B4C5A
+        ADDB RL4,#01H
+        MOVB idx_cam_ad_ivvt,RL4
+L_B4C5A:                 ; 0xb4c5a
+        MOV R4,state_ivvt_tran
+        CMP R4,#DATA16 0000CH
+        JMPR cc_NE,L_B4C6E
+        MOVB RL4,#01H
+        MOVB lv_cam_ad_avl_dc_ivvt,RL4
+        BSET lv_dc_rbm.0FH
+        JMPR cc_UC,L_B4CB2
+L_B4C6E:                 ; 0xb4c6e
+        MOV R4,state_ivvt_tran
+        CMP R4,#05H
+        JMPR cc_NE,L_B4CB2
+        BCLR lv_cam_ad_di_ivvt.00H
+        MOVBZ R12,idx_cam_ad_ivvt
+        SUB R12,#DATA16 00042H
+        MOV R13,#DATA16 0FFC0H
+        CALLS 00FH,Clamp_S16_SignedLimit
+        MOV R12,R4
+        MOVBZ R13,DPP0:c_tco_add_cam_ref_ivvt
+        CALLS 00FH,Mul_S16_Sat16
+        MOV R13,R4
+        MOVBZ R12,tco_st
+        CALLS 00FH,Sat_Add_S16_v2
+        MOVBZ R5,tco
+        CMP R5,R4
+        JMPR cc_UGT,L_B4CB2
+        MOVBZ R12,idx_cam_ad_ivvt
+        MOV R13,#02H
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB idx_cam_ad_ivvt,RL4
+L_B4CB2:                 ; 0xb4cb2
+        MOVB RL4,[R8+#03H]
+        JMPR cc_NE,L_B4D02
+        MOVB RL4,[R8+#02H]
+        MOVB [R8+#017H],RL4
+        MOVB RL4,lv_cam_ad_avl_dc_ivvt
+        JMPR cc_EQ,L_B4CF4
+        MOVB RL5,[R8+#02H]
+        MOVBZ R12,RL5
+        MOV R4,[R0+#0AH]
+        MOV R2,[R4]
+        MOVB RL4,[R2]
+        MOVBZ R4,RL4
+        ADD R12,R4
+        MOV R4,[R8+#08H]
+        MOVB RL5,[R4+#01H]
+        MOVBZ R4,RL5
+        SUB R12,R4
+        MOV R13,#00H
+        MOV R14,#DATA16 000FFH
+        CALLS 00FH,Clamp_S16
+        MOVB [R8+#014H],RL4
+        JMPR cc_UC,L_B4D3E
+L_B4CF4:                 ; 0xb4cf4
+        MOV R4,[R0+#0AH]
+        MOV R5,[R4]
+        MOVB RL4,[R5]
+        MOVB [R8+#014H],RL4
+        JMPR cc_UC,L_B4D3E
+L_B4D02:                 ; 0xb4d02
+        MOV R4,state_ivvt_tran
+        CMP R4,#05H
+        JMPR cc_NE,L_B4D3E
+        MOVB RL4,[R8+#02H]
+        MOVBZ R12,RL4
+        MOV R4,[R0+#0AH]
+        MOV R2,[R4]
+        MOVB RL4,[R2]
+        MOVBZ R4,RL4
+        ADD R12,R4
+        MOV R4,[R8+#08H]
+        MOVB RL5,[R4+#01H]
+        MOVBZ R4,RL5
+        SUB R12,R4
+        MOVB RL4,[R8+#013H]
+        MOVBS R4,RL4
+        ADD R12,R4
+        MOV R13,#00H
+        MOV R14,#DATA16 000FFH
+        CALLS 00FH,Clamp_S16
+        MOVB [R8+#014H],RL4
+L_B4D3E:                 ; 0xb4d3e
+        MOVB RL4,[R8+#014H]
+        MOVBZ R4,RL4
+        MOVB [R9+#020H],RL4
+        MOV R4,state_ivvt_tran
+        CMP R4,#05H
+        JMPR cc_NE,L_B4DAC
+        MOV R5,[R0+#0AH]
+        MOV R2,[R5]
+        MOVB RL4,[R2]
+        MOVBZ R12,RL4
+        MOVBZ R13,DPP0:c_cam_hys_ad_ivvt
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB RL5,[R9+#04H]
+        CMPB RL5,RL4
+        JMPR cc_C,L_B4D90
+        MOVB RL4,[R8+#015H]
+        JMPR cc_NE,L_B4D76
+        MOVB RL4,[R8+#03H]
+        JMPR cc_EQ,L_B4D90
+L_B4D76:                 ; 0xb4d76
+        MOVB RL4,[R8+#01BH]
+        MOVBZ R12,RL4
+        MOVB RL4,[R8+#02H]
+        MOVBZ R13,RL4
+        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        MOVBZ R4,RL4
+        SHR R4,#01H
+        CMPB RL4,DPP0:c_cam_raw_grd_max_ivvt
+        JMPR cc_C,L_B4DAC
+L_B4D90:                 ; 0xb4d90
+        BSET lv_cam_ad_di_ivvt.01H
+        BCLR lv_cam_ad_di_ivvt.00H
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_B4DAC
+        MOVB ivvt_in_1_struct_pos_ivvt_ctr_cam_ad_ivvt,ZEROS
+        JMPR cc_UC,L_B4DAC
+L_B4DA0:                 ; 0xb4da0
+        MOV R4,R8
+        ADD R4,#DATA16 0001DH
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+L_B4DAC:                 ; 0xb4dac
+        CMP R9,#DATA16 0CBCAH
+        JMPA cc_NE,L_B5038
+        MOV R4,[R8+#0EH]
+        MOV [R8+#0CH],R4
+        MOV R4,[R8+#012H]
+        MOV R5,[R8+#010H]
+        MOV [R5],R4
+        JMPA cc_UC,L_B5038
+
+; ======== Set_lv_cam_ad_di_ivvt  (@0xb4dca) ========
+        ; ------------------------------------------------------------
+        ; Named from dominant output signal (auto-derived).
+        ; ------------------------------------------------------------
+Set_lv_cam_ad_di_ivvt:
+        MOVB RL4,[R8+#03H]
+        JMPR cc_NE,L_B4DF4
+        MOVB RL4,[R8+#02H]
+        MOVBZ R12,RL4
+        MOV R4,[R8+#0EH]
+        ADD R12,R4
+        MOV R13,#00H
+        MOV R14,#DATA16 000FFH
+        CALLS 00FH,Clamp_S16
+        MOVB [R8+#014H],RL4
+        MOVB RL4,[R8+#02H]
+        MOVB [R8+#017H],RL4
+        JMPR cc_UC,L_B4E16
+L_B4DF4:                 ; 0xb4df4
+        MOVB RL4,[R8+#02H]
+        MOVBZ R12,RL4
+        MOV R4,[R8+#0EH]
+        ADD R12,R4
+        MOVB RL4,[R8+#013H]
+        MOVBS R4,RL4
+        ADD R12,R4
+        MOV R13,#00H
+        MOV R14,#DATA16 000FFH
+        CALLS 00FH,Clamp_S16
+        MOVB [R8+#014H],RL4
+L_B4E16:                 ; 0xb4e16
+        MOVB RL4,[R8+#014H]
+        MOVBZ R4,RL4
+        MOVB [R9+#020H],RL4
+        MOVB RL4,#01H
+        MOVB [R0],RL4
+        MOVB RL5,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_B4E46
+        MOVBZ R12,DPP0:c_cam_ini_in
+        MOVBZ R13,DPP0:c_cam_hys_ad_ivvt
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL4,ivvt_in_struct_sp_ivvt_cam_sp_ivvt
+        JMPR cc_NC,L_B4E42
+        MOVB RL4,#01H
+        MOVB [R0],RL4
+        JMPR cc_UC,L_B4E46
+L_B4E42:                 ; 0xb4e42
+        MOVB RL4,#00H
+        MOVB [R0],RL4
+L_B4E46:                 ; 0xb4e46
+        MOVB RL4,DPP0:c_t_min_ref_req_ivvt
+        CMPB RL4,#00H
+        JMPR cc_ULE,L_B4EEE
+        JB lv_err_tps_det.02H,L_B4EEE
+        MOVB RL5,[R0]
+        JMPR cc_EQ,L_B4EEE
+        MOVBZ R12,idx_cam_ad_ivvt
+        SUB R12,#DATA16 00040H
+        MOVBZ R13,DPP0:c_tco_add_cam_ref_ivvt
+        CALLS 00FH,Mul_S16_Sat16
+        MOV R13,R4
+        MOVBZ R12,tco_st
+        CALLS 00FH,Sat_Add_S16_v2
+        MOVBZ R5,tco
+        CMP R5,R4
+        JMPR cc_NC,L_B4EA4
+        MOVBZ R12,idx_cam_ad_ivvt
+        SUB R12,#DATA16 00042H
+        MOV R13,#DATA16 0FFC0H
+        CALLS 00FH,Clamp_S16_SignedLimit
+        MOV R12,R4
+        MOVBZ R13,DPP0:c_tco_add_cam_ref_ivvt
+        CALLS 00FH,Mul_S16_Sat16
+        MOV R13,R4
+        MOVBZ R12,tco_st
+        CALLS 00FH,Sat_Add_S16_v2
+        MOVBZ R5,tco
+        CMP R5,R4
+        JMPR cc_UGT,L_B4EEE
+L_B4EA4:                 ; 0xb4ea4
+        JB lv_cam_ad_di_ivvt.01H,L_B4EEE
+        JB lv_diag_trip_avl_ivvt.08H,L_B4EEE
+        MOVB RL4,[R8+#01BH]
+        MOVBZ R12,RL4
+        MOVB RL4,[R8+#02H]
+        MOVBZ R13,RL4
+        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        MOVBZ R4,RL4
+        SHR R4,#01H
+        CMPB RL4,DPP0:c_cam_raw_grd_max_ivvt
+        JMPR cc_UGT,L_B4ECC
+        MOVB RL4,#01H
+        MOVB [R0],RL4
+        JMPR cc_UC,L_B4ED0
+L_B4ECC:                 ; 0xb4ecc
+        MOVB RL4,#00H
+        MOVB [R0],RL4
+L_B4ED0:                 ; 0xb4ed0
+        MOVB RL4,[R0]
+        JMPR cc_EQ,L_B4EE4
+        JB lv_cam_ad_di_ivvt.02H,L_B4EF6
+        BSET lv_cam_ad_di_ivvt.02H
+        MOVBZ R4,DPP0:c_t_min_ref_req_ivvt
+        MOV t_ref_req_ivvt,R4
+        JMPR cc_UC,L_B4EF6
+L_B4EE4:                 ; 0xb4ee4
+        BCLR lv_cam_ad_di_ivvt.02H
+        BCLR lv_cam_ad_di_ivvt.01H
+        MOV t_ref_req_ivvt,ZEROS
+        JMPR cc_UC,L_B4EF6
+L_B4EEE:                 ; 0xb4eee
+        BCLR lv_cam_ad_di_ivvt.02H
+        BCLR lv_cam_ad_di_ivvt.01H
+        MOV t_ref_req_ivvt,ZEROS
+L_B4EF6:                 ; 0xb4ef6
+        MOVB RL4,[R8+#03H]
+        JMPR cc_EQ,L_B4F52
+        JB lv_cam_ad_avl_nvmy_ivvt.00H,L_B4F2A
+        MOVB RL4,[R8+#019H]
+        MOVBZ R12,RL4
+        MOVB RL4,[R8+#014H]
+        MOVBZ R13,RL4
+        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        MOVBZ R4,RL4
+        SHR R4,#01H
+        CMPB RL4,DPP0:c_cam_grd_ad_max_ivvt
+        JMPR cc_UGT,L_B4F52
+        MOV R4,[R8+#034H]
+        CMP R4,#01H
+        JMPR cc_EQ,L_B4F2A
+        MOV R4,[R8+#034H]
+        CMP R4,#02H
+        JMPR cc_NE,L_B4F52
+L_B4F2A:                 ; 0xb4f2a
+        MOVB RL4,[R8+#018H]
+        MOVBZ R12,RL4
+        MOVB RL4,[R8+#014H]
+        MOVBZ R13,RL4
+        CALLS 00FH,Sat_Sub_S8
+        MOVBS R13,RL4
+        MOVBZ R4,DPP0:c_crlc_cam_ad_ivvt
+        MUL R13,R4
+        MOV R13,0FE0EH
+        MOV R12,[R8+#012H]
+        CALLS 00FH,Sat_Add_S16
+        MOV [R8+#012H],R4
+L_B4F52:                 ; 0xb4f52
+        CMP R9,#DATA16 0CBCAH
+        JMPA cc_NE,L_B5038
+        MOV R4,[R8+#012H]
+        MOV R5,[R8+#010H]
+        MOV [R5],R4
+        JMPR cc_UC,L_B5038
+
+; ======== IVVT_CamAd_Arm_2  (@0xb4f66) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IVVT_CamAd_Arm_2:
+        MOVB RL4,[R8+#03H]
+        JMPR cc_NE,L_B4FBC
+        JB lv_diag_trip_avl_ivvt.0FH,L_B4F74
+        JNB lv_cam_err.05H,L_B4F86
+L_B4F74:                 ; 0xb4f74
+        MOV R4,[R0+#0AH]
+        MOV R5,[R4]
+        MOVB RL4,[R5]
+        MOVB [R8+#017H],RL4
+        MOVB [R8+#014H],RL4
+        JMPR cc_UC,L_B5008
+L_B4F86:                 ; 0xb4f86
+        MOVB RL4,[R8+#02H]
+        MOVB [R8+#017H],RL4
+        MOVB RL4,lv_cam_ad_avl_dc_ivvt
+        JMPR cc_EQ,L_B4FAE
+        MOVB RL5,[R8+#02H]
+        MOVBZ R12,RL5
+        MOV R13,[R8+#0EH]
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV R12,R4
+        CALLS 00FH,Sat_HiByte_ff
+        MOVB [R8+#014H],RL4
+        JMPR cc_UC,L_B5008
+L_B4FAE:                 ; 0xb4fae
+        MOV R4,[R0+#0AH]
+        MOV R5,[R4]
+        MOVB RL4,[R5]
+        MOVB [R8+#014H],RL4
+        JMPR cc_UC,L_B5008
+L_B4FBC:                 ; 0xb4fbc
+        JB lv_diag_trip_avl_ivvt.0FH,L_B4FC4
+        JNB lv_cam_err.05H,L_B4FD2
+L_B4FC4:                 ; 0xb4fc4
+        MOV R4,[R0+#0AH]
+        MOV R5,[R4]
+        MOVB RL4,[R5]
+        MOVB [R8+#014H],RL4
+        JMPR cc_UC,L_B5008
+L_B4FD2:                 ; 0xb4fd2
+        MOVB RL4,lv_cam_ad_avl_dc_ivvt
+        JMPR cc_EQ,L_B4FFC
+        MOVB RL5,[R8+#02H]
+        MOVBZ R12,RL5
+        MOV R4,[R8+#0EH]
+        ADD R12,R4
+        MOVB RL4,[R8+#013H]
+        MOVBS R4,RL4
+        ADD R12,R4
+        MOV R13,#00H
+        MOV R14,#DATA16 000FFH
+        CALLS 00FH,Clamp_S16
+        MOVB [R8+#014H],RL4
+        JMPR cc_UC,L_B5008
+L_B4FFC:                 ; 0xb4ffc
+        MOV R4,[R0+#0AH]
+        MOV R5,[R4]
+        MOVB RL4,[R5]
+        MOVB [R8+#014H],RL4
+L_B5008:                 ; 0xb5008
+        MOVB RL4,[R8+#014H]
+        MOVBZ R4,RL4
+        MOVB [R9+#020H],RL4
+        JMPR cc_UC,L_B5038
+
+; ======== IVVT_CamAd_Arm_3  (@0xb5014) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IVVT_CamAd_Arm_3:
+        MOV R4,[R0+#0AH]
+        MOV R5,[R4]
+        MOVB RL4,[R5]
+        MOVB [R8+#014H],RL4
+        MOVB RL4,[R8+#03H]
+        JMPR cc_NE,L_B502E
+        MOVB RL4,[R8+#02H]
+        MOVB [R8+#017H],RL4
+L_B502E:                 ; 0xb502e
+        MOVB RL4,[R8+#014H]
+        MOVBZ R4,RL4
+        MOVB [R9+#020H],RL4
+L_B5038:                 ; 0xb5038
+        MOVB RL4,[R8+#018H]
+        MOVB [R8+#019H],RL4
+        MOVB RL4,[R8+#014H]
+        MOVB [R8+#018H],RL4
+        MOVB RL4,[R8+#01AH]
+        MOVB [R8+#01BH],RL4
+        MOVB RL4,[R8+#02H]
+        MOVB [R8+#01AH],RL4
+        ADD R0,#02H
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        ADD R0,#02H
+        RETS
+
+; ======== SetBits_lv_cam_ad_di_ivvt_066  (@0xb5066) ========
+SetBits_lv_cam_ad_di_ivvt_066:
+        BSET lv_cam_ad_di_ivvt.00H
+        RETS
+
+; ======== IVVT_Set_RamPtr_3  (@0xb506a) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IVVT_Set_RamPtr_3:
+        MOV R4,p_ivvt_cam_m
+        CMP R4,#DATA16 0CADAH
+        JMPR cc_NE,L_B507C
+        MOV R5,#DATA16 0F6D6H
+        MOV [R4+#0DEH],R5
+L_B507C:                 ; 0xb507c
+        RETS
+
+S_B48DE ENDS
+        END

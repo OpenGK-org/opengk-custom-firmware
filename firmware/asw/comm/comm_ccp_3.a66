@@ -1,0 +1,625 @@
+; asw/comm/comm_ccp_3.a66
+; 0xA5F16-0xA651A  (1540 bytes, 8 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  CCP_Cmd_Entry, CCP_Cmd_StateMachine, CCP_Parse_Cmd, CCP_Reset_State, CCP_Set_EngineFlags, CCP_Submit_Cmd
+PUBLIC  Move_xFF_items__from_PTR_R12_to_PTR_R13, Move_xFF_items__from_PTR_R12_to_PTR_R13_5F1C
+EXTERN  CCP_Resp_Dispatch:NEAR, CCP_Session_Ctl:NEAR, CCP_Session_Ctl_2:NEAR, CCP_Set_Flags_2:NEAR
+EXTERN  CCP_Svc_Prog_DAQ:NEAR, Check_Threshold_a6580:NEAR, Init_CommObj_States:NEAR, Init_KeyBuf_c508:NEAR
+EXTERN  KWP_Build_NegResponse:NEAR, Push_To_System_Stack:NEAR, Tail_f0a6818_5b8:NEAR
+
+S_A5F16 SECTION CODE AT 0A5F16H
+
+; ======== Move_xFF_items?_from_PTR_R12_to_PTR_R13  (@0xa5f16) ========
+Move_xFF_items__from_PTR_R12_to_PTR_R13:
+        JMPR cc_UC,Move_xFF_items__from_PTR_R12_to_PTR_R13_5F1C
+L_A5F18:                 ; 0xa5f18
+        MOVB [R12],[R13+]
+        ADD R12,#01H
+
+; ======== Move_xFF_items?_from_PTR_R12_to_PTR_R13  (@0xa5f1c) ========
+Move_xFF_items__from_PTR_R12_to_PTR_R13_5F1C:
+        CMPD1 R14,#00H
+        JMPR cc_NE,L_A5F18
+        RETS
+
+; ======== CCP_Reset_State  (@0xa5f22) ========
+CCP_Reset_State:
+        MOV ccp_d750,ZEROS
+        MOV ccp_d752,ZEROS
+        MOV ccp_session_state,ZEROS
+        BCLR ccp_engine_flags.0AH
+        BCLR ccp_engine_flags.0BH
+        BCLR ccp_engine_flags.0CH
+        MOV ccp_d756,ZEROS
+        MOVB ccp_c506,ZEROS
+        MOVB ccp_c505,ZEROS
+        MOVB ccp_cmd_err_cnt,ZEROS
+        CALLS 00AH,Tail_f0a6818_5b8
+        RETS
+
+; ======== CCP_Cmd_Entry  (@0xa5f4a) ========
+        ; CCP_Cmd_Entry(channel): CCP command receive entry. channel 0 -> writes cmd 0x2c, channel 1 -> 0x2d
+        ; into work buffer ccp_cmd_buf(0xd770), then invokes CCP_Cmd_StateMachine. Called from the CAN-RX glue
+        ; (undefined code @0a4a46) when a CRO arrives on the CCP message object.
+CCP_Cmd_Entry:
+        MOV [-R0],R12
+        CMP R12,#00H
+        JMPR cc_EQ,L_A5F56
+        CMP R12,#01H
+        JMPR cc_EQ,L_A5F68
+        JMPR cc_UC,L_A5F78
+L_A5F56:                 ; 0xa5f56
+        MOVB RL4,#DATA16 0002CH
+        MOVB ccp_d770,RL4
+        MOV R12,#DATA16 0D770H
+        CALLS 00AH,CCP_Cmd_StateMachine
+        JMPR cc_UC,L_A5F78
+L_A5F68:                 ; 0xa5f68
+        MOVB RL4,#DATA16 0002DH
+        MOVB ccp_d770,RL4
+        MOV R12,#DATA16 0D770H
+        CALLS 00AH,CCP_Cmd_StateMachine
+L_A5F78:                 ; 0xa5f78
+        ADD R0,#02H
+        RETS
+
+; ======== CCP_Cmd_StateMachine  (@0xa5f7c) ========
+        ; CCP_Cmd_StateMachine(cmdBufPtr): main CCP command dispatcher / session state machine. State in
+        ; ccp_session_state (0=idle, 0x10=connected, 0x20=cal-active, 0x30=program). cmdBuf[0] command codes:
+        ; 0x2c=connect/start, 0x2d=disconnect, 0x16=program (sub 0x03=prog,0x50=end), 0x2f=select-cal-page
+        ; (sub 0x8c), 0x2a=cal-page/status (sub 0x67/0x66/0x65/0x64/0x8c). Verifies station id vs const
+        ; @0x0a2432. Dispatches to CCP_Cmd_Program(0a6532), CCP_Svc(0a6552), CCP_Exchange(0a659c), and
+        ; CCP_Resp_Dispatch. Unknown cmd -> ccp_cmd_err_cnt++. engine flags in ccp_engine_flags (bit 0xa-0xe).
+CCP_Cmd_StateMachine:
+        MOV [-R0],R9
+        MOV [-R0],R6
+        MOV R9,R12
+        MOV R4,ccp_session_state
+        JMPR cc_EQ,L_A5FA2
+        CMP R4,#DATA16 00010H
+        JMPR cc_EQ,L_A6004
+        CMP R4,#DATA16 00020H
+        JMPA cc_EQ,L_A613A
+        CMP R4,#DATA16 00030H
+        JMPA cc_EQ,L_A625E
+        JMPA cc_UC,L_A62CC
+L_A5FA2:                 ; 0xa5fa2
+        MOVB RL4,[R9]
+        CMPB RL4,#DATA16 0002CH
+        JMPR cc_NE,L_A5FFC
+        MOVB RL4,#DATA16 0001DH
+        MOVB ccp_d74c,RL4
+        MOV R12,#DATA16 0D74CH
+        CALLS 00AH,CCP_Resp_Dispatch
+        MOV R12,#DATA16 0006FH
+        CALLS 00AH,CCP_Submit_Cmd
+        MOVB ccp_c50f,ZEROS
+        MOVB ccp_c50b,ZEROS
+        BCLR ccp_engine_flags.0DH
+        MOVB RL6,#00H
+L_A5FCE:                 ; 0xa5fce
+        MOVB RL4,#00H
+        MOVBZ R5,RL6
+        MOVB [R5+#0C50CH],RL4
+        ADDB RL6,#01H
+        CMPB RL6,#02H
+        JMPR cc_C,L_A5FCE
+        CALLS 00AH,Init_KeyBuf_c508
+        BCLR ccp_engine_flags.0EH
+        MOVB ccp_c50e,ZEROS
+        MOVB RL4,DPP1:0A2430H
+        MOVB ccp_c507,RL4
+        BSET ccp_engine_flags.0AH
+        MOV R4,#DATA16 00010H
+        MOV ccp_session_state,R4
+        JMPA cc_UC,L_A62D0
+L_A5FFC:                 ; 0xa5ffc
+        SUBB ccp_cmd_err_cnt,ONES
+        JMPA cc_UC,L_A62D0
+L_A6004:                 ; 0xa6004
+        MOVB RL4,[R9]
+        CMPB RL4,#DATA16 0002AH
+        JMPR cc_EQ,L_A6026
+        CMPB RL4,#DATA16 00016H
+        JMPR cc_EQ,L_A60D0
+        CMPB RL4,#DATA16 0002DH
+        JMPA cc_EQ,L_A6108
+        CMPB RL4,#DATA16 0002FH
+        JMPA cc_EQ,L_A6110
+        JMPA cc_UC,L_A6132
+L_A6026:                 ; 0xa6026
+        MOVB RL4,[R9+#02H]
+        CMPB RL4,DPP1:0A2432H
+        JMPR cc_NE,L_A605C
+        MOVB RL4,[R9+#03H]
+        CMPB RL4,#DATA16 00067H
+        JMPA cc_NE,L_A62D0
+        MOVB RL4,#DATA16 00067H
+        MOVB ccp_c50a,RL4
+        BSET ccp_engine_flags.0DH
+        BCLR ccp_engine_flags.0AH
+        JNB ccp_engine_flags.0EH,L_A6050
+        CALLS 00AH,CCP_Set_Flags_2
+L_A6050:                 ; 0xa6050
+        MOV R4,#DATA16 00020H
+        MOV ccp_session_state,R4
+        JMPA cc_UC,L_A62D0
+L_A605C:                 ; 0xa605c
+        MOVB RL4,[R9+#03H]
+        CMPB RL4,#DATA16 00064H
+        JMPR cc_EQ,L_A606E
+        CMPB RL4,#DATA16 00065H
+        JMPR cc_EQ,L_A6094
+        JMPR cc_UC,L_A60C8
+L_A606E:                 ; 0xa606e
+        MOVB RL4,#DATA16 00064H
+        MOVB RL5,[R9+#02H]
+        MOVBZ R5,RL5
+        MOVB [R5+#0C508H],RL4
+        BSET ccp_engine_flags.0DH
+        BCLR ccp_engine_flags.0AH
+        JNB ccp_engine_flags.0EH,L_A6088
+        CALLS 00AH,CCP_Set_Flags_2
+L_A6088:                 ; 0xa6088
+        MOV R4,#DATA16 00020H
+        MOV ccp_session_state,R4
+        JMPA cc_UC,L_A62D0
+L_A6094:                 ; 0xa6094
+        MOVB RL4,[R9+#02H]
+        MOVBZ R4,RL4
+        MOVB RL5,[R4+#0C508H]
+        CMPB RL5,#DATA16 000FFH
+        JMPA cc_NE,L_A62D0
+        MOVB RL4,#DATA16 00065H
+        MOVB RL5,[R9+#02H]
+        MOVBZ R5,RL5
+        MOVB [R5+#0C508H],RL4
+        MOVB RL4,[R9+#02H]
+        MOVBZ R4,RL4
+        MOV R12,#DATA16 0C50CH
+        ADD R12,R4
+        CALLS 00AH,Check_Threshold_a6580
+        JMPA cc_UC,L_A62D0
+L_A60C8:                 ; 0xa60c8
+        SUBB ccp_cmd_err_cnt,ONES
+        JMPA cc_UC,L_A62D0
+L_A60D0:                 ; 0xa60d0
+        MOVB RL4,[R9+#02H]
+        CMPB RL4,#DATA16 00050H
+        JMPR cc_EQ,L_A60E0
+        CMPB RL4,#03H
+        JMPR cc_EQ,L_A60F8
+        JMPR cc_UC,L_A6100
+L_A60E0:                 ; 0xa60e0
+        BSET ccp_engine_flags.0DH
+        BCLR ccp_engine_flags.0AH
+        JNB ccp_engine_flags.0EH,L_A60EC
+        CALLS 00AH,CCP_Set_Flags_2
+L_A60EC:                 ; 0xa60ec
+        MOV R4,#DATA16 00020H
+        MOV ccp_session_state,R4
+        JMPA cc_UC,L_A62D0
+L_A60F8:                 ; 0xa60f8
+        CALLS 00AH,CCP_Session_Ctl
+        JMPA cc_UC,L_A62D0
+L_A6100:                 ; 0xa6100
+        SUBB ccp_cmd_err_cnt,ONES
+        JMPA cc_UC,L_A62D0
+L_A6108:                 ; 0xa6108
+        CALLS 00AH,CCP_Session_Ctl_2
+        JMPA cc_UC,L_A62D0
+L_A6110:                 ; 0xa6110
+        MOVB RL4,[R9+#02H]
+        CMPB RL4,#DATA16 0008CH
+        JMPR cc_NE,L_A612A
+        BSET ccp_engine_flags.0DH
+        BCLR ccp_engine_flags.0AH
+        MOV R4,#DATA16 00020H
+        MOV ccp_session_state,R4
+        JMPA cc_UC,L_A62D0
+L_A612A:                 ; 0xa612a
+        SUBB ccp_cmd_err_cnt,ONES
+        JMPA cc_UC,L_A62D0
+L_A6132:                 ; 0xa6132
+        SUBB ccp_cmd_err_cnt,ONES
+        JMPA cc_UC,L_A62D0
+L_A613A:                 ; 0xa613a
+        MOVB RL4,[R9]
+        CMPB RL4,#DATA16 00016H
+        JMPR cc_EQ,L_A6152
+        CMPB RL4,#DATA16 0002DH
+        JMPR cc_EQ,L_A6178
+        CMPB RL4,#DATA16 0002AH
+        JMPR cc_EQ,L_A6180
+        JMPA cc_UC,L_A6258
+L_A6152:                 ; 0xa6152
+        MOVB RL4,[R9+#02H]
+        CMPB RL4,#03H
+        JMPR cc_EQ,L_A6164
+        CMPB RL4,#DATA16 00050H
+        JMPA cc_EQ,L_A62D0
+        JMPR cc_UC,L_A6170
+L_A6164:                 ; 0xa6164
+        MOVB ccp_c50e,ZEROS
+        CALLS 00AH,CCP_Session_Ctl
+        JMPA cc_UC,L_A62D0
+L_A6170:                 ; 0xa6170
+        SUBB ccp_cmd_err_cnt,ONES
+        JMPA cc_UC,L_A62D0
+L_A6178:                 ; 0xa6178
+        CALLS 00AH,CCP_Session_Ctl_2
+        JMPA cc_UC,L_A62D0
+L_A6180:                 ; 0xa6180
+        MOVB RL4,[R9+#02H]
+        CMPB RL4,DPP1:0A2432H
+        JMPR cc_NE,L_A61F8
+        MOVB RL4,[R9+#03H]
+        CMPB RL4,#DATA16 00067H
+        JMPR cc_EQ,L_A619C
+        CMPB RL4,#DATA16 00066H
+        JMPR cc_EQ,L_A61C0
+        JMPR cc_UC,L_A61F0
+L_A619C:                 ; 0xa619c
+        JNB ccp_engine_flags.0EH,L_A61A4
+        CALLS 00AH,CCP_Set_Flags_2
+L_A61A4:                 ; 0xa61a4
+        MOVB ccp_c50e,ZEROS
+        MOVB RL4,ccp_c50a
+        CMPB RL4,#DATA16 00067H
+        JMPA cc_EQ,L_A62D0
+        MOVB RL5,#DATA16 00067H
+        MOVB ccp_c50a,RL5
+        JMPA cc_UC,L_A62D0
+L_A61C0:                 ; 0xa61c0
+        MOVB RL4,ccp_c50a
+        CMPB RL4,#DATA16 00066H
+        JMPA cc_EQ,L_A62D0
+        SUBB ccp_c50e,ONES
+        MOVB RL5,ccp_c50e
+        CMPB RL5,DPP1:0A2431H
+        JMPA cc_C,L_A62D0
+        MOVB RL3,#DATA16 00066H
+        MOVB ccp_c50a,RL3
+        MOV R12,#DATA16 0C50BH
+        CALLS 00AH,Check_Threshold_a6580
+        JMPA cc_UC,L_A62D0
+L_A61F0:                 ; 0xa61f0
+        SUBB ccp_cmd_err_cnt,ONES
+        JMPA cc_UC,L_A62D0
+L_A61F8:                 ; 0xa61f8
+        MOVB RL4,[R9+#03H]
+        CMPB RL4,#DATA16 00064H
+        JMPR cc_EQ,L_A620A
+        CMPB RL4,#DATA16 00065H
+        JMPR cc_EQ,L_A6222
+        JMPR cc_UC,L_A6252
+L_A620A:                 ; 0xa620a
+        MOVB RL4,#DATA16 00064H
+        MOVB RL5,[R9+#02H]
+        MOVBZ R5,RL5
+        MOVB [R5+#0C508H],RL4
+        JNB ccp_engine_flags.0EH,L_A62D0
+        CALLS 00AH,CCP_Set_Flags_2
+        JMPR cc_UC,L_A62D0
+L_A6222:                 ; 0xa6222
+        MOVB RL4,[R9+#02H]
+        MOVBZ R4,RL4
+        MOVB RL5,[R4+#0C508H]
+        CMPB RL5,#DATA16 00065H
+        JMPR cc_EQ,L_A62D0
+        MOVB RL4,#DATA16 00065H
+        MOVB RL5,[R9+#02H]
+        MOVBZ R5,RL5
+        MOVB [R5+#0C508H],RL4
+        MOVB RL4,[R9+#02H]
+        MOVBZ R4,RL4
+        MOV R12,#DATA16 0C50CH
+        ADD R12,R4
+        CALLS 00AH,Check_Threshold_a6580
+        JMPR cc_UC,L_A62D0
+L_A6252:                 ; 0xa6252
+        SUBB ccp_cmd_err_cnt,ONES
+        JMPR cc_UC,L_A62D0
+L_A6258:                 ; 0xa6258
+        SUBB ccp_cmd_err_cnt,ONES
+        JMPR cc_UC,L_A62D0
+L_A625E:                 ; 0xa625e
+        MOVB RL4,[R9]
+        CMPB RL4,#DATA16 00016H
+        JMPR cc_EQ,L_A6274
+        CMPB RL4,#DATA16 0002DH
+        JMPR cc_EQ,L_A62A0
+        CMPB RL4,#DATA16 0002FH
+        JMPR cc_EQ,L_A62B0
+        JMPR cc_UC,L_A62C6
+L_A6274:                 ; 0xa6274
+        MOVB RL4,[R9+#02H]
+        JMPR cc_NE,L_A629A
+        MOV R12,#DATA16 0006FH
+        CALLS 00AH,CCP_Submit_Cmd
+        JNB ccp_engine_flags.0DH,L_A6290
+        MOV R4,#DATA16 00020H
+        MOV ccp_session_state,R4
+        JMPR cc_UC,L_A62D0
+L_A6290:                 ; 0xa6290
+        MOV R4,#DATA16 00010H
+        MOV ccp_session_state,R4
+        JMPR cc_UC,L_A62D0
+L_A629A:                 ; 0xa629a
+        SUBB ccp_cmd_err_cnt,ONES
+        JMPR cc_UC,L_A62D0
+L_A62A0:                 ; 0xa62a0
+        BCLR ccp_engine_flags.0EH
+        MOV R12,#DATA16 0C50FH
+        CALLS 00AH,Check_Threshold_a6580
+        CALLS 00AH,CCP_Session_Ctl_2
+        JMPR cc_UC,L_A62D0
+L_A62B0:                 ; 0xa62b0
+        MOVB RL4,[R9+#02H]
+        CMPB RL4,#DATA16 0008CH
+        JMPR cc_NE,L_A62C0
+        BSET ccp_engine_flags.0DH
+        BCLR ccp_engine_flags.0AH
+        JMPR cc_UC,L_A62D0
+L_A62C0:                 ; 0xa62c0
+        SUBB ccp_cmd_err_cnt,ONES
+        JMPR cc_UC,L_A62D0
+L_A62C6:                 ; 0xa62c6
+        SUBB ccp_cmd_err_cnt,ONES
+        JMPR cc_UC,L_A62D0
+L_A62CC:                 ; 0xa62cc
+        SUBB ccp_cmd_err_cnt,ONES
+L_A62D0:                 ; 0xa62d0
+        MOV R6,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== CCP_Parse_Cmd  (@0xa62d6) ========
+        ; ------------------------------------------------------------
+        ; Seg-A ISR helper (verified by SFR/CCP usage): CCP/serial command parse: matches command chars (0x22
+        ; '"', 0x6f 'o') gated by DAT_00d750.
+        ; ------------------------------------------------------------
+CCP_Parse_Cmd:
+        MOV R4,ccp_d750
+        JMPR cc_EQ,L_A62E4
+        CMP R4,#DATA16 00020H
+        JMPR cc_EQ,L_A6306
+        JMPR cc_UC,L_A634C
+L_A62E4:                 ; 0xa62e4
+        MOVB RL4,[R12]
+        CMPB RL4,#DATA16 00022H
+        JMPR cc_NE,L_A6300
+        MOVB RL4,[R12+#02H]
+        CMPB RL4,#DATA16 0006FH
+        JMPR cc_NE,L_A6300
+        MOV R4,#DATA16 00020H
+        MOV ccp_d750,R4
+        RETS
+L_A6300:                 ; 0xa6300
+        SUBB ccp_c505,ONES
+        RETS
+L_A6306:                 ; 0xa6306
+        MOVB RL4,[R12]
+        CMPB RL4,#DATA16 00022H
+        JMPR cc_EQ,L_A6322
+        CMPB RL4,#DATA16 0002FH
+        JMPR cc_EQ,L_A6350
+        CMPB RL4,#DATA16 0002BH
+        JMPR cc_EQ,L_A6350
+        CMPB RL4,#DATA16 00023H
+        JMPR cc_EQ,L_A6350
+        JMPR cc_UC,L_A6346
+L_A6322:                 ; 0xa6322
+        MOVB RL4,[R12+#02H]
+        CMPB RL4,#DATA16 0006EH
+        JMPR cc_EQ,L_A633A
+        CMPB RL4,#DATA16 00070H
+        JMPR cc_EQ,L_A6350
+        CMPB RL4,#DATA16 0006FH
+        JMPR cc_EQ,L_A6350
+        JMPR cc_UC,L_A6340
+L_A633A:                 ; 0xa633a
+        MOV ccp_d750,ZEROS
+        RETS
+L_A6340:                 ; 0xa6340
+        SUBB ccp_c505,ONES
+        RETS
+L_A6346:                 ; 0xa6346
+        SUBB ccp_c505,ONES
+        RETS
+L_A634C:                 ; 0xa634c
+        SUBB ccp_c505,ONES
+L_A6350:                 ; 0xa6350
+        RETS
+
+; ======== CCP_Set_EngineFlags  (@0xa6352) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by ccp_/bl_/cpu output signals): Set CCP engine/comms flags ccp_engine_flags.
+        ; ------------------------------------------------------------
+CCP_Set_EngineFlags:
+        MOV [-R0],R9
+        MOV R9,R12
+        MOV R4,ccp_d752
+        JMPR cc_EQ,L_A636E
+        CMP R4,#DATA16 00020H
+        JMPR cc_EQ,L_A6398
+        CMP R4,#DATA16 00030H
+        JMPA cc_EQ,L_A6452
+        JMPA cc_UC,L_A6492
+L_A636E:                 ; 0xa636e
+        MOVB RL4,[R9]
+        CMPB RL4,#DATA16 00022H
+        JMPR cc_NE,L_A6390
+        MOVB RL4,[R9+#02H]
+        CMPB RL4,#DATA16 0006FH
+        JMPR cc_NE,L_A6390
+        BCLR ccp_engine_flags.0FH
+        BSET ccp_engine_flags.0BH
+        MOV R4,#DATA16 00020H
+        MOV ccp_d752,R4
+        JMPA cc_UC,L_A6496
+L_A6390:                 ; 0xa6390
+        SUBB ccp_c506,ONES
+        JMPA cc_UC,L_A6496
+L_A6398:                 ; 0xa6398
+        MOVB RL4,[R9]
+        CMPB RL4,#DATA16 00022H
+        JMPR cc_EQ,L_A63BA
+        CMPB RL4,#DATA16 00015H
+        JMPR cc_EQ,L_A63E8
+        CMPB RL4,#DATA16 00014H
+        JMPR cc_EQ,L_A6406
+        CMPB RL4,#DATA16 0002FH
+        JMPR cc_EQ,L_A6424
+        CMPB RL4,#DATA16 00030H
+        JMPR cc_EQ,L_A642E
+        JMPR cc_UC,L_A644C
+L_A63BA:                 ; 0xa63ba
+        MOVB RL4,[R9+#02H]
+        CMPB RL4,#DATA16 0006EH
+        JMPR cc_NE,L_A63CC
+        BCLR ccp_engine_flags.0BH
+        MOV ccp_d752,ZEROS
+        JMPR cc_UC,L_A6496
+L_A63CC:                 ; 0xa63cc
+        MOVB RL4,[R9+#02H]
+        CMPB RL4,#DATA16 00070H
+        JMPR cc_NE,L_A63E2
+        BCLR ccp_engine_flags.0BH
+        MOV R4,#DATA16 00030H
+        MOV ccp_d752,R4
+        JMPR cc_UC,L_A6496
+L_A63E2:                 ; 0xa63e2
+        SUBB ccp_c506,ONES
+        JMPR cc_UC,L_A6496
+L_A63E8:                 ; 0xa63e8
+        MOVB RL4,[R9+#02H]
+        MOVBZ R4,RL4
+        MOV R5,R4
+        SHL R5,#02H
+        SUB R5,R4
+        SHL R5,#02H
+        MOV R10,R5
+        MOV R4,[R10+#063CCH]
+        MOV R5,[R10+#063CEH]
+        CALLS 00CH,Push_To_System_Stack
+        JMPR cc_UC,L_A6496
+L_A6406:                 ; 0xa6406
+        MOVB RL4,[R9+#02H]
+        MOVBZ R4,RL4
+        MOV R5,R4
+        SHL R5,#02H
+        SUB R5,R4
+        SHL R5,#02H
+        MOV R10,R5
+        MOV R4,[R10+#063CCH]
+        MOV R5,[R10+#063CEH]
+        CALLS 00CH,Push_To_System_Stack
+        JMPR cc_UC,L_A6496
+L_A6424:                 ; 0xa6424
+        MOVB RL4,[R9+#02H]
+        SUBB ccp_c506,ONES
+        JMPR cc_UC,L_A6496
+L_A642E:                 ; 0xa642e
+        MOVB RL4,[R9+#02H]
+        CMPB RL4,#DATA16 00096H
+        JMPR cc_NE,L_A6446
+        CALLS 00AH,KWP_Build_NegResponse
+        MOV R12,#DATA16 0D740H
+        CALLS 00AH,CCP_Svc_Prog_DAQ
+        JMPR cc_UC,L_A6496
+L_A6446:                 ; 0xa6446
+        SUBB ccp_c506,ONES
+        JMPR cc_UC,L_A6496
+L_A644C:                 ; 0xa644c
+        SUBB ccp_c506,ONES
+        JMPR cc_UC,L_A6496
+L_A6452:                 ; 0xa6452
+        MOVB RL4,[R9]
+        CMPB RL4,#DATA16 00022H
+        JMPR cc_NE,L_A648C
+        MOVB RL4,[R9+#02H]
+        CMPB RL4,#DATA16 0006EH
+        JMPR cc_NE,L_A646A
+        MOV ccp_d752,ZEROS
+        JMPR cc_UC,L_A6496
+L_A646A:                 ; 0xa646a
+        MOVB RL4,[R9+#02H]
+        CMPB RL4,#DATA16 0006FH
+        JMPR cc_NE,L_A6486
+        BCLR ccp_engine_flags.0FH
+        BSET ccp_engine_flags.0BH
+        CALLS 00AH,Init_CommObj_States
+        MOV R4,#DATA16 00020H
+        MOV ccp_d752,R4
+        JMPR cc_UC,L_A6496
+L_A6486:                 ; 0xa6486
+        SUBB ccp_c506,ONES
+        JMPR cc_UC,L_A6496
+L_A648C:                 ; 0xa648c
+        SUBB ccp_c506,ONES
+        JMPR cc_UC,L_A6496
+L_A6492:                 ; 0xa6492
+        SUBB ccp_c506,ONES
+L_A6496:                 ; 0xa6496
+        MOV R9,[R0+]
+        RETS
+        JNB ccp_engine_flags.0AH,L_A64C4
+        MOVB RL4,ccp_c507
+        JMPR cc_EQ,L_A64AC
+        SUBB RL4,#01H
+        MOVB ccp_c507,RL4
+        RETS
+L_A64AC:                 ; 0xa64ac
+        MOVB RL4,#DATA16 0002FH
+        MOVB ign_cc_0,RL4
+        MOVB RL5,#DATA16 0008CH
+        MOVB ign_cc_1,RL5
+        MOV R12,#DATA16 0D77CH
+        CALLS 00AH,CCP_Cmd_StateMachine
+L_A64C4:                 ; 0xa64c4
+        RETS
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa64c6 [dpp]  W:{-}  R:{CC3INT_Handler}
+        ; ------------------------------------------------------------
+        JNB ccp_engine_flags.0CH,L_A64E8
+        MOV R4,ccp_d756
+        JMPR cc_NE,L_A64E4
+        BCLR ccp_engine_flags.0CH
+        MOVB RL4,#DATA16 0001FH
+        MOVB ccp_d74c,RL4
+        MOV R12,#DATA16 0D74CH
+        CALLS 00AH,CCP_Resp_Dispatch
+        RETS
+L_A64E4:                 ; 0xa64e4
+        ADD ccp_d756,ONES
+L_A64E8:                 ; 0xa64e8
+        RETS
+
+; ======== CCP_Submit_Cmd  (@0xa64ea) ========
+        ; ------------------------------------------------------------
+        ; Seg-A helper (verified): Build+submit CCP command: sets d76c/d76e, CCP_Set_EngineFlags,
+        ; CCP_Parse_Cmd.
+        ; ------------------------------------------------------------
+CCP_Submit_Cmd:
+        MOV [-R0],R6
+        MOV R6,R12
+        MOVB RL4,#DATA16 00022H
+        MOVB ccp_d76c,RL4
+        MOVB ccp_d76e,RL6
+        MOV R12,#DATA16 0D76CH
+        CALLS 00AH,CCP_Set_EngineFlags
+        MOVB RL4,#DATA16 00022H
+        MOVB ccp_d760,RL4
+        MOVB ccp_d762,RL6
+        MOV R12,#DATA16 0D760H
+        CALLS 00AH,CCP_Parse_Cmd
+        MOV R6,[R0+]
+        RETS
+
+S_A5F16 ENDS
+        END

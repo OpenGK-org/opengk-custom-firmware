@@ -1,0 +1,194 @@
+; asw/cp/cp_purge.a66
+; 0xB1E56-0xB1FF0  (410 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  CanPurge_Calc_Flow_2, CanPurge_Calc_LamSum, CanPurge_State_Upd, CanPurge_State_Upd_2, L_B1FEE, Set_cp_state_fe8
+EXTERN  CanPurge_Reset:NEAR
+
+S_B1E56 SECTION CODE AT 0B1E56H
+
+; ======== CanPurge_Calc_LamSum  (@0xb1e56) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signals): Purge lambda-disturbance sum lam_p_sum_cp during transition.
+        ; ------------------------------------------------------------
+CanPurge_Calc_LamSum:
+        JNB lv_cp_act.0BH,L_B1E8A
+        MOV R4,cp_t_state
+        CMP R4,#03H
+        JMPA cc_NE,L_B1FEE
+        MOVB lam_sum_cp,ZEROS
+        BCLR lv_fcut_fast.06H
+        BCLR lv_fcut_fast.0CH
+        MOVB lam_p_sum_cp,ZEROS
+        BSET lv_fcut_fast.07H
+        BSET lv_fcut_fast.09H
+        MOV R5,lam_bank_1_lam_up_ti_lam
+        MOV ti_lam_cp_mmv,R5
+        MOV R2,#05H
+        MOV cp_state,R2
+        MOV R3,#09H
+        MOV cp_tra_state,R3
+        RET
+L_B1E8A:                 ; 0xb1e8a
+        BCLR lv_fcut_fast.06H
+        MOVB lam_sum_cp,ZEROS
+        JNB lv_cp_act.0CH,L_B1EB4
+        MOV cl_mmv_old,ZEROS
+        MOV rel_flow_cps_old,ZEROS
+        MOV rel_flow_cps_old_min,ZEROS
+        MOV R4,lam_bank_1_lam_up_ti_lam
+        MOV ti_lam_cp_mmv,R4
+        MOV R5,#04H
+        MOV cp_state,R5
+        MOV cp_tra_state,ZEROS
+        RET
+L_B1EB4:                 ; 0xb1eb4
+        BCLR lv_fcut_fast.0CH
+        MOVB lam_p_sum_cp,ZEROS
+        JNB lv_cp_act.07H,L_B1ECC
+        MOV R4,#01H
+        MOV cp_state,R4
+        MOV cp_tra_state,ZEROS
+        BCLR lv_fcut_fast.07H
+        RET
+L_B1ECC:                 ; 0xb1ecc
+        JNB lv_cp_act.0AH,L_B1EDE
+        MOV R4,#02H
+        MOV cp_state,R4
+        MOV R5,#04H
+        MOV cp_tra_state,R5
+        JMPR cc_UC,L_B1EF4
+L_B1EDE:                 ; 0xb1ede
+        MOV R4,#01H
+        MOV cp_state,R4
+        JNB lv_cp_act.08H,L_B1EEE
+        MOV cp_tra_state,ZEROS
+        JMPR cc_UC,L_B1EF4
+L_B1EEE:                 ; 0xb1eee
+        MOV R4,#03H
+        MOV cp_tra_state,R4
+L_B1EF4:                 ; 0xb1ef4
+        MOV R4,#01H
+        MOV cp_norm_deac_state,R4
+        RET
+
+; ======== CanPurge_Calc_Flow_2  (@0xb1efc) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signals): Purge relative flow during transition: rel_flow_cps +
+        ; cp_state.
+        ; ------------------------------------------------------------
+CanPurge_Calc_Flow_2:
+        JNB lv_cp_act.0CH,L_B1F0A
+        MOV R4,cp_t_state
+        CMP R4,#03H
+        JMPA cc_NE,L_B1FEE
+L_B1F0A:                 ; 0xb1f0a
+        JNB lv_cp_act.07H,L_B1F1C
+        MOV R4,#01H
+        MOV cp_state,R4
+        MOV cp_tra_state,ZEROS
+        BCLR lv_fcut_fast.07H
+        RET
+L_B1F1C:                 ; 0xb1f1c
+        MOV R4,rel_flow_cps
+        CMP R4,cp_flow_lim
+        JMPR cc_ULE,L_B1F2E
+        MOV R5,cp_flow_lim
+        MOV rel_flow_cps,R5
+L_B1F2E:                 ; 0xb1f2e
+        MOV R4,cp_t_state
+        CMP R4,#03H
+        JMPR cc_NE,L_B1F54
+        BSET lv_fcut_fast.09H
+        BSET lv_fcut_fast.0AH
+        MOV R5,cl_mmv
+        MOV cl_mmv_norm_purge_end,R5
+        MOVB lam_sum_cp,ZEROS
+        MOV R2,#05H
+        MOV cp_state,R2
+        MOV R3,#0AH
+        MOV cp_tra_state,R3
+        RET
+L_B1F54:                 ; 0xb1f54
+        JNB lv_cp_act.0AH,L_B1F66
+        MOV R4,#02H
+        MOV cp_state,R4
+        MOV R5,#06H
+        MOV cp_tra_state,R5
+        JMPR cc_UC,L_B1F7C
+L_B1F66:                 ; 0xb1f66
+        MOV R4,#01H
+        MOV cp_state,R4
+        JNB lv_cp_act.08H,L_B1F76
+        MOV cp_tra_state,ZEROS
+        JMPR cc_UC,L_B1F7C
+L_B1F76:                 ; 0xb1f76
+        MOV R4,#05H
+        MOV cp_tra_state,R4
+L_B1F7C:                 ; 0xb1f7c
+        MOV R4,#02H
+        MOV cp_norm_deac_state,R4
+        RET
+
+; ======== CanPurge_State_Upd  (@0xb1f84) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by cp/evap/dtp/diagcp output signals + DTC): Canister-purge state update:
+        ; cp_state / cp_tra_state transitions.
+        ; ------------------------------------------------------------
+CanPurge_State_Upd:
+        JB lv_cp_act.0DH,L_B1FEE
+        JNB lv_cp_act.0AH,L_B1F9A
+        MOV R4,#02H
+        MOV cp_state,R4
+        MOV R5,#08H
+        MOV cp_tra_state,R5
+        RET
+L_B1F9A:                 ; 0xb1f9a
+        MOV R4,#01H
+        MOV cp_state,R4
+        JNB lv_cp_act.09H,L_B1FAC
+        MOV R5,#07H
+        MOV cp_tra_state,R5
+        RET
+L_B1FAC:                 ; 0xb1fac
+        MOV cp_tra_state,ZEROS
+        RET
+
+; ======== CanPurge_State_Upd_2  (@0xb1fb2) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signals): Canister-purge state update (variant):
+        ; cp_state/cp_tra_state.
+        ; ------------------------------------------------------------
+CanPurge_State_Upd_2:
+        JB lv_fcut_fast.0BH,L_B1FEE
+        JNB lv_cp_act.0BH,L_B1FCA
+        MOV R4,#03H
+        MOV cp_state,R4
+        MOV cp_tra_state,ZEROS
+        CALLA cc_UC,CanPurge_Reset
+        RET
+L_B1FCA:                 ; 0xb1fca
+        JNB lv_cp_act.0AH,L_B1FDC
+        MOV R4,#02H
+        MOV cp_state,R4
+        MOV R5,#0CH
+        MOV cp_tra_state,R5
+        RET
+L_B1FDC:                 ; 0xb1fdc
+        MOV R4,#01H
+        MOV cp_state,R4
+        MOV cp_tra_state,ZEROS
+        RET
+
+; ======== Set_cp_state_fe8  (@0xb1fe8) ========
+Set_cp_state_fe8:
+        MOV R4,#01H
+        MOV cp_state,R4
+L_B1FEE:                 ; 0xb1fee
+        RET
+
+S_B1E56 ENDS
+        END

@@ -1,0 +1,109 @@
+; asw/lo/lo_f0b6b24.a66
+; 0xB6A9A-0xB6B7A  (224 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_lshpwm_as                          EQU  09009CH
+c_fac_v_efc_lsh_up_as                EQU  0901BBH
+
+PUBLIC  Log_Event_f950_Dly, Log_Event_f98a, Set_LSH_Up_PWM, Tail_f0b6b24_a9a
+EXTERN  Add_Clamp_U8:NEAR, Div_Ratio_U8_Sat:NEAR, Mul_S16_Q7_Sat:NEAR
+
+S_B6A9A SECTION CODE AT 0B6A9AH
+
+; ======== Tail_f0b6b24_a9a  (@0xb6a9a) ========
+Tail_f0b6b24_a9a:
+        CALLA cc_UC,Set_LSH_Up_PWM
+        RETS
+
+; ======== Log_Event_f98a  (@0xb6aa0) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Log_Event_f98a:
+        MOV R4,#01H
+        MOV g_f98a,R4
+        MOVB RL4,#DATA16 00016H
+        MOVBZ R5,tq_lo_wr
+        MOVB [R5+#0F66EH],RL4
+        MOVB RL4,tq_lo_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_wr,RL4
+        MOVB RL4,tq_lo_wr
+        CMPB RL4,tq_lo_rd
+        JMPR cc_NE,L_B6ADA
+        BSET sched_flags.03H
+        MOVB RL4,tq_lo_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_rd,RL4
+L_B6ADA:                 ; 0xb6ada
+        RETS
+
+; ======== Log_Event_f950_Dly  (@0xb6adc) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Log_Event_f950_Dly:
+        MOVB RL4,g_c247
+        ADDB g_c247,ONES
+        CMPB RL4,#00H
+        JMPR cc_EQ,L_B6B22
+        MOV R4,#01H
+        MOV g_f950,R4
+        MOVB RL4,#DATA16 00017H
+        MOVBZ R5,tq_lo_wr
+        MOVB [R5+#0F66EH],RL4
+        MOVB RL4,tq_lo_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_wr,RL4
+        MOVB RL4,tq_lo_wr
+        CMPB RL4,tq_lo_rd
+        JMPR cc_NE,L_B6B22
+        BSET sched_flags.03H
+        MOVB RL4,tq_lo_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_rd,RL4
+L_B6B22:                 ; 0xb6b22
+        RETS
+
+; ======== Set_LSH_Up_PWM  (@0xb6b24) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by lsh/ls_cur/n_grd/mtv output signals): Set front O2 heater PWM duty lshpwm_up.
+        ; ------------------------------------------------------------
+Set_LSH_Up_PWM:
+        MOVBZ R12,lsh_up_bank_1_v_efc_lsh_up
+        MOVBZ R4,lsh_up_bank_1_v_efc_lsh_up
+        MUL R12,R4
+        MOV R12,0FE0EH
+        MOVBZ R13,vb
+        MOVBZ R4,vb
+        MUL R13,R4
+        MOV R13,0FE0EH
+        CALLS 00FH,Div_Ratio_U8_Sat
+        MOVBZ R12,RL4
+        MOVBZ R13,DPP0:c_fac_v_efc_lsh_up_as
+        CALLS 00FH,Mul_S16_Q7_Sat
+        MOVB lsh_up_bank_1_lshpwm_up,RL4
+        MOVBZ R12,RL4
+        MOVBS R13,DPP0:c_lshpwm_as
+        CALLS 00FH,Add_Clamp_U8
+        MOVB lsh_up_bank_1_lshpwm_up,RL4
+        MOVBZ R4,RL4
+        SHL R4,#08H
+        MOV R2,#DATA16 0493EH
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV g_f9c6,R4
+        RET
+
+S_B6A9A ENDS
+        END

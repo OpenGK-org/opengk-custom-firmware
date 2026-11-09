@@ -1,0 +1,194 @@
+; asw/diag/diag_by.a66
+; 0xCB400-0xCB588  (392 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Count_DTC_By_Status, Find_DTC_By_Status
+
+S_CB400 SECTION CODE AT 0CB400H
+
+; ======== Find_DTC_By_Status  (@0xcb400) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Find_DTC_By_Status:
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOVB RL6,#00H
+        MOV R13,#DATA16 000FFH
+        JMPR cc_UC,L_CB41E
+L_CB40C:                 ; 0xcb40c
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOVB RL5,[R4+#0CE8DH]
+        MOV R4,R12
+        CMPB RL5,RL4
+        JMPR cc_NE,L_CB41C
+        MOV R13,R6
+L_CB41C:                 ; 0xcb41c
+        ADDB RL6,#01H
+L_CB41E:                 ; 0xcb41e
+        CMPB RL6,#DATA16 0000AH
+        JMPR cc_NC,L_CB42C
+        MOV R4,R13
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_EQ,L_CB40C
+L_CB42C:                 ; 0xcb42c
+        MOV R4,R13
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_EQ,L_CB4BE
+        ADDB diag_c35f,ONES
+        MOV R6,R13
+        JMPR cc_UC,L_CB47A
+L_CB43C:                 ; 0xcb43c
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOVB RL5,[R4+#0CE8FH]
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOVB [R4+#0CE8DH],RL5
+        MOV R14,#DATA16 0CE00H
+        MOVBZ R4,RL6
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        ADD R14,R5
+        MOVB RL7,#00H
+L_CB45E:                 ; 0xcb45e
+        MOV R4,R14
+        ADD R4,#DATA16 0000EH
+        MOVBZ R5,RL7
+        ADD R4,R5
+        MOVBZ R5,RL7
+        MOV R2,R14
+        ADD R2,R5
+        MOVB [R2],[R4]
+        ADDB RL7,#01H
+        CMPB RL7,#DATA16 0000EH
+        JMPR cc_C,L_CB45E
+        ADDB RL6,#01H
+L_CB47A:                 ; 0xcb47a
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOVB RL5,[R4+#0CE8FH]
+        CMPB RL5,#DATA16 000FFH
+        JMPR cc_EQ,L_CB48E
+        MOVBZ R4,RL6
+        CMPI1 R4,#09H
+        JMPR cc_SLT,L_CB43C
+L_CB48E:                 ; 0xcb48e
+        MOVB RL4,#DATA16 000FFH
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        MOVB [R5+#0CE8DH],RL4
+        MOV R14,#DATA16 0CE00H
+        MOVBZ R4,RL6
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        ADD R14,R5
+        MOVB RL7,#00H
+L_CB4AC:                 ; 0xcb4ac
+        MOVB RL4,#00H
+        MOVBZ R5,RL7
+        MOV R2,R14
+        ADD R2,R5
+        MOVB [R2],RL4
+        ADDB RL7,#01H
+        CMPB RL7,#DATA16 0000EH
+        JMPR cc_C,L_CB4AC
+L_CB4BE:                 ; 0xcb4be
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        RETS
+
+; ======== Count_DTC_By_Status  (@0xcb4c4) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Count_DTC_By_Status:
+        MOV [-R0],R6
+        MOVB RL6,#00H
+        JMPR cc_UC,L_CB4CC
+L_CB4CA:                 ; 0xcb4ca
+        ADDB RL6,#01H
+L_CB4CC:                 ; 0xcb4cc
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOVB RL5,[R4+#0CE8DH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05232H]
+        CMP R5,R12
+        JMPR cc_EQ,L_CB528
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        MOVB RL4,[R5+#0CE8DH]
+        MOVBZ R4,RL4
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05230H]
+        CMP R5,R12
+        JMPR cc_EQ,L_CB528
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        MOVB RL4,[R5+#0CE8DH]
+        MOVBZ R4,RL4
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05234H]
+        CMP R5,R12
+        JMPR cc_EQ,L_CB528
+        MOVBZ R5,RL6
+        CMP R5,#DATA16 00009H
+        JMPR cc_SLT,L_CB4CA
+L_CB528:                 ; 0xcb528
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOVB RL5,[R4+#0CE8DH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05232H]
+        CMP R5,R12
+        JMPR cc_EQ,L_CB57C
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        MOVB RL4,[R5+#0CE8DH]
+        MOVBZ R4,RL4
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05230H]
+        CMP R5,R12
+        JMPR cc_EQ,L_CB57C
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        MOVB RL4,[R5+#0CE8DH]
+        MOVBZ R4,RL4
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05234H]
+        CMP R5,R12
+        JMPR cc_NE,L_CB580
+L_CB57C:                 ; 0xcb57c
+        MOVB RL4,RL6
+        JMPR cc_UC,L_CB584
+L_CB580:                 ; 0xcb580
+        MOVB RL4,#DATA16 000FFH
+L_CB584:                 ; 0xcb584
+        MOV R6,[R0+]
+        RETS
+
+S_CB400 ENDS
+        END

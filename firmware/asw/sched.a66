@@ -1,0 +1,122 @@
+; asw/sched.a66
+; 0xE5D36-0xE5E0C  (214 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_vb_max_diag                        EQU  090407H
+c_vb_min_diag                        EQU  090410H
+c_t_efp                              EQU  0906E8H
+
+PUBLIC  Clr_Diag_fd62_RetStatus, FuelPump_Out_6, SMARTRA_Phase_Sync, vb_sub, write_eeprom_ti_co_is
+EXTERN  BL_Set_ExecMagic_Full_2:NEAR, Calc_Inj_Pattern:NEAR, Check_VIN_Programmed:NEAR, ClrBits_Dfd66_a1a:NEAR
+EXTERN  ClrBits_lv_asr_act_30e:NEAR, ClrBits_lv_er_carb_b4_c7c:NEAR, Diag_MAF_TPS_Ratio_d1be:NEAR, Init_CC5_Output:NEAR
+EXTERN  Init_GearRatio:NEAR, Init_ISC_State:NEAR, Output_CC12_P2_12_Disable:NEAR, Output_CC5_P2_5_Enable:NEAR
+EXTERN  Read_Coding_Nibble:NEAR, Reset_Dc5dc_b9c:NEAR, Reset_ISA:NEAR, Reset_TI_IS:NEAR
+EXTERN  Reset_ar_red_bas_thr_ivs_522:NEAR, SMARTRA_auth_begin:NEAR, SMARTRA_auth_post_update:NEAR, SMARTRA_tx_begin:NEAR
+EXTERN  Set_TCO_Stop:NEAR, Set_TOIL_Stop:NEAR, Set_lv_cps_err:NEAR
+
+S_E5D36 SECTION CODE AT 0E5D36H
+
+; ======== FuelPump_Out_6  (@0xe5d36) ========
+        ; ------------------------------------------------------------
+        ; Digital-output-latch driver (fd94=request/fd96=state, fd98=feedback; CC5/P2.5=fuel-pump relay):
+        ; Fuel-pump relay output handler (variant).
+        ; ------------------------------------------------------------
+FuelPump_Out_6:
+        CALLS 00AH,Output_CC5_P2_5_Enable
+        CALLS 00AH,Output_CC12_P2_12_Disable
+        CALLS 00AH,Read_Coding_Nibble
+        MOV R4,DPP0:c_t_efp
+        MOV sw_timer_b,R4
+        CALLS 00DH,Diag_MAF_TPS_Ratio_d1be
+        CALLS 00AH,Init_CC5_Output
+        CALLS 00BH,Set_TOIL_Stop
+        CALLS 00CH,Set_TCO_Stop
+        RETS
+
+; ======== vb_sub  (@0xe5d5c) ========
+vb_sub:
+        MOVB RL4,lv_sched_diag_inh
+        ANDB RL4,#01H
+        JMPR cc_NE,L_E5D8A
+        MOVB RL4,vb
+        CMPB RL4,DPP0:c_vb_min_diag
+        JMPR cc_C,L_E5D84
+        MOVB RL5,v_igk
+        CMPB RL5,DPP0:c_vb_min_diag
+        JMPR cc_C,L_E5D84
+        CMPB RL4,DPP0:c_vb_max_diag
+        JMPR cc_UGT,L_E5D84
+        CMPB RL5,DPP0:c_vb_max_diag
+        JMPR cc_ULE,L_E5D88
+L_E5D84:                 ; 0xe5d84
+        BCLR sched_flags2.0EH
+        RETS
+L_E5D88:                 ; 0xe5d88
+        BSET sched_flags2.0EH
+L_E5D8A:                 ; 0xe5d8a
+        RETS
+
+; ======== Clr_Diag_fd62_RetStatus  (@0xe5d8c) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified): Clear diag flag DAT_00fd62.0x4000, return status bit DAT_00f627.0.
+        ; ------------------------------------------------------------
+Clr_Diag_fd62_RetStatus:
+        BCLR sched_flags2.0EH
+        MOVB RL4,lv_sched_diag_inh
+        ANDB RL4,#01H
+        RETS
+
+; ======== SMARTRA_Phase_Sync  (@0xe5d96) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by bl_/kwp_ output signals): SMARTRA immobilizer phase sync: phase /
+        ; smartra_comms_status / lv_err_com_resp_imob.
+        ; ------------------------------------------------------------
+SMARTRA_Phase_Sync:
+        CALLS 00AH,Check_VIN_Programmed
+        MOVB RL4,lv_sched_diag_inh
+        ANDB RL4,#01H
+        JMPR cc_NE,L_E5DEC
+        CALLS 00CH,Calc_Inj_Pattern
+        CALLS 00AH,SMARTRA_tx_begin
+        BCLR smartra_comms_status.0DH
+        BCLR smartra_comms_status.0EH
+        BCLR smartra_comms_status.0FH
+        BCLR lv_err_com_resp_imob.00H
+        MOV smartra_byte_timer,ZEROS
+        MOVB RL4,#01H
+        MOVB smartra_comms_phase,RL4
+        CALLS 00BH,SMARTRA_auth_begin
+        JNB lv_conf_mis.02H,L_E5DC8
+        CALLS 00BH,ClrBits_lv_er_carb_b4_c7c
+L_E5DC8:                 ; 0xe5dc8
+        CALLS 00CH,Reset_ISA
+        CALLS 00BH,Reset_Dc5dc_b9c
+        CALLS 00CH,Reset_ar_red_bas_thr_ivs_522
+        CALLS 00BH,Init_GearRatio
+        CALLS 00BH,Init_ISC_State
+        CALLS 00BH,Reset_TI_IS
+        CALLS 00CH,Set_lv_cps_err
+        CALLS 00CH,ClrBits_lv_asr_act_30e
+        CALLS 00CH,ClrBits_Dfd66_a1a
+L_E5DEC:                 ; 0xe5dec
+        RETS
+
+; ======== write_eeprom_ti_co_is  (@0xe5dee) ========
+write_eeprom_ti_co_is:
+        MOVB RL4,lv_sched_diag_inh
+        ANDB RL4,#01H
+        JMPR cc_NE,L_E5E06
+        CALLS 00CH,Calc_Inj_Pattern
+        MOV R4,lv_ti_c97a
+        MOV ti_co_is,R4
+        CALLS 00BH,SMARTRA_auth_post_update
+L_E5E06:                 ; 0xe5e06
+        CALLS 00AH,BL_Set_ExecMagic_Full_2
+        RETS
+
+S_E5D36 ENDS
+        END

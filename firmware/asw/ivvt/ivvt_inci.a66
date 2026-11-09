@@ -1,0 +1,182 @@
+; asw/ivvt/ivvt_inci.a66
+; 0xC133A-0xC14C2  (392 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_abc_inc_ad_mec_ref_ivvt            EQU  0900A0H
+c_abc_inc_cam_dif_ivvt               EQU  0900A2H
+c_abc_inc_tooth_off_ivvt             EQU  0900CBH
+c_abc_max_ad_mec_ref_ivvt            EQU  0900D4H
+c_abc_max_cam_dif_ivvt               EQU  0900D6H
+c_abc_max_tooth_off_ivvt             EQU  090100H
+
+PUBLIC  Diag_DTC_dd5f4, Diag_IVVT_CamDif_Inci, Diag_IVVT_SetDTC_d602, Diag_IVVT_SetDTC_d61e
+EXTERN  DTC_Update_Debounced:NEAR, DTC_Update_Debounced_OBD:NEAR, DTC_Update_Immediate:NEAR
+
+S_C133A SECTION CODE AT 0C133AH
+
+; ======== Diag_IVVT_CamDif_Inci  (@0xc133a) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by ivvt/cam output signals + DTC): Cam-diff diagnosis incidence (DTC 0xd5f4):
+        ; ctr_cam_sp_chg + inhibit flags lv_inh_diag/rbm_cam_dif_ivvt.
+        ; ------------------------------------------------------------
+Diag_IVVT_CamDif_Inci:
+        BSET lv_diag_trip_avl_ivvt.06H
+        BCLR lv_diag_trip_avl_ivvt.07H
+        BCLR lv_diag_trip_avl_ivvt.08H
+        BCLR lv_diag_trip_avl_ivvt.0CH
+        BCLR lv_diag_trip_avl_ivvt.0BH
+        MOVB ctr_cam_sp_chg,ZEROS
+        MOVB ivvt_in_1_struct_diag_mec_inci_ivvt_lv_inh_rbm_cam_dif_ivvt,ZEROS
+        MOVB RL4,#01H
+        MOVB ivvt_in_1_struct_diag_mec_inci_ivvt_lv_inh_diag_cam_dif_ivvt,RL4
+        MOVB RL5,#01H
+        MOVB lv_ivvt_d5f5,RL5
+        MOV R12,#DATA16 0D5F4H
+        MOV R13,#DATA16 05A42H
+        MOVBZ R14,DPP0:c_abc_inc_ad_mec_ref_ivvt
+        MOVBZ R15,DPP0:c_abc_max_ad_mec_ref_ivvt
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_can_bus_off_err.0EH,dtc_status_work.06H
+        MOVBZ R4,g_d5fe
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C1382
+        MOV R4,#DATA16 0BFFFH
+        AND dtc_st_grp_can,R4
+L_C1382:                 ; 0xc1382
+        MOVB RL4,#01H
+        MOVB lv_ivvt_d603,RL4
+        MOV R12,#DATA16 0D602H
+        MOV R13,#DATA16 05A58H
+        MOVBZ R14,DPP0:c_abc_inc_tooth_off_ivvt
+        MOVBZ R15,DPP0:c_abc_max_tooth_off_ivvt
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_can_bus_off_err.0FH,dtc_status_work.06H
+        MOVBZ R4,lv_ivvt_d60c
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C13B2
+        MOV R4,#DATA16 07FFFH
+        AND dtc_st_grp_can,R4
+L_C13B2:                 ; 0xc13b2
+        MOV R12,#DATA16 0D61EH
+        MOV R13,#DATA16 05A84H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_acp_err.01H,dtc_status_work.06H
+        MOVBZ R4,lv_ivvt_d628
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C13D4
+        MOV R4,#DATA16 0FFFDH
+        AND diag_f86e,R4
+L_C13D4:                 ; 0xc13d4
+        MOVB lv_ivvt_cbc4,ZEROS
+        MOV lv_ivvt_cbc6,ZEROS
+        RETS
+
+; ======== Diag_DTC_dd5f4  (@0xc13de) ========
+        ; ------------------------------------------------------------
+        ; Per-fault DTC setter: sets dtc_test_result and updates the DTC at status-address 0xd5f4. Name = DTC
+        ; status RAM address (unique per fault).
+        ; ------------------------------------------------------------
+Diag_DTC_dd5f4:
+        MOV [-R0],R6
+        MOV R6,R12
+        CMPB RL6,#00H
+        JMPR cc_EQ,L_C1422
+        MOVBZ R4,RL6
+        AND R4,#01H
+        JMPR cc_EQ,L_C13F4
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        JMPR cc_UC,L_C13F8
+L_C13F4:                 ; 0xc13f4
+        MOVB dtc_test_result,ZEROS
+L_C13F8:                 ; 0xc13f8
+        MOV R12,#DATA16 0D5F4H
+        MOV R13,#DATA16 05A42H
+        MOVBZ R14,DPP0:c_abc_inc_ad_mec_ref_ivvt
+        MOVBZ R15,DPP0:c_abc_max_ad_mec_ref_ivvt
+        CALLS 00DH,DTC_Update_Debounced_OBD
+        BMOV lv_can_bus_off_err.0EH,dtc_status_work.06H
+        MOVBZ R4,g_d5fe
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C1422
+        MOV R4,#DATA16 0BFFFH
+        AND dtc_st_grp_can,R4
+L_C1422:                 ; 0xc1422
+        BMOV PSW.06H,lv_can_bus_off_err.0EH
+        MOV R6,[R0+]
+        RETS
+
+; ======== Diag_IVVT_SetDTC_d602  (@0xc142a) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by ivvt/cam output signals + DTC): IVVT diagnostic DTC update, P-code 0xd602.
+        ; ------------------------------------------------------------
+Diag_IVVT_SetDTC_d602:
+        MOV [-R0],R6
+        MOV R6,R12
+        CMPB RL6,#00H
+        JMPR cc_EQ,L_C146E
+        MOVBZ R4,RL6
+        AND R4,#01H
+        JMPR cc_EQ,L_C1440
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        JMPR cc_UC,L_C1444
+L_C1440:                 ; 0xc1440
+        MOVB dtc_test_result,ZEROS
+L_C1444:                 ; 0xc1444
+        MOV R12,#DATA16 0D602H
+        MOV R13,#DATA16 05A58H
+        MOVBZ R14,DPP0:c_abc_inc_tooth_off_ivvt
+        MOVBZ R15,DPP0:c_abc_max_tooth_off_ivvt
+        CALLS 00DH,DTC_Update_Debounced_OBD
+        BMOV lv_can_bus_off_err.0FH,dtc_status_work.06H
+        MOVBZ R4,lv_ivvt_d60c
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C146E
+        MOV R4,#DATA16 07FFFH
+        AND dtc_st_grp_can,R4
+L_C146E:                 ; 0xc146e
+        BMOV PSW.06H,lv_can_bus_off_err.0FH
+        MOV R6,[R0+]
+        RETS
+
+; ======== Diag_IVVT_SetDTC_d61e  (@0xc1476) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by ivvt/cam output signals + DTC): IVVT diagnostic DTC update, P-code 0xd61e.
+        ; ------------------------------------------------------------
+Diag_IVVT_SetDTC_d61e:
+        MOV [-R0],R6
+        MOV R6,R12
+        CMPB RL6,#00H
+        JMPR cc_EQ,L_C14BA
+        MOVBZ R4,RL6
+        AND R4,#01H
+        JMPR cc_EQ,L_C148C
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        JMPR cc_UC,L_C1490
+L_C148C:                 ; 0xc148c
+        MOVB dtc_test_result,ZEROS
+L_C1490:                 ; 0xc1490
+        MOV R12,#DATA16 0D61EH
+        MOV R13,#DATA16 05A84H
+        MOVBZ R14,DPP0:c_abc_inc_cam_dif_ivvt
+        MOVBZ R15,DPP0:c_abc_max_cam_dif_ivvt
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_acp_err.01H,dtc_status_work.06H
+        MOVBZ R4,lv_ivvt_d628
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C14BA
+        MOV R4,#DATA16 0FFFDH
+        AND diag_f86e,R4
+L_C14BA:                 ; 0xc14ba
+        BMOV PSW.06H,lv_acp_err.01H
+        MOV R6,[R0+]
+        RETS
+
+S_C133A ENDS
+        END

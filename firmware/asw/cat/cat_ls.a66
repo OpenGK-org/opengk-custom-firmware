@@ -1,0 +1,372 @@
+; asw/cat/cat_ls.a66
+; 0xB5BF8-0xB5FA2  (938 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_maf_int_dly_puc_max                EQU  0905D0H
+c_maf_int_puc_min                    EQU  0905E6H
+c_temp_cat_dly_puc_min               EQU  09076AH
+c_vls_puc_dly_max_down               EQU  090820H
+ldp_cat_ip_fac_cat_dly_puc       EQU  090B29H
+ldp_maf_int_puc_ip_maf_int    EQU  091606H
+ldp_maf_kgh_ip_t_dly_puc                     EQU  091760H
+ip_maf_int_dly_puc__maf_int_puc      EQU  092E14H
+ip_t_dly_puc__maf_kgh                EQU  093852H
+ip_t_dly_puc_pue__maf_kgh            EQU  09385EH
+ip_fac_cat_dly_puc__cat_diag         EQU  095611H
+
+PUBLIC  Calc_Cat_Temp_Dly, LS_Diag_Group_1, LS_Diag_Group_2, Set_lv_cam_ad_di_ivvt_b5d8
+EXTERN  Add_r12_r13_Return_r4:NEAR, Calc_Cat_MMV:NEAR, Calc_Cat_VLS_Diag:NEAR, Calc_DynWatch_DYW:NEAR
+EXTERN  Calc_Inh_FSD_CP:NEAR, Calc_LSH_Down_OBD2_Temp:NEAR, Calc_LSH_Up_OBD2_Temp:NEAR, Calc_LS_Down_Sig:NEAR
+EXTERN  Calc_LS_Up_Amplitude:NEAR, Calc_LS_Up_Switching:NEAR, Calc_Lam_Ctl_Limits:NEAR, Calc_MAF_MMV_Dly:NEAR
+EXTERN  Calc_RBM_LSH_Down_OBD2:NEAR, Calc_RBM_LSH_Up_OBD2:NEAR, Calc_RBM_LS_Down_Swt:NEAR, Calc_RBM_VLS_Down_Plaus:NEAR
+EXTERN  Calc_RBM_VLS_Up_Frq:NEAR, Calc_RBM_VLS_Up_Plaus:NEAR, Calc_TI_AD_ADD_MMV:NEAR, CanPurge_Set_Close_3:NEAR
+EXTERN  Check_CatStruct_Stub:NEAR, Check_fd66_Stub:NEAR, Diag_Cat_Eff_Main:NEAR, Diag_Cat_Eff_VlsDown:NEAR
+EXTERN  Diag_DTC_dd1dab:NEAR, Diag_DTC_dd1f6:NEAR, Diag_DTC_dd204:NEAR, Diag_DTC_dd212:NEAR
+EXTERN  Diag_DTC_dd220:NEAR, Diag_DTC_dd22e:NEAR, Diag_FSD_CP_VlsDown:NEAR, Diag_LS_Down_Response:NEAR
+EXTERN  Diag_LS_Up_Response:NEAR, Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_2D_Table:NEAR
+EXTERN  Get_IP_Word_Y_Axis:NEAR, Mul_U16_Hi:NEAR, sub_r12_r13_rets_r4:NEAR
+
+S_B5BF8 SECTION CODE AT 0B5BF8H
+
+; ======== Calc_Cat_Temp_Dly  (@0xb5bf8) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Calc_Cat_Temp_Dly:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV R9,p_lam_bank1
+        JB lv_inh_int_puc_1.03H,L_B5C2C
+        MOV R4,temp_cat_word
+        CMP R4,DPP0:c_temp_cat_dly_puc_min
+        JMPR cc_ULE,L_B5C2C
+        MOV R4,[R9+#0106H]
+        CMP R4,#04H
+        JMPR cc_NE,L_B5C2C
+        MOV R4,[R9+#066H]
+        CMP R4,DPP0:c_maf_int_puc_min
+        JMPR cc_UGT,L_B5C28
+        MOV R4,[R9+#064H]
+        CMP R4,#00H
+        JMPR cc_ULE,L_B5C2C
+L_B5C28:                 ; 0xb5c28
+        BSET state_cat_diag.0EH
+        JMPR cc_UC,L_B5C34
+L_B5C2C:                 ; 0xb5c2c
+        BCLR state_cat_diag.0EH
+        MOV R4,#00H
+        MOV [R9+#064H],R4
+L_B5C34:                 ; 0xb5c34
+        JNB lv_pl.02H,L_B5C6C
+        JB state_cat_diag.0FH,L_B5C46
+        BSET state_cat_diag.0FH
+        BCLR state_cat_diag.0DH
+        MOV R4,#00H
+        MOV [R9+#062H],R4
+L_B5C46:                 ; 0xb5c46
+        JB lv_inh_fsd_cp.01H,L_B5C4E
+        JMPA cc_UC,L_B5D80
+L_B5C4E:                 ; 0xb5c4e
+        MOV R12,maf_kgh
+        MOV R13,#DATA16 00198H
+        CALLS 00FH,Mul_U16_Hi
+        MOV R13,R4
+        MOV R12,[R9+#066H]
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV [R9+#066H],R4
+        JMPA cc_UC,L_B5D80
+L_B5C6C:                 ; 0xb5c6c
+        JNB state_cat_diag.0FH,L_B5CB8
+        BCLR state_cat_diag.0FH
+        JNB state_cat_diag.0EH,L_B5CB2
+        MOV R12,#DATA16 POF ldp_maf_int_puc_ip_maf_int
+        MOV R13,#DATA16 PAG ldp_maf_int_puc_ip_maf_int
+        MOV R14,[R9+#066H]
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_maf_int_dly_puc__maf_int_puc
+        MOV R13,#DATA16 PAG ip_maf_int_dly_puc__maf_int_puc
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV R13,R4
+        MOV R12,[R9+#064H]
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV R8,R4
+        CMP R8,DPP0:c_maf_int_dly_puc_max
+        JMPR cc_ULE,L_B5CAE
+        MOV R4,DPP0:c_maf_int_dly_puc_max
+        MOV [R9+#064H],R4
+        JMPR cc_UC,L_B5CB2
+L_B5CAE:                 ; 0xb5cae
+        MOV [R9+#064H],R8
+L_B5CB2:                 ; 0xb5cb2
+        MOV R4,#00H
+        MOV [R9+#066H],R4
+L_B5CB8:                 ; 0xb5cb8
+        JNB state_lam_ctl.00H,L_B5D78
+        JNB state_cat_diag.0EH,L_B5D78
+        MOV R4,[R9+#096H]
+        CMP R4,DPP0:c_vls_puc_dly_max_down
+        JMPR cc_UGT,L_B5D6A
+        BSET state_cat_diag.0DH
+        JNB lv_inh_fsd_cp.01H,L_B5D1E
+        MOV R12,#DATA16 POF ldp_cat_ip_fac_cat_dly_puc
+        MOV R13,#DATA16 PAG ldp_cat_ip_fac_cat_dly_puc
+        MOVB RL4,[R9+#0126H]
+        MOVBZ R14,RL4
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_fac_cat_dly_puc__cat_diag
+        MOV R13,#DATA16 PAG ip_fac_cat_dly_puc__cat_diag
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVBZ R4,RL4
+        SHL R4,#08H
+        MOV [-R0],R4
+        MOV R12,maf_kgh
+        MOV R13,#DATA16 00198H
+        CALLS 00FH,Mul_U16_Hi
+        MOV R12,R4
+        MOV R13,[R0+]
+        CALLS 00FH,Mul_U16_Hi
+        MOV R8,R4
+        CMP R8,#00H
+        JMPR cc_UGT,L_B5D10
+        MOV R8,#01H
+L_B5D10:                 ; 0xb5d10
+        MOV R12,[R9+#064H]
+        MOV R13,R8
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV [R9+#064H],R4
+L_B5D1E:                 ; 0xb5d1e
+        JNB lv_inh_fsd_cp.0CH,L_B5D48
+        JB lv_cam_ad_di_ivvt.06H,L_B5D48
+        MOV R12,#DATA16 POF ldp_maf_kgh_ip_t_dly_puc
+        MOV R13,#DATA16 PAG ldp_maf_kgh_ip_t_dly_puc
+        MOV R14,maf_kgh
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_t_dly_puc_pue__maf_kgh
+        MOV R13,#DATA16 PAG ip_t_dly_puc_pue__maf_kgh
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV [R9+#062H],R4
+        JMPR cc_UC,L_B5D80
+L_B5D48:                 ; 0xb5d48
+        MOV R12,#DATA16 POF ldp_maf_kgh_ip_t_dly_puc
+        MOV R13,#DATA16 PAG ldp_maf_kgh_ip_t_dly_puc
+        MOV R14,maf_kgh
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_t_dly_puc__maf_kgh
+        MOV R13,#DATA16 PAG ip_t_dly_puc__maf_kgh
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV [R9+#062H],R4
+        JMPR cc_UC,L_B5D80
+L_B5D6A:                 ; 0xb5d6a
+        BCLR state_cat_diag.0DH
+        MOV R4,#00H
+        MOV [R9+#064H],R4
+        MOV [R9+#062H],R4
+        JMPR cc_UC,L_B5D80
+L_B5D78:                 ; 0xb5d78
+        BCLR state_cat_diag.0DH
+        MOV R4,#00H
+        MOV [R9+#062H],R4
+L_B5D80:                 ; 0xb5d80
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Set_lv_cam_ad_di_ivvt_b5d8  (@0xb5d86) ========
+        ; ------------------------------------------------------------
+        ; Named from dominant output signal (auto-derived).
+        ; ------------------------------------------------------------
+Set_lv_cam_ad_di_ivvt_b5d8:
+        MOVB RL4,conf_lam
+        JMPA cc_EQ,L_B5E88
+        JB lv_cam_ad_di_ivvt.09H,L_B5E12
+        MOV R12,#DATA16 0C74CH
+        MOV R4,state_lam_ctl
+        MOV [R12+#06H],R4
+        MOV R4,diag_fd68
+        AND R4,#DATA16 0001FH
+        MOV [R12+#094H],R4
+        MOV R4,diag_fd68
+        AND R4,#DATA16 0FFE0H
+        MOV [R12+#0BEH],R4
+        MOV R4,state_lam_ctl2
+        AND R4,#DATA16 0003FH
+        MOV [R12+#046H],R4
+        MOV R4,state_lam_ctl2
+        AND R4,#DATA16 0FFC0H
+        MOV [R12+#068H],R4
+        MOV R4,state_cat_diag
+        AND R4,#03H
+        MOV [R12+#0148H],R4
+        MOV R4,state_cat_diag
+        AND R4,#DATA16 0007CH
+        MOV [R12+#0124H],R4
+        MOV R4,state_cat_diag
+        AND R4,#DATA16 00180H
+        MOV [R12+#017EH],R4
+        MOV R4,state_cat_diag
+        AND R4,#DATA16 01E00H
+        MOV [R12+#01BCH],R4
+        MOV R4,state_cat_diag
+        AND R4,#DATA16 0E000H
+        MOV [R12+#060H],R4
+        MOV R4,#DATA16 0C74CH
+        MOV p_lam_bank1,R4
+        JMPR cc_UC,L_B5E1A
+L_B5E12:                 ; 0xb5e12
+        MOV R4,#DATA16 0C74CH
+        MOV p_lam_bank1,R4
+L_B5E1A:                 ; 0xb5e1a
+        BXOR lv_cam_ad_di_ivvt.09H,ONES.00H
+        JMPR cc_N,L_B5E88
+        MOVB RL4,#DATA16 00012H
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_B5E54
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_B5E54:                 ; 0xb5e54
+        MOVB RL4,#DATA16 00013H
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_B5E88
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_B5E88:                 ; 0xb5e88
+        RETS
+
+; ======== LS_Diag_Group_1  (@0xb5e8a) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+LS_Diag_Group_1:
+        MOVB RL4,diag_c242
+        JMPR cc_NE,L_B5E94
+        CALLS 00BH,Calc_MAF_MMV_Dly
+L_B5E94:                 ; 0xb5e94
+        MOVB RL4,conf_cat_eff
+        CMPB RL4,#01H
+        JMPR cc_NE,L_B5EE2
+        CALLS 00BH,Calc_LS_Down_Sig
+        MOVB RL4,diag_c242
+        JMPR cc_NE,L_B5EAE
+        CALLS 00CH,Diag_DTC_dd220
+        CALLS 00CH,Diag_DTC_dd22e
+L_B5EAE:                 ; 0xb5eae
+        CALLS 00BH,Diag_Cat_Eff_VlsDown
+        CALLS 00BH,Diag_FSD_CP_VlsDown
+        MOVB RL4,diag_c243
+        JMPR cc_NE,L_B5ECC
+        CALLS 00BH,Calc_LSH_Down_OBD2_Temp
+        CALLS 00BH,Calc_RBM_LSH_Down_OBD2
+        CALLS 00BH,Calc_RBM_LS_Down_Swt
+        CALLS 00BH,Calc_RBM_VLS_Down_Plaus
+L_B5ECC:                 ; 0xb5ecc
+        CALLS 00BH,Calc_Inh_FSD_CP
+        CALLS 00BH,Calc_Cat_Temp_Dly
+        MOVB RL4,diag_c242
+        JMPR cc_NE,L_B5EDE
+        CALLS 00BH,Calc_Cat_VLS_Diag
+L_B5EDE:                 ; 0xb5ede
+        CALLS 00BH,Diag_LS_Down_Response
+L_B5EE2:                 ; 0xb5ee2
+        RETS
+
+; ======== LS_Diag_Group_2  (@0xb5ee4) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+LS_Diag_Group_2:
+        MOV [-R0],R9
+        MOV R9,p_lam_bank1
+        CALLS 00DH,Calc_LS_Up_Amplitude
+        MOVB RL4,diag_c242
+        JMPR cc_NE,L_B5F00
+        CALLS 00CH,Diag_DTC_dd1dab
+        CALLS 00CH,Diag_DTC_dd1f6
+        CALLS 00CH,Diag_DTC_dd212
+L_B5F00:                 ; 0xb5f00
+        MOVB RL4,diag_c243
+        JMPR cc_NE,L_B5F1E
+        CALLS 00CH,Diag_DTC_dd204
+        CALLS 00DH,Calc_LSH_Up_OBD2_Temp
+        CALLS 00CH,Check_CatStruct_Stub
+        CALLS 00DH,Calc_RBM_VLS_Up_Plaus
+        CALLS 00DH,Calc_RBM_VLS_Up_Frq
+        CALLS 00DH,Calc_RBM_LSH_Up_OBD2
+L_B5F1E:                 ; 0xb5f1e
+        CALLS 00CH,CanPurge_Set_Close_3
+        CALLS 00CH,Check_fd66_Stub
+        CALLS 00DH,Calc_LS_Up_Switching
+        MOVB RL4,conf_cat_eff
+        CMPB RL4,#01H
+        JMPR cc_NE,L_B5F3A
+        CALLS 00BH,Calc_Cat_MMV
+        CALLS 00BH,Diag_Cat_Eff_Main
+L_B5F3A:                 ; 0xb5f3a
+        CALLS 00BH,Diag_LS_Up_Response
+        MOVB RL4,diag_c242
+        JMPR cc_NE,L_B5F4C
+        JB lv_cam_ad_di_ivvt.09H,L_B5F4C
+        CALLS 00BH,Calc_DynWatch_DYW
+L_B5F4C:                 ; 0xb5f4c
+        CALLS 00CH,Calc_Lam_Ctl_Limits
+        CALLS 00CH,Calc_TI_AD_ADD_MMV
+        MOVB RL4,diag_c240
+        JMPR cc_NE,L_B5F62
+        MOVB RL5,#09H
+        MOVB diag_c240,RL5
+        JMPR cc_UC,L_B5F66
+L_B5F62:                 ; 0xb5f62
+        ADDB diag_c240,ONES
+L_B5F66:                 ; 0xb5f66
+        MOVB RL4,diag_c241
+        JMPR cc_NE,L_B5F74
+        MOVB RL5,#01H
+        MOVB diag_c241,RL5
+        JMPR cc_UC,L_B5F78
+L_B5F74:                 ; 0xb5f74
+        ADDB diag_c241,ONES
+L_B5F78:                 ; 0xb5f78
+        MOVB RL4,diag_c242
+        JMPR cc_NE,L_B5F86
+        MOVB RL5,#09H
+        MOVB diag_c242,RL5
+        JMPR cc_UC,L_B5F8A
+L_B5F86:                 ; 0xb5f86
+        ADDB diag_c242,ONES
+L_B5F8A:                 ; 0xb5f8a
+        MOVB RL4,diag_c243
+        JMPR cc_NE,L_B5F9A
+        MOVB RL5,#DATA16 00063H
+        MOVB diag_c243,RL5
+        JMPR cc_UC,L_B5F9E
+L_B5F9A:                 ; 0xb5f9a
+        ADDB diag_c243,ONES
+L_B5F9E:                 ; 0xb5f9e
+        MOV R9,[R0+]
+        RETS
+
+S_B5BF8 ENDS
+        END

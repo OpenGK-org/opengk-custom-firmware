@@ -1,0 +1,338 @@
+; asw/ivvt/ivvt_elec.a66
+; 0xB507E-0xB53BA  (828 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_cam_hys_diag_mec_ivvt              EQU  090126H
+c_cam_hys_int_rst_diag_ivvt          EQU  090128H
+c_cam_hys_ref_ivvt                   EQU  090129H
+c_vb_diag_ivvt                       EQU  090402H
+c_cam_dif_int_max_diag_ivvt          EQU  0904C8H
+
+PUBLIC  Diag_DTC_dd610, Diag_IVVT_Elec_SetDTC, IVVT_CamMeas_Dispatch, Set_cam_dif_int_save_ivvt_in_1_07e
+EXTERN  Abs_S16:NEAR, Add_r12_r13_Return_r4:NEAR, DTC_Update_Immediate:NEAR, Diag_DTC_dd5f4:NEAR
+EXTERN  Diag_IVVT_SetDTC_d602:NEAR, Diag_IVVT_SetDTC_d61e:NEAR, Get_IP_Word_3D_Table_DWord_XByte_YByte:NEAR, IVVT_CamMeas_Trip:NEAR
+EXTERN  L_B54CE:NEAR, Max0_S16:NEAR, MulDiv_S16_Sat:NEAR, Mul_Shift_U16_Sat32:NEAR
+EXTERN  Sat_Add_U8:NEAR, sub_r12_13_ret_r4:NEAR, subtract_r12_r13_negate_if_not_rets_r4:NEAR
+
+S_B507E SECTION CODE AT 0B507EH
+
+; ======== Set_cam_dif_int_save_ivvt_in_1_07e  (@0xb507e) ========
+Set_cam_dif_int_save_ivvt_in_1_07e:
+        MOV cam_dif_int_save_ivvt_in_1,ZEROS
+        RETS
+
+; ======== Diag_IVVT_Elec_SetDTC  (@0xb5084) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by ivvt/cam output signals + DTC): IVVT electrical (OCV) DTC update, P-code
+        ; 0xd610.
+        ; ------------------------------------------------------------
+Diag_IVVT_Elec_SetDTC:
+        MOV [-R0],R9
+        MOV [-R0],R6
+        MOV R9,p_ivvt_cam_m
+        MOVB RL4,vb
+        CMPB RL4,DPP0:c_vb_diag_ivvt
+        JMPR cc_C,L_B50CA
+        JB lv_diag_trip_avl_ivvt.01H,L_B50CA
+        JB lv_cam_ad_di_ivvt.04H,L_B50CA
+        MOVB RL6,#DATA16 00010H
+        MOVB RL5,[R9+#021H]
+        JMPR cc_EQ,L_B50CA
+        MOV R4,[R9+#0AH]
+        MOV R5,[R4]
+        MOV R2,[R9+#08H]
+        CMP R5,[R2]
+        JMPR cc_EQ,L_B50BA
+        MOVB RL6,#DATA16 00011H
+L_B50BA:                 ; 0xb50ba
+        MOVBZ R12,RL6
+        CALLS 00CH,Diag_IVVT_SetDTC_d602
+        MOVB RL4,#00H
+        BMOV R4.00H,PSW.06H
+        MOVB [R9+#0E7H],RL4
+L_B50CA:                 ; 0xb50ca
+        MOVB RL4,[R9+#0E7H]
+        JMPR cc_EQ,L_B50F8
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D610H
+        MOV R13,#DATA16 05A6EH
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_acp_err.00H,dtc_status_work.06H
+        MOVBZ R4,g_d61a
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_B50F8
+        MOV R4,#DATA16 0FFFEH
+        AND diag_f86e,R4
+L_B50F8:                 ; 0xb50f8
+        MOV R6,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Diag_DTC_dd610  (@0xb50fe) ========
+        ; ------------------------------------------------------------
+        ; Per-fault DTC setter: sets dtc_test_result and updates the DTC at status-address 0xd610. Name = DTC
+        ; status RAM address (unique per fault).
+        ; ------------------------------------------------------------
+Diag_DTC_dd610:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R6
+        MOV R8,R12
+        MOV R9,p_ivvt_cam_m
+        MOVB RL6,#00H
+        MOVB RL4,vb
+        CMPB RL4,DPP0:c_vb_diag_ivvt
+        JMPR cc_C,L_B5188
+        JB lv_diag_trip_avl_ivvt.01H,L_B5188
+        JB lv_cam_ad_di_ivvt.04H,L_B5188
+        MOVB RL6,#DATA16 00010H
+        MOV R4,state_ivvt
+        CMP R4,#01H
+        JMPR cc_EQ,L_B512E
+        CMP R4,#04H
+        JMPR cc_NE,L_B5144
+L_B512E:                 ; 0xb512e
+        MOVB RL4,[R9+#017H]
+        MOVBZ R12,RL4
+        MOV R4,[R8]
+        MOVB RL5,[R4]
+        MOVBZ R13,RL5
+        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CMPB RL4,DPP0:c_cam_hys_ref_ivvt
+        JMPR cc_UGT,L_B5184
+L_B5144:                 ; 0xb5144
+        MOV R4,state_ivvt
+        CMP R4,#02H
+        JMPR cc_NE,L_B5188
+        MOV R2,[R8+#02H]
+        MOVB RL4,[R2]
+        MOVBZ R4,RL4
+        MOV R5,[R8]
+        MOVB RL3,[R5]
+        MOVBZ R12,RL3
+        SUB R12,R4
+        MOVBZ R4,DPP0:c_cam_hys_diag_mec_ivvt
+        SUB R12,R4
+        CALLS 00FH,Max0_S16
+        MOVB RL5,[R9+#014H]
+        CMPB RL5,RL4
+        JMPR cc_C,L_B5184
+        MOV R4,[R8]
+        MOVB RL5,[R4]
+        MOVBZ R12,RL5
+        MOVBZ R13,DPP0:c_cam_hys_diag_mec_ivvt
+        CALLS 00FH,Sat_Add_U8
+        MOVB RL5,[R9+#014H]
+        CMPB RL5,RL4
+        JMPR cc_ULE,L_B5188
+L_B5184:                 ; 0xb5184
+        MOVB RL6,#DATA16 00011H
+L_B5188:                 ; 0xb5188
+        MOVBZ R12,RL6
+        CALLS 00CH,Diag_DTC_dd5f4
+        MOVB RL4,#00H
+        BMOV R4.00H,PSW.06H
+        MOVB [R9+#0E2H],RL4
+        MOVB RL4,[R9+#0E2H]
+        JMPR cc_EQ,L_B51C6
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D610H
+        MOV R13,#DATA16 05A6EH
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_acp_err.00H,dtc_status_work.06H
+        MOVBZ R4,g_d61a
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_B51C6
+        MOV R4,#DATA16 0FFFEH
+        AND diag_f86e,R4
+L_B51C6:                 ; 0xb51c6
+        MOV R4,dtc_st_grp_can
+        AND R4,#DATA16 04000H
+        JMPR cc_NE,L_B520C
+        MOVB RL4,[R9+#0E2H]
+        JMPR cc_NE,L_B520C
+        MOV R4,dtc_st_grp_can
+        AND R4,#DATA16 08000H
+        JMPR cc_NE,L_B520C
+        MOVB RL4,[R9+#0E7H]
+        JMPR cc_NE,L_B520C
+        MOVB dtc_test_result,ZEROS
+        MOV R12,#DATA16 0D610H
+        MOV R13,#DATA16 05A6EH
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_acp_err.00H,dtc_status_work.06H
+        MOVBZ R4,g_d61a
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_B520C
+        MOV R4,#DATA16 0FFFEH
+        AND diag_f86e,R4
+L_B520C:                 ; 0xb520c
+        MOV R6,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== IVVT_CamMeas_Dispatch  (@0xb5214) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified: state_ivvt SM + jmptab@0xa079e): Cam-phaser dynamic-RESPONSE measurement sub-state
+        ; dispatcher. switch(camstruct+0xe0 sub-state) via IVVT_CamMeas_jmptab@0xa079e -> 6 arms St0..St5.
+        ; Times cam move/settle after an IVVT toggle (mechanical diag/adaptation). Arms share tail: FUN_0c14c2
+        ; + (state_ivvt==2) cam end-of-travel hysteresis via DAT_00c23d/c_cam_hys_*.
+        ; ------------------------------------------------------------
+IVVT_CamMeas_Dispatch:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R7,R12
+        MOV R8,p_ivvt_cam_m
+        MOV R9,p_ivvt_cam_s
+        MOVB RL6,#00H
+        MOV R4,state_ivvt
+        CMP R4,#02H
+        JMPR cc_EQ,L_B5236
+        CMP R4,#04H
+        JMPA cc_NE,L_B5386
+L_B5236:                 ; 0xb5236
+        MOVB RL4,[R8+#0E8H]
+        JMPA cc_NE,L_B5386
+        JNB lv_cam_ad_di_ivvt.04H,L_B5246
+        JMPA cc_UC,L_B5386
+L_B5246:                 ; 0xb5246
+        MOVB RL4,[R8+#0E4H]
+        JMPR cc_NE,L_B5258
+        MOV R4,#00H
+        MOV [R9+#014H],R4
+        MOVB RL4,#01H
+        MOVB [R8+#0E4H],RL4
+L_B5258:                 ; 0xb5258
+        MOV R4,[R7]
+        MOVB RL5,[R4]
+        MOVBZ R12,RL5
+        MOV R4,[R7+#08H]
+        MOVB RL5,[R4]
+        MOVBZ R13,RL5
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB state_ivvt_cammeas,RL4
+        MOVB RL5,[R9+#04H]
+        CMPB RL5,state_ivvt_cammeas
+        JMPR cc_ULE,L_B5290
+        MOV R4,[R9+#014H]
+        CMP R4,#DATA16 01770H
+        JMPR cc_NC,L_B5296
+        MOV R4,R9
+        ADD R4,#DATA16 00014H
+        MOV R5,[R4]
+        ADD R5,#01H
+        MOV [R4],R5
+        JMPR cc_UC,L_B5296
+L_B5290:                 ; 0xb5290
+        MOV R4,#00H
+        MOV [R9+#014H],R4
+L_B5296:                 ; 0xb5296
+        MOVB RL4,[R9+#0CH]
+        JMPA cc_EQ,L_B538C
+        MOVB RL4,[R9+#04H]
+        CMPB RL4,state_ivvt_cammeas
+        JMPR cc_ULE,L_B52CA
+        MOVB RL4,[R9+#04H]
+        CMPB RL4,state_ivvt_cammeas
+        JMPR cc_ULE,L_B538C
+        MOV R12,#DATA16 04788H
+        MOVBZ R13,n_32
+        MOVBZ R14,toil
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YByte
+        MOV R5,[R9+#014H]
+        CMP R5,R4
+        JMPR cc_C,L_B538C
+L_B52CA:                 ; 0xb52ca
+        MOVB RL4,[R9+#04H]
+        MOVBZ R12,RL4
+        MOVBZ R13,DPP0:c_cam_hys_int_rst_diag_ivvt
+        CALLS 00FH,Sat_Add_U8
+        MOVB RL5,[R8+#014H]
+        CMPB RL5,RL4
+        JMPR cc_UGT,L_B52F6
+        MOVB RL4,[R9+#04H]
+        MOVBZ R12,RL4
+        MOVBZ R13,DPP0:c_cam_hys_int_rst_diag_ivvt
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB RL5,[R8+#014H]
+        CMPB RL5,RL4
+        JMPR cc_NC,L_B531C
+L_B52F6:                 ; 0xb52f6
+        MOV R12,[R8+#03AH]
+        MOV R13,t_seg_av
+        MOV R14,#DATA16 00400H
+        CALLS 00FH,MulDiv_S16_Sat
+        MOV R12,R4
+        CALLS 00FH,Abs_S16
+        MOV R13,R4
+        MOV R12,[R8+#0D8H]
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV [R8+#0D8H],R4
+        JMPR cc_UC,L_B533E
+L_B531C:                 ; 0xb531c
+        MOV R4,#00H
+        MOV [R8+#0D8H],R4
+        MOV R12,t_seg_av
+        MOVBZ R13,DPP0:c_cam_hys_int_rst_diag_ivvt
+        MOV R14,#0AH
+        CALLS 00FH,Mul_Shift_U16_Sat32
+        MOV R13,R4
+        MOV R12,[R8+#0DAH]
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV [R8+#0DAH],R4
+L_B533E:                 ; 0xb533e
+        MOV R4,[R8+#0D8H]
+        CMP R4,DPP0:c_cam_dif_int_max_diag_ivvt
+        JMPR cc_C,L_B5362
+        MOVB RL6,#DATA16 00011H
+        MOV R4,[R8+#0D8H]
+        MOV R5,[R8+#0DEH]
+        MOV [R5],R4
+        MOV R4,#00H
+        MOV [R8+#0D8H],R4
+        MOV [R8+#0DAH],R4
+        JMPR cc_UC,L_B538C
+L_B5362:                 ; 0xb5362
+        MOV R4,[R8+#0DAH]
+        CMP R4,DPP0:c_cam_dif_int_max_diag_ivvt
+        JMPR cc_C,L_B538C
+        MOVB RL6,#DATA16 00010H
+        MOV R4,[R8+#0D8H]
+        MOV R5,[R8+#0DEH]
+        MOV [R5],R4
+        MOV R4,#00H
+        MOV [R8+#0D8H],R4
+        MOV [R8+#0DAH],R4
+        JMPR cc_UC,L_B538C
+L_B5386:                 ; 0xb5386
+        MOVB RL4,#00H
+        MOVB [R8+#0E4H],RL4
+L_B538C:                 ; 0xb538c
+        MOVBZ R12,RL6
+        CALLS 00CH,Diag_IVVT_SetDTC_d61e
+        MOVB RL4,#00H
+        BMOV R4.00H,PSW.06H
+        MOVB [R8+#0E3H],RL4
+        MOVB RL6,#00H
+        JB lv_diag_trip_avl_ivvt.07H,L_B53A6
+        JMPA cc_UC,IVVT_CamMeas_Trip
+L_B53A6:                 ; 0xb53a6
+        MOV R4,[R8+#0E0H]
+        CMP R4,#05H
+        JMPA cc_UGT,L_B54CE
+        SHL R4,#01H
+        ADD R4,#DATA16 0479EH
+        MOV R4,[R4]
+        JMPI cc_UC,[R4]
+
+S_B507E ENDS
+        END

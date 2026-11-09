@@ -1,0 +1,482 @@
+; asw/dtp/dtp_cp.a66
+; 0xD39E8-0xD3F04  (1308 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_abc_inc_dtp_con                    EQU  0900A7H
+c_abc_inc_dtp_noise                  EQU  0900A8H
+c_abc_inc_dtp_sens                   EQU  0900A9H
+c_abc_inc_sov_mecha                  EQU  0900BEH
+c_abc_max_dtp_con                    EQU  0900DBH
+c_abc_max_dtp_noise                  EQU  0900DCH
+c_abc_max_dtp_sens                   EQU  0900DDH
+c_abc_max_sov_mecha                  EQU  0900F3H
+c_nr_dtp_con_diag_sample             EQU  0902D3H
+c_t_v_dtp_mes                        EQU  09035CH
+c_tam_min_diagcp                     EQU  090363H
+c_vs_dtp_diag                        EQU  090427H
+c_maf_cps_dif_min_diag               EQU  0905A6H
+c_v_dtp_max_diag                     EQU  0907CAH
+c_v_dtp_min_con_diag                 EQU  0907CCH
+c_v_dtp_min_diag                     EQU  0907CEH
+c_v_dtp_min_sov                      EQU  0907D0H
+c_v_dtp_plaus_con_diag               EQU  0907D2H
+ldp_v_dtp_ip_dtp                      EQU  09125AH
+ip_dtp__v_dtp                        EQU  09246EH
+
+PUBLIC  Acq_DiagCP_Pressure, Delay_Dc397, DiagCP_Acq_Dtp, DiagCP_SetDTC_d300
+EXTERN  DTC_Update_Debounced:NEAR, DTC_Update_Immediate:NEAR, Div_S32_Signed:NEAR, Get_IP_Word_2D_Table:NEAR
+EXTERN  Get_IP_Word_Y_Axis:NEAR, Sat_Add_U8:NEAR, Sat_Sub_S16:NEAR, sub_r12_r13_rets_r4:NEAR
+
+S_D39E8 SECTION CODE AT 0D39E8H
+
+; ======== Acq_DiagCP_Pressure  (@0xd39e8) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Acq_DiagCP_Pressure:
+        MOVB RL4,#DATA16 00010H
+        MOVB idx_cp_prs_ring,RL4
+L_D39F0:                 ; 0xd39f0
+        ADDB idx_cp_prs_ring,ONES
+        MOV R4,adc_cp_prs
+        AND R4,#DATA16 003FFH
+        MOVBZ R5,idx_cp_prs_ring
+        SHL R5,#01H
+        MOV [R5+#0F7EEH],R4
+        MOVB RL4,idx_cp_prs_ring
+        JMPR cc_NE,L_D39F0
+        RET
+
+; ======== Delay_Dc397  (@0xd3a0e) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Delay_Dc397:
+        MOVB RL4,#04H
+        MOVB g_c397,RL4
+L_D3A14:                 ; 0xd3a14
+        ADDB g_c397,ONES
+        MOVBZ R4,g_c397
+        SHL R4,#01H
+        MOV [R4+#0F80EH],R12
+        MOVB RL4,g_c397
+        JMPR cc_NE,L_D3A14
+        RET
+
+; ======== DiagCP_Acq_Dtp  (@0xd3a2a) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by cp/evap/dtp/diagcp output signals + DTC): Differential tank-pressure sensor
+        ; acquisition v_dtp / v_dtp_mes + sensor DTC 0xd2f2.
+        ; ------------------------------------------------------------
+DiagCP_Acq_Dtp:
+        MOV [-R0],R6
+        MOVB RL4,conf_diagcp
+        JMPA cc_EQ,L_D3DFE
+        MOV v_dtp_mes,ZEROS
+        MOVB RL6,idx_cp_prs_ring
+        SUBB RL6,#DATA16 0000AH
+        ANDB RL6,#DATA16 0000FH
+        JMPR cc_UC,L_D3A5C
+L_D3A46:                 ; 0xd3a46
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R5,[R4+#0F7EEH]
+        ADD v_dtp_mes,R5
+        ADDB RL6,#01H
+        MOVB RL4,RL6
+        ANDB RL4,#DATA16 0000FH
+        MOVB RL6,RL4
+L_D3A5C:                 ; 0xd3a5c
+        CMPB RL6,idx_cp_prs_ring
+        JMPR cc_NE,L_D3A46
+        MOV R4,#0AH
+        MOV R5,v_dtp_mes
+        MOV 0FE0EH,R5
+        DIVU R4
+        MOV v_dtp_mes,MDL
+        MOV R5,0FE0EH
+        JB can_fd58.0CH,L_D3A7E
+        JMPA cc_UC,L_D3BDC
+L_D3A7E:                 ; 0xd3a7e
+        CMP R5,DPP0:c_v_dtp_max_diag
+        JMPR cc_ULE,L_D3ABE
+        MOVB t_v_dtp_mes,ZEROS
+        MOVB RL4,#01H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D2F2H
+        MOV R13,#DATA16 05588H
+        MOVBZ R14,DPP0:c_abc_inc_dtp_sens
+        MOVBZ R15,DPP0:c_abc_max_dtp_sens
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_cps_err.07H,dtc_status_work.06H
+        MOVBZ R4,g_d2fc
+        AND R4,#DATA16 00020H
+        JMPA cc_EQ,L_D3BE0
+        MOV R4,#DATA16 0FF7FH
+        AND dtc_st_grp_cp,R4
+        JMPA cc_UC,L_D3BE0
+L_D3ABE:                 ; 0xd3abe
+        MOV R4,v_dtp_mes
+        CMP R4,DPP0:c_v_dtp_min_sov
+        JMPR cc_UGT,L_D3B76
+        MOVB RL4,t_v_dtp_mes
+        CMPB RL4,DPP0:c_t_v_dtp_mes
+        JMPR cc_NC,L_D3B1E
+        MOV R4,v_dtp_mes
+        CMP R4,DPP0:c_v_dtp_min_diag
+        JMPR cc_UGT,L_D3B10
+        MOVB RL4,#02H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D2F2H
+        MOV R13,#DATA16 05588H
+        MOVBZ R14,DPP0:c_abc_inc_dtp_sens
+        MOVBZ R15,DPP0:c_abc_max_dtp_sens
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_cps_err.07H,dtc_status_work.06H
+        MOVBZ R4,g_d2fc
+        AND R4,#DATA16 00020H
+        JMPA cc_EQ,L_D3BE0
+        MOV R4,#DATA16 0FF7FH
+        AND dtc_st_grp_cp,R4
+        JMPR cc_UC,L_D3BE0
+L_D3B10:                 ; 0xd3b10
+        SUBB t_v_dtp_mes,ONES
+        MOV R4,v_dtp_mes
+        MOV v_dtp,R4
+        JMPR cc_UC,L_D3BE0
+L_D3B1E:                 ; 0xd3b1e
+        JNB lv_pl.09H,L_D3B3E
+        JB lv_act_diagcps.03H,L_D3B3E
+        JB lv_cps_err.07H,L_D3B3E
+        JB lv_cps_err.08H,L_D3B3E
+        JB lv_cps_err.09H,L_D3B3E
+        JB lv_cps_err.0EH,L_D3B3E
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        JMPR cc_UC,L_D3B42
+L_D3B3E:                 ; 0xd3b3e
+        MOVB dtc_test_result,ZEROS
+L_D3B42:                 ; 0xd3b42
+        MOV R12,#DATA16 0D362H
+        MOV R13,#DATA16 05638H
+        MOVBZ R14,DPP0:c_abc_inc_sov_mecha
+        MOVBZ R15,DPP0:c_abc_max_sov_mecha
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_cps_err.0FH,dtc_status_work.06H
+        MOVBZ R4,g_d36c
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D3B6C
+        MOV R4,#DATA16 07FFFH
+        AND dtc_st_grp_cp,R4
+L_D3B6C:                 ; 0xd3b6c
+        MOV R4,v_dtp_mes
+        MOV v_dtp,R4
+        JMPR cc_UC,L_D3BE0
+L_D3B76:                 ; 0xd3b76
+        MOVB t_v_dtp_mes,ZEROS
+        MOV R4,v_dtp_mes
+        MOV v_dtp,R4
+        MOVB dtc_test_result,ZEROS
+        MOV R12,#DATA16 0D2F2H
+        MOV R13,#DATA16 05588H
+        MOVBZ R14,DPP0:c_abc_inc_dtp_sens
+        MOVBZ R15,DPP0:c_abc_max_dtp_sens
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_cps_err.07H,dtc_status_work.06H
+        MOVBZ R4,g_d2fc
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D3BB0
+        MOV R4,#DATA16 0FF7FH
+        AND dtc_st_grp_cp,R4
+L_D3BB0:                 ; 0xd3bb0
+        MOV R12,#DATA16 0D362H
+        MOV R13,#DATA16 05638H
+        MOVBZ R14,DPP0:c_abc_inc_sov_mecha
+        MOVBZ R15,DPP0:c_abc_max_sov_mecha
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_cps_err.0FH,dtc_status_work.06H
+        MOVBZ R4,g_d36c
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D3BE0
+        MOV R4,#DATA16 07FFFH
+        AND dtc_st_grp_cp,R4
+        JMPR cc_UC,L_D3BE0
+L_D3BDC:                 ; 0xd3bdc
+        MOVB t_v_dtp_mes,ZEROS
+L_D3BE0:                 ; 0xd3be0
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_D3BE8
+        JMPA cc_UC,L_D3D3A
+L_D3BE8:                 ; 0xd3be8
+        JB can_fd58.0CH,L_D3BF0
+        JMPA cc_UC,L_D3D3A
+L_D3BF0:                 ; 0xd3bf0
+        MOVB RL4,tam
+        CMPB RL4,DPP0:c_tam_min_diagcp
+        JMPA cc_C,L_D3D3A
+        MOV R4,v_dtp
+        CMP R4,v_dtp_max_diag
+        JMPR cc_ULE,L_D3C0C
+        MOV v_dtp_max_diag,R4
+        JMPR cc_UC,L_D3C1A
+L_D3C0C:                 ; 0xd3c0c
+        MOV R4,v_dtp
+        CMP R4,v_dtp_min_diag
+        JMPR cc_NC,L_D3C1A
+        MOV v_dtp_min_diag,R4
+L_D3C1A:                 ; 0xd3c1a
+        MOV R12,v_dtp_max_diag
+        MOV R13,v_dtp_min_diag
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV v_dtp_dif_diag,R4
+        MOVB RL4,vs
+        CMPB RL4,vs_dtp_max_diag
+        JMPR cc_ULE,L_D3C38
+        MOVB vs_dtp_max_diag,RL4
+L_D3C38:                 ; 0xd3c38
+        MOV R4,maf_cps
+        CMP R4,maf_cps_max_diag
+        JMPR cc_ULE,L_D3C48
+        MOV maf_cps_max_diag,R4
+        JMPR cc_UC,L_D3C56
+L_D3C48:                 ; 0xd3c48
+        MOV R4,maf_cps
+        CMP R4,maf_cps_min_diag
+        JMPR cc_NC,L_D3C56
+        MOV maf_cps_min_diag,R4
+L_D3C56:                 ; 0xd3c56
+        MOV R12,maf_cps_max_diag
+        MOV R13,maf_cps_min_diag
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV maf_cps_dif_diag,R4
+        JB lv_cps_err.07H,L_D3CF8
+        JB lv_cps_err.09H,L_D3CF8
+        JB lv_cam_err.07H,L_D3CF8
+        JB lv_cam_err.08H,L_D3CF8
+        JB lv_cps_err.06H,L_D3CF8
+        JB lv_inh_int_puc_1.05H,L_D3CF8
+        JB lv_inh_int_puc_1.06H,L_D3CF8
+        MOVB RL4,nr_dtp_con_diag_sample
+        JMPR cc_NE,L_D3D36
+        MOV R4,maf_cps_dif_diag
+        CMP R4,DPP0:c_maf_cps_dif_min_diag
+        JMPR cc_ULE,L_D3CC2
+        MOV R5,v_dtp
+        CMP R5,DPP0:c_v_dtp_min_con_diag
+        JMPR cc_ULE,L_D3CC2
+        MOVB RL4,vs_dtp_max_diag
+        CMPB RL4,DPP0:c_vs_dtp_diag
+        JMPR cc_ULE,L_D3CC2
+        MOV R4,v_dtp_dif_diag
+        CMP R4,DPP0:c_v_dtp_plaus_con_diag
+        JMPR cc_C,L_D3CBA
+        MOV R12,#00H
+        MOV R13,#00H
+        CALLS 00DH,DiagCP_SetDTC_d300
+        JMPR cc_UC,L_D3CC2
+L_D3CBA:                 ; 0xd3cba
+        MOV R12,#00H
+        MOV R13,#01H
+        CALLS 00DH,DiagCP_SetDTC_d300
+L_D3CC2:                 ; 0xd3cc2
+        MOVB RL4,DPP0:c_nr_dtp_con_diag_sample
+        MOVB nr_dtp_con_diag_sample,RL4
+        MOV R4,v_dtp
+        MOV v_dtp_max_diag,R4
+        MOV R5,v_dtp
+        MOV v_dtp_min_diag,R5
+        MOV v_dtp_dif_diag,ZEROS
+        MOV R2,maf_cps
+        MOV maf_cps_max_diag,R2
+        MOV R3,maf_cps
+        MOV maf_cps_min_diag,R3
+        MOV maf_cps_dif_diag,ZEROS
+        MOVB vs_dtp_max_diag,ZEROS
+        JMPR cc_UC,L_D3D3A
+L_D3CF8:                 ; 0xd3cf8
+        MOVB RL4,DPP0:c_nr_dtp_con_diag_sample
+        MOVB nr_dtp_con_diag_sample,RL4
+        MOV R4,v_dtp
+        MOV v_dtp_max_diag,R4
+        MOV R5,v_dtp
+        MOV v_dtp_min_diag,R5
+        MOV v_dtp_dif_diag,ZEROS
+        MOV R2,maf_cps
+        MOV maf_cps_max_diag,R2
+        MOV R3,maf_cps
+        MOV maf_cps_min_diag,R3
+        MOV maf_cps_dif_diag,ZEROS
+        MOVB vs_dtp_max_diag,ZEROS
+        MOV R1,#DATA16 0FEFFH
+        AND lv_cat_f874,R1
+        JMPR cc_UC,L_D3D3A
+L_D3D36:                 ; 0xd3d36
+        ADDB nr_dtp_con_diag_sample,ONES
+L_D3D3A:                 ; 0xd3d3a
+        JB lv_cps_err.08H,L_D3D6A
+        MOVB RL4,cdn_dtp_noise_state_diag
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_D3D5A
+        CMPB RL4,#02H
+        JMPR cc_NE,L_D3D72
+        MOV R12,#01H
+        MOV R13,#01H
+        CALLS 00DH,DiagCP_SetDTC_d300
+        MOVB RL4,#04H
+        MOVB cdn_dtp_noise_state_diag,RL4
+        JMPR cc_UC,L_D3D72
+L_D3D5A:                 ; 0xd3d5a
+        MOV R12,#01H
+        MOV R13,#00H
+        CALLS 00DH,DiagCP_SetDTC_d300
+        MOVB RL4,#03H
+        MOVB cdn_dtp_noise_state_diag,RL4
+        JMPR cc_UC,L_D3D72
+L_D3D6A:                 ; 0xd3d6a
+        MOV R4,#DATA16 0FDFFH
+        AND lv_cat_f874,R4
+L_D3D72:                 ; 0xd3d72
+        MOV R4,dtp_sword
+        MOV g_cfba,R4
+        MOV R12,#DATA16 POF ldp_v_dtp_ip_dtp
+        MOV R13,#DATA16 PAG ldp_v_dtp_ip_dtp
+        MOV R14,v_dtp
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_dtp__v_dtp
+        MOV R13,#DATA16 PAG ip_dtp__v_dtp
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV R12,R4
+        ADD R12,#DATA16 08000H
+        MOV R13,dtp_ofs
+        CALLS 00FH,Sat_Sub_S16
+        MOV dtp_sword,R4
+        MOV R4,dtp_sword
+        MOVBZ R5,g_c397
+        SHL R5,#01H
+        MOV [R5+#0F80EH],R4
+        SUBB g_c397,ONES
+        MOVB RL4,g_c397
+        ANDB RL4,#03H
+        MOVB g_c397,RL4
+        MOV g_cfc6,ZEROS
+        MOV g_cfc8,ZEROS
+        MOVB RL6,#04H
+L_D3DCE:                 ; 0xd3dce
+        SUBB RL6,#01H
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R5,[R4+#0F80EH]
+        MOV R10,R5
+        MOV R11,R10
+        ASHR R11,#0FH
+        ADD g_cfc6,R10
+        ADDC g_cfc8,R11
+        CMPB RL6,#00H
+        JMPR cc_NE,L_D3DCE
+        MOV R4,g_cfc6
+        MOV R5,g_cfc8
+        MOV R10,#04H
+        MOV R11,#00H
+        CALLS 00DH,Div_S32_Signed
+        MOV dtp_mv,R4
+L_D3DFE:                 ; 0xd3dfe
+        MOV R6,[R0+]
+        RETS
+
+; ======== DiagCP_SetDTC_d300  (@0xd3e02) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by cp/evap/dtp/diagcp output signals + DTC): EVAP leak-diagnosis DTC update,
+        ; P-code 0xd300 (lv_cps_err).
+        ; ------------------------------------------------------------
+DiagCP_SetDTC_d300:
+        MOV [-R0],R12
+        MOV [-R0],R6
+        MOV R6,R13
+        MOV R4,R12
+        CMPB RL4,#00H
+        JMPR cc_EQ,L_D3E16
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_D3E7C
+        JMPA cc_UC,L_D3EFE
+L_D3E16:                 ; 0xd3e16
+        CMPB RL6,#00H
+        JMPR cc_NE,L_D3E4A
+        MOVB dtc_test_result,ZEROS
+        MOV R12,#DATA16 0D300H
+        MOV R13,#DATA16 0559EH
+        MOVBZ R14,DPP0:c_abc_inc_dtp_con
+        MOVBZ R15,DPP0:c_abc_max_dtp_con
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_cps_err.08H,dtc_status_work.06H
+        MOVBZ R4,diag_d30a
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D3EFE
+        MOV R4,#DATA16 0FEFFH
+        AND dtc_st_grp_cp,R4
+        JMPR cc_UC,L_D3EFE
+L_D3E4A:                 ; 0xd3e4a
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D300H
+        MOV R13,#DATA16 0559EH
+        MOVBZ R14,DPP0:c_abc_inc_dtp_con
+        MOVBZ R15,DPP0:c_abc_max_dtp_con
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_cps_err.08H,dtc_status_work.06H
+        MOVBZ R4,diag_d30a
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D3EFE
+        MOV R4,#DATA16 0FEFFH
+        AND dtc_st_grp_cp,R4
+        JMPR cc_UC,L_D3EFE
+L_D3E7C:                 ; 0xd3e7c
+        CMPB RL6,#00H
+        JMPR cc_NE,L_D3EAC
+        MOVB diag_c39f,ZEROS
+        MOVB dtc_test_result,ZEROS
+        MOV R12,#DATA16 0D30EH
+        MOV R13,#DATA16 055B4H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.09H,dtc_status_work.06H
+        MOVBZ R4,diag_d318
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D3EFE
+        MOV R4,#DATA16 0FDFFH
+        AND dtc_st_grp_cp,R4
+        JMPR cc_UC,L_D3EFE
+L_D3EAC:                 ; 0xd3eac
+        MOVBZ R12,diag_c39f
+        MOVBZ R13,DPP0:c_abc_inc_dtp_noise
+        CALLS 00FH,Sat_Add_U8
+        MOVB diag_c39f,RL4
+        CMPB RL4,DPP0:c_abc_max_dtp_noise
+        JMPR cc_NC,L_D3EC4
+        JMPR cc_UC,L_D3ECC
+L_D3EC4:                 ; 0xd3ec4
+        MOVB RL4,DPP0:c_abc_max_dtp_noise
+        MOVB diag_c39f,RL4
+L_D3ECC:                 ; 0xd3ecc
+        MOVB RL4,diag_c39f
+        CMPB RL4,DPP0:c_abc_max_dtp_noise
+        JMPR cc_NE,L_D3EFE
+        MOVB RL5,#08H
+        MOVB dtc_test_result,RL5
+        MOV R12,#DATA16 0D30EH
+        MOV R13,#DATA16 055B4H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.09H,dtc_status_work.06H
+        MOVBZ R4,diag_d318
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D3EFE
+        MOV R4,#DATA16 0FDFFH
+        AND dtc_st_grp_cp,R4
+L_D3EFE:                 ; 0xd3efe
+        MOV R6,[R0+]
+        ADD R0,#02H
+        RETS
+
+S_D39E8 ENDS
+        END

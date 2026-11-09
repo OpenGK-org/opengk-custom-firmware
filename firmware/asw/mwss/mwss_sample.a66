@@ -1,0 +1,131 @@
+; asw/mwss/mwss_sample.a66
+; 0xB9318-0xB943A  (290 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_nr_mwss_sample                     EQU  0902D4H
+c_v_thd_max_mwss                     EQU  0903FFH
+c_v_thd_min_mwss                     EQU  090400H
+c_v_thd_mwss                         EQU  090401H
+c_vs_min_mwss_cnl                    EQU  09043DH
+c_t_mwss_min_cnl                     EQU  09071CH
+
+PUBLIC  Diag_MWSS, Reset_Df380_408
+EXTERN  Diag_DTC_dd140:NEAR, sub_r12_13_ret_r4:NEAR
+
+S_B9318 SECTION CODE AT 0B9318H
+
+; ======== Diag_MWSS  (@0xb9318) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen signals, verified): MAP/MWSS pressure sensor plausibility diagnosis
+        ; (lv_err_pres_mwss)
+        ; ------------------------------------------------------------
+Diag_MWSS:
+        MOV R4,diag_fa82
+        AND R4,#DATA16 003FFH
+        SHR R4,#02H
+        MOVB diag_f380,RL4
+        JB can_fd58.0BH,L_B932E
+        JMPA cc_UC,L_B9406
+L_B932E:                 ; 0xb932e
+        CMPB RL4,v_max_mwss_diag
+        JMPR cc_ULE,L_B933A
+        MOVB v_max_mwss_diag,RL4
+        JMPR cc_UC,L_B9348
+L_B933A:                 ; 0xb933a
+        MOVB RL4,diag_f380
+        CMPB RL4,v_min_mwss_diag
+        JMPR cc_NC,L_B9348
+        MOVB v_min_mwss_diag,RL4
+L_B9348:                 ; 0xb9348
+        MOVBZ R12,v_max_mwss_diag
+        MOVBZ R13,v_min_mwss_diag
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB v_dif_mwss_diag,RL4
+        CMPB RL4,v_dif_max_mwss_diag
+        JMPR cc_ULE,L_B9362
+        MOVB v_dif_max_mwss_diag,RL4
+L_B9362:                 ; 0xb9362
+        MOVB RL4,nr_mwss_diag_sample
+        JMPR cc_EQ,L_B9370
+        SUBB RL4,#01H
+        MOVB nr_mwss_diag_sample,RL4
+        JMPR cc_UC,L_B93D0
+L_B9370:                 ; 0xb9370
+        MOVB RL4,vs
+        JMPR cc_EQ,L_B9388
+        MOVB RL5,v_dif_mwss_diag
+        CMPB RL5,DPP0:c_v_thd_mwss
+        JMPR cc_ULE,L_B9388
+        BSET lv_err_pres_mwss.03H
+        CALLS 00BH,Diag_DTC_dd140
+        JMPR cc_UC,L_B93B4
+L_B9388:                 ; 0xb9388
+        MOVB RL4,vs
+        JMPR cc_NE,L_B93AA
+        MOVB RL5,v_min_mwss_diag
+        CMPB RL5,DPP0:c_v_thd_min_mwss
+        JMPR cc_C,L_B93A2
+        MOVB RL3,v_max_mwss_diag
+        CMPB RL3,DPP0:c_v_thd_max_mwss
+        JMPR cc_ULE,L_B93AA
+L_B93A2:                 ; 0xb93a2
+        BSET lv_err_pres_mwss.03H
+        CALLS 00BH,Diag_DTC_dd140
+        JMPR cc_UC,L_B93B4
+L_B93AA:                 ; 0xb93aa
+        BCLR lv_err_pres_mwss.03H
+        JB lv_cam_err.08H,L_B93B4
+        CALLS 00BH,Diag_DTC_dd140
+L_B93B4:                 ; 0xb93b4
+        MOVB RL4,DPP0:c_nr_mwss_sample
+        MOVB nr_mwss_diag_sample,RL4
+        MOVB RL5,diag_f380
+        MOVB v_max_mwss_diag,RL5
+        MOVB RL3,diag_f380
+        MOVB v_min_mwss_diag,RL3
+        MOVB v_dif_mwss_diag,ZEROS
+L_B93D0:                 ; 0xb93d0
+        JB lv_err_pres_mwss.03H,L_B93F0
+        JNB lv_cam_err.08H,L_B9406
+        MOVB RL4,vs
+        CMPB RL4,DPP0:c_vs_min_mwss_cnl
+        JMPR cc_ULE,L_B9406
+        MOV R4,diag_f6d8
+        JMPR cc_EQ,L_B93FA
+        SUB R4,#01H
+        MOV diag_f6d8,R4
+        RETS
+L_B93F0:                 ; 0xb93f0
+        MOV R4,DPP0:c_t_mwss_min_cnl
+        MOV diag_f6d8,R4
+        RETS
+L_B93FA:                 ; 0xb93fa
+        MOV R4,DPP0:c_t_mwss_min_cnl
+        MOV diag_f6d8,R4
+        CALLS 00BH,Diag_DTC_dd140
+L_B9406:                 ; 0xb9406
+        RETS
+
+; ======== Reset_Df380_408  (@0xb9408) ========
+Reset_Df380_408:
+        MOV R4,diag_fa82
+        AND R4,#DATA16 003FFH
+        SHR R4,#02H
+        MOVB diag_f380,RL4
+        MOVB v_max_mwss_diag,RL4
+        MOVB RL5,diag_f380
+        MOVB v_min_mwss_diag,RL5
+        MOVB v_dif_mwss_diag,ZEROS
+        BCLR lv_err_pres_mwss.03H
+        MOVB RL3,DPP0:c_nr_mwss_sample
+        MOVB nr_mwss_diag_sample,RL3
+        MOV R4,DPP0:c_t_mwss_min_cnl
+        MOV diag_f6d8,R4
+        RETS
+
+S_B9318 ENDS
+        END

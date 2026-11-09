@@ -1,0 +1,161 @@
+; asw/can1.a66
+; 0xD76B4-0xD77E0  (300 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  CAN1_Rx_ReadObject, CAN1_Tx_SendObject, Reset_Df4dd_6b4, Set_Df4de_6be
+
+S_D76B4 SECTION CODE AT 0D76B4H
+
+; ======== Reset_Df4dd_6b4  (@0xd76b4) ========
+Reset_Df4dd_6b4:
+        MOVB ctr_can_tcs_arb_to,ZEROS
+        MOVB ctr_can_tcs_to,ZEROS
+        RETS
+
+; ======== Set_Df4de_6be  (@0xd76be) ========
+Set_Df4de_6be:
+        MOVB ctr_can_abs_to,ZEROS
+        RETS
+
+; ======== CAN1_Rx_ReadObject  (@0xd76c4) ========
+        ; CAN1_Rx_ReadObject(objIdx): RECEIVE path (previously mis-named 'transmit'). Gates on C1MCRn MSGVAL
+        ; set (&0x300==0x200), copies the received message object data @0xEF16+idx*0x10 into RAM parse buffer
+        ; @0xf83c, returns objIdx on success (else 0xff). CAN1_Periodic_Task reads objIdx 0 (TCU), 2
+        ; (TCS/ESP), 1 (ABS wheel speeds) then parses 0xf83c.
+CAN1_Rx_ReadObject:
+        MOV R4,R12
+        MOVBZ R4,RL4
+        SHL R4,#04H
+        MOV R5,[R4+#0EF10H]
+        AND R5,#DATA16 00300H
+        CMP R5,#DATA16 00200H
+        JMPR cc_NE,L_D774A
+        MOV R4,#DATA16 0FDFFH
+        MOV R5,R12
+        MOVBZ R5,RL5
+        SHL R5,#04H
+        MOV [R5+#0EF10H],R4
+        MOV R13,#00H
+        MOV R14,#DATA16 0EF16H
+        MOV R4,R12
+        MOVBZ R4,RL4
+        SHL R4,#04H
+        ADD R14,R4
+        MOV R15,#DATA16 0F83CH
+        JMPR cc_UC,L_D7702
+L_D76FA:                 ; 0xd76fa
+        MOV [R15],[R14]
+        ADD R14,#02H
+        ADD R15,#02H
+        ADD R13,#01H
+L_D7702:                 ; 0xd7702
+        CMP R13,#05H
+        JMPR cc_C,L_D76FA
+        MOV R4,R12
+        MOVBZ R4,RL4
+        SHL R4,#04H
+        MOV R5,[R4+#0EF10H]
+        AND R5,#DATA16 00300H
+        CMP R5,#DATA16 00200H
+        JMPR cc_NE,L_D7750
+        MOV R4,#DATA16 0FDFFH
+        MOV R5,R12
+        MOVBZ R5,RL5
+        SHL R5,#04H
+        MOV [R5+#0EF10H],R4
+        MOV R13,#00H
+        MOV R14,#DATA16 0EF16H
+        MOV R4,R12
+        MOVBZ R4,RL4
+        SHL R4,#04H
+        ADD R14,R4
+        MOV R15,#DATA16 0F83CH
+        JMPR cc_UC,L_D7744
+L_D773C:                 ; 0xd773c
+        MOV [R15],[R14]
+        ADD R14,#02H
+        ADD R15,#02H
+        ADD R13,#01H
+L_D7744:                 ; 0xd7744
+        CMP R13,#05H
+        JMPR cc_C,L_D773C
+        JMPR cc_UC,L_D7750
+L_D774A:                 ; 0xd774a
+        MOVB RL4,0FF1EH
+        MOV R12,R4
+L_D7750:                 ; 0xd7750
+        MOV R4,R12
+        RETS
+
+; ======== CAN1_Tx_SendObject  (@0xd7754) ========
+        ; CAN1_Tx_SendObject(objIdx): TRANSMIT path. Copies 6B arbitration/config from ROM template
+        ; @0x50b4+idx*0x10 and the 8 data bytes staged in RAM @0xf832..0xf83a into TX message object
+        ; @0xEF10+idx*0x10, then writes MCR=0x6595 (NEWDAT set) to send. The periodic task
+        ; CAN1_Periodic_Task(0d68f6) fills 0xf832 then calls this with objIdx 0xD/0xC/0xB/0xA.
+CAN1_Tx_SendObject:
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOVB RL7,0FF1EH
+        MOVB RL4,can1_sr
+        ANDB RL4,#DATA16 00008H
+        JMPR cc_EQ,L_D777A
+        MOV R4,R12
+        MOVBZ R4,RL4
+        SHL R4,#04H
+        MOV R5,[R4+#0EF10H]
+        AND R5,#DATA16 03000H
+        CMP R5,#DATA16 01000H
+        JMPR cc_EQ,L_D7788
+L_D777A:                 ; 0xd777a
+        MOVBZ R4,can1_sr
+        AND R4,#07H
+        CMP R4,#03H
+        JMPR cc_EQ,L_D7788
+        MOVB RL7,0FF1CH
+L_D7788:                 ; 0xd7788
+        MOV R14,#DATA16 0EF10H
+        MOV R4,R12
+        MOVBZ R4,RL4
+        SHL R4,#04H
+        ADD R14,R4
+        MOV R13,#DATA16 050B4H
+        MOV R4,R12
+        MOVBZ R4,RL4
+        SHL R4,#04H
+        ADD R13,R4
+        MOVB RL6,#00H
+L_D77A2:                 ; 0xd77a2
+        MOV [R14],[R13]
+        ADD R14,#02H
+        ADD R13,#02H
+        ADDB RL6,#01H
+        CMPB RL6,#03H
+        JMPR cc_C,L_D77A2
+        MOVB RL6,#00H
+        MOV R13,#DATA16 0F832H
+        JMPR cc_UC,L_D77BE
+L_D77B6:                 ; 0xd77b6
+        MOV [R14],[R13]
+        ADD R14,#02H
+        ADD R13,#02H
+        ADDB RL6,#01H
+L_D77BE:                 ; 0xd77be
+        CMPB RL6,#05H
+        JMPR cc_C,L_D77B6
+        MOVB RL4,#DATA16 000F7H
+        ANDB can1_sr,RL4
+        MOV R4,#DATA16 06595H
+        MOV R5,R12
+        MOVBZ R5,RL5
+        SHL R5,#04H
+        MOV [R5+#0EF10H],R4
+        MOVB RL4,RL7
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        RETS
+
+S_D76B4 ENDS
+        END

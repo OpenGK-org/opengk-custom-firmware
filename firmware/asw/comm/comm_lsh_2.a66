@@ -1,0 +1,290 @@
+; asw/comm/comm_lsh_2.a66
+; 0xD466C-0xD4900  (660 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_pwm_max_lsh_up_obd2                EQU  0902E4H
+c_pwm_min_lsh_up_obd2                EQU  0902E6H
+c_t_dly_lsh_up_obd2                  EQU  090327H
+c_vb_max_lsh_up_obd2                 EQU  09040BH
+c_vb_min_lsh_up_obd2                 EQU  090415H
+c_egy_min_lsh_up_obd2                EQU  09053AH
+c_frc_stc_lsh_up_obd2                EQU  09055EH
+c_r_thd_lsh_up_obd2                  EQU  09068CH
+c_tcc_stc_lsh_up_obd2                EQU  090756H
+c_temp_min_lsh_up_obd2               EQU  09077EH
+c_temp_set_lsh_up_obd2               EQU  090782H
+ldp_maf_kgh__fac_maf_lsh_up                  EQU  09135CH
+ip_fac_maf_lsh_up                    EQU  09567BH
+
+PUBLIC  Calc_LSH_Up_OBD2_Temp, Calc_RBM_LSH_Up_OBD2, ClrBits_state_rbm_lsh_up_obd2_86e, Reset_state_rbm_lsh_up_obd2_864, Reset_temp_dif_lsh_up_obd2_66c
+EXTERN  Add_r12_r13_Return_r4:NEAR, Diag_DTC_dd266:NEAR, Div_U32_U16_Round32:NEAR, Get_IP_Byte_2D_Table:NEAR
+EXTERN  Get_IP_Word_Y_Axis:NEAR, Mul_Frac_U16_Sat:NEAR, sub_r12_r13_rets_r4:NEAR
+
+S_D466C SECTION CODE AT 0D466CH
+
+; ======== Reset_temp_dif_lsh_up_obd2_66c  (@0xd466c) ========
+Reset_temp_dif_lsh_up_obd2_66c:
+        MOV temp_dif_lsh_up_obd2,ZEROS
+        MOVB obd_c8f6,ZEROS
+        MOV lam_bank_1_lsh_up_obd2_struct_frc_stc_lsh_up_obd2,ZEROS
+        MOV lam_bank_1_lsh_up_obd2_struct_tcc_stc_lsh_up_obd2,ZEROS
+        MOV lam_bank_1_lsh_up_obd2_struct_pow_int_lsh_up_obd2,ZEROS
+        MOV lam_bank_1_lsh_up_obd2_struct_ctr_cycnr_r_lsh_up_obd2,ZEROS
+        MOV lam_bank_1_lsh_up_obd2_struct_state_lsh_up_obd2,ZEROS
+        RETS
+
+; ======== Calc_LSH_Up_OBD2_Temp  (@0xd468a) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by obd2/er output signals): Front-O2 heater OBD2 temperature-diff diagnosis:
+        ; temp_dif_lsh_up_obd2.
+        ; ------------------------------------------------------------
+Calc_LSH_Up_OBD2_Temp:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV R8,p_lam_bank1
+        JB lv_cam_ad_di_ivvt.09H,L_D469A
+        MOV R9,#DATA16 0C916H
+L_D469A:                 ; 0xd469a
+        MOV R4,[R8+#01A8H]
+        CMP R4,#07H
+        JMPA cc_EQ,L_D485E
+        JB can_fd58.09H,L_D46AC
+        JMPA cc_UC,L_D483C
+L_D46AC:                 ; 0xd46ac
+        JNB lv_pl.04H,L_D46B4
+        JMPA cc_UC,L_D483C
+L_D46B4:                 ; 0xd46b4
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_D46BC
+        JMPA cc_UC,L_D483C
+L_D46BC:                 ; 0xd46bc
+        JNB lv_cat_diag_inh_1.09H,L_D46C4
+        JMPA cc_UC,L_D483C
+L_D46C4:                 ; 0xd46c4
+        JB state_lam_ctl2.08H,L_D46CC
+        JMPA cc_UC,L_D4828
+L_D46CC:                 ; 0xd46cc
+        MOV R4,[R9]
+        CMP R4,#04H
+        JMPA cc_NE,L_D4828
+        MOVB RL4,vb
+        CMPB RL4,DPP0:c_vb_min_lsh_up_obd2
+        JMPA cc_ULE,L_D4828
+        CMPB RL4,DPP0:c_vb_max_lsh_up_obd2
+        JMPA cc_NC,L_D4828
+        MOVB RL5,[R9+#02H]
+        CMPB RL5,DPP0:c_pwm_min_lsh_up_obd2
+        JMPA cc_ULE,L_D4828
+        MOVB RL5,[R9+#02H]
+        CMPB RL5,DPP0:c_pwm_max_lsh_up_obd2
+        JMPA cc_NC,L_D4828
+        MOVB RL5,[R8+#01AAH]
+        CMPB RL5,DPP0:c_t_dly_lsh_up_obd2
+        JMPA cc_C,L_D4814
+        JNB lv_cat_diag_inh_1.08H,L_D4714
+        JMPA cc_UC,L_D47F4
+L_D4714:                 ; 0xd4714
+        MOV R4,teg_dyn
+        CMP R4,DPP0:c_temp_min_lsh_up_obd2
+        JMPR cc_UGT,L_D47E6
+        MOV R5,[R8+#01A0H]
+        CMP R5,DPP0:c_egy_min_lsh_up_obd2
+        JMPR cc_C,L_D4796
+        MOV R5,[R8+#0C4H]
+        MOV R2,[R8+#019EH]
+        CMP R5,R2
+        JMPR cc_EQ,L_D4796
+        MOV R5,#06H
+        MOV [R8+#01A8H],R5
+        MOV R4,[R8+#0C4H]
+        MOV [R8+#019EH],R4
+        MOV R4,[R8+#01A2H]
+        CMP R4,#DATA16 003FFH
+        JMPR cc_NC,L_D4758
+        MOV R4,R8
+        ADD R4,#DATA16 001A2H
+        MOV R5,[R4]
+        ADD R5,#01H
+        MOV [R4],R5
+L_D4758:                 ; 0xd4758
+        MOV R4,[R8+#0C6H]
+        CMP R4,DPP0:c_r_thd_lsh_up_obd2
+        JMPR cc_C,L_D4778
+        MOV R4,[R8+#01A4H]
+        CMP R4,#DATA16 003FFH
+        JMPR cc_NC,L_D4778
+        MOV R4,R8
+        ADD R4,#DATA16 001A4H
+        MOV R5,[R4]
+        ADD R5,#01H
+        MOV [R4],R5
+L_D4778:                 ; 0xd4778
+        MOV R4,[R8+#01A2H]
+        CMP R4,DPP0:c_tcc_stc_lsh_up_obd2
+        JMPR cc_C,L_D485E
+        MOV R4,#07H
+        MOV [R8+#01A8H],R4
+        MOV R4,[R8+#01A4H]
+        CMP R4,DPP0:c_frc_stc_lsh_up_obd2
+        JMPR cc_ULE,L_D4850
+        BSET lv_act_diagcps.0CH
+        JMPR cc_UC,L_D4852
+L_D4796:                 ; 0xd4796
+        MOV R4,#05H
+        MOV [R8+#01A8H],R4
+        MOV R12,DPP0:c_temp_set_lsh_up_obd2
+        MOV R13,teg_dyn
+        CALLS 00FH,sub_r12_r13_rets_r4
+        SHR R4,#04H
+        MOV temp_dif_lsh_up_obd2,R4
+        MOV R12,#DATA16 POF ldp_maf_kgh__fac_maf_lsh_up
+        MOV R13,#DATA16 PAG ldp_maf_kgh__fac_maf_lsh_up
+        MOV R14,maf_kgh
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_fac_maf_lsh_up
+        MOV R13,#DATA16 PAG ip_fac_maf_lsh_up
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVBZ R13,RL4
+        SHL R13,#04H
+        MOV R12,temp_dif_lsh_up_obd2
+        CALLS 00FH,Mul_Frac_U16_Sat
+        MOV R13,R4
+        MOV R12,[R8+#01A0H]
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV [R8+#01A0H],R4
+        JMPR cc_UC,L_D485E
+L_D47E6:                 ; 0xd47e6
+        MOV R4,#04H
+        MOV [R8+#01A8H],R4
+        MOV R4,#00H
+        MOV [R8+#01A0H],R4
+        JMPR cc_UC,L_D485E
+L_D47F4:                 ; 0xd47f4
+        MOV R4,#03H
+        MOV [R8+#01A8H],R4
+        MOVB RL4,#00H
+        MOVB [R8+#01AAH],RL4
+        MOV R4,#00H
+        MOV [R8+#01A0H],R4
+        JB lv_cam_ad_di_ivvt.09H,L_D485E
+        MOV R4,#DATA16 0DFFFH
+        AND g_f872,R4
+        JMPR cc_UC,L_D485E
+L_D4814:                 ; 0xd4814
+        MOV R4,R8
+        ADD R4,#DATA16 001AAH
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+        MOV R4,#02H
+        MOV [R8+#01A8H],R4
+        JMPR cc_UC,L_D485E
+L_D4828:                 ; 0xd4828
+        MOV R4,#01H
+        MOV [R8+#01A8H],R4
+        MOVB RL4,#00H
+        MOVB [R8+#01AAH],RL4
+        MOV R4,#00H
+        MOV [R8+#01A0H],R4
+        JMPR cc_UC,L_D485E
+L_D483C:                 ; 0xd483c
+        MOV R4,#00H
+        MOV [R8+#01A8H],R4
+        MOVB RL4,#00H
+        MOVB [R8+#01AAH],RL4
+        MOV R4,#00H
+        MOV [R8+#01A0H],R4
+        JMPR cc_UC,L_D485E
+L_D4850:                 ; 0xd4850
+        BCLR lv_act_diagcps.0CH
+L_D4852:                 ; 0xd4852
+        MOV R4,[R8+#01A4H]
+        MOV [R8+#01A6H],R4
+        CALLS 00CH,Diag_DTC_dd266
+L_D485E:                 ; 0xd485e
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Reset_state_rbm_lsh_up_obd2_864  (@0xd4864) ========
+Reset_state_rbm_lsh_up_obd2_864:
+        MOVB state_rbm_lsh_up_obd2,ZEROS
+        MOV rate_rbm_lsh_up_obd2,ONES
+        RETS
+
+; ======== ClrBits_state_rbm_lsh_up_obd2_86e  (@0xd486e) ========
+ClrBits_state_rbm_lsh_up_obd2_86e:
+        MOVB RL4,#DATA16 000FDH
+        ANDB state_rbm_lsh_up_obd2,RL4
+        RETS
+
+; ======== Calc_RBM_LSH_Up_OBD2  (@0xd4878) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by state_rbm_/rate_rbm_ output signals): IUMPR rate-based monitor for LSH Up
+        ; OBD2: updates state_rbm_lsh_up_obd2 / rate_rbm_lsh_up_obd2 (in-use completion ratio =
+        ; numerator/denominator).
+        ; ------------------------------------------------------------
+Calc_RBM_LSH_Up_OBD2:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV R7,p_lam_bank1
+        JNB obd_sf.0DH,L_D48F8
+        MOVBZ R4,state_rbm_lsh_up_obd2
+        AND R4,#01H
+        JMPR cc_NE,L_D489C
+        MOV R4,[R7+#01A8H]
+        CMP R4,#07H
+        JMPR cc_NE,L_D489C
+        MOVB RL4,#01H
+        ORB state_rbm_lsh_up_obd2,RL4
+L_D489C:                 ; 0xd489c
+        MOVBZ R4,state_rbm_lsh_up_obd2
+        AND R4,#02H
+        JMPR cc_NE,L_D48B2
+        JB lv_lam_lim_1_err.03H,L_D48AC
+        JNB lv_lam_lim_1_err.0BH,L_D48B2
+L_D48AC:                 ; 0xd48ac
+        MOVB RL4,#02H
+        ORB state_rbm_lsh_up_obd2,RL4
+L_D48B2:                 ; 0xd48b2
+        MOVBZ R4,state_rbm_lsh_up_obd2
+        AND R4,#04H
+        JMPR cc_NE,L_D48C0
+        MOVB RL4,#04H
+        ORB state_rbm_lsh_up_obd2,RL4
+L_D48C0:                 ; 0xd48c0
+        MOV R12,ctr_comp_rbm_lsh_up_obd2
+        MOV R13,#00H
+        MOV R13,R12
+        MOV R12,0FF1CH
+        MOV R14,ctr_cdn_rbm_lsh_up_obd2
+        CALLS 00FH,Div_U32_U16_Round32
+        MOV R8,R4
+        MOV R9,R5
+        MOV R4,R9
+        SHR R8,#03H
+        SHR R9,#03H
+        SHL R4,#0DH
+        OR R8,R4
+        CMP R9,#00H
+        JMPR cc_NE,L_D48EA
+        CMP R8,#DATA16 0FFFFH
+L_D48EA:                 ; 0xd48ea
+        JMPR cc_C,L_D48F2
+        MOV rate_rbm_lsh_up_obd2,ONES
+        JMPR cc_UC,L_D48F8
+L_D48F2:                 ; 0xd48f2
+        MOV R4,R8
+        MOV rate_rbm_lsh_up_obd2,R4
+L_D48F8:                 ; 0xd48f8
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_D466C ENDS
+        END

@@ -1,0 +1,193 @@
+; asw/maf/maf_thr.a66
+; 0xC3522-0xC36E0  (446 bytes, 6 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_ctr_maf_puls                       EQU  090179H
+c_n_max_puls                         EQU  0902AFH
+c_tps_min_puls                       EQU  0903EFH
+c_maf_dif_max                        EQU  0905C2H
+c_maf_puls_hys                       EQU  09060AH
+ldpm_n_32_ar_red                             EQU  090D43H
+ip_maf_puls_max__n                   EQU  092F8CH
+
+PUBLIC  Acq_MAF_Mes, Calc_AR_Red_Bas_Thr, Detect_MAF_Puls, Reset_Df7e6_57e, Reset_ar_red_bas_thr_530, Reset_ar_red_bas_thr_ivs_522
+EXTERN  Abs_S16_Simple:NEAR, Add_r12_r13_Return_r4:NEAR, Calc_MAF_Kgh_Fac:NEAR, Get_IP_Byte_Y_Axis:NEAR
+EXTERN  Get_IP_Word_2D_Table:NEAR, Get_IP_Word_3D_Table_DWord_XWord_YWord:NEAR, Mul_Frac_Sat_x2:NEAR, multipied_r12_r13_UGT_r14_rets_r4:NEAR
+EXTERN  sub_r12_r13_rets_r4:NEAR
+
+S_C3522 SECTION CODE AT 0C3522H
+
+; ======== Reset_ar_red_bas_thr_ivs_522  (@0xc3522) ========
+Reset_ar_red_bas_thr_ivs_522:
+        MOV ar_red_bas_thr_ivs,ZEROS
+        MOV ar_red_bas_thr,ZEROS
+        MOV ar_red_bas,ZEROS
+        RETS
+
+; ======== Reset_ar_red_bas_thr_530  (@0xc3530) ========
+Reset_ar_red_bas_thr_530:
+        MOV R12,#DATA16 04A26H
+        MOV R13,tps_seg
+        MOV R14,n_C93C
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XWord_YWord
+        MOV ar_red_bas_thr,R4
+        MOV R12,#DATA16 04A1AH
+        MOV R13,opg_av_isa
+        MOV R14,n_C93C
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XWord_YWord
+        MOV ar_red_bas_isa,R4
+        MOV R12,ar_red_bas_thr
+        MOV R13,R4
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV ar_red_bas,R4
+        RETS
+
+; ======== Calc_AR_Red_Bas_Thr  (@0xc3568) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by maf/tps output signals + DTC): Air-reduction base threshold
+        ; ar_red_bas_thr_ivs (from tps_av/n 3D map).
+        ; ------------------------------------------------------------
+Calc_AR_Red_Bas_Thr:
+        MOV R12,#DATA16 04A26H
+        MOV R13,tps_av
+        MOV R14,n_C93C
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XWord_YWord
+        MOV ar_red_bas_thr_ivs,R4
+        RETS
+
+; ======== Reset_Df7e6_57e  (@0xc357e) ========
+Reset_Df7e6_57e:
+        MOV R4,#DATA16 01B8AH
+        MOV g_f7e6,R4
+        MOV maf_min,ONES
+        MOV maf_max,ZEROS
+        MOVB lv_maf_c31f,ZEROS
+        RETS
+
+; ======== Acq_MAF_Mes  (@0xc3594) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by maf/tps output signals + DTC): MAF sensor acquisition: averages the
+        ; accumulated hot-film samples -> maf_kgh_mes / maf_mes / maf_puls / maf_min (immob-gated accumulator
+        ; pick).
+        ; ------------------------------------------------------------
+Acq_MAF_Mes:
+        JNB lv_err_com_resp_imob.08H,L_C35BE
+        MOV R4,maf_acc_cnt
+        SHL R4,#01H
+        MOV MDH,maf_acc_hi
+        MOV MDL,maf_acc_lo
+        DIVLU R4
+        MOV maf_kgh_mes_bas,MDL
+        MOV R4,0FE0EH
+        MOV maf_acc_lo,ZEROS
+        MOV maf_acc_hi,ZEROS
+        MOV maf_acc_cnt,ZEROS
+        JMPR cc_UC,L_C35E2
+L_C35BE:                 ; 0xc35be
+        MOV R4,maf_acc2_cnt
+        SHL R4,#01H
+        MOV MDH,maf_acc2_hi
+        MOV MDL,maf_acc2_lo
+        DIVLU R4
+        MOV maf_kgh_mes_bas,MDL
+        MOV R4,0FE0EH
+        MOV maf_acc2_lo,ZEROS
+        MOV maf_acc2_hi,ZEROS
+        MOV maf_acc2_cnt,ZEROS
+L_C35E2:                 ; 0xc35e2
+        CALLS 00DH,Calc_MAF_Kgh_Fac
+        MOV R4,maf_kgh_mes
+        MOV lv_maf_cc26,R4
+        MOV R12,maf_kgh_mes_bas
+        MOVBZ R13,maf_kgh_mes_fac
+        CALLS 00FH,Mul_Frac_Sat_x2
+        MOV maf_kgh_mes,R4
+        MOV R12,R4
+        MOV R13,#DATA16 0C000H
+        MOV R14,n_C93C
+        SHL R14,#02H
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV maf_mes,R4
+        MOV R12,maf_max
+        SUB R12,maf_min
+        MOV R13,#DATA16 0C000H
+        MOV R14,n_C93C
+        SHL R14,#03H
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV maf_puls,R4
+        MOV maf_min,ONES
+        MOV maf_max,ZEROS
+        RETS
+
+; ======== Detect_MAF_Puls  (@0xc3636) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (ThetaII, verified): MAF pulsation detect: lv_maf_puls from maf_dif/c_maf_dif_max,
+        ; ip_maf_puls_max
+        ; (was FUN_0c3636)
+        ; ------------------------------------------------------------
+Detect_MAF_Puls:
+        MOVB RL4,n_32
+        CMPB RL4,DPP0:c_n_max_puls
+        JMPR cc_NC,L_C36D8
+        MOVB RL5,tps
+        CMPB RL5,DPP0:c_tps_min_puls
+        JMPR cc_ULE,L_C36D8
+        JB lv_cam_err.02H,L_C36D8
+        MOV R12,#DATA16 POF ldpm_n_32_ar_red
+        MOV R13,#DATA16 PAG ldpm_n_32_ar_red
+        MOVBZ R14,RL4
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        JNB lv_maf_puls.00H,L_C369A
+        MOV R12,#DATA16 POF ip_maf_puls_max__n
+        MOV R13,#DATA16 PAG ip_maf_puls_max__n
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV R12,R4
+        MOV R13,DPP0:c_maf_puls_hys
+        CALLS 00FH,sub_r12_r13_rets_r4
+        CMP R4,maf_puls
+        JMPR cc_ULE,L_C3694
+        MOVB RL4,lv_maf_c31f
+        CMPB RL4,DPP0:c_ctr_maf_puls
+        JMPR cc_C,L_C368E
+        BCLR lv_maf_puls.00H
+        MOVB lv_maf_c31f,ZEROS
+        RETS
+L_C368E:                 ; 0xc368e
+        SUBB lv_maf_c31f,ONES
+        RETS
+L_C3694:                 ; 0xc3694
+        MOVB lv_maf_c31f,ZEROS
+        RETS
+L_C369A:                 ; 0xc369a
+        MOV R12,maf_dif
+        CALLS 00DH,Abs_S16_Simple
+        CMP R4,DPP0:c_maf_dif_max
+        JMPR cc_NC,L_C36D2
+        MOV R12,#DATA16 POF ip_maf_puls_max__n
+        MOV R13,#DATA16 PAG ip_maf_puls_max__n
+        CALLS 00FH,Get_IP_Word_2D_Table
+        CMP R4,maf_puls
+        JMPR cc_NC,L_C36D2
+        MOVB RL4,lv_maf_c31f
+        CMPB RL4,DPP0:c_ctr_maf_puls
+        JMPR cc_C,L_C36CC
+        BSET lv_maf_puls.00H
+        MOVB lv_maf_c31f,ZEROS
+        RETS
+L_C36CC:                 ; 0xc36cc
+        SUBB lv_maf_c31f,ONES
+        RETS
+L_C36D2:                 ; 0xc36d2
+        MOVB lv_maf_c31f,ZEROS
+        RETS
+L_C36D8:                 ; 0xc36d8
+        MOVB lv_maf_c31f,ZEROS
+        BCLR lv_maf_puls.00H
+        RETS
+
+S_C3522 ENDS
+        END

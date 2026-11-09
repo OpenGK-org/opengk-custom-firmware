@@ -1,0 +1,279 @@
+; asw/stnd.a66
+; 0xC6584-0xC67E2  (606 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_maf_max_ratio_tqi_bas_max_stnd     EQU  090230H
+c_maf_min_ratio_tqi_bas_max_stnd     EQU  090232H
+c_n_max_ratio_tqi_bas_max_stnd       EQU  0902B0H
+c_n_min_ratio_tqi_bas_max_stnd       EQU  0902C1H
+c_ratio_tqi_bas_max_stnd_max         EQU  0902E7H
+c_ratio_tqi_bas_max_stnd_min         EQU  0902E8H
+c_tco_min_ratio_tqi_bas_max_stnd     EQU  09038FH
+c_tia_ratio_tqi_bas_max_stnd         EQU  0903BEH
+c_amp_ratio_tqi_bas_max_stnd         EQU  0904C4H
+c_crlc_ratio_tqi_bas_max_stnd        EQU  0904FCH
+
+PUBLIC  Calc_Ratio_TQI_Bas_Stnd, Calc_Ratio_TQI_Max_Stnd, NVM_Save_s5d8, Set_ratio_tqi_bas_max_stnd_2_750, Set_tqi_av_ems_7dc
+EXTERN  Add_r12_r13_Return_r4:NEAR, Clamp_U16_v2:NEAR, Div_U32_U16_Round:NEAR, Elevated_Write_Routine_prg_zone_wrapper:NEAR
+EXTERN  Get_IP_Word_2D_Table_DWord_YByte:NEAR, Interp_U16:NEAR, Mul_Q15_Sat:NEAR, sub_r12_13_ret_r4:NEAR
+EXTERN  xor_routine:NEAR
+
+S_C6584 SECTION CODE AT 0C6584H
+
+; ======== Calc_Ratio_TQI_Bas_Stnd  (@0xc6584) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen signals, verified): Standstill torque-reserve ratio
+        ; (ratio_tqi_bas_max_stnd)
+        ; ------------------------------------------------------------
+Calc_Ratio_TQI_Bas_Stnd:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R6
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_C6592
+        JMPA cc_UC,L_C66D2
+L_C6592:                 ; 0xc6592
+        JNB lv_pl.04H,L_C659A
+        JMPA cc_UC,L_C66D2
+L_C659A:                 ; 0xc659a
+        MOV R12,amp
+        MOV R13,#00H
+        MOV R4,R12
+        SHL R12,#08H
+        SHL R13,#08H
+        SHR R4,#08H
+        OR R13,R4
+        MOV R14,DPP0:c_amp_ratio_tqi_bas_max_stnd
+        CALLS 00FH,Div_U32_U16_Round
+        MOV R8,R4
+        SHR R8,#01H
+        CMP R8,#DATA16 000FFH
+        JMPR cc_ULE,L_C65C2
+        MOVB ratio_tqi_bas_max_stnd_1,ONES
+        JMPR cc_UC,L_C65C8
+L_C65C2:                 ; 0xc65c2
+        MOV R4,R8
+        MOVB ratio_tqi_bas_max_stnd_1,RL4
+L_C65C8:                 ; 0xc65c8
+        MOVBZ R12,iga_ref
+        MOVBZ R13,iga_bas
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB lv_tq_c32e,RL4
+        MOV R12,#DATA16 04BC6H
+        MOVBZ R13,RL4
+        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        MOV eff_iga_bas,R4
+        MOV R12,eff_iga_bas_cor
+        MOV R13,#00H
+        MOV R5,R12
+        SHL R12,#08H
+        SHL R13,#08H
+        SHR R5,#08H
+        OR R13,R5
+        MOV R14,R4
+        CALLS 00FH,Div_U32_U16_Round
+        MOV R9,R4
+        SHR R9,#01H
+        CMP R9,#DATA16 000FFH
+        JMPR cc_ULE,L_C6610
+        MOV R4,#DATA16 000FFH
+        MOV ratio_tqi_bas_max_stnd_2_inter,R4
+        JMPR cc_UC,L_C6618
+L_C6610:                 ; 0xc6610
+        MOV R4,R9
+        MOVBZ R4,RL4
+        MOV ratio_tqi_bas_max_stnd_2_inter,R4
+L_C6618:                 ; 0xc6618
+        MOVB RL4,tco
+        CMPB RL4,DPP0:c_tco_min_ratio_tqi_bas_max_stnd
+        JMPR cc_ULE,L_C6658
+        MOVB RL5,n_32
+        CMPB RL5,DPP0:c_n_min_ratio_tqi_bas_max_stnd
+        JMPR cc_ULE,L_C6658
+        CMPB RL5,DPP0:c_n_max_ratio_tqi_bas_max_stnd
+        JMPR cc_NC,L_C6658
+        MOVB RL3,maf_hb
+        CMPB RL3,DPP0:c_maf_min_ratio_tqi_bas_max_stnd
+        JMPR cc_ULE,L_C6658
+        CMPB RL3,DPP0:c_maf_max_ratio_tqi_bas_max_stnd
+        JMPR cc_NC,L_C6658
+        MOV R12,ratio_tqi_bas_max_stnd_2
+        MOV R13,ratio_tqi_bas_max_stnd_2_inter
+        SHL R13,#08H
+        MOV R14,DPP0:c_crlc_ratio_tqi_bas_max_stnd
+        CALLS 00FH,Interp_U16
+        MOV ratio_tqi_bas_max_stnd_2,R4
+L_C6658:                 ; 0xc6658
+        MOVB RL4,tia
+        CMPB RL4,DPP0:c_tia_ratio_tqi_bas_max_stnd
+        JMPR cc_ULE,L_C6692
+        MOVBZ R12,RL4
+        MOV R13,#DATA16 0012CH
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV R14,R4
+        MOVBZ R4,DPP0:c_tia_ratio_tqi_bas_max_stnd
+        ADD R4,#DATA16 0012CH
+        MOV R5,#00H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R4,R12
+        SHL R12,#08H
+        SHL R13,#08H
+        SHR R4,#08H
+        OR R13,R4
+        CALLS 00FH,Div_U32_U16_Round
+        SHR R4,#01H
+        MOV ratio_tqi_bas_max_stnd_3,R4
+        JMPR cc_UC,L_C669A
+L_C6692:                 ; 0xc6692
+        MOV R4,#DATA16 00080H
+        MOV ratio_tqi_bas_max_stnd_3,R4
+L_C669A:                 ; 0xc669a
+        MOVBZ R12,ratio_tqi_bas_max_stnd_1
+        MOV R13,ratio_tqi_bas_max_stnd_2
+        CALLS 00FH,Mul_Q15_Sat
+        MOV R2,ratio_tqi_bas_max_stnd_3
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R3,R5
+        SHR R4,#07H
+        SHR R5,#07H
+        SHL R3,#09H
+        OR R4,R3
+        MOVB RL6,RL4
+        MOVBZ R12,RL6
+        MOVBZ R13,DPP0:c_ratio_tqi_bas_max_stnd_min
+        MOVBZ R14,DPP0:c_ratio_tqi_bas_max_stnd_max
+        CALLS 00FH,Clamp_U16_v2
+        MOVB ratio_tqi_bas_max_stnd,RL4
+L_C66D2:                 ; 0xc66d2
+        MOV R6,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_Ratio_TQI_Max_Stnd  (@0xc66da) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tq/tqi output signals): Standardized max-torque ratios:
+        ; ratio_tqi_bas_max_stnd(_1/_2/_2_inter) for torque normalization.
+        ; ------------------------------------------------------------
+Calc_Ratio_TQI_Max_Stnd:
+        MOV R4,#DATA16 00080H
+        MOV ratio_tqi_bas_max_stnd_2_inter,R4
+        MOVB ratio_tqi_bas_max_stnd_1,RL4
+        MOVB ratio_tqi_bas_max_stnd,RL4
+        JNB lv_pl.0CH,L_C66F4
+        MOVB RL5,conf_ad_rst
+        JMPR cc_NE,L_C674A
+L_C66F4:                 ; 0xc66f4
+        JB can_fd58.02H,L_C674A
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 005D8H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#02H
+        CALLS 00DH,xor_routine
+        MOV R10,diag_f890
+        MOV R11,diag_f892
+        EXTP R11, #02H
+        MOV R5,[R10+#05DAH]
+        NOP
+        CMP R5,R4
+        JMPR cc_NE,L_C674A
+        EXTP R11, #02H
+        MOV R4,[R10+#05D8H]
+        NOP
+        MOV ratio_tqi_bas_max_stnd_2,R4
+        RETS
+L_C674A:                 ; 0xc674a
+        CALLS 00CH,Set_ratio_tqi_bas_max_stnd_2_750
+        RETS
+
+; ======== Set_ratio_tqi_bas_max_stnd_2_750  (@0xc6750) ========
+Set_ratio_tqi_bas_max_stnd_2_750:
+        MOV R4,#DATA16 08000H
+        MOV ratio_tqi_bas_max_stnd_2,R4
+        RETS
+
+; ======== NVM_Save_s5d8  (@0xc675a) ========
+        ; ------------------------------------------------------------
+        ; NVM adaptation I/O: saves RAM-> validated NVM block (DAT_00f890 base) section; xor_routine checksum.
+        ; Section offset in name.
+        ; ------------------------------------------------------------
+NVM_Save_s5d8:
+        SUB R0,#02H
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 005D8H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0CD70H
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 005D8H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#02H
+        CALLS 00DH,xor_routine
+        MOV [R0],R4
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 005DAH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,R0
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        ADD R0,#02H
+        RETS
+
+; ======== Set_tqi_av_ems_7dc  (@0xc67dc) ========
+Set_tqi_av_ems_7dc:
+        MOV tqi_av_ems,ZEROS
+        RETS
+
+S_C6584 ENDS
+        END

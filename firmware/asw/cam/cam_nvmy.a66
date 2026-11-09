@@ -1,0 +1,322 @@
+; asw/cam/cam_nvmy.a66
+; 0xC186A-0xC1B8C  (802 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_cam_dif_min_req_ad_ext             EQU  09011FH
+c_cam_hys_req_ad_ext                 EQU  09012AH
+c_cam_ini_in                         EQU  09012EH
+c_ctr_cam_req_ad_ext                 EQU  090175H
+c_cam_ref_cor_ivvt_in_1              EQU  0904CAH
+
+PUBLIC  Calc_Cam_Dif, Calc_Cam_Ref_Edges, Restore_Cam_Ad_NVM, Set_lv_cam_ad_avl_nvmy_ivvt
+EXTERN  Add_r12_r13_Return_r4:NEAR, IVVT_Save_CamDif:NEAR, Sat_Sub_S16:NEAR, subtract_r12_r13_negate_if_not_rets_r4:NEAR
+EXTERN  xor_routine:NEAR
+
+S_C186A SECTION CODE AT 0C186AH
+
+; ======== Calc_Cam_Dif  (@0xc186a) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by ivvt/cam output signals + DTC): Cam phase difference: cam_in_1_dif /
+        ; cam_in_2_dif (per cam vs reference DAT_00c2f6), clamped to 0xa0; + cam_in_1_2_dif.
+        ; ------------------------------------------------------------
+Calc_Cam_Dif:
+        MOV [-R0],R9
+        MOV R9,p_ivvt_cam_m
+        MOVB RL4,cam_1_level
+        BMOVN PSW.06H,PSW.03H
+        JB PSW.06H,L_C189E
+        MOVB RL4,[R9+#014H]
+        MOVBZ R12,RL4
+        MOVBZ R13,lv_ivvt_c2f6
+        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        MOVB cam_in_1_dif,RL4
+        CMPB RL4,#DATA16 000A0H
+        JMPR cc_C,L_C18BE
+        MOVB RL5,#DATA16 000A0H
+        MOVB cam_in_1_dif,RL5
+        JMPR cc_UC,L_C18BE
+L_C189E:                 ; 0xc189e
+        MOVB RL4,[R9+#014H]
+        MOVBZ R12,RL4
+        MOVBZ R13,lv_ivvt_c2f6
+        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        MOVB cam_in_2_dif,RL4
+        CMPB RL4,#DATA16 000A0H
+        JMPR cc_C,L_C18BE
+        MOVB RL5,#DATA16 000A0H
+        MOVB cam_in_2_dif,RL5
+L_C18BE:                 ; 0xc18be
+        MOVB RL4,[R9+#014H]
+        MOVBZ R12,RL4
+        MOVBZ R13,lv_ivvt_c2f5
+        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        MOVB cam_in_1_2_dif,RL4
+        CMPB RL4,#DATA16 000A0H
+        JMPR cc_C,L_C18DE
+        MOVB RL5,#DATA16 000A0H
+        MOVB cam_in_1_2_dif,RL5
+L_C18DE:                 ; 0xc18de
+        MOVB RL4,cam_in_1_dif
+        CMPB RL4,DPP0:c_cam_hys_req_ad_ext
+        JMPR cc_NC,L_C1908
+        MOVB RL5,cam_in_2_dif
+        CMPB RL5,DPP0:c_cam_hys_req_ad_ext
+        JMPR cc_NC,L_C1908
+        MOVB RL3,cam_in_1_2_dif
+        CMPB RL3,DPP0:c_cam_dif_min_req_ad_ext
+        JMPR cc_ULE,L_C1908
+        BSET lv_cam_ad_avl_nvmy_ivvt.00H
+        MOVB RL2,DPP0:c_ctr_cam_req_ad_ext
+        MOVB ctr_cam_req_ad_ext,RL2
+        JMPR cc_UC,L_C191E
+L_C1908:                 ; 0xc1908
+        MOVB RL4,ctr_cam_req_ad_ext
+        CMPB RL4,#00H
+        JMPR cc_ULE,L_C1918
+        SUBB RL4,#01H
+        MOVB ctr_cam_req_ad_ext,RL4
+        JMPR cc_UC,L_C191E
+L_C1918:                 ; 0xc1918
+        BCLR lv_cam_ad_avl_nvmy_ivvt.00H
+        MOVB ctr_cam_req_ad_ext,ZEROS
+L_C191E:                 ; 0xc191e
+        MOVB RL4,lv_ivvt_c2f5
+        MOVB lv_ivvt_c2f6,RL4
+        MOVB RL5,[R9+#014H]
+        MOVB lv_ivvt_c2f5,RL5
+        MOV R9,[R0+]
+        RETS
+
+; ======== Set_lv_cam_ad_avl_nvmy_ivvt  (@0xc1932) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Set_lv_cam_ad_avl_nvmy_ivvt:
+        JB lv_cam_ad_avl_nvmy_ivvt.02H,L_C193C
+        JNB lv_dc_rbm.0FH,L_C193C
+        BSET lv_cam_ad_avl_nvmy_ivvt.01H
+L_C193C:                 ; 0xc193c
+        MOVB RL4,#00H
+        BMOV R4.00H,lv_cam_ad_avl_nvmy_ivvt.01H
+        MOVB cam_ad_avl_nvm,RL4
+        BMOV lv_cam_ad_avl_nvmy_ivvt.02H,lv_dc_rbm.0FH
+        RETS
+
+; ======== Restore_Cam_Ad_NVM  (@0xc194c) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by ivvt/cam output signals + DTC): Restore cam adaptation from NVM (f890+0x582,
+        ; xor_routine checksum) -> cam_ad/cam_ref/edge averages.
+        ; ------------------------------------------------------------
+Restore_Cam_Ad_NVM:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        SUB R0,#DATA16 0000EH
+        JNB lv_pl.0CH,L_C1964
+        MOVB RL4,conf_ad_rst
+        JMPA cc_NE,L_C1B16
+L_C1964:                 ; 0xc1964
+        JNB can_fd58.02H,L_C196C
+        JMPA cc_UC,L_C1B16
+L_C196C:                 ; 0xc196c
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 00582H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#DATA16 00026H
+        CALLS 00DH,xor_routine
+        MOV R10,diag_f890
+        MOV R11,diag_f892
+        EXTP R11, #02H
+        MOV R5,[R10+#05A8H]
+        NOP
+        CMP R5,R4
+        JMPA cc_NE,L_C1B16
+        EXTP R11, #02H
+        MOVB RL4,[R10+#05A7H]
+        NOP
+        MOVB cam_ad_avl_nvm,RL4
+        MOVB cam_ad_avl_nvm_z,RL4
+        EXTP R11, #02H
+        MOVB RL5,[R10+#05A7H]
+        NOP
+        CMPB RL5,#00H
+        BMOVN PSW.06H,PSW.03H
+        BMOV lv_cam_ad_avl_nvmy_ivvt.01H,PSW.06H
+        EXTP R11, #02H
+        MOV R4,[R10+#0582H]
+        NOP
+        MOV cam_ref_ivvt_in_1,R4
+        MOV cam_ref_ivvt_in_lst_1,R4
+        MOV cam_ref_nvm,R4
+        EXTP R11, #02H
+        MOV R4,[R10+#0584H]
+        NOP
+        MOV cam_ad_ivvt_in_1,R4
+        MOV cam_ad_nvm,R4
+        ADD R10,#DATA16 00586H
+        MOV R4,R10
+        MOV R5,R11
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R11
+        SHR R5,#02H
+        MOV [R0+#08H],R4
+        MOV [R0+#0AH],R5
+        MOV R2,#DATA16 0F6B0H
+        MOV [R0+#04H],R2
+        MOV R3,#DATA16 0CABAH
+        MOV [R0+#02H],R3
+        MOV R1,#00H
+        MOV [R0],R1
+L_C1A26:                 ; 0xc1a26
+        MOV R4,[R0+#08H]
+        MOV R5,[R0+#0AH]
+        EXTS R5, #01H
+        MOV R2,[R4]
+        MOV R3,[R0+#04H]
+        MOV [R3],R2
+        MOV R4,[R0+#02H]
+        MOV [R4],R2
+        MOV R4,[R0+#08H]
+        MOV R5,[R0+#0AH]
+        ADD R4,#02H
+        ADDC R5,#00H
+        MOV [R0+#08H],R4
+        MOV [R0+#0AH],R5
+        MOV R2,[R0+#04H]
+        ADD R2,#02H
+        MOV [R0+#04H],R2
+        MOV R3,[R0+#02H]
+        ADD R3,#02H
+        MOV [R0+#02H],R3
+        MOV R1,[R0]
+        ADD R1,#01H
+        MOV [R0],R1
+        CMP R1,#DATA16 00010H
+        JMPR cc_C,L_C1A26
+        MOV R4,diag_f890
+        MOV R5,diag_f892
+        EXTP R5, #02H
+        MOVB RL3,[R4+#05A6H]
+        NOP
+        MOVB lv_cam_ad_save_in_1,RL3
+        MOVB cam_ad_save_nvm,RL3
+        MOVBZ R12,g_f6d1
+        MOVB RL4,g_f6d5
+        MOVBS R4,RL4
+        MOV R13,#DATA16 000A0H
+        SUB R13,R4
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV R7,R4
+        MOV R12,R7
+        MOV R13,DPP0:c_cam_ref_cor_ivvt_in_1
+        ADD R13,#DATA16 07FFFH
+        CALLS 00FH,Sat_Sub_S16
+        MOV R8,R4
+        MOV R9,R8
+        ADD R9,#DATA16 08000H
+        SHR R9,#04H
+        MOV R4,R8
+        CMP R4,#00H
+        JMPR cc_SGE,L_C1AC4
+        MOVB cam_rise_av,ZEROS
+        JMPR cc_UC,L_C1ACA
+L_C1AC4:                 ; 0xc1ac4
+        MOV R4,R9
+        MOVB cam_rise_av,RL4
+L_C1ACA:                 ; 0xc1aca
+        MOVBZ R12,g_f6d1
+        MOV R13,#DATA16 00460H
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV [R0+#0CH],R4
+        MOV R12,R4
+        MOV R13,DPP0:c_cam_ref_cor_ivvt_in_1
+        ADD R13,#DATA16 07FFFH
+        CALLS 00FH,Sat_Sub_S16
+        MOV [R0+#06H],R4
+        MOV R6,R4
+        ADD R6,#DATA16 08000H
+        SHR R6,#04H
+        CMP R4,#00H
+        JMPR cc_SGE,L_C1AFE
+        MOVB cam_fall_av,ZEROS
+        JMPR cc_UC,L_C1B04
+L_C1AFE:                 ; 0xc1afe
+        MOV R4,R6
+        MOVB cam_fall_av,RL4
+L_C1B04:                 ; 0xc1b04
+        MOVB RL4,cam_fall_av
+        MOVB cam_fall_av_z,RL4
+        MOVB RL5,cam_rise_av
+        MOVB cam_rise_av_z,RL5
+        JMPR cc_UC,L_C1B1A
+L_C1B16:                 ; 0xc1b16
+        CALLS 00CH,Calc_Cam_Ref_Edges
+L_C1B1A:                 ; 0xc1b1a
+        ADD R0,#DATA16 0000EH
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_Cam_Ref_Edges  (@0xc1b28) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by ivvt/cam output signals + DTC): Runtime cam rising/falling edge averaging:
+        ; cam_rise_av / cam_fall_av / cam_ref_ivvt_in_1 / cam_ad_ivvt_in_1.
+        ; ------------------------------------------------------------
+Calc_Cam_Ref_Edges:
+        MOV [-R0],R6
+        MOVB RL4,#DATA16 00072H
+        MOVB cam_fall_av,RL4
+        MOVB RL5,#DATA16 00036H
+        MOVB cam_rise_av,RL5
+        BCLR lv_cam_ad_avl_nvmy_ivvt.01H
+        MOVB cam_ad_avl_nvm,ZEROS
+        MOVB cam_ad_avl_nvm_z,ZEROS
+        MOVB lv_cam_ad_save_in_1,ZEROS
+        MOVB cam_ad_save_nvm,ZEROS
+        MOVBZ R4,DPP0:c_cam_ini_in
+        SHL R4,#08H
+        MOV cam_ref_ivvt_in_1,R4
+        MOV cam_ref_ivvt_in_lst_1,R4
+        MOV cam_ref_nvm,R4
+        MOV cam_ad_ivvt_in_1,ZEROS
+        MOV cam_ad_nvm,ZEROS
+        MOVB RL6,#00H
+L_C1B68:                 ; 0xc1b68
+        MOV R4,#DATA16 08000H
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        MOV [R5+#0F6B0H],R4
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        MOV [R5+#0CABAH],R4
+        ADDB RL6,#01H
+        CMPB RL6,#DATA16 00010H
+        JMPR cc_C,L_C1B68
+        CALLS 00CH,IVVT_Save_CamDif
+        MOV R6,[R0+]
+        RETS
+
+S_C186A ENDS
+        END

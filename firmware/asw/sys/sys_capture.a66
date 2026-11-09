@@ -1,0 +1,107 @@
+; asw/sys/sys_capture.a66
+; 0xA3660-0xA3750  (240 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_crk_vld_tooth                      EQU  09015BH
+lv_crank_906e2                       EQU  0906E2H
+
+PUBLIC  EngCrank_ArmTimingCapture, EngCrank_StopTimingCapture
+
+S_A3660 SECTION CODE AT 0A3660H
+
+; ======== EngCrank_ArmTimingCapture  (@0xa3660) ========
+        ; Engine START/RESYNC - arms crank/cam angle-timing capture. Clears
+        ; stop_eng/run_eng/syn_eng/crk_tooth_det/cam_1_edge_ctr; arms crank-input capture CC24 (ptr
+        ; &DAT_091001, CCM3/CCM6), angle-clock T5 (T5CON=0xa003) + T6 (T6CON=0x85), and PEC channel 7
+        ; (SRCP7=0xfe9e/DSTP7=0xfab4/PECC7=0x212) to DMA crank samples; DAT_00f5d9=c_crk_vld_tooth-1. Returns
+        ; CONCAT11(0xfa, crk_err_lih_req). Restart-group counterpart of EngCrank_StopTimingCapture.
+EngCrank_ArmTimingCapture:
+        MOVB stop_eng,ZEROS
+        MOVB first_vld_tooth,ZEROS
+        MOVB run_eng,ZEROS
+        MOVB syn_eng,ZEROS
+        MOVB crk_tooth_det,ZEROS
+        BCLR ccp_engine_flags.05H
+        MOVB crank_tim_6,ZEROS
+        MOVB crank_tim_12,ZEROS
+        MOV cam_1_edge_ctr,ZEROS
+        BCLR lv_err_com_resp_imob.0FH
+        BCLR lv_err_com_resp_imob.0DH
+        BCLR ccp_engine_flags.01H
+        BCLR ccp_engine_flags.04H
+        BSET ccp_engine_flags.03H
+        MOVB cam_err_lih,ZEROS
+        MOV R4,#03H
+        MOV crank_tim_28,R4
+        MOV R4,DPP0:lv_crank_906e2
+        MOV crank_tim_21,R4
+        MOVB RL4,DPP0:c_crk_vld_tooth
+        SUBB RL4,#01H
+        MOVB crank_tim_8,RL4
+        MOVB crank_tim_7,ZEROS
+        TRAP #060H
+        MOV R4,#DATA16 0FE9EH
+        MOV SRCP7_FCFC,R4
+        MOV R4,#DATA16 0FAB4H
+        MOV DSTP7_FCFE,R4
+        MOV PECC7,#DATA16 00212H
+        MOVB RL4,crk_err_lih_req
+        JMPR cc_NE,L_A36DA
+        BFLDH CCM3_FF58,#0F0H,#0A0H
+        MOV CC24,#DATA16 01001H
+        BFLDL 0FF26H,#0FH,#05H
+        EXTR #01H
+        BFLDL 0F170H,#0FFH,#072H
+L_A36DA:                 ; 0xa36da
+        MOV T5CON,#DATA16 0A003H
+        MOV T5,#DATA16 00000H
+        BFLDL 0FF66H,#0FFH,#076H
+        MOV T6CON,#DATA16 00085H
+        BFLDL 0FF68H,#0FFH,#071H
+        BFLDH CCM3_FF58,#0FH,#0BH
+        BFLDL 0FF94H,#0FFH,#06CH
+        BFLDL 0FF50H,#04FH,#0AH
+        MOV T0,#DATA16 01000H
+        BFLDL 0FF20H,#04FH,#0AH
+        EXTR #01H
+        MOV T7,#DATA16 01000H
+        BSET T78CON.06H
+        RETS
+
+; ======== EngCrank_StopTimingCapture  (@0xa370c) ========
+        ; Engine STOP - halts crank/cam angle-timing capture. stop_eng=0xff, first_vld_tooth=0; stops
+        ; angle-clock timers T5/T6 and T0/T1/T7/T8 (CON & ~0x40), disables crank-input CAPCOM CC24/CC31 +
+        ; CRIC/XP2IC; invalidates seg_t_mes_bas and period vars (DAT_00faa6/faa8/faf0=0xffff). Member of the
+        ; engine-STOP trio (with EngInj_DisableOutputs + EngIgn_DisableOutputs); counterpart of
+        ; EngCrank_ArmTimingCapture. Invoked by ProgSession_StateMachine_VbGated to make the engine quiet
+        ; during reprogramming.
+EngCrank_StopTimingCapture:
+        EXTR #01H
+        BFLDL 0F170H,#0FFH,#00H
+        BFLDL 0FF68H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F194H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F196H,#0FFH,#00H
+        BFLDL 0FF66H,#0FFH,#00H
+        BFLDL 0FF6AH,#0FFH,#00H
+        BCLR T6CON.06H
+        BCLR T5CON.06H
+        BCLR T01CON.06H
+        BCLR T78CON.06H
+        MOVB first_vld_tooth,ZEROS
+        MOVB stop_eng,ONES
+        BCLR ccp_engine_flags.06H
+        MOV crank_tim_16,ONES
+        MOV crank_tim_17,ONES
+        BCLR lv_err_com_resp_imob.0EH
+        MOV crank_tim_27,ONES
+        MOV seg_t_mes_bas,ONES
+        RETS
+
+S_A3660 ENDS
+        END

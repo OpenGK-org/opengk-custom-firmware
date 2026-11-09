@@ -1,0 +1,205 @@
+; asw/ivvt/ivvt_ocv.a66
+; 0xB0000-0xB01BA  (442 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_cam_dif_min_dly_ivvt               EQU  09011EH
+c_cam_hys_ad_ivvt                    EQU  090124H
+ldpm_n_32_2_ivvt                  EQU  0980BAH
+ldpm_toil_1_ivvt                  EQU  0980C3H
+ip_dly_adc_ivvt_in                   EQU  0990BCH
+ip_dly_rtd_ivvt_in                   EQU  0990FCH
+
+PUBLIC  Calc_IVVT_Delay, IVVT_MesStep_d, IVVT_MesStep_e, IVVT_OCV_Meas_1
+EXTERN  Abs_S16_Simple:NEAR, Get_IP_Byte_3D_Table:NEAR, Get_IP_Byte_X_Axis:NEAR, Get_IP_Byte_Y_Axis:NEAR
+EXTERN  Sat_Add_U8:NEAR, Sat_HiByte_ff:NEAR, sub_r12_13_ret_r4:NEAR
+
+S_B0000 SECTION CODE AT 0B0000H
+
+; ======== IVVT_MesStep_d  (@0xb0000) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IVVT_MesStep_d:
+        MOV R12,p_ivvt_cam_m
+        MOVB RL4,#00H
+        MOVB [R12+#0A8H],RL4
+        MOVB [R12+#0A7H],RL4
+        RETS
+
+; ======== IVVT_MesStep_e  (@0xb0010) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IVVT_MesStep_e:
+        MOV R12,p_ivvt_cam_m
+        MOVB RL4,#00H
+        MOVB [R12+#0A8H],RL4
+        MOVB [R12+#0A7H],RL4
+        RETS
+
+; ======== Calc_IVVT_Delay  (@0xb0020) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): IVVT Delay (dly_adc/rtd_ivvt)
+        ; ------------------------------------------------------------
+Calc_IVVT_Delay:
+        MOV R4,state_ivvt
+        CMP R4,#02H
+        JMPR cc_NE,L_B006E
+        MOV R12,#DATA16 POF ldpm_n_32_2_ivvt
+        MOV R13,#DATA16 PAG ldpm_n_32_2_ivvt
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_toil_1_ivvt
+        MOV R13,#DATA16 PAG ldpm_toil_1_ivvt
+        MOVBZ R14,toil
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_B006E
+        MOV R12,#DATA16 POF ip_dly_adc_ivvt_in
+        MOV R13,#DATA16 PAG ip_dly_adc_ivvt_in
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB ivvt_in_struct_dly_ivvt_dly_adc_ivvt,RL4
+        MOV R12,#DATA16 POF ip_dly_rtd_ivvt_in
+        MOV R13,#DATA16 PAG ip_dly_rtd_ivvt_in
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB ivvt_in_struct_dly_ivvt_dly_rtd_ivvt,RL4
+L_B006E:                 ; 0xb006e
+        RETS
+
+; ======== IVVT_OCV_Meas_1  (@0xb0070) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IVVT_OCV_Meas_1:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R7,R12
+        MOV R8,p_ivvt_cam_m
+        MOV R9,p_ivvt_cam_s
+        MOVB RL4,[R8+#0A8H]
+        MOVB RL5,state_ivvt_tran
+        CMPB RL4,RL5
+        JMPR cc_EQ,L_B00AA
+        MOV R4,state_ivvt_tran
+        CMP R4,#DATA16 00008H
+        JMPR cc_EQ,L_B00A4
+        CMP R4,#05H
+        JMPR cc_EQ,L_B00A4
+        CMP R4,#07H
+        JMPR cc_EQ,L_B00A4
+        CMP R4,#06H
+        JMPR cc_NE,L_B00AA
+L_B00A4:                 ; 0xb00a4
+        MOVB RL4,#00H
+        MOVB [R8+#0A7H],RL4
+L_B00AA:                 ; 0xb00aa
+        MOVB RL4,state_ivvt_tran
+        MOVB [R8+#0A8H],RL4
+        MOV R4,state_ivvt
+        CMP R4,#02H
+        JMPA cc_NE,L_B01B0
+        MOVB RL4,[R8+#0A7H]
+        CMPB RL4,#02H
+        JMPR cc_NE,L_B0130
+        MOV R4,[R8+#034H]
+        CMP R4,#03H
+        JMPR cc_NE,L_B0130
+        CMP R9,#DATA16 0CBCAH
+        JMPR cc_NE,L_B00D6
+        MOVB RL6,[R8+#065H]
+L_B00D6:                 ; 0xb00d6
+        MOV R4,[R7]
+        MOVB RL5,[R4]
+        MOVBZ R12,RL5
+        MOVBZ R13,DPP0:c_cam_hys_ad_ivvt
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB RL5,[R8+#014H]
+        CMPB RL5,RL4
+        JMPR cc_UGT,L_B00F0
+        CMPB RL6,#00H
+        JMPR cc_NE,L_B0118
+L_B00F0:                 ; 0xb00f0
+        MOV R4,[R7]
+        MOVB RL5,[R4]
+        MOVBZ R12,RL5
+        MOV R4,[R7+#02H]
+        MOVB RL5,[R4]
+        MOVBZ R13,RL5
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVBZ R12,RL4
+        MOVBZ R13,DPP0:c_cam_hys_ad_ivvt
+        CALLS 00FH,Sat_Add_U8
+        MOVB RL5,[R8+#014H]
+        CMPB RL5,RL4
+        JMPR cc_C,L_B01A8
+        CMPB RL6,#00H
+        JMPR cc_NE,L_B01A8
+L_B0118:                 ; 0xb0118
+        MOVB RL4,[R8+#014H]
+        MOVB [R8+#0A6H],RL4
+        MOVB RL4,#01H
+        MOVB [R8+#0A9H],RL4
+        MOV R4,t_dly_mes_ivvt
+        MOV [R8+#0AAH],R4
+        JMPR cc_UC,L_B01A8
+L_B0130:                 ; 0xb0130
+        MOVB RL4,[R8+#0A9H]
+        JMPR cc_EQ,L_B01A8
+        MOVB RL4,[R8+#0A7H]
+        CMPB RL4,#03H
+        JMPR cc_NE,L_B01A2
+        MOV R4,[R8+#034H]
+        CMP R4,#03H
+        JMPR cc_NE,L_B01A2
+        MOVB RL4,[R8+#064H]
+        JMPR cc_NE,L_B01A2
+        MOVB RL4,[R8+#066H]
+        JMPR cc_NE,L_B01A2
+        MOVB RL4,[R8+#014H]
+        MOVBZ R12,RL4
+        MOVB RL4,[R8+#0A6H]
+        MOVBZ R4,RL4
+        SUB R12,R4
+        CALLS 00DH,Abs_S16_Simple
+        MOVBZ R5,DPP0:c_cam_dif_min_dly_ivvt
+        CMP R4,R5
+        JMPR cc_SLT,L_B01A8
+        MOVB RL4,#00H
+        MOVB [R8+#0A9H],RL4
+        MOV R4,[R8+#036H]
+        CMP R4,#01H
+        JMPR cc_NE,L_B018E
+        MOV R4,[R8+#0AAH]
+        MOV R12,t_dly_mes_ivvt
+        SUB R12,R4
+        CALLS 00FH,Sat_HiByte_ff
+        MOVB [R8+#0A5H],RL4
+        JMPR cc_UC,L_B01A8
+L_B018E:                 ; 0xb018e
+        MOV R4,[R8+#0AAH]
+        MOV R12,t_dly_mes_ivvt
+        SUB R12,R4
+        CALLS 00FH,Sat_HiByte_ff
+        MOVB [R8+#0A4H],RL4
+        JMPR cc_UC,L_B01A8
+L_B01A2:                 ; 0xb01a2
+        MOVB RL4,#00H
+        MOVB [R8+#0A9H],RL4
+L_B01A8:                 ; 0xb01a8
+        MOV R4,[R8+#034H]
+        MOVB [R8+#0A7H],RL4
+L_B01B0:                 ; 0xb01b0
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_B0000 ENDS
+        END

@@ -1,0 +1,115 @@
+; asw/comm/comm_seed.a66
+; 0xA5822-0xA58DC  (186 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  CCP_GetSeed_0x12, CCP_Unlock_0x13
+EXTERN  Move_xFF_items__from_PTR_R12_to_PTR_R13:NEAR
+
+S_A5822 SECTION CODE AT 0A5822H
+
+; ======== CCP_GetSeed_0x12  (@0xa5822) ========
+        ; CCP GET_SEED (0x12) handler. Dispatched from CCP_Svc_Conn_Security when connected
+        ; (ccp_security_state==0x20). Grabs the response CAN tx message object (ptr @ cmdBuf[2]->+4), frames a
+        ; DTO (ctrl word 0xFAFF -> fill -> 0xE7FF) and copies 8 bytes of the CRO payload (cmdBuf[5..12]) into
+        ; the DTO data area (obj+7); returns status 0xE700. NB: NO seed is generated/randomised and nothing is
+        ; stored as an expected value - the 8 "seed" bytes are taken straight out of the request buffer. See
+        ; CCP_Unlock_0x13.
+CCP_GetSeed_0x12:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV R8,R12
+        MOV R4,[R8+#02H]
+        MOV R9,[R4+#04H]
+        MOV R4,#DATA16 0FAFFH
+        MOV [R9],R4
+        MOV R12,R9
+        ADD R12,#07H
+        MOV R13,R8
+        ADD R13,#05H
+        MOV R14,#08H
+        CALLS 00AH,Move_xFF_items__from_PTR_R12_to_PTR_R13
+        MOV R4,#DATA16 0E7FFH
+        MOV [R9],R4
+        MOVB RL4,#00H
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== CCP_Unlock_0x13  (@0xa5852) ========
+        ; CCP UNLOCK / SEND_KEY (0x13) handler. Dispatched from CCP_Svc_Conn_Security when connected. Masks
+        ; CC11 CAN-obj interrupt, then inserts the supplied key word (cmdBuf[6..7]) into a singly-linked
+        ; privilege/record list (head ptr @ cmdBuf[2]->+8): if the list is empty it stores the key as the
+        ; first node, frames the response DTO (0xFAFF->0xE7FF, 8 data bytes, +2 optional words when
+        ; node[2]==1); otherwise walks the list and appends the key. Re-enables CC11. NB: the key is NEVER
+        ; compared against an expected value derived from the seed - any key is accepted and simply
+        ; registered. Combined with CCP_GetSeed_0x12 (which echoes request bytes), the CCP seed/key "security"
+        ; is effectively a no-op.
+CCP_Unlock_0x13:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV R7,R12
+        EXTR #01H
+        BCLR XP1IC.06H
+        MOV R4,[R7+#02H]
+        MOV R9,[R4+#08H]
+        MOV R4,[R9]
+        JMPR cc_EQ,L_A588A
+        JMPR cc_UC,L_A587A
+L_A586C:                 ; 0xa586c
+        MOV R4,[R7+#06H]
+        MOV R5,[R9]
+        CMP R5,R4
+        JMPR cc_EQ,L_A587E
+        MOV R4,[R9]
+        MOV R9,R4
+L_A587A:                 ; 0xa587a
+        MOV R4,[R9]
+        JMPR cc_NE,L_A586C
+L_A587E:                 ; 0xa587e
+        MOV R4,[R7+#06H]
+        MOV [R9],R4
+        EXTR #01H
+        BSET CC11IC.06H
+        JMPR cc_UC,L_A58D2
+L_A588A:                 ; 0xa588a
+        MOV R4,[R7+#06H]
+        MOV [R9],R4
+        EXTR #01H
+        BSET CC11IC.06H
+        MOV R4,[R7+#02H]
+        MOV R8,[R4+#04H]
+        MOV R4,#DATA16 0FAFFH
+        MOV [R8],R4
+        MOV R9,[R7+#06H]
+        MOV R12,R8
+        ADD R12,#07H
+        MOV R13,R9
+        ADD R13,#03H
+        MOV R14,#08H
+        CALLS 00AH,Move_xFF_items__from_PTR_R12_to_PTR_R13
+        MOVB RL4,[R9+#02H]
+        CMPB RL4,#01H
+        JMPR cc_NE,L_A58CC
+        MOV R4,[R9+#0CH]
+        MOV [R8+#02H],R4
+        MOV R4,[R9+#0EH]
+        MOV [R8+#04H],R4
+L_A58CC:                 ; 0xa58cc
+        MOV R4,#DATA16 0E7FFH
+        MOV [R8],R4
+L_A58D2:                 ; 0xa58d2
+        MOVB RL4,#00H
+        MOV R7,[R0+]
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa58d6 [dpp]  W:{-}  R:{-}
+        ; ------------------------------------------------------------
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_A5822 ENDS
+        END

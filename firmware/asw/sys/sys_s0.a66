@@ -1,0 +1,1727 @@
+; asw/sys/sys_s0.a66
+; 0xA6E34-0xA8080  (4684 bytes, 7 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  CC14INT_handler, CallVia_368, Reset_S0EIC_e4e, Reset_S0TBIC_e40, Reset_S0TIC_e34, Set_Output_CC24
+PUBLIC  Set_lv_err_com_resp_imob_a800
+
+S_A6E34 SECTION CODE AT 0A6E34H
+
+; ======== Reset_S0TIC_e34  (@0xa6e34) ========
+Reset_S0TIC_e34:
+        BCLR S0TIC.07H
+        BOR can_sched_flags1.0AH,can_sched_flags0.0AH
+        BMOV can_sched_flags0.0AH,can_sched_flags2.0AH
+        RETI
+
+; ======== Reset_S0TBIC_e40  (@0xa6e40) ========
+Reset_S0TBIC_e40:
+        EXTR #01H
+        BCLR S0TBIC.07H
+        BOR can_sched_flags1.0BH,can_sched_flags0.0BH
+        BMOV can_sched_flags0.0BH,can_sched_flags2.0BH
+        RETI
+
+; ======== Reset_S0EIC_e4e  (@0xa6e4e) ========
+Reset_S0EIC_e4e:
+        BCLR S0EIC.07H
+        BOR can_sched_flags1.08H,can_sched_flags0.08H
+        BMOV can_sched_flags0.08H,can_sched_flags2.08H
+        RETI
+
+; ======== CC14INT_handler  (@0xa6e5a) ========
+CC14INT_handler:
+        SCXT CP,#DATA16 0FBE4H
+        NOP
+        CMPB ZEROS,crank_tim_6
+        JMPA cc_EQ,L_A6FD6
+        SCXT MDC,#DATA16 00000H
+        PUSH MDH
+        PUSH MDL
+        MOVBZ R0,cam_1_level
+        BCMP R0.00H,P2.0EH
+        JMPA cc_NN,L_A6FCC
+        SUB cam_1_edge_ctr,ONES
+        JB P2.0EH,L_A6E8A
+        MOVB cam_1_level,ZEROS
+        JMPR cc_UC,L_A6E8E
+L_A6E8A:                 ; 0xa6e8a
+        MOVB cam_1_level,ONES
+L_A6E8E:                 ; 0xa6e8e
+        BCLR T6CON.06H
+        MOVB RL2,g_fae9
+        MOVB RH2,crank_tim_26
+        MOV R0,CC14_FE9C
+        JMPR cc_N,L_A6EAC
+        ATOMIC #02H
+        MOV R1,ign_cc_mode
+        JNB XP3IC.07H,L_A6EC4
+        ADD R1,#01H
+        JMPR cc_UC,L_A6EC4
+L_A6EAC:                 ; 0xa6eac
+        MOV R1,ign_cc_mode
+        CMP ONES,T1_FE52
+        JMPR cc_NN,L_A6EC4
+        ATOMIC #02H
+        JNB T1IC.07H,L_A6EBE
+        JMPR cc_UC,L_A6EC4
+L_A6EBE:                 ; 0xa6ebe
+        MOV R1,ign_cc_mode
+        SUB R1,#01H
+L_A6EC4:                 ; 0xa6ec4
+        MOV 0FE0EH,R0
+        SUB MDL,crank_tim_14
+        MOV MDH_FE0C,R1
+        SUBC MDH,crank_tim_15
+        MOV crank_tim_14,R0
+        MOV crank_tim_15,R1
+        MOVBZ R0,cam_1_level
+        JMPR cc_EQ,L_A6EEC
+        MOVBZ R0,cam_rise_av_z
+        SUBB RL0,cam_fall_av_z
+        JMPR cc_UC,L_A6EF4
+L_A6EEC:                 ; 0xa6eec
+        MOVBZ R0,cam_fall_av_z
+        SUBB RL0,cam_rise_av_z
+L_A6EF4:                 ; 0xa6ef4
+        JMPR cc_NN,L_A6EFA
+        ADDB RL0,#DATA16 00078H
+L_A6EFA:                 ; 0xa6efa
+        DIVLU R0
+        MOV crank_tim_20,MDL
+        NEGB RL0
+        ADDB RL0,#DATA16 00078H
+        MOVB crank_tim_11,RL0
+        MOV R0,#DATA16 0001EH
+        MOV R1,0FE0EH
+        MULU R0,R1
+        MOV crank_tim_25,MDL
+        MOV crank_tim_26,MDH
+        MOV R0,crank_tim_20
+        CMP R0,#DATA16 00016H
+        JMPR cc_C,L_A6F88
+        CMP R0,#DATA16 0186AH
+        JMPR cc_UGT,L_A6F88
+        MOV MDL,crank_tim_25
+        MOV MDH,crank_tim_26
+        DIVLU R2
+        JMPR cc_NV,L_A6F3C
+        MOV MDL,0FF1EH
+L_A6F3C:                 ; 0xa6f3c
+        MOV R0,0FE0EH
+        CMP R0,#DATA16 00800H
+        JMPR cc_UGT,L_A6F88
+        CMP R0,#DATA16 00020H
+        JMPR cc_C,L_A6F88
+        MOVBZ R0,PECC4_FEC8
+        JMPR cc_NE,L_A6F62
+        MOV CAPREL,crank_tim_20
+        MOVBZ R2,crank_tim_11
+        OR R2,#00H
+        MOV PECC4_FEC8,R2
+        JMPR cc_UC,L_A6F78
+L_A6F62:                 ; 0xa6f62
+        MOV CAPREL,#DATA16 00016H
+        BSET ccp_engine_flags.05H
+        MOV R1,#DATA16 00016H
+        MULU R0,R1
+        MOVBZ R0,crank_tim_11
+        DIVLU R0
+        SUB crank_tim_20,MDL
+L_A6F78:                 ; 0xa6f78
+        MOV R0,crank_tim_20
+        MOV crank_tim_19,R0
+        MOV T6,CAPREL_FE4A
+        BSET T6CON.06H
+        JMPR cc_UC,L_A6FCC
+L_A6F88:                 ; 0xa6f88
+        EXTR #01H
+        BFLDL 0F170H,#0FFH,#00H
+        BFLDL 0FF68H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F194H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F196H,#0FFH,#00H
+        BFLDL 0FF66H,#0FFH,#00H
+        BFLDL 0FF6AH,#0FFH,#00H
+        BCLR T6CON.06H
+        BCLR T5CON.06H
+        BCLR T01CON.06H
+        BCLR T78CON.06H
+        MOVB first_vld_tooth,ZEROS
+        MOVB stop_eng,ONES
+        BCLR ccp_engine_flags.06H
+        MOV crank_tim_16,ONES
+        MOV crank_tim_17,ONES
+        BCLR lv_err_com_resp_imob.0EH
+        MOV crank_tim_27,ONES
+        MOV seg_t_mes_bas,ONES
+        JMPR cc_UC,L_A6FCC
+L_A6FCC:                 ; 0xa6fcc
+        POP MDL
+        POP MDH
+        POP MDC
+        JMPA cc_UC,L_A7364
+L_A6FD6:                 ; 0xa6fd6
+        CMPB ZEROS,syn_eng
+        JMPR cc_EQ,L_A709C
+        SUB cam_1_edge_ctr,ONES
+        JB P2.0EH,L_A6FEA
+        MOVB cam_1_level,ZEROS
+        JMPR cc_UC,L_A6FEE
+L_A6FEA:                 ; 0xa6fea
+        MOVB cam_1_level,ONES
+L_A6FEE:                 ; 0xa6fee
+        SCXT MDC,#DATA16 00000H
+        PUSH MDH
+        PUSH MDL
+        MOV R0,CC14_FE9C
+        JMPR cc_N,L_A700A
+        ATOMIC #02H
+        MOV R1,ign_cc_mode
+        JNB XP3IC.07H,L_A7022
+        ADD R1,#01H
+        JMPR cc_UC,L_A7022
+L_A700A:                 ; 0xa700a
+        MOV R1,ign_cc_mode
+        CMP ONES,T1_FE52
+        JMPR cc_NN,L_A7022
+        ATOMIC #02H
+        JNB T1IC.07H,L_A701C
+        JMPR cc_UC,L_A7022
+L_A701C:                 ; 0xa701c
+        MOV R1,ign_cc_mode
+        SUB R1,#01H
+L_A7022:                 ; 0xa7022
+        MOV crank_tim_14,R0
+        MOV crank_tim_15,R1
+        MOV R1,DSTP7_FCFE
+        MOV R2,[R1+#0FFFCH]
+        MOV R1,[R1+#0FFFEH]
+        SUB R1,R2
+        CMP R1,#DATA16 00016H
+        JMPR cc_NC,L_A7044
+        MOV R1,crank_tim_19
+        JMPR cc_UC,L_A7048
+L_A7044:                 ; 0xa7044
+        MOV crank_tim_19,R1
+L_A7048:                 ; 0xa7048
+        MOV R2,T0_FE50
+        SUB R0,CC15_FE9E
+        JMPR cc_NN,L_A705E
+        ADD R0,R1
+        JMPR cc_NN,L_A7058
+        MOV R0,#00H
+L_A7058:                 ; 0xa7058
+        MOV R2,T0_FE50
+        SUB R2,#01H
+L_A705E:                 ; 0xa705e
+        CMP R2,#00H
+        JMPR cc_SGT,L_A7066
+        ADD R2,#DATA16 00078H
+L_A7066:                 ; 0xa7066
+        SHL R2,#04H
+        MOV MDH_FE0C,R0
+        MOV MDL,#DATA16 00000H
+        DIVLU R1
+        JB PSW.02H,L_A7086
+        MOV R0,0FE0EH
+        SUB R1,MDH_FE0C
+        SUB R1,MDH_FE0C
+        ADDC R0,#00H
+        JMPR cc_UC,L_A708A
+L_A7086:                 ; 0xa7086
+        MOV R0,0FF1EH
+L_A708A:                 ; 0xa708a
+        SHR R0,#0CH
+        OR R0,R2
+        MOV cam_1_psn_av,R0
+        POP MDL
+        POP MDH
+        POP MDC
+        JMPA cc_UC,L_A7364
+L_A709C:                 ; 0xa709c
+        MOVB RL0,crank_tim_12
+        JMPR cc_NE,L_A70F4
+        SUB cam_1_edge_ctr,ONES
+        JB P2.0EH,L_A70B0
+        MOVB cam_1_level,ZEROS
+        JMPR cc_UC,L_A70B4
+L_A70B0:                 ; 0xa70b0
+        MOVB cam_1_level,ONES
+L_A70B4:                 ; 0xa70b4
+        BSET ccp_engine_flags.02H
+        BSET T5CON.06H
+        MOV R0,CC14_FE9C
+        JMPR cc_N,L_A70CC
+        ATOMIC #02H
+        MOV R1,ign_cc_mode
+        JNB XP3IC.07H,L_A70E4
+        ADD R1,#01H
+        JMPR cc_UC,L_A70E4
+L_A70CC:                 ; 0xa70cc
+        MOV R1,ign_cc_mode
+        CMP ONES,T1_FE52
+        JMPR cc_NN,L_A70E4
+        ATOMIC #02H
+        JNB T1IC.07H,L_A70DE
+        JMPR cc_UC,L_A70E4
+L_A70DE:                 ; 0xa70de
+        MOV R1,ign_cc_mode
+        SUB R1,#01H
+L_A70E4:                 ; 0xa70e4
+        MOV crank_tim_14,R0
+        MOV crank_tim_15,R1
+        SUBB crank_tim_12,ONES
+        JMPA cc_UC,L_A7364
+L_A70F4:                 ; 0xa70f4
+        SCXT MDC,#DATA16 00000H
+        PUSH MDH
+        PUSH MDL
+        MOVBZ R0,cam_1_level
+        BCMP R0.00H,P2.0EH
+        JMPA cc_NN,L_A735E
+        SUB cam_1_edge_ctr,ONES
+        JB P2.0EH,L_A7116
+        MOVB cam_1_level,ZEROS
+        JMPR cc_UC,L_A711A
+L_A7116:                 ; 0xa7116
+        MOVB cam_1_level,ONES
+L_A711A:                 ; 0xa711a
+        MOVB RL2,g_fae9
+        MOVB RH2,crank_tim_26
+        MOV R0,CC14_FE9C
+        JMPR cc_N,L_A7136
+        ATOMIC #02H
+        MOV R1,ign_cc_mode
+        JNB XP3IC.07H,L_A714E
+        ADD R1,#01H
+        JMPR cc_UC,L_A714E
+L_A7136:                 ; 0xa7136
+        MOV R1,ign_cc_mode
+        CMP ONES,T1_FE52
+        JMPR cc_NN,L_A714E
+        ATOMIC #02H
+        JNB T1IC.07H,L_A7148
+        JMPR cc_UC,L_A714E
+L_A7148:                 ; 0xa7148
+        MOV R1,ign_cc_mode
+        SUB R1,#01H
+L_A714E:                 ; 0xa714e
+        MOV 0FE0EH,R0
+        SUB MDL,crank_tim_14
+        MOV MDH_FE0C,R1
+        SUBC MDH,crank_tim_15
+        MOV crank_tim_14,R0
+        MOV crank_tim_15,R1
+        MOVBZ R0,cam_1_level
+        JMPR cc_EQ,L_A7176
+        MOVBZ R0,cam_rise_av_z
+        SUBB RL0,cam_fall_av_z
+        JMPR cc_UC,L_A717E
+L_A7176:                 ; 0xa7176
+        MOVBZ R0,cam_fall_av_z
+        SUBB RL0,cam_rise_av_z
+L_A717E:                 ; 0xa717e
+        JMPR cc_NN,L_A7184
+        ADDB RL0,#DATA16 00078H
+L_A7184:                 ; 0xa7184
+        DIVLU R0
+        MOV crank_tim_20,MDL
+        NEGB RL0
+        ADDB RL0,#DATA16 00078H
+        MOVB crank_tim_11,RL0
+        MOV R0,#DATA16 0001EH
+        MOV R1,0FE0EH
+        MULU R0,R1
+        MOV crank_tim_25,MDL
+        MOV crank_tim_26,MDH
+        MOV R0,crank_tim_20
+        CMP R0,#DATA16 00016H
+        JMPA cc_C,L_A731A
+        CMP R0,#DATA16 0186AH
+        JMPA cc_UGT,L_A731A
+        MOVB RL0,crank_tim_12
+        CMPB RL0,#01H
+        JMPR cc_NE,L_A71C8
+        MOV R0,#DATA16 00100H
+        JMPR cc_UC,L_A71DC
+L_A71C8:                 ; 0xa71c8
+        MOV MDL,crank_tim_25
+        MOV MDH,crank_tim_26
+        DIVLU R2
+        JMPR cc_NV,L_A71D8
+        MOV MDL,0FF1EH
+L_A71D8:                 ; 0xa71d8
+        MOV R0,0FE0EH
+L_A71DC:                 ; 0xa71dc
+        CMP R0,#DATA16 00400H
+        JMPA cc_UGT,L_A731A
+        CMP R0,#DATA16 00040H
+        JMPA cc_C,L_A731A
+        BSET ccp_engine_flags.02H
+        SUBB crank_tim_12,ONES
+        MOVB RL0,crank_tim_12
+        CMPB RL0,#04H
+        JMPR cc_UGT,L_A7206
+        JMPA cc_C,L_A735E
+        CMPB ZEROS,run_eng
+        JMPA cc_NE,L_A735E
+L_A7206:                 ; 0xa7206
+        MOVB crank_tim_6,ONES
+        MOVB RL0,diag_f5cf
+        JMPR cc_EQ,L_A7256
+        EXTR #01H
+        BFLDL 0F170H,#0FFH,#00H
+        BFLDL 0FF68H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F194H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F196H,#0FFH,#00H
+        BFLDL 0FF66H,#0FFH,#00H
+        BFLDL 0FF6AH,#0FFH,#00H
+        BCLR T6CON.06H
+        BCLR T5CON.06H
+        BCLR T01CON.06H
+        BCLR T78CON.06H
+        MOVB first_vld_tooth,ZEROS
+        MOVB stop_eng,ONES
+        BCLR ccp_engine_flags.06H
+        MOV crank_tim_16,ONES
+        MOV crank_tim_17,ONES
+        BCLR lv_err_com_resp_imob.0EH
+        MOV crank_tim_27,ONES
+        MOV seg_t_mes_bas,ONES
+        JMPA cc_UC,L_A735E
+L_A7256:                 ; 0xa7256
+        ATOMIC #01H
+        BFLDL 0F196H,#0FFH,#00H
+        BFLDH CCM3_FF58,#0F0H,#00H
+        BCLR T6CON.06H
+        BCLR T01CON.06H
+        BCLR T78CON.06H
+        BFLDL 0FF6AH,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F146H,#09FH,#03H
+        ATOMIC #01H
+        BFLDH T5CON_FF46,#0F1H,#00H
+        MOVB first_vld_tooth,ONES
+        MOVB run_eng,ONES
+        BCLR lv_err_com_resp_imob.0CH
+        TRAP #060H
+        EXTR #01H
+        MOV T7,#DATA16 01000H
+        ATOMIC #01H
+        BFLDL 0F150H,#04FH,#08H
+        ATOMIC #01H
+        BFLDL 0F120H,#04FH,#08H
+        BSET T78CON.06H
+        MOV R0,#DATA16 00079H
+        MOVBZ R1,cam_1_level
+        JMPR cc_EQ,L_A72A6
+        SUBB RL0,cam_rise_av_z
+        JMPR cc_UC,L_A72AA
+L_A72A6:                 ; 0xa72a6
+        SUBB RL0,cam_fall_av_z
+L_A72AA:                 ; 0xa72aa
+        CMP R0,#DATA16 0003CH
+        JMPR cc_ULE,L_A72B4
+        SUB R0,#DATA16 0003CH
+L_A72B4:                 ; 0xa72b4
+        MOV CC24_FE70,R0
+        ADD CC24,#DATA16 01000H
+        EXTR #01H
+        BFLDL 0F170H,#0FFH,#072H
+        BFLDL 0FF26H,#0FH,#05H
+        BFLDL 0FF68H,#0FFH,#07CH
+        MOV CAPREL,crank_tim_20
+        MOV T6,CAPREL_FE4A
+        MOV crank_tim_19,CAPREL
+        MOV R0,#DATA16 0FE52H
+        MOV SRCP4_FCF0,R0
+        MOV R0,#DATA16 0FE9EH
+        MOV DSTP4_FCF2,R0
+        MOVBZ R0,crank_tim_11
+        OR R0,#00H
+        MOV PECC4_FEC8,R0
+        MOV T6CON,#DATA16 08085H
+        BSET T6CON.06H
+        BSET can_sched_flags2.0EH
+        BOR can_sched_flags1.0EH,can_sched_flags0.0EH
+        BMOV can_sched_flags0.0EH,can_sched_flags2.0EH
+        MOVB crank_tim_5,ZEROS
+        SUBB crank_tim_5,ONES
+        CMPB ZEROS,run_eng
+        JMPR cc_EQ,L_A7314
+        ATOMIC #01H
+        BFLDL 0F188H,#080H,#080H
+L_A7314:                 ; 0xa7314
+        SUBB crank_tim_5,ONES
+        JMPR cc_UC,L_A735E
+L_A731A:                 ; 0xa731a
+        EXTR #01H
+        BFLDL 0F170H,#0FFH,#00H
+        BFLDL 0FF68H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F194H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F196H,#0FFH,#00H
+        BFLDL 0FF66H,#0FFH,#00H
+        BFLDL 0FF6AH,#0FFH,#00H
+        BCLR T6CON.06H
+        BCLR T5CON.06H
+        BCLR T01CON.06H
+        BCLR T78CON.06H
+        MOVB first_vld_tooth,ZEROS
+        MOVB stop_eng,ONES
+        BCLR ccp_engine_flags.06H
+        MOV crank_tim_16,ONES
+        MOV crank_tim_17,ONES
+        BCLR lv_err_com_resp_imob.0EH
+        MOV crank_tim_27,ONES
+        MOV seg_t_mes_bas,ONES
+        JMPR cc_UC,L_A735E
+L_A735E:                 ; 0xa735e
+        POP MDL
+        POP MDH
+        POP MDC
+L_A7364:                 ; 0xa7364
+        POP CP
+        RETI
+
+; ======== CallVia_368  (@0xa7368) ========
+CallVia_368:
+        SCXT CP,#DATA16 0FBEAH
+        NOP
+        JMPI cc_UC,[R4]
+        CMP ZEROS,crank_tim_21
+        JMPR cc_EQ,L_A73D4
+        MOV R4,#DATA16 073AAH
+        BFLDL 0FF26H,#0FH,#00H
+        EXTR #01H
+        BFLDL 0F170H,#080H,#00H
+        ATOMIC #01H
+        BFLDL 0F194H,#0C0H,#00H
+        MOVB crank_tim_12,ZEROS
+        MOV CC24,T8_F052
+        ADD CC24,crank_tim_21
+        BFLDL 0FF26H,#0FH,#0EH
+        CMP CC24,T8_F052
+        JMPR cc_EQ,L_A73A4
+        JMPA cc_NN,L_A807C
+L_A73A4:                 ; 0xa73a4
+        JMPR cc_UC,L_A73AA
+        JMPA cc_UC,L_A806E
+L_A73AA:                 ; 0xa73aa
+        BFLDL 0FF26H,#0FH,#00H
+        EXTR #01H
+        BFLDL 0F170H,#080H,#00H
+        ATOMIC #01H
+        BFLDL 0F194H,#0C0H,#040H
+        MOVB crank_tim_12,ZEROS
+        EXTR #01H
+        MOV T7,#DATA16 01000H
+        MOV CC24,#DATA16 01001H
+        BFLDL 0FF26H,#0FH,#05H
+        MOV R4,#DATA16 073D4H
+        JMPA cc_UC,L_A806E
+L_A73D4:                 ; 0xa73d4
+        BSET ccp_engine_flags.06H
+        BSET ccp_engine_flags.02H
+        BSET T5CON.06H
+        MOV R9,CC15_FE9E
+        MOV R4,#DATA16 073EAH
+        SUB CC24,0FF1EH
+        JMPA cc_UC,L_A806E
+        MOV R5,CC15_FE9E
+        SUB R5,R9
+        MOV R9,CC15_FE9E
+        CMP R5,#DATA16 0186AH
+        JMPR cc_UGT,L_A7476
+        CMP R5,#DATA16 00016H
+        JMPR cc_C,L_A744C
+        MOVB first_vld_tooth,ONES
+        JB P2.0EH,L_A7414
+        MOV R6,#00H
+        MOVB RL0,cam_fall_av_z
+        MOVB crank_tim_7,RL0
+        JMPR cc_UC,L_A7420
+L_A7414:                 ; 0xa7414
+        MOV R6,#DATA16 0FFFFH
+        MOVB RL0,cam_rise_av_z
+        MOVB crank_tim_7,RL0
+L_A7420:                 ; 0xa7420
+        SUBB crank_tim_7,ONES
+        MOV crank_tim_19,R5
+        MOV R3,R5
+        MOV R1,R5
+        MOVBZ R2,crank_tim_8
+        MOV R4,#DATA16 074BCH
+        SUB CC24,0FF1EH
+        BSET can_sched_flags2.0EH
+        BOR can_sched_flags1.0EH,can_sched_flags0.0EH
+        BMOV can_sched_flags0.0EH,can_sched_flags2.0EH
+        MOVB crank_tim_5,ZEROS
+        SUBB crank_tim_5,ONES
+        JMPR cc_UC,L_A74B8
+L_A744C:                 ; 0xa744c
+        BCLR T78CON.06H
+        BCLR lv_err_com_resp_imob.0DH
+        MOVB crank_tim_7,ZEROS
+        MOV R4,#DATA16 073EAH
+        MOV CC24,#DATA16 01002H
+        EXTR #01H
+        MOV T7,#DATA16 01001H
+        EXTR #01H
+        BFLDL 0F170H,#080H,#00H
+        BSET ccp_engine_flags.02H
+        MOV R0,#DATA16 08080H
+        MOV crank_tim_18,R0
+        BSET T78CON.06H
+        JMPR cc_UC,L_A74B8
+L_A7476:                 ; 0xa7476
+        EXTR #01H
+        BFLDL 0F170H,#0FFH,#00H
+        BFLDL 0FF68H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F194H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F196H,#0FFH,#00H
+        BFLDL 0FF66H,#0FFH,#00H
+        BFLDL 0FF6AH,#0FFH,#00H
+        BCLR T6CON.06H
+        BCLR T5CON.06H
+        BCLR T01CON.06H
+        BCLR T78CON.06H
+        MOVB first_vld_tooth,ZEROS
+        MOVB stop_eng,ONES
+        BCLR ccp_engine_flags.06H
+        MOV crank_tim_16,ONES
+        MOV crank_tim_17,ONES
+        BCLR lv_err_com_resp_imob.0EH
+        MOV crank_tim_27,ONES
+        MOV seg_t_mes_bas,ONES
+L_A74B8:                 ; 0xa74b8
+        JMPA cc_UC,L_A806E
+        SCXT MDC,#DATA16 00000H
+        PUSH MDH
+        PUSH MDL
+        MOV R5,CC15_FE9E
+        SUB R5,R9
+        MOV R9,CC15_FE9E
+        CMP R5,#DATA16 0186AH
+        JMPA cc_UGT,L_A760A
+        CMP R5,#DATA16 00016H
+        JMPA cc_C,L_A75E0
+        MULU R1,R1
+        DIVLU R3
+        JMPR cc_V,L_A74FA
+        MOV R3,R1
+        MOV R1,0FE0EH
+        MOVBZ MDH_FE0C,RH5
+        MOV MDL,#DATA16 00000H
+        MOVB ign_cc_stat,RL5
+        DIVLU R1
+        JMPR cc_NV,L_A74FE
+L_A74FA:                 ; 0xa74fa
+        MOV MDL,0FF1EH
+L_A74FE:                 ; 0xa74fe
+        MOV R1,R5
+        MOV R7,0FE0EH
+        CMP R7,#DATA16 00200H
+        JMPR cc_UGT,L_A7580
+        CMP R7,#DATA16 00080H
+        JMPR cc_C,L_A7580
+        SHL R6,#01H
+        BMOV R6.00H,P2.0EH
+        MOV crank_tim_19,R5
+        BCMP R6.00H,R6.01H
+        JMPR cc_NN,L_A753A
+        BSET lv_err_com_resp_imob.0DH
+        JB R6.00H,L_A7530
+        MOVB RL0,cam_fall_av_z
+        MOVB crank_tim_7,RL0
+        JMPR cc_UC,L_A753A
+L_A7530:                 ; 0xa7530
+        MOVB RL0,cam_rise_av_z
+        MOVB crank_tim_7,RL0
+        JMPR cc_UC,L_A753A
+L_A753A:                 ; 0xa753a
+        MOVB RL0,crank_tim_7
+        CMPB RL0,#DATA16 00078H
+        JMPR cc_C,L_A7548
+        MOVB crank_tim_7,ZEROS
+L_A7548:                 ; 0xa7548
+        SUBB crank_tim_7,ONES
+        SUB R2,#01H
+        JMPR cc_NE,L_A756A
+        MOVB crk_tooth_det,ONES
+        MOVB run_eng,ONES
+        MOV R4,#DATA16 07656H
+        MOV R8,CC15_FE9E
+        BCLR lv_err_com_resp_imob.0CH
+        CMP R5,#DATA16 00177H
+        JMPR cc_ULE,L_A756A
+        BSET lv_err_com_resp_imob.0CH
+L_A756A:                 ; 0xa756a
+        SUB CC24,0FF1EH
+        CMPB ZEROS,run_eng
+        JMPR cc_EQ,L_A757A
+        ATOMIC #01H
+        BFLDL 0F188H,#080H,#080H
+L_A757A:                 ; 0xa757a
+        SUBB crank_tim_5,ONES
+        JMPR cc_UC,L_A764C
+L_A7580:                 ; 0xa7580
+        CMP R7,#DATA16 00380H
+        JMPR cc_UGT,L_A75B6
+        CMP R7,#DATA16 00280H
+        JMPR cc_C,L_A75B6
+        BCLR T78CON.06H
+        BCLR lv_err_com_resp_imob.0DH
+        MOVB crank_tim_7,ZEROS
+        MOV R4,#DATA16 073EAH
+        MOV CC24,#DATA16 01002H
+        EXTR #01H
+        MOV T7,#DATA16 01001H
+        EXTR #01H
+        BFLDL 0F170H,#080H,#00H
+        BSET ccp_engine_flags.02H
+        MOV R0,#DATA16 0C0C0H
+        MOV crank_tim_18,R0
+        BSET T78CON.06H
+        JMPR cc_UC,L_A764C
+L_A75B6:                 ; 0xa75b6
+        BCLR T78CON.06H
+        BCLR lv_err_com_resp_imob.0DH
+        MOVB crank_tim_7,ZEROS
+        MOV R4,#DATA16 073EAH
+        MOV CC24,#DATA16 01002H
+        EXTR #01H
+        MOV T7,#DATA16 01001H
+        EXTR #01H
+        BFLDL 0F170H,#080H,#00H
+        BSET ccp_engine_flags.02H
+        MOV R0,#DATA16 04040H
+        MOV crank_tim_18,R0
+        BSET T78CON.06H
+        JMPR cc_UC,L_A764C
+L_A75E0:                 ; 0xa75e0
+        BCLR T78CON.06H
+        BCLR lv_err_com_resp_imob.0DH
+        MOVB crank_tim_7,ZEROS
+        MOV R4,#DATA16 073EAH
+        MOV CC24,#DATA16 01002H
+        EXTR #01H
+        MOV T7,#DATA16 01001H
+        EXTR #01H
+        BFLDL 0F170H,#080H,#00H
+        BSET ccp_engine_flags.02H
+        MOV R0,#DATA16 08080H
+        MOV crank_tim_18,R0
+        BSET T78CON.06H
+        JMPR cc_UC,L_A764C
+L_A760A:                 ; 0xa760a
+        EXTR #01H
+        BFLDL 0F170H,#0FFH,#00H
+        BFLDL 0FF68H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F194H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F196H,#0FFH,#00H
+        BFLDL 0FF66H,#0FFH,#00H
+        BFLDL 0FF6AH,#0FFH,#00H
+        BCLR T6CON.06H
+        BCLR T5CON.06H
+        BCLR T01CON.06H
+        BCLR T78CON.06H
+        MOVB first_vld_tooth,ZEROS
+        MOVB stop_eng,ONES
+        BCLR ccp_engine_flags.06H
+        MOV crank_tim_16,ONES
+        MOV crank_tim_17,ONES
+        BCLR lv_err_com_resp_imob.0EH
+        MOV crank_tim_27,ONES
+        MOV seg_t_mes_bas,ONES
+L_A764C:                 ; 0xa764c
+        POP MDL
+        POP MDH
+        POP MDC
+        JMPA cc_UC,L_A806E
+        SCXT MDC,#DATA16 00000H
+        PUSH MDH
+        PUSH MDL
+        MOV R5,CC15_FE9E
+        SUB R5,R9
+        MOV R9,CC15_FE9E
+        CMP R5,#DATA16 00016H
+        JMPA cc_C,L_A7A08
+        SHL R6,#01H
+        BMOV R6.00H,P2.0EH
+        BCMP R6.00H,R6.01H
+        JMPR cc_NN,L_A7696
+        BSET lv_err_com_resp_imob.0DH
+        JB R6.00H,L_A768C
+        MOVB RL0,cam_fall_av_z
+        MOVB crank_tim_7,RL0
+        JMPR cc_UC,L_A7696
+L_A768C:                 ; 0xa768c
+        MOVB RL0,cam_rise_av_z
+        MOVB crank_tim_7,RL0
+        JMPR cc_UC,L_A7696
+L_A7696:                 ; 0xa7696
+        MOVB RL0,crank_tim_7
+        CMPB RL0,#DATA16 00078H
+        JMPR cc_C,L_A76A4
+        MOVB crank_tim_7,ZEROS
+L_A76A4:                 ; 0xa76a4
+        SUBB crank_tim_7,ONES
+        MULU R1,R1
+        DIVLU R3
+        JMPR cc_V,L_A76C4
+        MOV R3,R1
+        MOV R1,0FE0EH
+        MOVBZ MDH_FE0C,RH5
+        MOV MDL,#DATA16 00000H
+        MOVB ign_cc_stat,RL5
+        DIVLU R1
+        JMPR cc_NV,L_A76C8
+L_A76C4:                 ; 0xa76c4
+        MOV MDL,0FF1EH
+L_A76C8:                 ; 0xa76c8
+        MOV R1,R5
+        MOV R7,0FE0EH
+        CMP R7,#DATA16 00380H
+        JMPA cc_UGT,L_A7970
+        CMP R7,#DATA16 00280H
+        JMPA cc_C,L_A7970
+        CMP R5,#DATA16 0493EH
+        JMPA cc_UGT,L_A792C
+        BCLR T78CON.06H
+        AND R6,#03H
+        CMP R6,crank_tim_28
+        JMPA cc_NE,L_A77E8
+        MOVB RL0,#01H
+        MOVB imob_f5d4,RL0
+        MOV R0,CC15_FE9E
+        MOV g_fab2,R0
+        SUB R0,R3
+        MOV g_fab0,R0
+        MOV crank_tim_19,R3
+        MOV R7,R3
+        MOV R6,#DATA16 0647EH
+        MOV R0,[R6+]
+        MOV CC24_FE70,R0
+        MOV R4,[R6+]
+        JNB lv_err_com_resp_imob.0CH,L_A7720
+        BFLDL 0FF6AH,#0FFH,#073H
+L_A7720:                 ; 0xa7720
+        EXTR #01H
+        MOV T7,#DATA16 0003DH
+        MOV T0,T7_F050
+        MOVB RL0,crank_tim_7
+        CMPB RL0,#DATA16 0003CH
+        JMPR cc_UGT,L_A7738
+        MOVB crank_tim_7,T0
+L_A7738:                 ; 0xa7738
+        BSET T01CON.06H
+        BSET T78CON.06H
+        MOVB syn_eng,ONES
+        MOV R2,#00H
+        BSET can_sched_flags2.0FH
+        BSET smartra_comms_status.01H
+        MOVB RL0,#DATA16 00043H
+        MOVB RH0,#06H
+        MOVBZ CC6_FE8C,RL0
+        BFLDH CCM1_FF54,#0FH,#06H
+        MOVB RL0,#DATA16 0003DH
+        SUBB RL0,T0_FE50
+        NEGB RL0
+        CMPB RL0,#00H
+        JMPR cc_SGE,L_A7766
+        ADDB RL0,#DATA16 00078H
+L_A7766:                 ; 0xa7766
+        CMPB RL0,RH0
+        JMPR cc_C,L_A7770
+        ATOMIC #01H
+        BFLDL 0F184H,#080H,#080H
+L_A7770:                 ; 0xa7770
+        BSET smartra_comms_status.04H
+        MOVB RL0,#DATA16 00041H
+        MOVB RH0,#04H
+        MOVBZ CC7_FE8E,RL0
+        BFLDH CCM1_FF54,#0F0H,#060H
+        MOVB RL0,#DATA16 0003DH
+        SUBB RL0,T0_FE50
+        NEGB RL0
+        CMPB RL0,#00H
+        JMPR cc_SGE,L_A7792
+        ADDB RL0,#DATA16 00078H
+L_A7792:                 ; 0xa7792
+        CMPB RL0,RH0
+        JMPR cc_C,L_A779C
+        ATOMIC #01H
+        BFLDL 0F186H,#080H,#080H
+L_A779C:                 ; 0xa779c
+        BSET DP2.0CH
+        BCLR P2.0CH
+        MOV R0,T0_FE50
+        ADD R0,0FF1EH
+        MOV CC12_FE98,R0
+        BFLDL 0FF58H,#07H,#05H
+        ATOMIC #01H
+        BFLDL 0F190H,#07FH,#058H
+        MOV CC12,#DATA16 00041H
+        CMP CC12,T0_FE50
+        JMPR cc_UGT,L_A77C8
+        ATOMIC #01H
+        BFLDL 0F190H,#080H,#080H
+        BSET P2.0CH
+L_A77C8:                 ; 0xa77c8
+        MOV R0,#01H
+        MOVB RL0,[R0+#065EFH]
+        MOVB inj_cc_6,RL0
+        MOVB RL0,[R0+#0F60CH]
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_A77E0
+        SUB R0,#DATA16 00078H
+L_A77E0:                 ; 0xa77e0
+        MOV CC5_FE8A,R0
+        JMPA cc_UC,L_A7922
+L_A77E8:                 ; 0xa77e8
+        CPL R6
+        AND R6,#03H
+        CMP R6,crank_tim_28
+        JMPR cc_NE,L_A78DE
+        MOVB RL0,#03H
+        MOVB imob_f5d4,RL0
+        MOV R0,CC15_FE9E
+        MOV g_fab2,R0
+        SUB R0,R3
+        MOV g_fab0,R0
+        MOV crank_tim_19,R3
+        MOV R7,R3
+        MOV R6,#DATA16 0645AH
+        MOV R0,[R6+]
+        MOV CC24_FE70,R0
+        MOV R4,[R6+]
+        JNB lv_err_com_resp_imob.0CH,L_A7820
+        BFLDL 0FF6AH,#0FFH,#073H
+L_A7820:                 ; 0xa7820
+        EXTR #01H
+        MOV T7,#DATA16 00001H
+        MOV T0,T7_F050
+        MOVB RL0,crank_tim_7
+        CMPB RL0,#DATA16 0003CH
+        JMPR cc_ULE,L_A7838
+        MOVB crank_tim_7,T0
+L_A7838:                 ; 0xa7838
+        BSET T01CON.06H
+        BSET T78CON.06H
+        MOVB syn_eng,ONES
+        MOV R2,#00H
+        BSET can_sched_flags2.0FH
+        BCLR smartra_comms_status.01H
+        MOVB RL0,#07H
+        MOVB RH0,#06H
+        MOVBZ CC6_FE8C,RL0
+        BFLDH CCM1_FF54,#0FH,#06H
+        MOVB RL0,#01H
+        SUBB RL0,T0_FE50
+        NEGB RL0
+        CMPB RL0,#00H
+        JMPR cc_SGE,L_A7862
+        ADDB RL0,#DATA16 00078H
+L_A7862:                 ; 0xa7862
+        CMPB RL0,RH0
+        JMPR cc_C,L_A786C
+        ATOMIC #01H
+        BFLDL 0F184H,#080H,#080H
+L_A786C:                 ; 0xa786c
+        BCLR smartra_comms_status.04H
+        MOVB RL0,#05H
+        MOVB RH0,#04H
+        MOVBZ CC7_FE8E,RL0
+        BFLDH CCM1_FF54,#0F0H,#060H
+        MOVB RL0,#01H
+        SUBB RL0,T0_FE50
+        NEGB RL0
+        CMPB RL0,#00H
+        JMPR cc_SGE,L_A788A
+        ADDB RL0,#DATA16 00078H
+L_A788A:                 ; 0xa788a
+        CMPB RL0,RH0
+        JMPR cc_C,L_A7894
+        ATOMIC #01H
+        BFLDL 0F186H,#080H,#080H
+L_A7894:                 ; 0xa7894
+        BSET DP2.0CH
+        BCLR P2.0CH
+        MOV R0,T0_FE50
+        ADD R0,0FF1EH
+        MOV CC12_FE98,R0
+        BFLDL 0FF58H,#07H,#05H
+        ATOMIC #01H
+        BFLDL 0F190H,#07FH,#058H
+        MOV CC12,#DATA16 00005H
+        CMP CC12,T0_FE50
+        JMPR cc_UGT,L_A78C0
+        ATOMIC #01H
+        BFLDL 0F190H,#080H,#080H
+        BSET P2.0CH
+L_A78C0:                 ; 0xa78c0
+        MOV R0,#03H
+        MOVB RL0,[R0+#065EFH]
+        MOVB inj_cc_6,RL0
+        MOVB RL0,[R0+#0F60CH]
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_A78D8
+        SUB R0,#DATA16 00078H
+L_A78D8:                 ; 0xa78d8
+        MOV CC5_FE8A,R0
+        JMPR cc_UC,L_A7922
+L_A78DE:                 ; 0xa78de
+        EXTR #01H
+        BFLDL 0F170H,#0FFH,#00H
+        BFLDL 0FF68H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F194H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F196H,#0FFH,#00H
+        BFLDL 0FF66H,#0FFH,#00H
+        BFLDL 0FF6AH,#0FFH,#00H
+        BCLR T6CON.06H
+        BCLR T5CON.06H
+        BCLR T01CON.06H
+        BCLR T78CON.06H
+        MOVB first_vld_tooth,ZEROS
+        MOVB stop_eng,ONES
+        BCLR ccp_engine_flags.06H
+        MOV crank_tim_16,ONES
+        MOV crank_tim_17,ONES
+        BCLR lv_err_com_resp_imob.0EH
+        MOV crank_tim_27,ONES
+        MOV seg_t_mes_bas,ONES
+        JMPR cc_UC,L_A7928
+L_A7922:                 ; 0xa7922
+        ATOMIC #01H
+        BFLDL 0F188H,#080H,#080H
+L_A7928:                 ; 0xa7928
+        JMPA cc_UC,L_A7A30
+L_A792C:                 ; 0xa792c
+        EXTR #01H
+        BFLDL 0F170H,#0FFH,#00H
+        BFLDL 0FF68H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F194H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F196H,#0FFH,#00H
+        BFLDL 0FF66H,#0FFH,#00H
+        BFLDL 0FF6AH,#0FFH,#00H
+        BCLR T6CON.06H
+        BCLR T5CON.06H
+        BCLR T01CON.06H
+        BCLR T78CON.06H
+        MOVB first_vld_tooth,ZEROS
+        MOVB stop_eng,ONES
+        BCLR ccp_engine_flags.06H
+        MOV crank_tim_16,ONES
+        MOV crank_tim_17,ONES
+        BCLR lv_err_com_resp_imob.0EH
+        MOV crank_tim_27,ONES
+        MOV seg_t_mes_bas,ONES
+        JMPR cc_UC,L_A7A30
+L_A7970:                 ; 0xa7970
+        CMP R5,#DATA16 0186AH
+        JMPR cc_UGT,L_A79C4
+        CMP R7,#DATA16 00200H
+        JMPR cc_UGT,L_A799A
+        CMP R7,#DATA16 00080H
+        JMPR cc_C,L_A799A
+        MOV crank_tim_19,R5
+        MOV R8,CC15_FE9E
+        ATOMIC #01H
+        BFLDL 0F188H,#080H,#080H
+        SUBB crank_tim_5,ONES
+        SUB CC24,0FF1EH
+        JMPR cc_UC,L_A7A30
+L_A799A:                 ; 0xa799a
+        BCLR T78CON.06H
+        BCLR lv_err_com_resp_imob.0DH
+        MOVB crank_tim_7,ZEROS
+        MOV R4,#DATA16 073EAH
+        MOV CC24,#DATA16 01002H
+        EXTR #01H
+        MOV T7,#DATA16 01001H
+        EXTR #01H
+        BFLDL 0F170H,#080H,#00H
+        BSET ccp_engine_flags.02H
+        MOV R0,#DATA16 04040H
+        MOV crank_tim_18,R0
+        BSET T78CON.06H
+        JMPR cc_UC,L_A7A30
+L_A79C4:                 ; 0xa79c4
+        EXTR #01H
+        BFLDL 0F170H,#0FFH,#00H
+        BFLDL 0FF68H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F194H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F196H,#0FFH,#00H
+        BFLDL 0FF66H,#0FFH,#00H
+        BFLDL 0FF6AH,#0FFH,#00H
+        BCLR T6CON.06H
+        BCLR T5CON.06H
+        BCLR T01CON.06H
+        BCLR T78CON.06H
+        MOVB first_vld_tooth,ZEROS
+        MOVB stop_eng,ONES
+        BCLR ccp_engine_flags.06H
+        MOV crank_tim_16,ONES
+        MOV crank_tim_17,ONES
+        BCLR lv_err_com_resp_imob.0EH
+        MOV crank_tim_27,ONES
+        MOV seg_t_mes_bas,ONES
+        JMPR cc_UC,L_A7A30
+L_A7A08:                 ; 0xa7a08
+        BCLR T78CON.06H
+        BCLR lv_err_com_resp_imob.0DH
+        MOVB crank_tim_7,ZEROS
+        MOV R4,#DATA16 073EAH
+        MOV CC24,#DATA16 01002H
+        EXTR #01H
+        MOV T7,#DATA16 01001H
+        EXTR #01H
+        BFLDL 0F170H,#080H,#00H
+        BSET ccp_engine_flags.02H
+        MOV R0,#DATA16 08080H
+        MOV crank_tim_18,R0
+        BSET T78CON.06H
+L_A7A30:                 ; 0xa7a30
+        POP MDL
+        POP MDH
+        POP MDC
+        JMPA cc_UC,L_A806E
+        BCLR T78CON.06H
+        MOVBZ R0,cam_1_level
+        JNB R0.00H,L_A7A46
+        JMPR cc_UC,L_A7B0E
+L_A7A46:                 ; 0xa7a46
+        MOVB RL0,#03H
+        MOVB imob_f5d4,RL0
+        MOV g_fab2,ZEROS
+        MOV g_fab0,ZEROS
+        MOV R6,#DATA16 0645AH
+        MOV R0,[R6+]
+        MOV CC24_FE70,R0
+        MOV R4,[R6+]
+        EXTR #01H
+        MOV T7,#DATA16 00001H
+        MOV T0,T7_F050
+        BSET T01CON.06H
+        BSET T78CON.06H
+        MOVB syn_eng,ONES
+        BSET can_sched_flags2.0FH
+        BCLR smartra_comms_status.01H
+        MOVB RL0,#07H
+        MOVB RH0,#06H
+        MOVBZ CC6_FE8C,RL0
+        BFLDH CCM1_FF54,#0FH,#06H
+        MOVB RL0,#01H
+        SUBB RL0,T0_FE50
+        NEGB RL0
+        CMPB RL0,#00H
+        JMPR cc_SGE,L_A7A92
+        ADDB RL0,#DATA16 00078H
+L_A7A92:                 ; 0xa7a92
+        CMPB RL0,RH0
+        JMPR cc_C,L_A7A9C
+        ATOMIC #01H
+        BFLDL 0F184H,#080H,#080H
+L_A7A9C:                 ; 0xa7a9c
+        BCLR smartra_comms_status.04H
+        MOVB RL0,#05H
+        MOVB RH0,#04H
+        MOVBZ CC7_FE8E,RL0
+        BFLDH CCM1_FF54,#0F0H,#060H
+        MOVB RL0,#01H
+        SUBB RL0,T0_FE50
+        NEGB RL0
+        CMPB RL0,#00H
+        JMPR cc_SGE,L_A7ABA
+        ADDB RL0,#DATA16 00078H
+L_A7ABA:                 ; 0xa7aba
+        CMPB RL0,RH0
+        JMPR cc_C,L_A7AC4
+        ATOMIC #01H
+        BFLDL 0F186H,#080H,#080H
+L_A7AC4:                 ; 0xa7ac4
+        BSET DP2.0CH
+        BCLR P2.0CH
+        MOV R0,T0_FE50
+        ADD R0,0FF1EH
+        MOV CC12_FE98,R0
+        BFLDL 0FF58H,#07H,#05H
+        ATOMIC #01H
+        BFLDL 0F190H,#07FH,#058H
+        MOV CC12,#DATA16 00005H
+        CMP CC12,T0_FE50
+        JMPR cc_UGT,L_A7AF0
+        ATOMIC #01H
+        BFLDL 0F190H,#080H,#080H
+        BSET P2.0CH
+L_A7AF0:                 ; 0xa7af0
+        MOV R0,#03H
+        MOVB RL0,[R0+#065EFH]
+        MOVB inj_cc_6,RL0
+        MOVB RL0,[R0+#0F60CH]
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_A7B08
+        SUB R0,#DATA16 00078H
+L_A7B08:                 ; 0xa7b08
+        MOV CC5_FE8A,R0
+        JMPR cc_UC,L_A7BDC
+L_A7B0E:                 ; 0xa7b0e
+        MOVB RL0,#01H
+        MOVB imob_f5d4,RL0
+        MOV g_fab2,ZEROS
+        MOV g_fab0,ZEROS
+        MOV R6,#DATA16 0647EH
+        MOV R0,[R6+]
+        MOV CC24_FE70,R0
+        MOV R4,[R6+]
+        EXTR #01H
+        MOV T7,#DATA16 0003DH
+        MOV T0,T7_F050
+        BSET T01CON.06H
+        BSET T78CON.06H
+        MOVB syn_eng,ONES
+        BSET can_sched_flags2.0FH
+        BSET smartra_comms_status.01H
+        MOVB RL0,#DATA16 00043H
+        MOVB RH0,#06H
+        MOVBZ CC6_FE8C,RL0
+        BFLDH CCM1_FF54,#0FH,#06H
+        MOVB RL0,#DATA16 0003DH
+        SUBB RL0,T0_FE50
+        NEGB RL0
+        CMPB RL0,#00H
+        JMPR cc_SGE,L_A7B5E
+        ADDB RL0,#DATA16 00078H
+L_A7B5E:                 ; 0xa7b5e
+        CMPB RL0,RH0
+        JMPR cc_C,L_A7B68
+        ATOMIC #01H
+        BFLDL 0F184H,#080H,#080H
+L_A7B68:                 ; 0xa7b68
+        BSET smartra_comms_status.04H
+        MOVB RL0,#DATA16 00041H
+        MOVB RH0,#04H
+        MOVBZ CC7_FE8E,RL0
+        BFLDH CCM1_FF54,#0F0H,#060H
+        MOVB RL0,#DATA16 0003DH
+        SUBB RL0,T0_FE50
+        NEGB RL0
+        CMPB RL0,#00H
+        JMPR cc_SGE,L_A7B8A
+        ADDB RL0,#DATA16 00078H
+L_A7B8A:                 ; 0xa7b8a
+        CMPB RL0,RH0
+        JMPR cc_C,L_A7B94
+        ATOMIC #01H
+        BFLDL 0F186H,#080H,#080H
+L_A7B94:                 ; 0xa7b94
+        BSET DP2.0CH
+        BCLR P2.0CH
+        MOV R0,T0_FE50
+        ADD R0,0FF1EH
+        MOV CC12_FE98,R0
+        BFLDL 0FF58H,#07H,#05H
+        ATOMIC #01H
+        BFLDL 0F190H,#07FH,#058H
+        MOV CC12,#DATA16 00041H
+        CMP CC12,T0_FE50
+        JMPR cc_UGT,L_A7BC0
+        ATOMIC #01H
+        BFLDL 0F190H,#080H,#080H
+        BSET P2.0CH
+L_A7BC0:                 ; 0xa7bc0
+        MOV R0,#01H
+        MOVB RL0,[R0+#065EFH]
+        MOVB inj_cc_6,RL0
+        MOVB RL0,[R0+#0F60CH]
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_A7BD8
+        SUB R0,#DATA16 00078H
+L_A7BD8:                 ; 0xa7bd8
+        MOV CC5_FE8A,R0
+L_A7BDC:                 ; 0xa7bdc
+        ATOMIC #01H
+        BFLDL 0F188H,#080H,#080H
+        JMPA cc_UC,L_A806E
+        CMPB ZEROS,crank_tim_6
+        JMPR cc_EQ,L_A7BEE
+        JMPR cc_UC,L_A7C28
+L_A7BEE:                 ; 0xa7bee
+        MOV R7,DSTP7_FCFE
+        MOV R0,[R7+#0FFFCH]
+        MOV R7,[R7+#0FFFEH]
+        SUB R7,R0
+        CMP R7,#DATA16 00016H
+        JMPR cc_NC,L_A7C08
+        MOV R7,crank_tim_19
+        JMPR cc_UC,L_A7C0C
+L_A7C08:                 ; 0xa7c08
+        MOV crank_tim_19,R7
+L_A7C0C:                 ; 0xa7c0c
+        MOV R8,CC15_FE9E
+        BCLR ccp_engine_flags.00H
+        BCLR T6CON.06H
+        MOV R3,R7
+        BFLDL 0FF68H,#080H,#00H
+        MOV T6_FE48,R3
+        SHR R3,#01H
+        ADD T6_FE48,R3
+        BSET T6CON.06H
+        SHR R3,#01H
+L_A7C28:                 ; 0xa7c28
+        JMPA cc_UC,Set_Output_CC24
+        CMPB ZEROS,crank_tim_6
+        JMPR cc_EQ,L_A7C34
+        JMPR cc_UC,L_A7C8C
+L_A7C34:                 ; 0xa7c34
+        JBC ccp_engine_flags.00H,L_A7C72
+        MOV R7,DSTP7_FCFE
+        MOV R0,[R7+#0FFFCH]
+        MOV R7,[R7+#0FFFEH]
+        SUB R7,R0
+        CMP R7,#DATA16 00016H
+        JMPR cc_NC,L_A7C52
+        MOV R7,crank_tim_19
+        JMPR cc_UC,L_A7C56
+L_A7C52:                 ; 0xa7c52
+        MOV crank_tim_19,R7
+L_A7C56:                 ; 0xa7c56
+        MOV R8,CC15_FE9E
+        BCLR T6CON.06H
+        MOV R3,R7
+        BFLDL 0FF68H,#080H,#00H
+        MOV T6_FE48,R3
+        SHR R3,#01H
+        ADD T6_FE48,R3
+        BSET T6CON.06H
+        SHR R3,#01H
+        JMPR cc_UC,L_A7C8C
+L_A7C72:                 ; 0xa7c72
+        MOVB RL2,#02H
+        BCLR T78CON.06H
+        BCLR T01CON.06H
+        BCLR lv_err_com_resp_imob.0FH
+        BFLDH CCM3_FF58,#0F0H,#00H
+        ATOMIC #01H
+        BFLDL 0F196H,#0FFH,#00H
+        BFLDL 0FF6AH,#0FFH,#073H
+        BCLR ccp_engine_flags.04H
+        BSET ccp_engine_flags.01H
+L_A7C8C:                 ; 0xa7c8c
+        JMPA cc_UC,Set_Output_CC24
+        CMPB ZEROS,crank_tim_6
+        JMPR cc_EQ,L_A7C98
+        JMPR cc_UC,L_A7D56
+L_A7C98:                 ; 0xa7c98
+        JBC ccp_engine_flags.00H,L_A7D38
+        MOV R3,DSTP7_FCFE
+        MOV R0,[R3+#0FFFCH]
+        MOV R3,[R3+#0FFFEH]
+        SUB R3,R0
+        CMP R3,#DATA16 00016H
+        JMPR cc_NC,L_A7CB6
+        MOV R3,crank_tim_19
+        JMPR cc_UC,L_A7CBA
+L_A7CB6:                 ; 0xa7cb6
+        MOV crank_tim_19,R3
+L_A7CBA:                 ; 0xa7cba
+        MOV R8,CC15_FE9E
+        BCLR T78CON.06H
+        BCLR T01CON.06H
+        BCLR lv_err_com_resp_imob.0FH
+        BFLDH CCM3_FF58,#0F0H,#00H
+        ATOMIC #01H
+        BFLDL 0F196H,#0FFH,#00H
+        BFLDL 0FF6AH,#0FFH,#073H
+        BCLR ccp_engine_flags.04H
+        BSET ccp_engine_flags.01H
+        JNB lv_err_com_resp_imob.0CH,L_A7D2C
+        CMP R3,R7
+        JMPR cc_NC,L_A7D2C
+        SCXT MDC,#DATA16 00000H
+        PUSH MDH
+        PUSH MDL
+        MULU R3,R3
+        DIVLU R7
+        MOV MDH,0FE0EH
+        MOV MDL,#DATA16 00000H
+        DIVLU R7
+        MOV R7,0FE0EH
+        MULU R7,R3
+        MOV R3,MDH_FE0C
+        MOV R0,PECC7_FECE
+        CMPB RL0,#02H
+        JMPR cc_ULE,L_A7D12
+        SUB PECC7,#DATA16 00002H
+        MOV R0,DSTP7_FCFE
+        ADD R0,#04H
+        JMPR cc_UC,L_A7D1A
+L_A7D12:                 ; 0xa7d12
+        MOV PECC7,#DATA16 00212H
+        MOV R0,#DATA16 0FAB4H
+L_A7D1A:                 ; 0xa7d1a
+        MOV DSTP7_FCFE,R0
+        MOV R1,R8
+        MOV [-R0],R1
+        SUB R1,R3
+        MOV [-R0],R1
+        POP MDL
+        POP MDH
+        POP MDC
+L_A7D2C:                 ; 0xa7d2c
+        MOV R7,R3
+        MOV T6_FE48,R3
+        BFLDL 0FF68H,#080H,#00H
+        JMPR cc_UC,L_A7D56
+L_A7D38:                 ; 0xa7d38
+        JB ccp_engine_flags.01H,L_A7D56
+        MOVB RL2,#01H
+        BCLR T78CON.06H
+        BCLR T01CON.06H
+        BCLR lv_err_com_resp_imob.0FH
+        BFLDH CCM3_FF58,#0F0H,#00H
+        ATOMIC #01H
+        BFLDL 0F196H,#0FFH,#00H
+        BFLDL 0FF6AH,#0FFH,#073H
+        BCLR ccp_engine_flags.04H
+        BSET ccp_engine_flags.01H
+L_A7D56:                 ; 0xa7d56
+        JMPA cc_UC,Set_Output_CC24
+        CMPB ZEROS,crank_tim_6
+        JMPR cc_EQ,L_A7D62
+        JMPR cc_UC,L_A7D7A
+L_A7D62:                 ; 0xa7d62
+        BFLDH CCM3_FF58,#0F0H,#0A0H
+        BCLR T6CON.06H
+        BSET T01CON.06H
+        BSET T78CON.06H
+        JB lv_err_com_resp_imob.0CH,L_A7D74
+        BFLDL 0FF6AH,#0FFH,#00H
+L_A7D74:                 ; 0xa7d74
+        BFLDL 0FF68H,#080H,#00H
+        BCLR ccp_engine_flags.01H
+L_A7D7A:                 ; 0xa7d7a
+        JMPA cc_UC,Set_Output_CC24
+        MOV T0,0FF1CH
+        MOV T7_F050,ZEROS
+        MOV R6,#DATA16 0645AH
+        CMPB ZEROS,crank_tim_6
+        JMPR cc_EQ,L_A7D92
+        JMPR cc_UC,L_A7DAA
+L_A7D92:                 ; 0xa7d92
+        BFLDH CCM3_FF58,#0F0H,#0A0H
+        BCLR T6CON.06H
+        BSET T01CON.06H
+        BSET T78CON.06H
+        JB lv_err_com_resp_imob.0CH,L_A7DA4
+        BFLDL 0FF6AH,#0FFH,#00H
+L_A7DA4:                 ; 0xa7da4
+        BFLDL 0FF68H,#080H,#00H
+        BCLR ccp_engine_flags.01H
+L_A7DAA:                 ; 0xa7daa
+        JMPA cc_UC,Set_Output_CC24
+        CMPB ZEROS,crank_tim_6
+        JMPR cc_EQ,L_A7DB6
+        JMPR cc_UC,L_A7E40
+L_A7DB6:                 ; 0xa7db6
+        MOV crank_tim_18,R2
+        CMPB RH2,#02H
+        JMPR cc_UGT,L_A7DFE
+        MOV R0,CC15_FE9E
+        SUB R0,R8
+        SHR R0,#01H
+        CMP R0,R7
+        JMPR cc_C,L_A7DFE
+        MOV R2,#00H
+        MOV R0,PECC7_FECE
+        CMPB RL0,#02H
+        JMPR cc_ULE,L_A7DE0
+        SUB PECC7,#DATA16 00002H
+        MOV R0,DSTP7_FCFE
+        ADD R0,#04H
+        JMPR cc_UC,L_A7DE8
+L_A7DE0:                 ; 0xa7de0
+        MOV PECC7,#DATA16 00212H
+        MOV R0,#DATA16 0FAB4H
+L_A7DE8:                 ; 0xa7de8
+        MOV DSTP7_FCFE,R0
+        MOV R1,CC15_FE9E
+        MOV [-R0],R1
+        MOV [-R0],R1
+        ATOMIC #01H
+        BFLDL 0F196H,#0FFH,#07FH
+        BSET ccp_engine_flags.02H
+        JMPR cc_UC,L_A7E40
+L_A7DFE:                 ; 0xa7dfe
+        EXTR #01H
+        BFLDL 0F170H,#0FFH,#00H
+        BFLDL 0FF68H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F194H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F196H,#0FFH,#00H
+        BFLDL 0FF66H,#0FFH,#00H
+        BFLDL 0FF6AH,#0FFH,#00H
+        BCLR T6CON.06H
+        BCLR T5CON.06H
+        BCLR T01CON.06H
+        BCLR T78CON.06H
+        MOVB first_vld_tooth,ZEROS
+        MOVB stop_eng,ONES
+        BCLR ccp_engine_flags.06H
+        MOV crank_tim_16,ONES
+        MOV crank_tim_17,ONES
+        BCLR lv_err_com_resp_imob.0EH
+        MOV crank_tim_27,ONES
+        MOV seg_t_mes_bas,ONES
+L_A7E40:                 ; 0xa7e40
+        JMPA cc_UC,Set_Output_CC24
+        CMPB ZEROS,crank_tim_6
+        JMPA cc_NE,L_A7F7E
+        MOV R0,CC15_FE9E
+        JMPR cc_N,L_A7E60
+        ATOMIC #02H
+        MOV R1,ign_cc_mode
+        JNB XP3IC.07H,L_A7E78
+        ADD R1,#01H
+        JMPR cc_UC,L_A7E78
+L_A7E60:                 ; 0xa7e60
+        MOV R1,ign_cc_mode
+        CMP ONES,T1_FE52
+        JMPR cc_NN,L_A7E78
+        ATOMIC #02H
+        JNB T1IC.07H,L_A7E72
+        JMPR cc_UC,L_A7E78
+L_A7E72:                 ; 0xa7e72
+        MOV R1,ign_cc_mode
+        SUB R1,#01H
+L_A7E78:                 ; 0xa7e78
+        JNB ccp_engine_flags.03H,L_A7EF0
+        BCLR ccp_engine_flags.03H
+        MOV g_fade,R0
+        MOV g_fae0,R1
+        SCXT MDC,#DATA16 00000H
+        PUSH MDH
+        PUSH MDL
+        MOV R0,DSTP7_FCFE
+        MOV R1,[R0+#0FFFCH]
+        MOV R0,[R0+#0FFFEH]
+        SUB R0,R1
+        CMP R0,#DATA16 00016H
+        JMPR cc_NC,L_A7EA8
+        MOV R0,crank_tim_19
+        JMPR cc_UC,L_A7EAC
+L_A7EA8:                 ; 0xa7ea8
+        MOV crank_tim_19,R0
+L_A7EAC:                 ; 0xa7eac
+        MOV R1,#DATA16 0001EH
+        MULU R0,R1
+        MOV R5,0FE0EH
+        MOV R0,MDH_FE0C
+        MOV crank_tim_16,R5
+        MOV crank_tim_17,R0
+        CMP R0,0FF1CH
+        JMPR cc_NE,L_A7ED6
+        MOV R1,R5
+        AND R1,#DATA16 0C000H
+        JMPR cc_NE,L_A7ED6
+        MOV R1,R5
+        SHL R1,#02H
+        JMPR cc_UC,L_A7EE0
+L_A7ED6:                 ; 0xa7ed6
+        MOV crank_tim_27,ONES
+        MOV seg_t_mes_bas,ONES
+        JMPR cc_UC,L_A7EE8
+L_A7EE0:                 ; 0xa7ee0
+        MOV crank_tim_27,R1
+        MOV seg_t_mes_bas,R1
+L_A7EE8:                 ; 0xa7ee8
+        POP MDL
+        POP MDH
+        POP MDC
+        JMPR cc_UC,L_A7F0C
+L_A7EF0:                 ; 0xa7ef0
+        MOV R5,R0
+        SUB R5,g_fade
+        MOV g_fade,R0
+        MOV R0,R1
+        SUBC R0,g_fae0
+        MOV g_fae0,R1
+        MOV crank_tim_16,R5
+        MOV crank_tim_17,R0
+L_A7F0C:                 ; 0xa7f0c
+        CMP R0,#00H
+        JMPR cc_C,L_A7F72
+        JMPR cc_UGT,L_A7F18
+        CMP R5,#DATA16 02BF2H
+        JMPR cc_ULE,L_A7F72
+L_A7F18:                 ; 0xa7f18
+        JB lv_err_com_resp_imob.0CH,L_A7F22
+        BSET lv_err_com_resp_imob.0CH
+        BFLDL 0FF6AH,#0FFH,#073H
+L_A7F22:                 ; 0xa7f22
+        CMP R0,#02H
+        JMPR cc_C,L_A7F8E
+        JMPR cc_UGT,L_A7F2E
+        CMP R5,#DATA16 0DC6CH
+        JMPR cc_ULE,L_A7F8E
+L_A7F2E:                 ; 0xa7f2e
+        EXTR #01H
+        BFLDL 0F170H,#0FFH,#00H
+        BFLDL 0FF68H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F194H,#0FFH,#00H
+        ATOMIC #01H
+        BFLDL 0F196H,#0FFH,#00H
+        BFLDL 0FF66H,#0FFH,#00H
+        BFLDL 0FF6AH,#0FFH,#00H
+        BCLR T6CON.06H
+        BCLR T5CON.06H
+        BCLR T01CON.06H
+        BCLR T78CON.06H
+        MOVB first_vld_tooth,ZEROS
+        MOVB stop_eng,ONES
+        BCLR ccp_engine_flags.06H
+        MOV crank_tim_16,ONES
+        MOV crank_tim_17,ONES
+        BCLR lv_err_com_resp_imob.0EH
+        MOV crank_tim_27,ONES
+        MOV seg_t_mes_bas,ONES
+        JMPR cc_UC,L_A7F8E
+L_A7F72:                 ; 0xa7f72
+        JNB lv_err_com_resp_imob.0CH,L_A7F8E
+        BCLR lv_err_com_resp_imob.0CH
+        BFLDL 0FF6AH,#0FFH,#00H
+        JMPR cc_UC,L_A7F8E
+L_A7F7E:                 ; 0xa7f7e
+        MOV R0,crank_tim_25
+        MOV crank_tim_16,R0
+        MOV R0,crank_tim_26
+        MOV crank_tim_17,R0
+L_A7F8E:                 ; 0xa7f8e
+        BMOVN lv_err_com_resp_imob.08H,lv_err_com_resp_imob.08H
+        MOVBZ R0,imob_f5d4
+        EXTP #03H, #01H
+        MOVB DPP0:cyl_id_sam_trig,RL0
+        MOVB RL0,[R0+#065EFH]
+        MOVB imob_f5d4,RL0
+        BOR can_sched_flags1.0FH,can_sched_flags0.0FH
+        BMOV can_sched_flags0.0FH,can_sched_flags2.0FH
+        MOV R0,crank_tim_27
+        MOV seg_t_mes_bas,R0
+        JMPR cc_UC,Set_Output_CC24
+        CMPB ZEROS,crank_tim_6
+        JMPR cc_NE,L_A7FEC
+        MOV R0,CAPREL_FE4A
+        JMPR cc_N,L_A7FD2
+        ATOMIC #02H
+        MOV R1,crank_tim_24
+        JNB CC19IC.07H,L_A7FEA
+        ADD R1,#01H
+        JMPR cc_UC,L_A7FEA
+L_A7FD2:                 ; 0xa7fd2
+        MOV R1,crank_tim_24
+        CMP ONES,T5_FE46
+        JMPR cc_NN,L_A7FEA
+        ATOMIC #02H
+        JNB T5IC.07H,L_A7FE4
+        JMPR cc_UC,L_A7FEA
+L_A7FE4:                 ; 0xa7fe4
+        MOV R1,crank_tim_24
+        SUB R1,#01H
+L_A7FEA:                 ; 0xa7fea
+        JMPR cc_UC,L_A8018
+L_A7FEC:                 ; 0xa7fec
+        MOV R0,T5_FE46
+        JMPR cc_N,Set_lv_err_com_resp_imob_a800
+        ATOMIC #02H
+        MOV R1,crank_tim_24
+        JNB CC19IC.07H,L_A8018
+        ADD R1,#01H
+        JMPR cc_UC,L_A8018
+
+; ======== Set_lv_err_com_resp_imob_a800  (@0xa8000) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Set_lv_err_com_resp_imob_a800:
+        MOV R1,crank_tim_24
+        CMP ONES,T5_FE46
+        JMPR cc_NN,L_A8018
+        ATOMIC #02H
+        JNB T5IC.07H,L_A8012
+        JMPR cc_UC,L_A8018
+L_A8012:                 ; 0xa8012
+        MOV R1,crank_tim_24
+        SUB R1,#01H
+L_A8018:                 ; 0xa8018
+        JB lv_err_com_resp_imob.0EH,L_A8028
+        BSET lv_err_com_resp_imob.0EH
+        MOV imob_faec,R0
+        MOV imob_faee,R1
+        JMPR cc_UC,L_A8048
+L_A8028:                 ; 0xa8028
+        MOV R5,R0
+        SUB R5,imob_faec
+        MOV imob_faec,R0
+        MOV R0,R1
+        SUBC R0,imob_faee
+        MOV imob_faee,R1
+        CMP R0,#00H
+        JMPR cc_EQ,L_A8044
+        MOV R5,0FF1EH
+L_A8044:                 ; 0xa8044
+        MOV crank_tim_27,R5
+L_A8048:                 ; 0xa8048
+        MOVBZ R0,imob_f5d4
+        MOVB RL0,[R0+#065A6H]
+        MOVB RL1,[R0+#0F5ADH]
+        CMPB RL1,#00H
+        JMPR cc_NE,L_A805A
+        JMPR cc_UC,L_A8064
+L_A805A:                 ; 0xa805a
+        MOVB imob_f5b5,RL0
+        ATOMIC #01H
+        BFLDL 0F18AH,#080H,#080H
+L_A8064:                 ; 0xa8064
+        JMPR cc_UC,Set_Output_CC24
+
+; ======== Set_Output_CC24  (@0xa8066) ========
+        ; ------------------------------------------------------------
+        ; Seg-A helper (verified): CAPCOM2 CC24 compare output setup (CC24/CC24IC vs T7).
+        ; ------------------------------------------------------------
+Set_Output_CC24:
+        MOV R0,[R6+]
+        MOV CC24_FE70,R0
+        MOV R4,[R6+]
+L_A806E:                 ; 0xa806e
+        EXTR #01H
+        CMP T0,CC24_FE70
+        JMPR cc_C,L_A807C
+        EXTR #01H
+        BFLDL 0F170H,#080H,#080H
+L_A807C:                 ; 0xa807c
+        POP CP
+        RETI
+
+S_A6E34 ENDS
+        END

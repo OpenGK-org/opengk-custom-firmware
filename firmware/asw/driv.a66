@@ -1,0 +1,292 @@
+; asw/driv.a66
+; 0xB0D2E-0xB0FE4  (694 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_fil_n_driv                         EQU  0901C2H
+c_vs_thd_max                         EQU  090449H
+c_vs_thd_min                         EQU  09044AH
+lc_inh_fac_tq_req_driv_at            EQU  09046DH
+c_fac_slop_driv_dec                  EQU  090544H
+c_fac_slop_driv_inc                  EQU  090546H
+c_fac_tq_req_tqi_bas_min             EQU  090552H
+c_fac_tqi_min_maf                    EQU  090554H
+c_pv_thd_fac_tq_req_red              EQU  09067CH
+c_pv_thd_fac_tq_req_tps_lih          EQU  09067EH
+c_tqi_fac_fl                         EQU  0907C4H
+ldpm_tmag_ivvt_1_ivvt                        EQU  09814DH
+
+PUBLIC  Calc_Fac_TQ_Req_TPS, Calc_TMag_IVVT, Calc_TMag_IVVT_Slv, Calc_TQI_Max
+EXTERN  Add_r12_r13_Return_r4:NEAR, Div_U32_U16_Round:NEAR, Get_IP_Byte_3D_Table_DWord_XByte_YByte:NEAR, Get_IP_Byte_Y_Axis:NEAR
+EXTERN  Get_IP_Word_3D_Table_DWord_XWord_YByte:NEAR, Get_IP_Word_3D_Table_DWord_XWord_YWord:NEAR, Interp_U16:NEAR, Max0_S16:NEAR
+EXTERN  Min_U16:NEAR, Mul_Q15_Sat:NEAR, Mul_Q15_Sat_Signed:NEAR, Sat_Add_S16:NEAR
+EXTERN  Sat_Sub_S16:NEAR, multipied_r12_r13_UGT_r14_rets_r4:NEAR, sub_r12_r13_rets_r4:NEAR
+
+S_B0D2E SECTION CODE AT 0B0D2EH
+
+; ======== Calc_TMag_IVVT  (@0xb0d2e) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signals): IVVT solenoid (OCV) magnet temperature model tmag_ivvt.
+        ; ------------------------------------------------------------
+Calc_TMag_IVVT:
+        MOV R12,#DATA16 045F2H
+        MOVBZ R13,toil
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XByte_YByte
+        MOVB tmag_ivvt,RL4
+        RETS
+
+; ======== Calc_TMag_IVVT_Slv  (@0xb0d44) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signals): IVVT magnet temp (slave bank): tmag_ivvt +
+        ; lv_act_cle_slv_ivvt.
+        ; ------------------------------------------------------------
+Calc_TMag_IVVT_Slv:
+        MOV R12,#DATA16 045F2H
+        MOVBZ R13,toil
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XByte_YByte
+        MOVB tmag_ivvt,RL4
+        JNB lv_act_cle_slv_ivvt.09H,L_B0D5E
+        BCLR lv_act_cle_slv_ivvt.09H
+L_B0D5E:                 ; 0xb0d5e
+        MOV R12,#DATA16 POF ldpm_tmag_ivvt_1_ivvt
+        MOV R13,#DATA16 PAG ldpm_tmag_ivvt_1_ivvt
+        MOVBZ R14,tmag_ivvt
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOVB RL4,ip_idx
+        CMPB RL4,lv_ivvt_c21c
+        JMPR cc_EQ,L_B0D7E
+        BSET lv_act_cle_slv_ivvt.09H
+        MOVB lv_ivvt_c21c,RL4
+L_B0D7E:                 ; 0xb0d7e
+        RETS
+
+; ======== Calc_Fac_TQ_Req_TPS  (@0xb0d80) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by maf/tps output signals + DTC): TPS/MAF torque-request factors:
+        ; fac_tq_req_tps_lih / fac_tq_req_min_maf / tqi_min_maf / tq_min_clu_maf.
+        ; ------------------------------------------------------------
+Calc_Fac_TQ_Req_TPS:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        JNB abs_def.04H,L_B0DAC
+        MOVB RL4,DPP0:lc_inh_fac_tq_req_driv_at
+        JMPR cc_NE,L_B0DAC
+        MOV R12,#DATA16 04616H
+        MOV R13,n_C93C
+        MOV R14,pv_av_h
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XWord_YWord
+        MOV fac_tq_req_driv_at,R4
+        MOV fac_tq_req_pv,R4
+        JMPR cc_UC,L_B0E32
+L_B0DAC:                 ; 0xb0dac
+        MOV R12,n_fil_driv
+        MOV R13,n_C93C
+        MOVBZ R14,DPP0:c_fil_n_driv
+        SHL R14,#08H
+        CALLS 00FH,Interp_U16
+        MOV n_fil_driv,R4
+        MOV R12,#DATA16 045FEH
+        MOV R13,R4
+        MOV R14,pv_av_h
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XWord_YWord
+        MOV fac_tq_req_driv_pas,R4
+        MOV R12,#DATA16 0460AH
+        MOV R13,n_C93C
+        MOV R14,pv_av_h
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XWord_YWord
+        MOV fac_tq_req_driv_act,R4
+        MOVB RL4,vs
+        CMPB RL4,DPP0:c_vs_thd_min
+        JMPR cc_NC,L_B0E04
+        MOV R12,fac_slop_driv
+        MOV R13,DPP0:c_fac_slop_driv_dec
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV fac_slop_driv,R4
+        JMPR cc_UC,L_B0E1E
+L_B0E04:                 ; 0xb0e04
+        MOVB RL4,vs
+        CMPB RL4,DPP0:c_vs_thd_max
+        JMPR cc_ULE,L_B0E1E
+        MOV R12,fac_slop_driv
+        MOV R13,DPP0:c_fac_slop_driv_inc
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV fac_slop_driv,R4
+L_B0E1E:                 ; 0xb0e1e
+        MOV R12,fac_tq_req_driv_act
+        MOV R13,fac_tq_req_driv_pas
+        MOV R14,fac_slop_driv
+        CALLS 00FH,Interp_U16
+        MOV fac_tq_req_pv,R4
+L_B0E32:                 ; 0xb0e32
+        JB lv_err_tps_det.05H,L_B0F08
+        MOV R4,pv_av_h
+        JMPR cc_NE,L_B0E42
+        MOV fac_tq_req_min_maf,ZEROS
+        JMPR cc_UC,L_B0EEE
+L_B0E42:                 ; 0xb0e42
+        MOV R12,eff_iga_bas_cor
+        MOV R13,eff_lamb_bas_cor
+        CALLS 00FH,Mul_Q15_Sat
+        MOV R13,R4
+        MOV R12,DPP0:c_fac_tqi_min_maf
+        CALLS 00FH,Mul_Q15_Sat
+        MOV [-R0],R4
+        MOV R12,#DATA16 04622H
+        MOVBZ R13,n_32
+        MOV R14,maf_min_cor
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XWord_YByte
+        MOV R12,R4
+        MOV R13,[R0+]
+        CALLS 00FH,Mul_Q15_Sat_Signed
+        MOV tqi_min_maf,R4
+        MOV R12,R4
+        MOV R13,tq_loss_req_clu
+        CALLS 00FH,Sat_Add_S16
+        MOV tq_min_clu_maf,R4
+        MOV R12,R4
+        MOV R13,tq_min_clu
+        CALLS 00FH,Sat_Sub_S16
+        MOV R12,R4
+        CALLS 00FH,Max0_S16
+        MOV R9,R4
+        MOV R12,tq_max_clu
+        MOV R13,tq_min_clu
+        CALLS 00FH,Sat_Sub_S16
+        MOV R12,R4
+        CALLS 00FH,Max0_S16
+        MOV R14,R4
+        MOV R12,R9
+        MOV R13,#DATA16 08000H
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV fac_tq_req_min_maf_1,R4
+        MOV R9,#01H
+        CMP R9,DPP0:c_pv_thd_fac_tq_req_red
+        JMPR cc_NC,L_B0EC4
+        MOV R9,DPP0:c_pv_thd_fac_tq_req_red
+L_B0EC4:                 ; 0xb0ec4
+        MOV R12,pv_av_h
+        MOV R13,#DATA16 08000H
+        MOV R14,R9
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV R9,R4
+        MOV R12,#DATA16 08000H
+        MOV R13,R9
+        CALLS 00FH,Min_U16
+        MOV R9,R4
+        MOV R12,R9
+        MOV R13,fac_tq_req_min_maf_1
+        CALLS 00FH,Mul_Q15_Sat
+        MOV fac_tq_req_min_maf,R4
+L_B0EEE:                 ; 0xb0eee
+        MOV R4,fac_tq_req_pv
+        CMP R4,fac_tq_req_min_maf
+        JMPR cc_ULE,L_B0EFE
+        MOV R4,fac_tq_req_pv
+        JMPR cc_UC,L_B0F02
+L_B0EFE:                 ; 0xb0efe
+        MOV R4,fac_tq_req_min_maf
+L_B0F02:                 ; 0xb0f02
+        MOV fac_tq_req_driv,R4
+        JMPR cc_UC,L_B0F98
+L_B0F08:                 ; 0xb0f08
+        MOV R4,pv_av_h
+        CMP R4,DPP0:c_pv_thd_fac_tq_req_tps_lih
+        JMPR cc_UGT,L_B0F18
+        MOV fac_tq_req_tps_lih,ZEROS
+        JMPR cc_UC,L_B0F90
+L_B0F18:                 ; 0xb0f18
+        MOV R12,tq_max_clu
+        MOV R13,tq_min_clu
+        CALLS 00FH,Sat_Sub_S16
+        MOV R8,R4
+        CMP R8,#00H
+        JMPR cc_SLE,L_B0F74
+        MOV R6,tqi_bas
+        MOV R7,R6
+        ASHR R7,#0FH
+        MOV R4,tq_loss
+        MOV R5,R4
+        ASHR R5,#0FH
+        ADD R6,R4
+        ADDC R7,R5
+        MOV R4,tq_min_clu
+        MOV R5,R4
+        ASHR R5,#0FH
+        SUB R6,R4
+        SUBC R7,R5
+        CMP R7,#00H
+        JMPR cc_SLT,L_B0F6E
+        JMPR cc_SGT,L_B0F54
+        CMP R6,#00H
+        JMPR cc_ULE,L_B0F6E
+L_B0F54:                 ; 0xb0f54
+        MOV R12,R6
+        MOV R13,R7
+        MOV R5,R12
+        SHL R12,#0FH
+        SHL R13,#0FH
+        SHR R5,#01H
+        OR R13,R5
+        MOV R14,R8
+        CALLS 00FH,Div_U32_U16_Round
+        MOV fac_tq_req_tqi_bas,R4
+        JMPR cc_UC,L_B0F78
+L_B0F6E:                 ; 0xb0f6e
+        MOV fac_tq_req_tqi_bas,ZEROS
+        JMPR cc_UC,L_B0F78
+L_B0F74:                 ; 0xb0f74
+        MOV fac_tq_req_tqi_bas,ONES
+L_B0F78:                 ; 0xb0f78
+        MOV R4,fac_tq_req_tqi_bas
+        CMP R4,DPP0:c_fac_tq_req_tqi_bas_min
+        JMPR cc_ULE,L_B0F88
+        MOV R4,fac_tq_req_tqi_bas
+        JMPR cc_UC,L_B0F8C
+L_B0F88:                 ; 0xb0f88
+        MOV R4,DPP0:c_fac_tq_req_tqi_bas_min
+L_B0F8C:                 ; 0xb0f8c
+        MOV fac_tq_req_tps_lih,R4
+L_B0F90:                 ; 0xb0f90
+        MOV R4,fac_tq_req_tps_lih
+        MOV fac_tq_req_driv,R4
+L_B0F98:                 ; 0xb0f98
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_TQI_Max  (@0xb0fa2) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tq/tqi output signals): Indicated-torque upper limits: tqi_max / tqi_ref_max
+        ; / tqi_bas_max / tq_max_clu (max allowable torque for the coordinator).
+        ; ------------------------------------------------------------
+Calc_TQI_Max:
+        MOV R12,#DATA16 0462EH
+        MOVBZ R13,n_32
+        MOV R14,maf_max_cor
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XWord_YByte
+        MOV tqi_ref_max,R4
+        MOV R12,R4
+        MOV R13,DPP0:c_tqi_fac_fl
+        CALLS 00FH,Mul_Q15_Sat_Signed
+        MOV tqi_max,R4
+        MOV R12,R4
+        MOV R13,tq_loss_req_clu
+        CALLS 00FH,Sat_Add_S16
+        MOV tq_max_clu,R4
+        MOV R12,tqi_ref_max
+        MOV R13,eff_tot_bas
+        CALLS 00FH,Mul_Q15_Sat_Signed
+        MOV tqi_bas_max,R4
+        RETS
+
+S_B0D2E ENDS
+        END

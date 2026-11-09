@@ -1,0 +1,117 @@
+; asw/crc.a66
+; 0xC7D86-0xC7EB0  (298 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Diag_CRC16, Reset_Dc2b6_e9a
+EXTERN  DTC_Calc_Activation_MIL:NEAR, Push_To_System_Stack:NEAR
+
+S_C7D86 SECTION CODE AT 0C7D86H
+
+; ======== Diag_CRC16  (@0xc7d86) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): CRC16 checksum fault handling (crc_status)
+        ; ------------------------------------------------------------
+Diag_CRC16:
+        MOV R4,crc_status
+        AND R4,#DATA16 018C6H
+        JMPA cc_EQ,L_C7E98
+        EXTP #00H, #02H
+        MOV R4,diag_27e
+        MOV R5,diag_280
+        CALLS 00CH,Push_To_System_Stack
+        MOV R4,crc_status
+        AND R4,#DATA16 02000H
+        JMPR cc_EQ,L_C7DF2
+        MOV R4,crc_status
+        AND R4,#DATA16 04400H
+        CMP R4,#DATA16 00400H
+        JMPR cc_NE,L_C7DC4
+        MOV R4,#DATA16 0FF7FH
+        AND ecu_diag_sf_word,R4
+        JMPR cc_UC,L_C7DCC
+L_C7DC4:                 ; 0xc7dc4
+        MOV R4,#DATA16 00080H
+        OR ecu_diag_sf_word,R4
+L_C7DCC:                 ; 0xc7dcc
+        MOV R12,#DATA16 00080H
+        CALLS 00DH,DTC_Calc_Activation_MIL
+        BMOV lv_ecu_err.03H,dtc_status_work.06H
+        MOVBZ R4,dtc_ecu_flags
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C7DEA
+        MOV R4,#DATA16 0FFF7H
+        AND dtc_st_grp_ecu,R4
+L_C7DEA:                 ; 0xc7dea
+        MOV R4,#DATA16 0DFFFH
+        AND crc_status,R4
+L_C7DF2:                 ; 0xc7df2
+        MOV R4,crc_status
+        AND R4,#DATA16 00100H
+        JMPR cc_EQ,L_C7E42
+        MOV R4,crc_status
+        AND R4,#DATA16 00220H
+        CMP R4,#DATA16 00020H
+        JMPR cc_NE,L_C7E14
+        MOV R4,#DATA16 0FEFFH
+        AND ecu_diag_sf_word,R4
+        JMPR cc_UC,L_C7E1C
+L_C7E14:                 ; 0xc7e14
+        MOV R4,#DATA16 00100H
+        OR ecu_diag_sf_word,R4
+L_C7E1C:                 ; 0xc7e1c
+        MOV R12,#DATA16 00100H
+        CALLS 00DH,DTC_Calc_Activation_MIL
+        BMOV lv_ecu_err.03H,dtc_status_work.06H
+        MOVBZ R4,dtc_ecu_flags
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C7E3A
+        MOV R4,#DATA16 0FFF7H
+        AND dtc_st_grp_ecu,R4
+L_C7E3A:                 ; 0xc7e3a
+        MOV R4,#DATA16 0FEFFH
+        AND crc_status,R4
+L_C7E42:                 ; 0xc7e42
+        MOV R4,crc_status
+        AND R4,#DATA16 00008H
+        JMPR cc_EQ,L_C7E98
+        MOV R4,cks_crc_cal
+        MOV diag_cdc0,R4
+        MOV R5,crc_status
+        AND R5,#DATA16 00011H
+        CMP R5,#01H
+        JMPR cc_NE,L_C7E6A
+        MOV R5,#DATA16 0FDFFH
+        AND ecu_diag_sf_word,R5
+        JMPR cc_UC,L_C7E72
+L_C7E6A:                 ; 0xc7e6a
+        MOV R4,#DATA16 00200H
+        OR ecu_diag_sf_word,R4
+L_C7E72:                 ; 0xc7e72
+        MOV R12,#DATA16 00200H
+        CALLS 00DH,DTC_Calc_Activation_MIL
+        BMOV lv_ecu_err.03H,dtc_status_work.06H
+        MOVBZ R4,dtc_ecu_flags
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C7E90
+        MOV R4,#DATA16 0FFF7H
+        AND dtc_st_grp_ecu,R4
+L_C7E90:                 ; 0xc7e90
+        MOV R4,#DATA16 0FFF7H
+        AND crc_status,R4
+L_C7E98:                 ; 0xc7e98
+        RETS
+
+; ======== Reset_Dc2b6_e9a  (@0xc7e9a) ========
+Reset_Dc2b6_e9a:
+        MOVB g_c2b6,ZEROS
+        MOVB g_c2b5,ZEROS
+        MOV ecu_diag_sf_word,ZEROS
+        MOV R4,#DATA16 01084H
+        OR crc_status,R4
+        RETS
+
+S_C7D86 ENDS
+        END

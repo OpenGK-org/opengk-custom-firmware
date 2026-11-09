@@ -1,0 +1,269 @@
+; asw/diagcp/diagcp_cp.a66
+; 0xD1F96-0xD2222  (652 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_max_prs_dyn_diagcp                 EQU  09023DH
+c_min_prs_dyn_diagcp                 EQU  090283H
+c_t_1_dif_diagcp                     EQU  090312H
+c_t_close_cps_diagcp                 EQU  090319H
+c_t_dly_close_sov_diagcp             EQU  09031EH
+c_t_dly_cor_beg_diagcp               EQU  09031FH
+c_dtp_dyw_1                          EQU  090522H
+c_maf_cps_sp_close_diagcp            EQU  0905AAH
+c_dtp_dif_max_diagcp                 EQU  09086EH
+c_dtp_slop_max                       EQU  09087EH
+
+PUBLIC  DiagCP_St0_Precond, DiagCP_St1, DiagCP_St2, DiagCP_St3
+EXTERN  Abs_S16_Simple:NEAR, DiagCP_Calc_DtpDyw:NEAR, DiagCP_Noise_Abort:NEAR, DiagCP_SetFaultState:NEAR
+EXTERN  Div_S16_Round_Sat:NEAR, Div_S32_S16_Round:NEAR, L_D3586:NEAR, Sat_Sub_S16:NEAR
+EXTERN  sub_r12_r13_rets_r4:NEAR
+
+S_D1F96 SECTION CODE AT 0D1F96H
+
+; ======== DiagCP_St0_Precond  (@0xd1f96) ========
+        ; ------------------------------------------------------------
+        ; DiagCP (EVAP leak-diag) state_diagcp==0 arm, via DiagCP_State_jmptab@0xa105e.
+        ; ------------------------------------------------------------
+DiagCP_St0_Precond:
+        JB lv_err_maf_tps_ratio_2.08H,L_D1FD6
+        JB lv_err_maf_tps_ratio_2.09H,L_D1FD6
+        MOV R4,dtp_sword
+        MOV g_cfd0,R4
+        MOV g_cfd2,R4
+        SUBB g_c399,ONES
+        SUBB g_c39a,ONES
+        BSET lv_act_diagcps.07H
+        BSET lv_act_diagcps.06H
+        MOV ctr_sum_dtp,ZEROS
+        MOV g_cfd4,ZEROS
+        MOV g_cfd6,ZEROS
+        BSET lv_err_maf_tps_ratio_2.08H
+        BCLR lv_err_maf_tps_ratio_2.09H
+        BSET lv_diagcp_cdn_nok.09H
+        BCLR lv_diagcp_cdn_nok.0AH
+        MOVBZ R5,DPP0:c_t_1_dif_diagcp
+        MOV state_diagcp_F978,R5
+        JMPA cc_UC,L_D3586
+L_D1FD6:                 ; 0xd1fd6
+        JB lv_err_maf_tps_ratio_2.09H,L_D203C
+        MOV R4,dtp_sword
+        CMP R4,g_cfd0
+        JMPR cc_SLE,L_D1FEE
+        MOV R4,dtp_sword
+        MOV g_cfd0,R4
+        JMPR cc_UC,L_D2000
+L_D1FEE:                 ; 0xd1fee
+        MOV R4,dtp_sword
+        CMP R4,g_cfd2
+        JMPR cc_SGE,L_D2000
+        MOV R4,dtp_sword
+        MOV g_cfd2,R4
+L_D2000:                 ; 0xd2000
+        MOV R12,g_cfd0
+        MOV R13,g_cfd2
+        CALLS 00FH,Sat_Sub_S16
+        MOV dtp_dif_prs_dyn_sword,R4
+        MOV R4,dtp_dif_prs_dyn_sword
+        CMP R4,DPP0:c_dtp_dif_max_diagcp
+        JMPR cc_SLE,L_D2024
+        BCLR lv_act_diagcps.07H
+        MOV R4,#DATA16 00020H
+        OR intr_state_diagcp,R4
+L_D2024:                 ; 0xd2024
+        MOV R4,dtp_sword
+        MOV R5,R4
+        ASHR R5,#0FH
+        ADD g_cfd4,R4
+        ADDC g_cfd6,R5
+        SUB ctr_sum_dtp,ONES
+        JMPA cc_UC,L_D3586
+L_D203C:                 ; 0xd203c
+        BCLR lv_err_maf_tps_ratio_2.08H
+        BCLR lv_err_maf_tps_ratio_2.09H
+        BCLR lv_diagcp_cdn_nok.09H
+        BCLR lv_diagcp_cdn_nok.0AH
+        MOV state_diagcp_F978,ZEROS
+        MOV R4,dtp_mv_per_sword
+        MOV g_cff4,R4
+        MOV R12,g_cfd4
+        MOV R13,g_cfd6
+        MOV R14,ctr_sum_dtp
+        CALLS 00FH,Div_S32_S16_Round
+        MOV dtp_mv_per_sword,R4
+        MOVB RL4,g_c39a
+        CMPB RL4,#02H
+        JMPA cc_C,L_D3586
+        MOV R12,dtp_mv_per_sword
+        MOV R13,g_cff4
+        CALLS 00FH,Sat_Sub_S16
+        MOV R12,R4
+        MOVBZ R13,DPP0:c_t_1_dif_diagcp
+        SUB R13,#01H
+        CALLS 00FH,Div_S16_Round_Sat
+        MOV dtp_slop,R4
+        MOV R12,R4
+        CALLS 00DH,Abs_S16_Simple
+        CMP R4,DPP0:c_dtp_slop_max
+        JMPR cc_SLT,L_D2098
+        BCLR lv_act_diagcps.06H
+L_D2098:                 ; 0xd2098
+        JNB lv_act_diagcps.07H,L_D20EA
+        JNB lv_act_diagcps.06H,L_D20EA
+        MOVB RL4,g_c39a
+        CMPB RL4,DPP0:c_max_prs_dyn_diagcp
+        JMPR cc_C,L_D20B4
+        MOVB RL5,g_c399
+        CMPB RL5,DPP0:c_min_prs_dyn_diagcp
+        JMPR cc_NE,L_D20D8
+L_D20B4:                 ; 0xd20b4
+        MOVB RL4,g_c399
+        CMPB RL4,DPP0:c_min_prs_dyn_diagcp
+        JMPA cc_C,L_D3586
+        MOV R4,#DATA16 0FFDFH
+        AND intr_state_diagcp,R4
+        MOVB RL4,#02H
+        MOVB state_diagcp,RL4
+        MOVB RL5,#01H
+        MOVB cdn_dtp_noise_state_diag,RL5
+        JMPA cc_UC,L_D3586
+L_D20D8:                 ; 0xd20d8
+        MOV R4,#DATA16 00020H
+        OR intr_state_diagcp,R4
+        MOV R12,#00H
+        CALLA cc_UC,DiagCP_SetFaultState
+        JMPA cc_UC,L_D3586
+L_D20EA:                 ; 0xd20ea
+        MOVB g_c399,ZEROS
+        MOVB RL4,g_c39a
+        CMPB RL4,DPP0:c_max_prs_dyn_diagcp
+        JMPA cc_C,L_D3586
+        JMPA cc_UC,DiagCP_Noise_Abort
+
+; ======== DiagCP_St1  (@0xd20fe) ========
+        ; ------------------------------------------------------------
+        ; DiagCP (EVAP leak-diag) state_diagcp==1 arm, via DiagCP_State_jmptab@0xa105e.
+        ; ------------------------------------------------------------
+DiagCP_St1:
+        JB lv_err_maf_tps_ratio_2.08H,L_D2126
+        JB lv_err_maf_tps_ratio_2.09H,L_D2126
+        MOV R4,flow_sp_cps
+        MOV flow_sp_cps_ext,R4
+        BSET lv_act_diagcps.03H
+        BCLR lv_act_diagcps.05H
+        BSET lv_err_maf_tps_ratio_2.08H
+        BCLR lv_err_maf_tps_ratio_2.09H
+        BSET lv_diagcp_cdn_nok.09H
+        BCLR lv_diagcp_cdn_nok.0AH
+        MOVBZ R5,DPP0:c_t_close_cps_diagcp
+        MOV state_diagcp_F978,R5
+        JMPA cc_UC,L_D3586
+L_D2126:                 ; 0xd2126
+        JNB lv_err_maf_tps_ratio_2.09H,L_D2144
+        BCLR lv_err_maf_tps_ratio_2.08H
+        BCLR lv_err_maf_tps_ratio_2.09H
+        BCLR lv_diagcp_cdn_nok.09H
+        BCLR lv_diagcp_cdn_nok.0AH
+        MOV state_diagcp_F978,ZEROS
+        MOV flow_sp_cps_ext,ZEROS
+        MOVB RL4,#03H
+        MOVB state_diagcp,RL4
+        JMPA cc_UC,L_D3586
+L_D2144:                 ; 0xd2144
+        MOV R4,flow_sp_cps_ext
+        CMP R4,#00H
+        JMPR cc_ULE,L_D215E
+        MOV R12,R4
+        MOV R13,DPP0:c_maf_cps_sp_close_diagcp
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV flow_sp_cps_ext,R4
+        JMPA cc_UC,L_D3586
+L_D215E:                 ; 0xd215e
+        BCLR lv_err_maf_tps_ratio_2.08H
+        BCLR lv_err_maf_tps_ratio_2.09H
+        BCLR lv_diagcp_cdn_nok.09H
+        BCLR lv_diagcp_cdn_nok.0AH
+        MOV state_diagcp_F978,ZEROS
+        MOVB RL4,#03H
+        MOVB state_diagcp,RL4
+        JMPA cc_UC,L_D3586
+
+; ======== DiagCP_St2  (@0xd2174) ========
+        ; ------------------------------------------------------------
+        ; DiagCP (EVAP leak-diag) state_diagcp==2 arm, via DiagCP_State_jmptab@0xa105e.
+        ; ------------------------------------------------------------
+DiagCP_St2:
+        JB lv_err_maf_tps_ratio_2.08H,L_D2190
+        JB lv_err_maf_tps_ratio_2.09H,L_D2190
+        BSET lv_err_maf_tps_ratio_2.08H
+        BCLR lv_err_maf_tps_ratio_2.09H
+        BSET lv_diagcp_cdn_nok.09H
+        BCLR lv_diagcp_cdn_nok.0AH
+        MOVBZ R4,DPP0:c_t_dly_close_sov_diagcp
+        MOV state_diagcp_F978,R4
+        JMPA cc_UC,L_D3586
+L_D2190:                 ; 0xd2190
+        JB lv_err_maf_tps_ratio_2.09H,L_D2198
+        JMPA cc_UC,L_D3586
+L_D2198:                 ; 0xd2198
+        JB state_out_req.09H,L_D21B4
+        MOV R4,maf_pwm_base
+        MOV R2,#DATA16 0FDF3H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV lv_maf_f9da,R4
+L_D21B4:                 ; 0xd21b4
+        BSET lv_err_maf_tps_ratio_2.05H
+        BCLR lv_err_maf_tps_ratio_2.08H
+        BCLR lv_err_maf_tps_ratio_2.09H
+        BCLR lv_diagcp_cdn_nok.09H
+        BCLR lv_diagcp_cdn_nok.0AH
+        MOV state_diagcp_F978,ZEROS
+        MOVB RL4,#04H
+        MOVB state_diagcp,RL4
+        JMPA cc_UC,L_D3586
+
+; ======== DiagCP_St3  (@0xd21cc) ========
+        ; ------------------------------------------------------------
+        ; DiagCP (EVAP leak-diag) state_diagcp==3 arm, via DiagCP_State_jmptab@0xa105e.
+        ; ------------------------------------------------------------
+DiagCP_St3:
+        MOV R12,DPP0:c_dtp_dyw_1
+        CALLA cc_UC,DiagCP_Calc_DtpDyw
+        CMPB RL4,#01H
+        JMPR cc_NE,L_D2212
+        JB lv_err_maf_tps_ratio_2.08H,L_D21F4
+        JB lv_err_maf_tps_ratio_2.09H,L_D21F4
+        BSET lv_err_maf_tps_ratio_2.08H
+        BCLR lv_err_maf_tps_ratio_2.09H
+        BSET lv_diagcp_cdn_nok.09H
+        BCLR lv_diagcp_cdn_nok.0AH
+        MOVBZ R4,DPP0:c_t_dly_cor_beg_diagcp
+        MOV state_diagcp_F978,R4
+        JMPA cc_UC,L_D3586
+L_D21F4:                 ; 0xd21f4
+        JB lv_err_maf_tps_ratio_2.09H,L_D21FC
+        JMPA cc_UC,L_D3586
+L_D21FC:                 ; 0xd21fc
+        BCLR lv_err_maf_tps_ratio_2.08H
+        BCLR lv_err_maf_tps_ratio_2.09H
+        BCLR lv_diagcp_cdn_nok.09H
+        BCLR lv_diagcp_cdn_nok.0AH
+        MOV state_diagcp_F978,ZEROS
+        MOVB RL4,#05H
+        MOVB state_diagcp,RL4
+        JMPA cc_UC,L_D3586
+L_D2212:                 ; 0xd2212
+        MOV R4,#04H
+        OR intr_state_diagcp,R4
+        MOV R12,#00H
+        CALLA cc_UC,DiagCP_SetFaultState
+        JMPA cc_UC,L_D3586
+
+S_D1F96 ENDS
+        END

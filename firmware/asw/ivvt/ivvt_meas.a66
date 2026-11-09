@@ -1,0 +1,214 @@
+; asw/ivvt/ivvt_meas.a66
+; 0xB53BA-0xB5552  (408 bytes, 7 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_cam_hys_ad_ivvt                    EQU  090124H
+c_cam_hys_end_act_ivvt               EQU  090127H
+
+PUBLIC  IVVT_CamMeas_St0_Init, IVVT_CamMeas_St1_WaitMove, IVVT_CamMeas_St2_WaitSettle, IVVT_CamMeas_St3_Confirm, IVVT_CamMeas_St4_Timeout, IVVT_CamMeas_St5_Done
+PUBLIC  IVVT_CamMeas_Trip, L_B54CE
+EXTERN  Sat_Add_U8:NEAR, Set_IVVT_Trip_Avl:NEAR, sub_r12_13_ret_r4:NEAR
+
+S_B53BA SECTION CODE AT 0B53BAH
+
+; ======== IVVT_CamMeas_St0_Init  (@0xb53ba) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified: state_ivvt SM + jmptab@0xa079e): Cam-meas sub-state 0: init measurement, snapshot
+        ; t_dly_mes_ivvt, lv_cam_ad_di|0x10, sub-state->1.
+        ; ------------------------------------------------------------
+IVVT_CamMeas_St0_Init:
+        MOV R4,[R7]
+        MOVB RL5,[R4]
+        MOVB [R9+#016H],RL5
+        MOV R4,t_dly_mes_ivvt
+        MOV [R8+#0DCH],R4
+        BSET lv_cam_ad_di_ivvt.04H
+        MOV R4,#01H
+        MOV [R8+#0E0H],R4
+        JMPA cc_UC,L_B54CE
+
+; ======== IVVT_CamMeas_St5_Done  (@0xb53d6) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified: state_ivvt SM + jmptab@0xa079e): Cam-meas sub-state 5: done; if mec trip
+        ; state_trip_ivvt==5 set lv_cam_ad_di error bit 0x20.
+        ; ------------------------------------------------------------
+IVVT_CamMeas_St5_Done:
+        MOV R4,ivvt_in_1_struct_diag_mec_ivvt_state_trip_ivvt
+        CMP R4,#05H
+        JMPA cc_NE,L_B54CE
+        BCLR lv_cam_ad_di_ivvt.04H
+        BSET lv_cam_ad_di_ivvt.05H
+        JMPA cc_UC,L_B54CE
+
+; ======== IVVT_CamMeas_St1_WaitMove  (@0xb53e8) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified: state_ivvt SM + jmptab@0xa079e): Cam-meas sub-state 1: within window & cam moved (>=
+        ; c_cam_hys_ad) -> sub-state 2; else timeout -> 4.
+        ; ------------------------------------------------------------
+IVVT_CamMeas_St1_WaitMove:
+        MOV R2,[R7+#06H]
+        MOV R4,[R8+#0DCH]
+        MOV R5,t_dly_mes_ivvt
+        SUB R5,R4
+        CMP R5,[R2]
+        JMPR cc_NC,L_B542A
+        MOV R4,[R7]
+        MOVB RL5,[R4]
+        MOVBZ R12,RL5
+        MOVBZ R13,DPP0:c_cam_hys_ad_ivvt
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB RL5,[R8+#014H]
+        CMPB RL5,RL4
+        JMPR cc_C,L_B54CE
+        MOV R4,[R7+#04H]
+        MOVB RL5,[R4]
+        MOVB [R9+#016H],RL5
+        MOV R4,t_dly_mes_ivvt
+        MOV [R8+#0DCH],R4
+        MOV R4,#02H
+        MOV [R8+#0E0H],R4
+        JMPR cc_UC,L_B54CE
+L_B542A:                 ; 0xb542a
+        MOV R4,#04H
+        MOV [R8+#0E0H],R4
+        JMPR cc_UC,L_B54CE
+
+; ======== IVVT_CamMeas_St2_WaitSettle  (@0xb5432) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified: state_ivvt SM + jmptab@0xa079e): Cam-meas sub-state 2: within window & cam settled ->
+        ; sub-state 3; else timeout -> 4.
+        ; ------------------------------------------------------------
+IVVT_CamMeas_St2_WaitSettle:
+        MOV R2,[R7+#06H]
+        MOV R4,[R8+#0DCH]
+        MOV R5,t_dly_mes_ivvt
+        SUB R5,R4
+        CMP R5,[R2]
+        JMPR cc_NC,L_B5474
+        MOV R4,[R7+#04H]
+        MOVB RL5,[R4]
+        MOVBZ R12,RL5
+        MOVBZ R13,DPP0:c_cam_hys_ad_ivvt
+        CALLS 00FH,Sat_Add_U8
+        MOVB RL5,[R8+#014H]
+        CMPB RL5,RL4
+        JMPR cc_UGT,L_B54CE
+        MOV R4,[R7]
+        MOVB RL5,[R4]
+        MOVB [R9+#016H],RL5
+        MOV R4,t_dly_mes_ivvt
+        MOV [R8+#0DCH],R4
+        MOV R4,#03H
+        MOV [R8+#0E0H],R4
+        JMPR cc_UC,L_B54CE
+L_B5474:                 ; 0xb5474
+        MOV R4,#04H
+        MOV [R8+#0E0H],R4
+        JMPR cc_UC,L_B54CE
+
+; ======== IVVT_CamMeas_St3_Confirm  (@0xb547c) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified: state_ivvt SM + jmptab@0xa079e): Cam-meas sub-state 3: confirm settle -> sub-state 5
+        ; (FUN_0c14c2(0x30)); else timeout -> 4.
+        ; ------------------------------------------------------------
+IVVT_CamMeas_St3_Confirm:
+        MOV R2,[R7+#06H]
+        MOV R4,[R8+#0DCH]
+        MOV R5,t_dly_mes_ivvt
+        SUB R5,R4
+        CMP R5,[R2]
+        JMPR cc_NC,L_B54B0
+        MOV R4,[R7]
+        MOVB RL5,[R4]
+        MOVBZ R12,RL5
+        MOVBZ R13,DPP0:c_cam_hys_ad_ivvt
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB RL5,[R8+#014H]
+        CMPB RL5,RL4
+        JMPR cc_C,L_B54CE
+        MOVB RL6,#DATA16 00030H
+        MOV R4,#05H
+        MOV [R8+#0E0H],R4
+        JMPR cc_UC,L_B54CE
+L_B54B0:                 ; 0xb54b0
+        MOV R4,#04H
+        MOV [R8+#0E0H],R4
+        JMPR cc_UC,L_B54CE
+
+; ======== IVVT_CamMeas_St4_Timeout  (@0xb54b8) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified: state_ivvt SM + jmptab@0xa079e): Cam-meas sub-state 4: measurement timeout/abort ->
+        ; sub-state 5 (FUN_0c14c2(0x31)).
+        ; ------------------------------------------------------------
+IVVT_CamMeas_St4_Timeout:
+        MOVB RL6,#DATA16 00031H
+        MOV R4,#05H
+        MOV [R8+#0E0H],R4
+        JMPR cc_UC,L_B54CE
+
+; ======== IVVT_CamMeas_Trip  (@0xb54c4) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by imob/smartra output signals): IVVT cam-measurement trip arm: sets
+        ; ivvt_in_1_struct...state_trip_ivvt / lv_cam_ad_di_ivvt.
+        ; ------------------------------------------------------------
+IVVT_CamMeas_Trip:
+        JNB lv_cam_ad_di_ivvt.04H,L_B54CE
+        BCLR lv_cam_ad_di_ivvt.04H
+        MOV ivvt_in_1_struct_diag_mec_ivvt_state_trip_ivvt,ZEROS
+L_B54CE:                 ; 0xb54ce
+        MOVBZ R12,RL6
+        CALLS 00CH,Set_IVVT_Trip_Avl
+        MOVB RL4,#00H
+        BMOV R4.00H,PSW.06H
+        MOVB [R8+#0E5H],RL4
+        MOV R4,state_ivvt
+        CMP R4,#02H
+        JMPR cc_NE,L_B5548
+        MOV R5,[R7]
+        MOVB RL4,[R5]
+        MOVBZ R12,RL4
+        MOV R4,[R7+#02H]
+        MOVB RL5,[R4]
+        MOVBZ R13,RL5
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB state_ivvt_cammeas,RL4
+        MOVB RL5,[R9+#04H]
+        CMPB RL5,state_ivvt_cammeas
+        JMPR cc_C,L_B553A
+        MOVB RL5,[R8+#014H]
+        CMPB RL5,state_ivvt_cammeas
+        JMPR cc_C,L_B553A
+        MOVBZ R12,RL4
+        MOVBZ R13,DPP0:c_cam_hys_end_act_ivvt
+        CALLS 00FH,Sat_Add_U8
+        MOVB state_ivvt_cammeas,RL4
+        MOVB RL5,[R9+#04H]
+        CMPB RL5,state_ivvt_cammeas
+        JMPR cc_NC,L_B5532
+        MOVB RL5,[R8+#014H]
+        CMPB RL5,state_ivvt_cammeas
+        JMPR cc_C,L_B5542
+L_B5532:                 ; 0xb5532
+        MOVB RL4,#00H
+        MOVB [R8+#0E6H],RL4
+        JMPR cc_UC,L_B5548
+L_B553A:                 ; 0xb553a
+        MOVB RL4,#00H
+        MOVB [R8+#0E6H],RL4
+        JMPR cc_UC,L_B5548
+L_B5542:                 ; 0xb5542
+        MOVB RL4,#01H
+        MOVB [R8+#0E6H],RL4
+L_B5548:                 ; 0xb5548
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_B53BA ENDS
+        END

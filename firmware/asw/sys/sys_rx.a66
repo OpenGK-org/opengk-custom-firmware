@@ -1,0 +1,134 @@
+; asw/sys/sys_rx.a66
+; 0xA85F0-0xA86F0  (256 bytes, 8 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  SMARTRA_isr_epilogue, SMARTRA_rx_cksum_verify, SMARTRA_rx_error, SMARTRA_rx_len, SMARTRA_rx_payload, SMARTRA_rx_sync
+PUBLIC  SMARTRA_tx_cksum, SMARTRA_tx_to_rx
+
+S_A85F0 SECTION CODE AT 0A85F0H
+
+; ======== SMARTRA_tx_cksum  (@0xa85f0) ========
+        ; ------------------------------------------------------------
+        ; SMARTRA RX ISR per-phase handler. Reached via jmpi [r0] @0x0a8556 (RAM jump table @0x64be). S0RBUF
+        ; 0xFEB2=in, S0TBUF 0xFEB0=out, frame buf 0xc51b, sub-phase 0xf5b8/0xf5ba.
+        ; ------------------------------------------------------------
+SMARTRA_tx_cksum:
+        MOVB S0TBUF,smartra_frame_cksum
+        MOV smartra_byte_timer,ZEROS
+        MOVB RL0,#0AH
+        MOVB smartra_io_subphase,RL0
+        JMPA cc_UC,SMARTRA_isr_epilogue
+
+; ======== SMARTRA_tx_to_rx  (@0xa8602) ========
+        ; ------------------------------------------------------------
+        ; SMARTRA RX ISR per-phase handler. Reached via jmpi [r0] @0x0a8556 (RAM jump table @0x64be). S0RBUF
+        ; 0xFEB2=in, S0TBUF 0xFEB0=out, frame buf 0xc51b, sub-phase 0xf5b8/0xf5ba.
+        ; ------------------------------------------------------------
+SMARTRA_tx_to_rx:
+        MOVB RL0,#05H
+        MOVB smartra_comms_phase,RL0
+        MOVB RL0,#0CH
+        MOVB smartra_io_subphase,RL0
+        MOV smartra_byte_timer,ZEROS
+        JMPR cc_UC,SMARTRA_isr_epilogue
+
+; ======== SMARTRA_rx_sync  (@0xa8614) ========
+SMARTRA_rx_sync:
+        MOV R0,smartra_byte_timer
+        CMP R0,#DATA16 0025BH                   ; inter-byte timeout: timer > 0x25b -> set fd5c.14 (timeout)
+        JMPR cc_UGT,L_A8648
+        CMP R0,#00H
+        JMPR cc_C,L_A8648
+        CMPB S0RBUF,#DATA16 00069H              ; expect SMARTRA sync-echo 0x69 ('i') (ECU sent 0x49 'I')
+        JMPR cc_NE,L_A8636
+        MOVB RL0,#06H
+        MOVB smartra_comms_phase,RL0
+        MOVB RL0,#0EH
+        MOVB smartra_io_subphase,RL0
+        JMPR cc_UC,L_A8658
+L_A8636:                 ; 0xa8636
+        BSET lv_err_com_resp_imob.00H
+        MOVB RL0,#02H
+        MOVB smartra_comms_phase,RL0
+        MOVB RL0,#DATA16 00016H
+        MOVB smartra_io_subphase,RL0
+        JMPR cc_UC,L_A8658
+L_A8648:                 ; 0xa8648
+        BSET smartra_comms_status.0EH
+        MOVB RL0,#02H
+        MOVB smartra_comms_phase,RL0
+        MOVB RL0,#DATA16 00016H
+        MOVB smartra_io_subphase,RL0
+L_A8658:                 ; 0xa8658
+        MOV smartra_byte_timer,ZEROS
+        JMPR cc_UC,SMARTRA_isr_epilogue
+
+; ======== SMARTRA_rx_len  (@0xa865e) ========
+SMARTRA_rx_len:
+        MOV R1,#DATA16 0C51BH                   ; r1 = &frame_buf (0xc51b); RL0 = S0RBUF (0xFEB2) received byte stored into it below
+        ADD R1,#00H
+        MOV smartra_rx_ptr,R1
+        MOVB RL0,S0RBUF_FEB2
+        MOVB [R1],RL0
+        CMPB RL0,#DATA16 00014H                 ; clamp RX length to 0x14 (20); overlong -> set fd5e.0 (framing error)
+        JMPR cc_ULE,L_A867A
+        MOVB RL0,#DATA16 00014H
+        BSET lv_err_com_resp_imob.00H
+L_A867A:                 ; 0xa867a
+        MOVB smartra_frame_cksum,RL0
+        SUBB RL0,#01H
+        MOVB smartra_frame_len_rem,RL0
+        SUB smartra_rx_ptr,ONES
+        MOVB RL0,#DATA16 00010H
+        MOVB smartra_io_subphase,RL0
+        MOV smartra_byte_timer,ZEROS
+        JMPR cc_UC,SMARTRA_isr_epilogue
+
+; ======== SMARTRA_rx_payload  (@0xa8696) ========
+SMARTRA_rx_payload:
+        MOVB RL0,S0RBUF_FEB2
+        MOV R1,smartra_rx_ptr
+        MOVB [R1],RL0
+        ADDB smartra_frame_cksum,RL0
+        SUB smartra_rx_ptr,ONES
+        ADDB smartra_frame_len_rem,ONES
+        JMPR cc_NE,L_A86B6
+        MOVB RL0,#DATA16 00012H
+        MOVB smartra_io_subphase,RL0
+L_A86B6:                 ; 0xa86b6
+        MOV smartra_byte_timer,ZEROS
+        JMPR cc_UC,SMARTRA_isr_epilogue
+
+; ======== SMARTRA_rx_cksum_verify  (@0xa86bc) ========
+SMARTRA_rx_cksum_verify:
+        MOVB RL0,S0RBUF_FEB2
+        MOVB smartra_rx_cksum_rcvd,RL0
+        CMPB RL0,smartra_frame_cksum            ; verify trailing checksum == computed; mismatch -> set fd5e.0
+        JMPR cc_EQ,L_A86CC
+        BSET lv_err_com_resp_imob.00H
+L_A86CC:                 ; 0xa86cc
+        MOVB RL0,#02H
+        MOVB smartra_comms_phase,RL0
+        MOVB RL0,#DATA16 00014H
+        MOVB smartra_io_subphase,RL0
+        MOV smartra_byte_timer,ZEROS
+        JMPR cc_UC,SMARTRA_isr_epilogue
+
+; ======== SMARTRA_rx_error  (@0xa86e0) ========
+SMARTRA_rx_error:
+        BSET lv_err_com_resp_imob.00H
+        MOVB RL0,#02H
+        MOVB smartra_comms_phase,RL0
+        JMPR cc_UC,SMARTRA_isr_epilogue
+        JMPR cc_UC,SMARTRA_isr_epilogue
+
+; ======== SMARTRA_isr_epilogue  (@0xa86ec) ========
+SMARTRA_isr_epilogue:
+        POP CP
+        RETI
+
+S_A85F0 ENDS
+        END

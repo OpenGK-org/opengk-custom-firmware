@@ -1,0 +1,56 @@
+; asw/ivvt/ivvt_ptrs.a66
+; 0xB4874-0xB48DE  (106 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  IVVT_Set_RamPtrs, Reset_sVar1_874
+
+S_B4874 SECTION CODE AT 0B4874H
+
+; ======== Reset_sVar1_874  (@0xb4874) ========
+Reset_sVar1_874:
+        MOV R12,p_ivvt_cam_m
+        MOVB RL4,#00H
+        MOVB [R12+#01EH],RL4
+        BCLR lv_cam_ad_di_ivvt.02H
+        MOV t_ref_req_ivvt,ZEROS
+        BCLR lv_cam_ad_di_ivvt.00H
+        BCLR lv_dc_rbm.0FH
+        BCLR lv_cam_ad_avl_nvmy_ivvt.02H
+        MOVB [R12+#01FH],RL4
+        MOVB RL4,#DATA16 00040H
+        MOVB idx_cam_ad_ivvt,RL4
+        MOVB RL5,#00H
+        MOVB [R12+#01DH],RL5
+        RETS
+
+; ======== IVVT_Set_RamPtrs  (@0xb489e) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IVVT_Set_RamPtrs:
+        MOV R13,p_ivvt_cam_m
+        CMP R13,#DATA16 0CADAH
+        JMPR cc_NE,L_B48C8
+        MOV R4,#DATA16 0F6D0H
+        MOV [R13+#08H],R4
+        MOV R4,#DATA16 0F6D2H
+        MOV [R13+#0AH],R4
+        MOV R4,#DATA16 0F6D4H
+        MOV [R13+#010H],R4
+        MOV R4,#DATA16 0C23AH
+        MOV [R13+#022H],R4
+L_B48C8:                 ; 0xb48c8
+        MOV R4,[R12]
+        MOVB RL5,[R4]
+        MOV R4,[R13+#08H]
+        MOVB [R4+#01H],RL5
+        MOV R4,#00H
+        MOV R5,[R13+#010H]
+        MOV [R5],R4
+        RETS
+
+S_B4874 ENDS
+        END

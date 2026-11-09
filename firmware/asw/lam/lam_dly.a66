@@ -1,0 +1,325 @@
+; asw/lam/lam_dly.a66
+; 0xB564C-0xB592E  (738 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_cat_diag_max_dly                   EQU  090137H
+c_lam_temp_min_cat_dly               EQU  090222H
+c_ti_tco_ad_min                      EQU  0903B2H
+c_tps_grd_dec_dly                    EQU  0903DDH
+c_tps_grd_dec_dly_sum                EQU  0903DEH
+c_cl_mmv_max_dly                     EQU  0904DAH
+c_crlc_dly_ad                        EQU  0904F2H
+c_lam_mv_crlc_dly                    EQU  090592H
+c_lam_mv_dyw_dly                     EQU  090598H
+c_maf_crlc_dly                       EQU  0905B8H
+c_maf_dyw_dly                        EQU  0905CAH
+c_maf_int_min_ldc_dly                EQU  0905DEH
+c_n_crlc_dly                         EQU  09062EH
+c_n_dyw_dly                          EQU  09063EH
+c_tps_grd_sum_dly_max                EQU  0907B0H
+c_tps_grd_sum_dly_min                EQU  0907B2H
+ldp_cat_ip_fac_cat_dly           EQU  090B22H
+ldp_n_32_ip_fac_lam_dly             EQU  090B42H
+ldp_maf_ip_fac_lam_dly             EQU  090B4BH
+ip_fac_cat_dly__cat_diag             EQU  09560BH
+ip_fac_lam_dly__n__maf               EQU  095635H
+
+PUBLIC  Calc_Cat_VLS_Diag, Calc_Lam_Dly_CatFac, Calc_MAF_MMV_Dly, Filt_Lam_Dly_I_Ad, Reset_Dc79e_8fa
+EXTERN  Abs_Diff_U16:NEAR, Add_r12_r13_Return_r4:NEAR, Calc_Lam_Dly_PI:NEAR, ClrBits_Dfd6a_afc:NEAR
+EXTERN  Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_3D_Table:NEAR, Get_IP_Byte_X_Axis:NEAR, Get_IP_Byte_Y_Axis:NEAR
+EXTERN  Interp_S16:NEAR, Interp_U16:NEAR, Mul_U16_Hi:NEAR, Read_MD_Signed:NEAR
+EXTERN  Sat_Add_S16:NEAR, Sat_Sub_S16:NEAR, sub_r12_r13_rets_r4:NEAR
+
+S_B564C SECTION CODE AT 0B564CH
+
+; ======== Calc_Cat_VLS_Diag  (@0xb564c) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Calc_Cat_VLS_Diag:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV R9,p_lam_bank1
+        JB lv_inh_int_puc_1.04H,L_B56F2
+        JNB state_lam_ctl.00H,L_B56F2
+        JNB diag_fd68.00H,L_B56F2
+        JNB state_lam_ctl2.01H,L_B56F2
+        MOV R4,[R9+#0106H]
+        CMP R4,#04H
+        JMPR cc_NE,L_B56F2
+        MOVB RL4,tco
+        CMPB RL4,DPP0:c_ti_tco_ad_min
+        JMPR cc_ULE,L_B56F2
+        MOVB RL5,lv_cat_diag_cond
+        CMPB RL5,DPP0:c_lam_temp_min_cat_dly
+        JMPR cc_ULE,L_B56F2
+        MOVB RL5,[R9+#0126H]
+        CMPB RL5,DPP0:c_cat_diag_max_dly
+        JMPR cc_NC,L_B56F2
+        MOV R4,cp_state
+        CMP R4,#04H
+        JMPR cc_NE,L_B56A0
+        CMP R4,#04H
+        JMPR cc_NE,L_B56F2
+        MOV R5,cl_mmv
+        CMP R5,DPP0:c_cl_mmv_max_dly
+        JMPR cc_NC,L_B56F2
+L_B56A0:                 ; 0xb56a0
+        MOV R12,[R9+#0AH]
+        ASHR R12,#01H
+        MOV R13,[R9+#01EH]
+        CALLS 00FH,Sat_Add_S16
+        MOV R8,R4
+        MOV R4,[R9+#012H]
+        ASHR R4,#01H
+        CMP R8,R4
+        JMPR cc_SLE,L_B56E8
+        MOV R4,[R9+#014H]
+        ASHR R4,#01H
+        CMP R8,R4
+        JMPR cc_SGE,L_B56E8
+        JB state_cat_diag.0DH,L_B56DE
+        JB state_lam_ctl2.03H,L_B56D6
+        MOV R4,#00H
+        MOV [R9+#04CH],R4
+        BSET state_lam_ctl2.03H
+        JMPR cc_UC,L_B56FA
+L_B56D6:                 ; 0xb56d6
+        MOV R12,R9
+        CALLA cc_UC,Calc_Lam_Dly_PI
+        JMPR cc_UC,L_B56FA
+L_B56DE:                 ; 0xb56de
+        BSET state_lam_ctl2.02H
+        MOV R12,R9
+        CALLA cc_UC,ClrBits_Dfd6a_afc
+        JMPR cc_UC,L_B56FA
+L_B56E8:                 ; 0xb56e8
+        BCLR state_lam_ctl2.02H
+        MOV R12,R9
+        CALLA cc_UC,ClrBits_Dfd6a_afc
+        JMPR cc_UC,L_B56FA
+L_B56F2:                 ; 0xb56f2
+        BCLR state_lam_ctl2.02H
+        MOV R12,R9
+        CALLA cc_UC,ClrBits_Dfd6a_afc
+L_B56FA:                 ; 0xb56fa
+        MOV R12,#DATA16 POF ldp_n_32_ip_fac_lam_dly
+        MOV R13,#DATA16 PAG ldp_n_32_ip_fac_lam_dly
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_maf_ip_fac_lam_dly
+        MOV R13,#DATA16 PAG ldp_maf_ip_fac_lam_dly
+        MOVBZ R14,lv_iga_cc2b
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_fac_lam_dly__n__maf
+        MOV R13,#DATA16 PAG ip_fac_lam_dly__n__maf
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV [-R0],R4
+        MOV R12,[R9+#050H]
+        MOV R13,[R9+#054H]
+        CALLS 00FH,Sat_Add_S16
+        MOV R12,R4
+        MOV R13,[R0+]
+        CALLS 00FH,Read_MD_Signed
+        MOV [R9+#048H],R4
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_MAF_MMV_Dly  (@0xb5748) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by maf/tps output signals + DTC): Filtered/delayed MAF model value maf_mmv_dly.
+        ; ------------------------------------------------------------
+Calc_MAF_MMV_Dly:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV R8,p_lam_bank1
+        JB obd_sf.0DH,L_B575A
+        JMPA cc_UC,L_B58C4
+L_B575A:                 ; 0xb575a
+        MOV R12,[R8+#058H]
+        MOV R13,[R8+#0EH]
+        MOV R14,DPP0:c_lam_mv_crlc_dly
+        CALLS 00FH,Interp_S16
+        MOV [R8+#058H],R4
+        MOV R12,[R8+#0EH]
+        MOV R13,[R8+#058H]
+        CALLS 00FH,Sat_Sub_S16
+        MOV R7,R4
+        CMP R4,#00H
+        JMPR cc_SGE,L_B5786
+        MOV R4,R7
+        NEG R4
+        MOV R7,R4
+L_B5786:                 ; 0xb5786
+        CMP R7,DPP0:c_lam_mv_dyw_dly
+        JMPR cc_NC,L_B5790
+        BSET R9.00H
+        JMPR cc_UC,L_B579A
+L_B5790:                 ; 0xb5790
+        MOV R4,[R8+#0EH]
+        MOV [R8+#058H],R4
+        BCLR R9.00H
+L_B579A:                 ; 0xb579a
+        JB lv_cam_ad_di_ivvt.09H,L_B5800
+        MOV R12,n_mmv_dly
+        MOV R13,n_C93C
+        MOV R14,DPP0:c_n_crlc_dly
+        CALLS 00FH,Interp_U16
+        MOV n_mmv_dly,R4
+        MOV R12,maf_mmv_dly
+        MOV R13,maf_word
+        MOV R14,DPP0:c_maf_crlc_dly
+        CALLS 00FH,Interp_U16
+        MOV maf_mmv_dly,R4
+        MOV R12,maf_word
+        MOV R13,R4
+        CALLS 00FH,Abs_Diff_U16
+        CMP R4,DPP0:c_maf_dyw_dly
+        JMPR cc_NC,L_B57DA
+        BSET lv_cam_ad_di_ivvt.07H
+        JMPR cc_UC,L_B57E4
+L_B57DA:                 ; 0xb57da
+        MOV R4,maf_word
+        MOV maf_mmv_dly,R4
+        BCLR lv_cam_ad_di_ivvt.07H
+L_B57E4:                 ; 0xb57e4
+        MOV R12,n_C93C
+        MOV R13,n_mmv_dly
+        CALLS 00FH,Abs_Diff_U16
+        CMP R4,DPP0:c_n_dyw_dly
+        JMPR cc_C,L_B5800
+        MOV R4,n_C93C
+        MOV n_mmv_dly,R4
+        BCLR lv_cam_ad_di_ivvt.07H
+L_B5800:                 ; 0xb5800
+        BCMP R9.00H,lv_cam_ad_di_ivvt.07H
+        JMPR cc_NC,L_B5838
+        MOV R4,[R8+#05AH]
+        CMP R4,DPP0:c_maf_int_min_ldc_dly
+        JMPR cc_UGT,L_B583E
+        MOV R12,maf_kgh
+        MOV R13,#DATA16 007FFH
+        CALLS 00FH,Mul_U16_Hi
+        MOV R13,R4
+        MOV R12,[R8+#05AH]
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV [R8+#05AH],R4
+        MOV R4,[R8+#05AH]
+        CMP R4,DPP0:c_maf_int_min_ldc_dly
+        JMPR cc_UGT,L_B583E
+        BCLR R9.00H
+        JMPR cc_UC,L_B583E
+L_B5838:                 ; 0xb5838
+        MOV R4,#00H
+        MOV [R8+#05AH],R4
+L_B583E:                 ; 0xb583e
+        MOV R4,DPP0:c_tps_grd_sum_dly_min
+        CMP R4,DPP0:c_tps_grd_sum_dly_max
+        JMPR cc_UGT,L_B58AC
+        BCMP R9.00H,lv_cam_ad_di_ivvt.07H
+        JMPR cc_NC,L_B58AC
+        MOV R12,[R8+#05EH]
+        MOVBZ R13,lv_tps_f4b6
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV R7,R4
+        MOV R4,R8
+        ADD R4,#DATA16 0005CH
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+        MOVB RL4,[R8+#05CH]
+        CMPB RL4,DPP0:c_tps_grd_dec_dly_sum
+        JMPR cc_C,L_B5884
+        MOVB RL4,#00H
+        MOVB [R8+#05CH],RL4
+        MOV R12,R7
+        MOVBZ R13,DPP0:c_tps_grd_dec_dly
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV R7,R4
+L_B5884:                 ; 0xb5884
+        CMP R7,DPP0:c_tps_grd_sum_dly_min
+        JMPR cc_C,L_B58A4
+        CMP R7,DPP0:c_tps_grd_sum_dly_max
+        JMPR cc_UGT,L_B5894
+        JNB state_lam_ctl2.04H,L_B58A6
+L_B5894:                 ; 0xb5894
+        BCLR R9.00H
+        BSET state_lam_ctl2.04H
+        CMP R7,DPP0:c_tps_grd_sum_dly_max
+        JMPR cc_ULE,L_B58A6
+        MOV R7,DPP0:c_tps_grd_sum_dly_max
+        JMPR cc_UC,L_B58A6
+L_B58A4:                 ; 0xb58a4
+        BCLR state_lam_ctl2.04H
+L_B58A6:                 ; 0xb58a6
+        MOV [R8+#05EH],R7
+        JMPR cc_UC,L_B58BA
+L_B58AC:                 ; 0xb58ac
+        MOV R4,#00H
+        MOV [R8+#05EH],R4
+        BCLR state_lam_ctl2.04H
+        MOVB RL4,#00H
+        MOVB [R8+#05CH],RL4
+L_B58BA:                 ; 0xb58ba
+        BCMP R9.00H,lv_cam_ad_di_ivvt.07H
+        BMOV state_lam_ctl2.01H,PSW.01H
+        JMPR cc_UC,L_B58DC
+L_B58C4:                 ; 0xb58c4
+        MOV R4,n_C93C
+        MOV n_mmv_dly,R4
+        MOV R5,maf_word
+        MOV maf_mmv_dly,R5
+        MOV R2,lam_bank_1_lam_up_lam_mv
+        MOV lam_bank_1_lam_dly_lam_mv_mmv_dly,R2
+L_B58DC:                 ; 0xb58dc
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Filt_Lam_Dly_I_Ad  (@0xb58e4) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signal): Low-pass filter of lambda integral delay-time adaptation:
+        ; t_dly_i_ad = Interp_S16(t_dly_i_ad, t_dly_i_sword_1, c_crlc_dly_ad).
+        ; ------------------------------------------------------------
+Filt_Lam_Dly_I_Ad:
+        MOV R12,lam_bank_1_lam_dly_t_dly_i_ad
+        MOV R13,lam_bank_1_lam_dly_t_dly_i_sword_1_
+        MOV R14,DPP0:c_crlc_dly_ad
+        CALLS 00FH,Interp_S16
+        MOV lam_bank_1_lam_dly_t_dly_i_ad,R4
+        RETS
+
+; ======== Reset_Dc79e_8fa  (@0xb58fa) ========
+Reset_Dc79e_8fa:
+        MOV g_c79e,ZEROS
+        MOV lam_bank_1_lam_dly_t_dly_i_sword_1_,ZEROS
+        RETS
+
+; ======== Calc_Lam_Dly_CatFac  (@0xb5904) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signal): Lambda control delay catalyst factor: lam_dly_fac_cat_dly
+        ; from cat_diag 2D map; snapshots t_dly_i_ad -> t_dly_i_sword_1.
+        ; ------------------------------------------------------------
+Calc_Lam_Dly_CatFac:
+        MOV R12,#DATA16 POF ldp_cat_ip_fac_cat_dly
+        MOV R13,#DATA16 PAG ldp_cat_ip_fac_cat_dly
+        MOVBZ R14,lam_bank_1_cat_eff_struct_cat_diag
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_fac_cat_dly__cat_diag
+        MOV R13,#DATA16 PAG ip_fac_cat_dly__cat_diag
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB lam_bank_1_lam_dly_fac_cat_dly,RL4
+        MOV R4,lam_bank_1_lam_dly_t_dly_i_ad
+        MOV lam_bank_1_lam_dly_t_dly_i_sword_1_,R4
+        RETS
+
+S_B564C ENDS
+        END

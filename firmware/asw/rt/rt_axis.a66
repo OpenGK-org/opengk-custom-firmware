@@ -1,0 +1,134 @@
+; asw/rt/rt_axis.a66
+; 0xFED82-0xFEE94  (274 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Get_IP_Byte_X_Axis, Get_IP_Byte_Y_Axis, Get_IP_Word_X_Axis
+
+S_FED82 SECTION CODE AT 0FED82H
+
+; ======== Get_IP_Byte_X_Axis  (@0xfed82) ========
+Get_IP_Byte_X_Axis:
+        MOV DPP0_FE00,R13
+        MOV R1,R12
+        MOV R4,R14
+        MOV R2,R1
+        MOVB RL5,[R1+]
+        MOVBZ R5,RL5
+        ADD R2,R5
+        CMPB RL4,[R2]
+        JMPR cc_NC,L_FEDCC
+        CMPB RL4,[R1]
+        JMPR cc_ULE,L_FEDCA
+L_FED9A:                 ; 0xfed9a
+        SUB R2,#01H
+        CMPB RL4,[R2]
+        JMPR cc_C,L_FED9A
+        JMPR cc_EQ,L_FEDCC
+        SUBB RL4,[R2]
+        MOVBZ MDH_FE0C,RL4
+        MOV MDL,#DATA16 00000H
+        MOVB RL4,[R2+#01H]
+        SUBB RL4,[R2]
+        MOVBZ R4,RL4
+        DIVLU R4
+        SUB R2,R1
+        MOVB knk_idx_base,RL2
+        MOVB g_f518,RL5
+        MOV g_f8c0,MDL
+        MOV DPP0,#DATA16 00024H
+        RETS
+L_FEDCA:                 ; 0xfedca
+        MOV R2,R1
+L_FEDCC:                 ; 0xfedcc
+        SUB R2,R1
+        MOVB knk_idx_base,RL2
+        MOVB g_f518,RL5
+        MOV g_f8c0,ZEROS
+        MOV DPP0,#DATA16 00024H
+        RETS
+
+; ======== Get_IP_Byte_Y_Axis  (@0xfede0) ========
+Get_IP_Byte_Y_Axis:
+        MOV DPP0_FE00,R13
+        MOV R1,R12
+        MOV R4,R14
+        MOV R2,R1
+        MOVB RL5,[R1+]
+        MOVBZ R5,RL5
+        ADD R2,R5
+        CMPB RL4,[R2]
+        JMPR cc_NC,L_FEE26
+        CMPB RL4,[R1]
+        JMPR cc_ULE,L_FEE24
+L_FEDF8:                 ; 0xfedf8
+        SUB R2,#01H
+        CMPB RL4,[R2]
+        JMPR cc_C,L_FEDF8
+        JMPR cc_EQ,L_FEE26
+        SUBB RL4,[R2]
+        MOVBZ MDH_FE0C,RL4
+        MOV MDL,#DATA16 00000H
+        MOVB RL4,[R2+#01H]
+        SUBB RL4,[R2]
+        MOVBZ R4,RL4
+        DIVLU R4
+        SUB R2,R1
+        MOVB ip_idx,RL2
+        MOV ip_frac,MDL
+        MOV DPP0,#DATA16 00024H
+        RETS
+L_FEE24:                 ; 0xfee24
+        MOV R2,R1
+L_FEE26:                 ; 0xfee26
+        SUB R2,R1
+        MOVB ip_idx,RL2
+        MOV ip_frac,ZEROS
+        MOV DPP0,#DATA16 00024H
+        RETS
+
+; ======== Get_IP_Word_X_Axis  (@0xfee36) ========
+Get_IP_Word_X_Axis:
+        MOV DPP0_FE00,R13
+        MOV R1,R12
+        MOV R2,R1
+        MOV R4,[R1+]
+        ADD R2,R4
+        ADD R2,R4
+        CMP R14,[R2]
+        JMPR cc_NC,L_FEE7E
+        CMP R14,[R1]
+        JMPR cc_ULE,L_FEE7C
+L_FEE4C:                 ; 0xfee4c
+        SUB R2,#02H
+        CMP R14,[R2]
+        JMPR cc_C,L_FEE4C
+        JMPR cc_EQ,L_FEE7E
+        SUB R14,[R2]
+        MOV MDH_FE0C,R14
+        MOV MDL,#DATA16 00000H
+        MOV R10,[R2+#02H]
+        SUB R10,[R2]
+        DIVLU R10
+        SUB R2,R1
+        SHR R2,#01H
+        MOVB knk_idx_base,RL2
+        MOVB g_f518,RL4
+        MOV g_f8c0,MDL
+        MOV DPP0,#DATA16 00024H
+        RETS
+L_FEE7C:                 ; 0xfee7c
+        MOV R2,R1
+L_FEE7E:                 ; 0xfee7e
+        SUB R2,R1
+        SHR R2,#01H
+        MOVB knk_idx_base,RL2
+        MOVB g_f518,RL4
+        MOV g_f8c0,ZEROS
+        MOV DPP0,#DATA16 00024H
+        RETS
+
+S_FED82 ENDS
+        END

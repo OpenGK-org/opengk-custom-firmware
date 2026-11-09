@@ -1,0 +1,315 @@
+; asw/exec.a66
+; 0xA6A44-0xA6D32  (750 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  BL_Set_ExecMagic_Full, BL_Set_ExecParams, CCP_Validate_Program
+EXTERN  Push_To_System_Stack:NEAR, xor_routine:NEAR
+
+S_A6A44 SECTION CODE AT 0A6A44H
+
+; ======== CCP_Validate_Program  (@0xa6a44) ========
+        ; ------------------------------------------------------------
+        ; Seg-A ISR helper (verified by SFR/CCP usage): CCP program/flash validation (calls _BL_validate_...;
+        ; verifies flashed block).
+        ; ------------------------------------------------------------
+CCP_Validate_Program:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        SUB R0,#04H
+        MOV R9,#00H
+        MOV R4,#DATA16 08000H
+        MOV R5,#08H
+        EXTS R5, #01H
+        MOV R2,[R4]
+        CMP R2,#DATA16 0FFFFH
+        JMPR cc_EQ,L_A6AA2
+        MOV R8,#DATA16 04F7AH
+        JMPR cc_UC,L_A6A6E
+L_A6A66:                 ; 0xa6a66
+        MOV R4,[R8+#02H]
+        ADD R9,R4
+        ADD R8,#04H
+L_A6A6E:                 ; 0xa6a6e
+        MOV R4,[R8]
+        JMPR cc_NE,L_A6A66
+        MOV R4,#DATA16 08000H
+        MOV R5,#08H
+        EXTS R5, #01H
+        MOV R2,[R4]
+        CMP R9,R2
+        JMPR cc_NE,L_A6AA0
+        MOV R12,#04H
+        MOV R13,#DATA16 00022H
+        MOV R14,R9
+        CALLS 00DH,xor_routine
+        MOV R6,R4
+        MOV R4,#DATA16 08002H
+        MOV R5,#08H
+        EXTS R5, #01H
+        MOV R2,[R4]
+        CMP R6,R2
+        JMPR cc_EQ,L_A6AA2
+        MOV R9,#00H
+        JMPR cc_UC,L_A6AA2
+L_A6AA0:                 ; 0xa6aa0
+        MOV R9,#00H
+L_A6AA2:                 ; 0xa6aa2
+        CMP R9,#00H
+        JMPR cc_EQ,L_A6AEA
+        MOV R4,#DATA16 08004H
+        MOV R5,#08H
+        MOV [R0],R4
+        MOV [R0+#02H],R5
+        MOV R8,#DATA16 04F7AH
+        JMPR cc_UC,L_A6AE6
+L_A6AB8:                 ; 0xa6ab8
+        MOV R7,[R8]
+        MOV R9,[R8+#02H]
+        JMPR cc_UC,L_A6AE0
+L_A6AC0:                 ; 0xa6ac0
+        MOV R4,[R0]
+        MOV R5,[R0+#02H]
+        EXTS R5, #01H
+        MOVB RL3,[R4]
+        MOVB [R7],RL3
+        ADD R7,#01H
+        MOV R4,[R0]
+        MOV R5,[R0+#02H]
+        ADD R4,#01H
+        ADDC R5,#00H
+        MOV [R0],R4
+        MOV [R0+#02H],R5
+        SUB R9,#01H
+L_A6AE0:                 ; 0xa6ae0
+        CMP R9,#00H
+        JMPR cc_NE,L_A6AC0
+        ADD R8,#04H
+L_A6AE6:                 ; 0xa6ae6
+        MOV R4,[R8]
+        JMPR cc_NE,L_A6AB8
+L_A6AEA:                 ; 0xa6aea
+        ADD R0,#04H
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== BL_Set_ExecMagic_Full  (@0xa6af6) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by ccp_/bl_/cpu output signals): Write full 4-byte bootloader-exec magic
+        ; bl_exec_arm_magic/_b1/_b2/_b3.
+        ; ------------------------------------------------------------
+BL_Set_ExecMagic_Full:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        SUB R0,#04H
+        MOV R7,#00H
+        MOV R8,#09H
+        MOV R4,#00H
+        MOV R5,#09H
+        MOV [R0],R4
+        MOV [R0+#02H],R5
+        MOVB RL4,#DATA16 00053H
+        MOVB bl_exec_arm_magic,RL4
+        MOVB RL5,#DATA16 000ACH
+        MOVB bl_exec_magic_b1,RL5
+        MOVB RL3,#DATA16 000CAH
+        MOVB bl_exec_magic_b2,RL3
+        MOVB RL2,#DATA16 00035H
+        MOVB bl_exec_magic_b3,RL2
+L_A6B2C:                 ; 0xa6b2c
+        MOV ADDRSEL2,#DATA16 00904H
+        MOV R9,#00H
+        JMPR cc_UC,L_A6B42
+L_A6B34:                 ; 0xa6b34
+        EXTS R8, #01H
+        MOVB RL4,[R7]
+        MOVB [R9+#0E558H],RL4
+        ADD R7,#01H
+        ADDC R8,#00H
+        ADD R9,#01H
+L_A6B42:                 ; 0xa6b42
+        CMP R9,#DATA16 000FFH
+        JMPR cc_NC,L_A6B58
+        MOV R4,R7
+        MOV R5,R8
+        MOV R10,#DATA16 0FFEFH
+        MOV R11,#09H
+        SUB R4,R10
+        SUBC R5,R11
+        JMPR cc_ULE,L_A6B34
+L_A6B58:                 ; 0xa6b58
+        MOV ADDRSEL2,#DATA16 0FFF0H
+        MOV R4,[R0]
+        MOV R5,[R0+#02H]
+        MOV bl_exec_addr_lo,R4
+        MOV bl_exec_addr_hi,R5
+        MOV bl_exec_len,R9
+        MOV R2,#DATA16 0E558H
+        MOV bl_exec_src_ptr,R2
+        EXTP #00H, #02H
+        MOV R4,kwp_286
+        MOV R5,kwp_288
+        CALLS 00CH,Push_To_System_Stack
+        MOV R4,R9
+        MOV R5,#00H
+        MOV R10,[R0]
+        MOV R11,[R0+#02H]
+        ADD R10,R4
+        ADDC R11,R5
+        MOV [R0],R10
+        MOV [R0+#02H],R11
+        MOV R4,R7
+        MOV R5,R8
+        MOV R10,#DATA16 0FFEFH
+        MOV R11,#09H
+        SUB R4,R10
+        SUBC R5,R11
+        JMPR cc_UGT,L_A6BAE
+        JB bl_mode_status_flags.07H,L_A6B2C
+L_A6BAE:                 ; 0xa6bae
+        JNB bl_mode_status_flags.07H,L_A6BFE
+        MOVB RL4,#DATA16 00042H
+        MOVB bl_kwp_sid,RL4
+        MOVB RL4,#DATA16 00024H
+        MOVB bl_kwp_subfn,RL4
+        MOVB RL4,#DATA16 00048H
+        MOVB g_e55a,RL4
+        MOVB RL4,#DATA16 00090H
+        MOVB g_e55b,RL4
+        MOV R4,#DATA16 0FFF0H
+        MOV R5,#09H
+        MOV bl_exec_addr_lo,R4
+        MOV bl_exec_addr_hi,R5
+        MOV R2,#04H
+        MOV bl_exec_len,R2
+        MOV R3,#DATA16 0E558H
+        MOV bl_exec_src_ptr,R3
+        EXTP #00H, #02H
+        MOV R4,kwp_286
+        MOV R5,kwp_288
+        CALLS 00CH,Push_To_System_Stack
+L_A6BFE:                 ; 0xa6bfe
+        MOVB bl_exec_magic_b3,ZEROS
+        MOVB bl_exec_magic_b2,ZEROS
+        MOVB bl_exec_magic_b1,ZEROS
+        MOVB bl_exec_arm_magic,ZEROS
+        MOV ADDRSEL2,#DATA16 0FFF0H
+        ADD R0,#04H
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== BL_Set_ExecParams  (@0xa6c1c) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by ccp_/bl_/cpu output signals): Set bootloader exec target: bl_exec_len /
+        ; bl_exec_src_ptr / bl_exec_addr_lo/hi (reflash destination).
+        ; ------------------------------------------------------------
+BL_Set_ExecParams:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        SUB R0,#04H
+        MOV R4,#00H
+        MOV [R0],R4
+        MOV R9,#DATA16 04F7AH
+        JMPR cc_UC,L_A6C3A
+L_A6C2E:                 ; 0xa6c2e
+        MOV R4,[R9+#02H]
+        MOV R5,[R0]
+        ADD R5,R4
+        MOV [R0],R5
+        ADD R9,#04H
+L_A6C3A:                 ; 0xa6c3a
+        MOV R4,[R9]
+        JMPR cc_NE,L_A6C2E
+        MOV R4,[R0]
+        ADD R4,#04H
+        CMP R4,#DATA16 01000H
+        JMPR cc_UGT,L_A6D28
+        MOVB RL4,#DATA16 00053H
+        MOVB bl_exec_arm_magic,RL4
+        MOVB RL5,#DATA16 000ACH
+        MOVB bl_exec_magic_b1,RL5
+        MOVB RL3,#DATA16 000CAH
+        MOVB bl_exec_magic_b2,RL3
+        MOVB RL2,#DATA16 00035H
+        MOVB bl_exec_magic_b3,RL2
+        MOV R9,#DATA16 04F7AH
+        MOV R7,#DATA16 08004H
+        MOV R8,#08H
+        JMPR cc_UC,L_A6CAA
+L_A6C74:                 ; 0xa6c74
+        MOV bl_exec_addr_lo,R7
+        MOV bl_exec_addr_hi,R8
+        MOV R4,[R9+#02H]
+        MOV bl_exec_len,R4
+        MOV R5,[R9]
+        MOV bl_exec_src_ptr,R5
+        EXTP #00H, #02H
+        MOV R4,kwp_286
+        MOV R5,kwp_288
+        CALLS 00CH,Push_To_System_Stack
+        JNB bl_mode_status_flags.07H,L_A6CAE
+        MOV R4,[R9+#02H]
+        MOV R5,#00H
+        ADD R7,R4
+        ADDC R8,R5
+        ADD R9,#04H
+L_A6CAA:                 ; 0xa6caa
+        MOV R4,[R9]
+        JMPR cc_NE,L_A6C74
+L_A6CAE:                 ; 0xa6cae
+        MOV R12,#04H
+        MOV R13,#DATA16 00022H
+        MOV R14,[R0]
+        CALLS 00DH,xor_routine
+        MOV [R0+#02H],R4
+        JNB bl_mode_status_flags.07H,L_A6D18
+        MOV R4,#DATA16 08000H
+        MOV R5,#08H
+        MOV bl_exec_addr_lo,R4
+        MOV bl_exec_addr_hi,R5
+        MOV R2,#02H
+        MOV bl_exec_len,R2
+        MOV R3,R0
+        MOV bl_exec_src_ptr,R3
+        EXTP #00H, #02H
+        MOV R4,kwp_286
+        MOV R5,kwp_288
+        CALLS 00CH,Push_To_System_Stack
+        MOV R4,#DATA16 08002H
+        MOV R5,#08H
+        MOV bl_exec_addr_lo,R4
+        MOV bl_exec_addr_hi,R5
+        MOV R2,#02H
+        MOV bl_exec_len,R2
+        MOV R3,#02H
+        ADD R3,R0
+        MOV bl_exec_src_ptr,R3
+        EXTP #00H, #02H
+        MOV R4,kwp_286
+        MOV R5,kwp_288
+        CALLS 00CH,Push_To_System_Stack
+L_A6D18:                 ; 0xa6d18
+        MOVB bl_exec_magic_b3,ZEROS
+        MOVB bl_exec_magic_b2,ZEROS
+        MOVB bl_exec_magic_b1,ZEROS
+        MOVB bl_exec_arm_magic,ZEROS
+L_A6D28:                 ; 0xa6d28
+        ADD R0,#04H
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_A6A44 ENDS
+        END

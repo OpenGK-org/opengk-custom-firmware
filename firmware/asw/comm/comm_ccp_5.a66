@@ -1,0 +1,173 @@
+; asw/comm/comm_ccp_5.a66
+; 0xA68D2-0xA6A44  (370 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  CCP_Arm_BL_Exec, CCP_Arm_BL_Exec_2, CCP_Calc_Checksum, CCP_Checksum_Gate
+EXTERN  BL_Set_ExecMagic_Full:NEAR, BL_Set_ExecParams:NEAR, CCP_Validate_Program:NEAR, Push_To_System_Stack:NEAR
+
+S_A68D2 SECTION CODE AT 0A68D2H
+
+; ======== CCP_Checksum_Gate  (@0xa68d2) ========
+        ; ------------------------------------------------------------
+        ; Seg-A ISR helper (verified by SFR/CCP usage): Trigger CCP program validation if
+        ; ccp_engine_flags.0x200 set (-> CCP_Validate_Program).
+        ; ------------------------------------------------------------
+CCP_Checksum_Gate:
+        JNB ccp_engine_flags.09H,L_A68DA
+        CALLS 00AH,CCP_Validate_Program
+L_A68DA:                 ; 0xa68da
+        RETS
+
+; ======== CCP_Arm_BL_Exec  (@0xa68dc) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by ccp_/bl_/cpu output signals): CCP command path that arms bootloader execution:
+        ; ccp_engine_flags + bl_exec_arm_magic (CAN reflash entry).
+        ; ------------------------------------------------------------
+CCP_Arm_BL_Exec:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        JNB ccp_engine_flags.07H,L_A6926
+        MOV R8,#DATA16 0FCC0H
+        MOV R9,#00H
+L_A68EA:                 ; 0xa68ea
+        MOV R4,R8
+        ROL R4,#01H
+        MOV R8,R4
+        MOV R4,#01H
+        AND R4,R8
+        JMPR cc_EQ,L_A691E
+        MOVB RL4,[R9+#010H]
+        MOVB RL5,[R9+#04068H]
+        CMPB RL4,RL5
+        JMPR cc_NE,L_A691A
+        MOVB RL4,[R9+#020H]
+
+; ======== CCP_Arm_BL_Exec_2  (@0xa6906) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by ccp_/bl_/cpu output signals): CCP bootloader-exec arming (second path).
+        ; ------------------------------------------------------------
+CCP_Arm_BL_Exec_2:
+        MOVB RL5,[R9+#04074H]
+        CMPB RL4,RL5
+        JMPR cc_NE,L_A691A
+        MOVB RL4,[R9+#030H]
+        MOVB RL5,[R9+#04080H]
+        CMPB RL4,RL5
+        JMPR cc_EQ,L_A691E
+L_A691A:                 ; 0xa691a
+        BCLR ccp_engine_flags.07H
+        JMPR cc_UC,L_A6926
+L_A691E:                 ; 0xa691e
+        ADD R9,#01H
+        CMP R9,#DATA16 0000CH
+        JMPR cc_C,L_A68EA
+L_A6926:                 ; 0xa6926
+        JB ccp_engine_flags.07H,L_A692E
+        JNB ccp_engine_flags.08H,L_A69D8
+L_A692E:                 ; 0xa692e
+        JNB ccp_engine_flags.08H,L_A693E
+        JB ccp_engine_flags.07H,L_A693E
+        CALLS 00AH,CCP_Calc_Checksum
+        BSET ccp_engine_flags.07H
+        JMPR cc_UC,L_A6942
+L_A693E:                 ; 0xa693e
+        JNB ccp_engine_flags.07H,L_A6942
+L_A6942:                 ; 0xa6942
+        MOVB RL4,#DATA16 00065H
+        MOVB bl_exec_arm_magic,RL4
+        MOVB RL5,#DATA16 000ACH
+        MOVB bl_exec_magic_b1,RL5
+        MOVB RL3,#DATA16 000CAH
+        MOVB bl_exec_magic_b2,RL3
+        MOVB RL2,#DATA16 00035H
+        MOVB bl_exec_magic_b3,RL2
+        MOV ADDRSEL2,#DATA16 0FFF0H
+        MOV R4,#00H
+        MOV R5,#09H
+        MOV bl_exec_addr_lo,R4
+        MOV bl_exec_addr_hi,R5
+        EXTP #00H, #02H
+        MOV R4,ccp_282
+        MOV R5,ccp_284
+        CALLS 00CH,Push_To_System_Stack
+        JNB bl_mode_status_flags.08H,L_A69D8
+        JNB ccp_engine_flags.07H,L_A6990
+        CALLS 00AH,BL_Set_ExecMagic_Full
+        BCLR ccp_engine_flags.07H
+L_A6990:                 ; 0xa6990
+        JNB ccp_engine_flags.08H,L_A69D8
+        MOVB RL4,#DATA16 00065H
+        MOVB bl_exec_arm_magic,RL4
+        MOVB RL5,#DATA16 000ACH
+        MOVB bl_exec_magic_b1,RL5
+        MOVB RL3,#DATA16 000CAH
+        MOVB bl_exec_magic_b2,RL3
+        MOVB RL2,#DATA16 00035H
+        MOVB bl_exec_magic_b3,RL2
+        MOV R4,#DATA16 08000H
+        MOV R5,#08H
+        MOV bl_exec_addr_lo,R4
+        MOV bl_exec_addr_hi,R5
+        EXTP #00H, #02H
+        MOV R4,ccp_282
+        MOV R5,ccp_284
+        CALLS 00CH,Push_To_System_Stack
+        CALLS 00AH,BL_Set_ExecParams
+        BCLR ccp_engine_flags.08H
+L_A69D8:                 ; 0xa69d8
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== CCP_Calc_Checksum  (@0xa69de) ========
+        ; ------------------------------------------------------------
+        ; Seg-A ISR helper (verified by SFR/CCP usage): CCP block checksum/CRC computation (0x8000 seed,
+        ; loop).
+        ; ------------------------------------------------------------
+CCP_Calc_Checksum:
+        SUB R0,#02H
+        MOV R4,R0
+        MOV ADDRSEL2,#DATA16 00504H
+        MOV DPP0,#DATA16 00024H
+        MOV DPP2,#DATA16 00014H
+        MOV R12,#00H
+        MOV R13,#DATA16 08000H
+        MOV R14,#DATA16 0FFF0H
+L_A69F8:                 ; 0xa69f8
+        MOV [R4],[R12+]
+        MOV [R13+],[R4]
+        MOV [R4],[R12+]
+        MOV [R13+],[R4]
+        MOV [R4],[R12+]
+        MOV [R13+],[R4]
+        MOV [R4],[R12+]
+        MOV [R13+],[R4]
+        MOV [R4],[R12+]
+        MOV [R13+],[R4]
+        MOV [R4],[R12+]
+        MOV [R13+],[R4]
+        MOV [R4],[R12+]
+        MOV [R13+],[R4]
+        MOV [R4],[R12+]
+        MOV [R13+],[R4]
+        SUB R14,#DATA16 00010H
+        JMPR cc_EQ,L_A6A34
+        CMP R12,#DATA16 04000H
+        JMPR cc_NE,L_A69F8
+        MOV R12,#00H
+        MOV R13,#DATA16 08000H
+        SUB DPP0,0FF1EH
+        SUB DPP2,0FF1EH
+        JMPR cc_UC,L_A69F8
+L_A6A34:                 ; 0xa6a34
+        MOV DPP0,#DATA16 00024H
+        MOV DPP2,#DATA16 00025H
+        MOV ADDRSEL2,#DATA16 0FFF0H
+        ADD R0,#02H
+        RETS
+
+S_A68D2 ENDS
+        END

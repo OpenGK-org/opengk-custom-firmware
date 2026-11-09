@@ -1,0 +1,297 @@
+; asw/sys/sys_adjust.a66
+; 0xA4B22-0xA4E22  (768 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  CC26INT_Imob_Reset, FuelPump_Out_Init, IVVT_Hold_Adjust, IVVT_Hold_Adjust_2, Reset_Dfba4_e0a
+EXTERN  Diag_Output_SecAir:NEAR, EngCrank_StopTimingCapture:NEAR, EngIgn_DisableOutputs:NEAR, EngInj_DisableOutputs:NEAR
+EXTERN  Init_ECU_Ports:NEAR, Output_CC12_P2_12_Disable:NEAR, Output_CC5_P2_5_Enable:NEAR, Reset_ADCIC_4da:NEAR
+EXTERN  Reset_CC26IC_f1a:NEAR, Reset_CC26IC_f38:NEAR, Reset_CC28IC_e22:NEAR, Reset_CC29IC_2b4:NEAR
+EXTERN  Reset_Dfd62_8ca:NEAR, Set_lv_err_com_resp_imob:NEAR, SpinHalt_a3eae:NEAR
+
+S_A4B22 SECTION CODE AT 0A4B22H
+
+; ======== CC26INT_Imob_Reset  (@0xa4b22) ========
+        ; ------------------------------------------------------------
+        ; Seg-A ISR helper (verified by SFR/CCP usage): CC26 interrupt-clear + immob comms-error set
+        ; (Reset_CC26IC + Set_lv_err_com_resp_imob).
+        ; ------------------------------------------------------------
+CC26INT_Imob_Reset:
+        CALLS 00AH,Reset_CC26IC_f1a
+        BSET PSW.0BH
+        CALLS 00AH,Set_lv_err_com_resp_imob
+        RETS
+
+; ======== FuelPump_Out_Init  (@0xa4b2e) ========
+        ; ------------------------------------------------------------
+        ; Digital-output-latch driver (fd94=request/fd96=state, fd98=feedback; CC5/P2.5=fuel-pump relay):
+        ; Fuel-pump output init (CC5/P2.5 enable, CC12 disable).
+        ; ------------------------------------------------------------
+FuelPump_Out_Init:
+        MOV [-R0],R9
+        MOV R9,T1_FE52
+L_A4B34:                 ; 0xa4b34
+        JB capcom_12.0EH,L_A4B3C
+        JNB capcom_12.0DH,L_A4B48
+L_A4B3C:                 ; 0xa4b3c
+        MOV R4,T1_FE52
+        SUB R4,R9
+        CMP R4,#DATA16 000BBH
+        JMPR cc_C,L_A4B34
+L_A4B48:                 ; 0xa4b48
+        MOV state_out_diag,ZEROS
+        CALLS 00AH,Reset_Dfd62_8ca
+        CALLS 00AH,Diag_Output_SecAir
+        MOV R9,T1_FE52
+L_A4B58:                 ; 0xa4b58
+        JB capcom_12.0EH,L_A4B60
+        JNB capcom_12.0DH,L_A4B6C
+L_A4B60:                 ; 0xa4b60
+        MOV R4,T1_FE52
+        SUB R4,R9
+        CMP R4,#DATA16 000BBH
+        JMPR cc_C,L_A4B58
+L_A4B6C:                 ; 0xa4b6c
+        BCLR PSW.0BH
+        CALLS 00AH,Init_ECU_Ports
+        CALLS 00AH,EngInj_DisableOutputs
+        CALLS 00AH,EngIgn_DisableOutputs
+        CALLS 00AH,EngCrank_StopTimingCapture
+        CALLS 00AH,IVVT_Hold_Adjust_2
+        CALLS 00AH,Output_CC5_P2_5_Enable
+        CALLS 00AH,Output_CC12_P2_12_Disable
+        CALLS 00AH,Reset_CC28IC_e22
+        CALLS 00AH,SpinHalt_a3eae
+        CALLS 00AH,Reset_CC29IC_2b4
+        CALLS 00AH,Reset_ADCIC_4da
+        CALLS 00AH,Reset_CC26IC_f38
+        MOV R9,[R0+]
+        RETS
+
+; ======== IVVT_Hold_Adjust  (@0xa4ba2) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by ccp_/bl_/cpu output signals): IVVT OCV hold-current adjustment hld_adj_ivvt_in_1.
+        ; ------------------------------------------------------------
+IVVT_Hold_Adjust:
+        EXTR #02H
+        MOV PWMIC,#DATA16 00064H
+        BCLR ODP7.00H
+        BCLR P7.00H
+        BSET DP7.00H
+        EXTR #02H
+        MOV PT0,#DATA16 00000H
+        MOV PP0,#DATA16 005DBH
+        BSET PWMCON0.04H
+        EXTR #01H
+        MOV SFR_FE38,PP0_F038
+        MOV R4,PP0_F038
+        ADD R4,#01H
+        MOV R2,#00H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV PW0_FE30,R4
+        MOV PW0,PW0_FE30
+        OR PWMCON0,#DATA16 00001H
+        OR PWMCON1,#DATA16 00001H
+        OR PWMCON1,#DATA16 01000H
+        EXTR #01H
+        BCLR ODP7.01H
+        BSET P7.01H
+        BSET DP7.01H
+        EXTR #02H
+        MOV PT1,#DATA16 00000H
+        MOV PP1,#DATA16 005DBH
+        BSET PWMCON0.05H
+        EXTR #01H
+        MOV SFR_FE3A,PP1_F03A
+        MOV R5,PP1_F03A
+        ADD R5,#01H
+        MULU R5,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV PW1_FE32,R4
+        MOV PW1,PW1_FE32
+        OR PWMCON0,#DATA16 00002H
+        OR PWMCON1,#DATA16 00002H
+        EXTR #01H
+        BCLR ODP7.02H
+        BCLR P7.02H
+        BSET DP7.02H
+        EXTR #02H
+        MOV PT2,#DATA16 00000H
+        MOV PP2,#DATA16 00EA5H
+        BSET PWMCON0.06H
+        EXTR #01H
+        MOV SFR_FE3C,PP2_F03C
+        MOV R5,PP2_F03C
+        ADD R5,#01H
+        MULU R5,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV PW2_FE34,R4
+        MOV PW2,PW2_FE34
+        OR PWMCON0,#DATA16 00004H
+        OR PWMCON1,#DATA16 00004H
+        MOV R13,#DATA16 0012CH
+        MOVB RL4,#01H
+        MOVB hld_adj_ivvt_in_1,RL4
+        EXTR #01H
+        BCLR ODP7.03H
+        BCLR P7.03H
+        BSET DP7.03H
+        EXTR #02H
+        MOV PT3,#DATA16 00000H
+        MOV PP3,#DATA16 004E1H
+        BSET PWMCON0.07H
+        MOV R4,PP3_F03E
+        ADD R4,#01H
+        MOV R2,PW3_FE36
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV PW3_FE36,R4
+        MOV ivvt_hpwm_frq_z,R13
+        EXTR #01H
+        MOV ivvt_hpwm_div,SFR_FE3E
+        MOV PW3,PW3_FE36
+        MOVB ivvt_hpwm_rdy,ZEROS
+        OR PWMCON0,#DATA16 00808H
+        OR PWMCON1,#DATA16 00008H
+        BSET P8.00H
+        EXTR #01H
+        BCLR ODP8.00H
+        BSET DP8.00H
+        BSET P8.01H
+        EXTR #01H
+        BCLR ODP8.01H
+        BSET DP8.01H
+        EXTR #01H
+        MOV CC19IC,#DATA16 0004CH
+        BFLDH CCM4_FF22,#0F0H,#0D0H
+        BFLDL 0FF8EH,#0FFH,#00H
+        EXTR #01H
+        BCLR ODP2.0BH
+        BSET P2.0BH
+        BSET DP2.0BH
+        MOV R5,#DATA16 0249FH
+        MOV cps_pwm_base,R5
+        MOV R2,cps_pwm_base
+        MOV R1,#00H
+        MULU R2,R1
+        MOV R3,MDH_FE0C
+        MOV R2,R3
+        MOV R3,0FF1CH
+        MOV cps_pwm_cmp,R2
+        MOV R4,cps_pwm_base
+        SUB R4,cps_pwm_cmp
+        ADD R4,T1_FE52
+        MOV CC11_FE96,R4
+        BFLDH CCM2_FF56,#0F0H,#0D0H
+        BFLDL 0FF8EH,#0FFH,#051H
+        EXTR #02H
+        BFLDL 0F16AH,#0FFH,#00H
+        BCLR ODP8.05H
+        BSET P8.05H
+        BSET DP8.05H
+        MOV R4,#DATA16 0493EH
+        MOV maf_pwm_base,R4
+        MOV R4,maf_pwm_base
+        MULU R4,R1
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV lv_maf_f9da,R4
+        MOV R5,maf_pwm_base
+        SUB R5,lv_maf_f9da
+        ADD R5,T8_F052
+        MOV CC21_FE6A,R5
+        BFLDL 0FF24H,#0F0H,#0D0H
+        EXTR #01H
+        BFLDL 0F16AH,#0FFH,#04FH
+        BFLDL 0FF80H,#0FFH,#00H
+        EXTR #01H
+        BCLR ODP2.04H
+        BSET P2.04H
+        BSET DP2.04H
+        MOV R5,#DATA16 0493EH
+        MOV imob_pwm_base,R5
+        MOV R2,imob_pwm_base
+        MULU R2,R1
+        MOV R3,MDH_FE0C
+        MOV R2,R3
+        MOV R3,0FF1CH
+        MOV imob_f9de,R2
+        MOV R4,imob_pwm_base
+        SUB R4,imob_f9de
+        ADD R4,T1_FE52
+        MOV CC4_FE88,R4
+        BFLDL 0FF54H,#0FH,#0DH
+        BFLDL 0FF80H,#0FFH,#04BH
+        RETS
+
+; ======== IVVT_Hold_Adjust_2  (@0xa4d92) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by ccp_/bl_/cpu output signals): IVVT OCV hold-current adjustment (second path).
+        ; ------------------------------------------------------------
+IVVT_Hold_Adjust_2:
+        EXTR #01H
+        MOV PWMIC,#DATA16 00000H
+        AND PWMCON0,#DATA16 0EEEEH
+        AND PWMCON1,#DATA16 0FFEEH
+        BSET P7.00H
+        AND PWMCON0,#DATA16 0DDDDH
+        AND PWMCON1,#DATA16 0FFDDH
+        BCLR P7.01H
+        AND PWMCON0,#DATA16 0BBBBH
+        AND PWMCON1,#DATA16 0FFBBH
+        BSET P7.02H
+        BFLDL 0FF22H,#0FH,#00H
+        EXTR #01H
+        BFLDL 0F160H,#0FFH,#00H
+        MOVB RL4,#01H
+        MOVB hld_adj_ivvt_in_1,RL4
+        AND PWMCON0,#DATA16 07777H
+        AND PWMCON1,#DATA16 0FF77H
+        BSET P7.03H
+        BFLDH CCM4_FF22,#0F0H,#00H
+        EXTR #01H
+        BCLR CC19IC.06H
+        BSET P8.00H
+        BSET P8.01H
+        BFLDL 0FF8EH,#0FFH,#00H
+        BFLDH CCM2_FF56,#0F0H,#00H
+        BSET P2.0BH
+        EXTR #01H
+        BFLDL 0F16AH,#0FFH,#00H
+        BFLDL 0FF24H,#0F0H,#00H
+        BSET P8.05H
+        BFLDL 0FF80H,#0FFH,#00H
+        BFLDL 0FF54H,#0FH,#00H
+        BSET P2.04H
+        RETS
+        MULU R14,R15
+        ATOMIC #02H
+        MOV [R12],R14
+        MOV [R13],MDH_FE0C
+        RETS
+
+; ======== Reset_Dfba4_e0a  (@0xa4e0a) ========
+Reset_Dfba4_e0a:
+        MOV dtc_mil_req,ZEROS
+        BCLR sched_flags2.03H
+        EXTR #01H
+        BFLDL 0F178H,#0FFH,#00H
+        BFLDL 0FF28H,#0FH,#00H
+        EXTR #01H
+        BFLDL 0F178H,#0FFH,#063H
+        RETS
+
+S_A4B22 ENDS
+        END

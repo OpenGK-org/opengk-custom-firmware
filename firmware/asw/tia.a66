@@ -1,0 +1,556 @@
+; asw/tia.a66
+; 0xC9216-0xC97C2  (1452 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_abc_inc_tco                        EQU  0900C1H
+c_abc_inc_tco_grd_diag               EQU  0900C2H
+c_abc_inc_tia                        EQU  0900C3H
+c_abc_inc_tia_plaus_diag             EQU  0900C4H
+c_abc_max_tco                        EQU  0900F6H
+c_abc_max_tco_grd_diag               EQU  0900F7H
+c_abc_max_tia                        EQU  0900F8H
+c_abc_max_tia_plaus_diag             EQU  0900F9H
+c_t_vs_tia_plaus                     EQU  090360H
+c_tco_diag                           EQU  09036FH
+c_tco_dif_tia_plaus                  EQU  090371H
+c_tco_grd_max_diag                   EQU  090373H
+c_tco_max_diag                       EQU  090379H
+c_tco_mes_grd_max_diag               EQU  090380H
+c_tco_min_diag                       EQU  090386H
+c_tco_tia_plaus                      EQU  0903A4H
+c_tia_grd_max_diag                   EQU  0903B5H
+c_tia_max_diag                       EQU  0903B7H
+c_tia_min_diag                       EQU  0903BCH
+c_tia_plaus_diag                     EQU  0903BDH
+c_tia_sub_bol_diag                   EQU  0903C2H
+c_tia_sub_tol_diag                   EQU  0903C3H
+c_tia_tco_diag                       EQU  0903C4H
+c_vs_min_tia_plaus                   EQU  090443H
+c_vs_tia_plaus                       EQU  09044BH
+c_t_tco_min_tia_plaus                EQU  090738H
+c_t_tia_plaus                        EQU  090742H
+c_tco_st_tco_sub_min                 EQU  090758H
+c_tia_tco_dif_min_tco_sub            EQU  0907A6H
+sst_utal_kf_tal                       EQU  090F29H
+sst_utkw_kf_tkw                              EQU  09178EH
+ip_tco__vtco                         EQU  0965DCH
+ip_tia__vtia                         EQU  096ABAH
+
+PUBLIC  Acq_TCO_Mes, Acq_TIA_Mes
+EXTERN  Abs_Diff_U16:NEAR, DTC_Update_Debounced:NEAR, Diag_DTC_dd1a2b:NEAR, Diag_TCO_Sub:NEAR
+EXTERN  Div_Ratio_U8_Sat:NEAR, Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_2D_Table_DWord_YByte:NEAR, Get_IP_Byte_3D_Table_DWord_XWord_YWord:NEAR
+EXTERN  Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_2D_Table_DWord_YByte:NEAR, Get_IP_Word_2D_Table_DWord_YWord:NEAR, Get_IP_Word_Y_Axis:NEAR
+EXTERN  L_C99C8:NEAR, Read_MulDiv_MD:NEAR, Reset_TCO_Diag:NEAR, subtract_r12_r13_negate_if_not_rets_r4:NEAR
+
+S_C9216 SECTION CODE AT 0C9216H
+
+; ======== Acq_TIA_Mes  (@0xc9216) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (MS42, verified): intake-air temp acquisition: v_tia->tia_mes via IP + plausibility diag
+        ; (c_tia_*_diag)
+        ; (was FUN_0c9216)
+        ; ------------------------------------------------------------
+Acq_TIA_Mes:
+        MOV [-R0],R6
+        MOV R4,lv_tco_fa86
+        AND R4,#DATA16 003FFH
+        SHR R4,#02H
+        MOVB v_tia,RL4
+        MOV R12,#DATA16 POF sst_utal_kf_tal
+        MOV R13,#DATA16 PAG sst_utal_kf_tal
+        MOVBZ R14,RL4
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_tia__vtia
+        MOV R13,#DATA16 PAG ip_tia__vtia
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB tia_mes,RL4
+        CMPB RL4,DPP0:c_tia_max_diag
+        JMPR cc_ULE,L_C9284
+        JB sched_flags2.0EH,L_C9252
+        JMPA cc_UC,L_C9330
+L_C9252:                 ; 0xc9252
+        MOVB RL5,#02H
+        MOVB dtc_test_result,RL5
+        MOV R12,#DATA16 0D15CH
+        MOV R13,#DATA16 0530AH
+        MOVBZ R14,DPP0:c_abc_inc_tia
+        MOVBZ R15,DPP0:c_abc_max_tia
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_cam_err.0AH,dtc_status_work.06H
+        MOVBZ R4,g_d166
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C9330
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_grp_maf_dif,R4
+        JMPR cc_UC,L_C9330
+L_C9284:                 ; 0xc9284
+        MOVB RL4,tia_mes
+        CMPB RL4,DPP0:c_tia_min_diag
+        JMPR cc_NC,L_C92C8
+        JNB lv_n_max_isa_err.04H,L_C9330
+        JNB sched_flags2.0EH,L_C9330
+        MOVB RL5,#01H
+        MOVB dtc_test_result,RL5
+        MOV R12,#DATA16 0D15CH
+        MOV R13,#DATA16 0530AH
+        MOVBZ R14,DPP0:c_abc_inc_tia
+        MOVBZ R15,DPP0:c_abc_max_tia
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_cam_err.0AH,dtc_status_work.06H
+        MOVBZ R4,g_d166
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C9330
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_grp_maf_dif,R4
+        JMPR cc_UC,L_C9330
+L_C92C8:                 ; 0xc92c8
+        JNB sched_flags2.0EH,L_C92F6
+        MOV R12,#DATA16 0D15CH
+        MOV R13,#DATA16 0530AH
+        MOVBZ R14,DPP0:c_abc_inc_tia
+        MOVBZ R15,DPP0:c_abc_max_tia
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_cam_err.0AH,dtc_status_work.06H
+        MOVBZ R4,g_d166
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C92F6
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_grp_maf_dif,R4
+L_C92F6:                 ; 0xc92f6
+        JB lv_cam_err.0AH,L_C932E
+        MOVB RL4,tia_mes
+        CMPB RL4,tia
+        JMPR cc_C,L_C930C
+        MOVB RL6,RL4
+        SUBB RL6,tia
+        JMPR cc_UC,L_C9314
+L_C930C:                 ; 0xc930c
+        MOVB RL6,tia
+        SUBB RL6,tia_mes
+L_C9314:                 ; 0xc9314
+        JB lv_n_max_isa_err.07H,L_C9322
+        CMPB RL6,DPP0:c_tia_grd_max_diag
+        JMPR cc_ULE,L_C9322
+        BSET lv_n_max_isa_err.07H
+        JMPR cc_UC,L_C9330
+L_C9322:                 ; 0xc9322
+        MOVB RL4,tia_mes
+        MOVB tia,RL4
+        BCLR lv_n_max_isa_err.07H
+        JMPR cc_UC,L_C9330
+L_C932E:                 ; 0xc932e
+        BSET lv_n_max_isa_err.07H
+L_C9330:                 ; 0xc9330
+        MOVB RL4,g_d15d
+        JMPR cc_EQ,L_C933A
+        BSET lv_n_max_isa_err.0FH
+        JMPR cc_UC,L_C933C
+L_C933A:                 ; 0xc933a
+        BCLR lv_n_max_isa_err.0FH
+L_C933C:                 ; 0xc933c
+        JNB lv_cam_err.0AH,L_C937A
+        JB lv_cam_err.0CH,L_C9354
+        JB lv_cam_err.0DH,L_C9354
+        JB lv_cam_err.0EH,L_C9354
+        JB lv_lam_lim_1_err.00H,L_C9354
+        JNB lv_lam_lim_1_err.01H,L_C935E
+L_C9354:                 ; 0xc9354
+        MOVB RL4,DPP0:c_tia_sub_tol_diag
+        MOVB tia,RL4
+        JMPR cc_UC,L_C937A
+L_C935E:                 ; 0xc935e
+        MOVB RL4,tco
+        CMPB RL4,DPP0:c_tco_diag
+        JMPR cc_NC,L_C9372
+        MOVB RL5,DPP0:c_tia_sub_bol_diag
+        MOVB tia,RL5
+        JMPR cc_UC,L_C937A
+L_C9372:                 ; 0xc9372
+        MOVB RL4,DPP0:c_tia_sub_tol_diag
+        MOVB tia,RL4
+L_C937A:                 ; 0xc937a
+        JNB lv_pl.04H,L_C938A
+        JNB lv_pl.08H,L_C938A
+        MOVB RL4,tia
+        MOVB tia_st,RL4
+L_C938A:                 ; 0xc938a
+        JB can_fd58.09H,L_C9392
+        JMPA cc_UC,L_C9518
+L_C9392:                 ; 0xc9392
+        JB sched_flags2.0EH,L_C939A
+        JMPA cc_UC,L_C9518
+L_C939A:                 ; 0xc939a
+        MOVB RL4,tco
+        CMPB RL4,DPP0:c_tco_tia_plaus
+        JMPR cc_ULE,L_C93B6
+        MOV R4,g_cdce
+        JMPR cc_NE,L_C93B0
+        MOV g_cdce,ZEROS
+        JMPR cc_UC,L_C93BE
+L_C93B0:                 ; 0xc93b0
+        ADD g_cdce,ONES
+        JMPR cc_UC,L_C93BE
+L_C93B6:                 ; 0xc93b6
+        MOV R4,DPP0:c_t_tco_min_tia_plaus
+        MOV g_cdce,R4
+L_C93BE:                 ; 0xc93be
+        MOVB RL4,vs
+        CMPB RL4,DPP0:c_vs_min_tia_plaus
+        JMPR cc_ULE,L_C93D8
+        MOVB RL5,lv_tco_c356
+        JMPR cc_NE,L_C93D4
+        MOVB lv_tco_c356,ZEROS
+        JMPR cc_UC,L_C93D8
+L_C93D4:                 ; 0xc93d4
+        ADDB lv_tco_c356,ONES
+L_C93D8:                 ; 0xc93d8
+        MOV R12,#DATA16 04C76H
+        MOVBZ R13,tia_st
+        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        CMP R4,t_is
+        JMPR cc_NC,L_C93EC
+        BSET lv_n_max_isa_err.0AH
+L_C93EC:                 ; 0xc93ec
+        JB lv_cam_err.0AH,L_C9440
+        JB lv_cam_err.07H,L_C9440
+        JB lv_cam_err.08H,L_C9440
+        JB lv_cam_err.0CH,L_C9440
+        JB lv_lam_lim_1_err.01H,L_C9440
+        JB lv_cam_err.0DH,L_C9440
+        JB lv_cam_err.0EH,L_C9440
+        JB lv_lam_lim_1_err.00H,L_C9440
+        MOV R4,t_ast
+        CMP R4,DPP0:c_t_tia_plaus
+        JMPR cc_ULE,L_C9440
+        JNB lv_n_max_isa_err.0AH,L_C9440
+        MOVBZ R5,tco
+        MOVBZ R2,tco_st
+        SUB R5,R2
+        MOVBZ R2,DPP0:c_tco_dif_tia_plaus
+        SUB R2,#DATA16 00040H
+        CMP R5,R2
+        JMPR cc_SLE,L_C9440
+        MOV R5,g_cdce
+        JMPR cc_NE,L_C9440
+        MOVB RL4,lv_tco_c356
+        JMPR cc_NE,L_C9440
+        BSET lv_n_max_isa_err.05H
+        JMPR cc_UC,L_C9442
+L_C9440:                 ; 0xc9440
+        BCLR lv_n_max_isa_err.05H
+L_C9442:                 ; 0xc9442
+        MOVB RL4,tia
+        CMPB RL4,tia_min_tia_plaus_diag
+        JMPR cc_NC,L_C9452
+        MOVB tia_min_tia_plaus_diag,RL4
+        JMPR cc_UC,L_C9460
+L_C9452:                 ; 0xc9452
+        MOVB RL4,tia
+        CMPB RL4,tia_max_tia_plaus_diag
+        JMPR cc_ULE,L_C9460
+        MOVB tia_max_tia_plaus_diag,RL4
+L_C9460:                 ; 0xc9460
+        JNB lv_n_max_isa_err.05H,L_C9510
+        MOVB RL4,vs
+        CMPB RL4,DPP0:c_vs_tia_plaus
+        JMPR cc_NC,L_C9506
+        MOVB RL5,g_c355
+        CMPB RL5,#01H
+        JMPR cc_ULE,L_C947E
+        SUBB RL5,#01H
+        MOVB g_c355,RL5
+        JMPR cc_UC,L_C9518
+L_C947E:                 ; 0xc947e
+        MOVB g_c355,ZEROS
+        MOVBZ R12,tia
+        MOVBZ R13,tia_st
+        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CMPB RL4,DPP0:c_tia_plaus_diag
+        JMPR cc_NC,L_C94BC
+        MOVBZ R12,tia_max_tia_plaus_diag
+        MOVBZ R13,tia_min_tia_plaus_diag
+        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        MOV [-R0],R4
+        MOV R12,#DATA16 04C6EH
+        MOVBZ R13,tia_st
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        MOV R5,[R0+]
+        CMPB RL5,RL4
+        JMPR cc_NC,L_C94BC
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        JMPR cc_UC,L_C94C0
+L_C94BC:                 ; 0xc94bc
+        MOVB dtc_test_result,ZEROS
+L_C94C0:                 ; 0xc94c0
+        MOV R12,#DATA16 0D16AH
+        MOV R13,#DATA16 05320H
+        MOVBZ R14,DPP0:c_abc_inc_tia_plaus_diag
+        MOVBZ R15,DPP0:c_abc_max_tia_plaus_diag
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_cam_err.0BH,dtc_status_work.06H
+        MOVBZ R4,lv_tco_d174
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C94EA
+        MOV R4,#DATA16 0F7FFH
+        AND dtc_grp_maf_dif,R4
+L_C94EA:                 ; 0xc94ea
+        JB lv_n_max_isa_err.0BH,L_C9518
+        MOVBZ R12,DPP0:c_abc_max_tia_plaus_diag
+        MOVBZ R13,DPP0:c_abc_inc_tia_plaus_diag
+        CALLS 00FH,Div_Ratio_U8_Sat
+        MOVBZ R4,RL4
+        SHR R4,#01H
+        CMPB RL4,#00H
+        JMPR cc_EQ,L_C9518
+        BSET lv_n_max_isa_err.0BH
+        JMPR cc_UC,L_C9518
+L_C9506:                 ; 0xc9506
+        MOVB RL4,DPP0:c_t_vs_tia_plaus
+        MOVB g_c355,RL4
+        JMPR cc_UC,L_C9518
+L_C9510:                 ; 0xc9510
+        MOVB RL4,DPP0:c_t_vs_tia_plaus
+        MOVB g_c355,RL4
+L_C9518:                 ; 0xc9518
+        MOV R6,[R0+]
+        RET
+
+; ======== Acq_TCO_Mes  (@0xc951c) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (MS42, verified): coolant temp acquisition: v_tco_fil->tco_mes via IP + plausibility diag
+        ; (c_tco_*_diag)
+        ; (was FUN_0c951c)
+        ; ------------------------------------------------------------
+Acq_TCO_Mes:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R6
+        MOVBZ R4,tco_adc_cnt
+        MOV R10,tco_adc_sum
+        MOV R11,#00H
+        MOV R5,R10
+        SHL R10,#06H
+        SHL R11,#06H
+        SHR R5,#0AH
+        OR R11,R5
+        MOV MDH_FE0C,R11
+        MOV 0FE0EH,R10
+        DIVLU R4
+        MOV v_tco_fil,MDL
+        MOV R4,0FE0EH
+        MOV tco_adc_sum,ZEROS
+        MOVB tco_adc_cnt,ZEROS
+        MOV R12,#DATA16 POF sst_utkw_kf_tkw
+        MOV R13,#DATA16 PAG sst_utkw_kf_tkw
+        MOV R14,R4
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_tco__vtco
+        MOV R13,#DATA16 PAG ip_tco__vtco
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB tco_mes,RL4
+        CMPB RL4,DPP0:c_tco_max_diag
+        JMPR cc_ULE,L_C95B2
+        JB sched_flags2.0EH,L_C957C
+        JMPA cc_UC,L_C96A8
+L_C957C:                 ; 0xc957c
+        MOVB RL5,#02H
+        MOVB dtc_test_result,RL5
+        MOV R12,#DATA16 0D178H
+        MOV R13,#DATA16 05336H
+        MOVBZ R14,DPP0:c_abc_inc_tco
+        MOVBZ R15,DPP0:c_abc_max_tco
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_cam_err.0CH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_tco
+        AND R4,#DATA16 00020H
+        JMPA cc_EQ,L_C96A8
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_grp_maf_dif,R4
+        JMPA cc_UC,L_C96A8
+L_C95B2:                 ; 0xc95b2
+        MOVB RL4,tco_mes
+        CMPB RL4,DPP0:c_tco_min_diag
+        JMPR cc_NC,L_C9624
+        JB sched_flags2.0EH,L_C95C4
+        JMPA cc_UC,L_C96A8
+L_C95C4:                 ; 0xc95c4
+        MOVB RL5,tia
+        CMPB RL5,DPP0:c_tia_tco_diag
+        JMPR cc_C,L_C95D6
+        JB lv_cam_err.0AH,L_C95D6
+        JNB lv_cam_err.0BH,L_C95DA
+L_C95D6:                 ; 0xc95d6
+        JB lv_n_max_isa_err.04H,L_C95F2
+L_C95DA:                 ; 0xc95da
+        MOVB RL4,tia
+        CMPB RL4,DPP0:c_tia_tco_diag
+        JMPA cc_C,L_C96A8
+        JNB lv_cam_err.0AH,L_C95EE
+        JMPA cc_UC,L_C96A8
+L_C95EE:                 ; 0xc95ee
+        JB lv_cam_err.0BH,L_C96A8
+L_C95F2:                 ; 0xc95f2
+        MOVB RL4,#01H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D178H
+        MOV R13,#DATA16 05336H
+        MOVBZ R14,DPP0:c_abc_inc_tco
+        MOVBZ R15,DPP0:c_abc_max_tco
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_cam_err.0CH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_tco
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C96A8
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_grp_maf_dif,R4
+        JMPR cc_UC,L_C96A8
+L_C9624:                 ; 0xc9624
+        JNB sched_flags2.0EH,L_C9652
+        MOV R12,#DATA16 0D178H
+        MOV R13,#DATA16 05336H
+        MOVBZ R14,DPP0:c_abc_inc_tco
+        MOVBZ R15,DPP0:c_abc_max_tco
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_cam_err.0CH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_tco
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C9652
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_grp_maf_dif,R4
+L_C9652:                 ; 0xc9652
+        JB lv_cam_err.0CH,L_C96A6
+        JB lv_lam_lim_1_err.00H,L_C96A6
+        JNB lv_cam_err.0DH,L_C9662
+        JB lv_n_max_isa_err.09H,L_C96A6
+L_C9662:                 ; 0xc9662
+        JNB lv_cam_err.0EH,L_C966A
+        JB lv_n_max_isa_err.0DH,L_C96A6
+L_C966A:                 ; 0xc966a
+        JNB lv_lam_lim_1_err.01H,L_C9672
+        JB lv_inh_fsd_cp.09H,L_C96A6
+L_C9672:                 ; 0xc9672
+        MOVB RL4,tco_mes
+        CMPB RL4,tco
+        JMPR cc_C,L_C9684
+        MOVB RL6,RL4
+        SUBB RL6,tco
+        JMPR cc_UC,L_C968C
+L_C9684:                 ; 0xc9684
+        MOVB RL6,tco
+        SUBB RL6,tco_mes
+L_C968C:                 ; 0xc968c
+        JB lv_n_max_isa_err.06H,L_C969A
+        CMPB RL6,DPP0:c_tco_grd_max_diag
+        JMPR cc_ULE,L_C969A
+        BSET lv_n_max_isa_err.06H
+        JMPR cc_UC,L_C96A8
+L_C969A:                 ; 0xc969a
+        MOVB RL4,tco_mes
+        MOVB tco,RL4
+        BCLR lv_n_max_isa_err.06H
+        JMPR cc_UC,L_C96A8
+L_C96A6:                 ; 0xc96a6
+        BSET lv_n_max_isa_err.06H
+L_C96A8:                 ; 0xc96a8
+        MOVB RL4,tco_diag_ena
+        JMPR cc_EQ,L_C96B2
+        BSET lv_n_max_isa_err.0EH
+        JMPR cc_UC,L_C96B4
+L_C96B2:                 ; 0xc96b2
+        BCLR lv_n_max_isa_err.0EH
+L_C96B4:                 ; 0xc96b4
+        JNB can_fd58.09H,L_C971E
+        JNB sched_flags2.0EH,L_C971E
+        MOVB RL4,tco_mes
+        CMPB RL4,tco_mes_z
+        JMPR cc_ULE,L_C96D0
+        SUBB RL4,tco_mes_z
+        MOVB tco_mes_grd,RL4
+        JMPR cc_UC,L_C96DC
+L_C96D0:                 ; 0xc96d0
+        MOVB RL4,tco_mes_z
+        SUBB RL4,tco_mes
+        MOVB tco_mes_grd,RL4
+L_C96DC:                 ; 0xc96dc
+        MOVB RL4,tco_mes
+        MOVB tco_mes_z,RL4
+        MOVB RL5,tco_mes_grd
+        CMPB RL5,DPP0:c_tco_mes_grd_max_diag
+        JMPR cc_ULE,L_C96F4
+        MOVB RL3,#02H
+        MOVB dtc_test_result,RL3
+L_C96F4:                 ; 0xc96f4
+        MOV R12,#DATA16 0D1B0H
+        MOV R13,#DATA16 0538EH
+        MOVBZ R14,DPP0:c_abc_inc_tco_grd_diag
+        MOVBZ R15,DPP0:c_abc_max_tco_grd_diag
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_lam_lim_1_err.00H,dtc_status_work.06H
+        MOVBZ R4,dtc_done_tco_grd
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C971E
+        MOV R4,#DATA16 0FFFEH
+        AND diag_f864,R4
+L_C971E:                 ; 0xc971e
+        MOVB RL4,eng_state
+        CMPB RL4,#02H
+        JMPA cc_C,Reset_TCO_Diag
+        JNB lv_cam_err.0CH,L_C9730
+        JMPA cc_UC,L_C99C8
+L_C9730:                 ; 0xc9730
+        MOVB RL5,t_dly_tco_sub
+        JMPA cc_NE,Diag_TCO_Sub
+        MOVBZ R4,tia_st
+        SHL R4,#08H
+        CMP R4,DPP0:c_tco_st_tco_sub_min
+        JMPR cc_ULE,L_C9784
+        MOVBZ R12,tco_st
+        SHL R12,#08H
+        MOVBZ R13,tia_st
+        SHL R13,#08H
+        CALLS 00FH,Abs_Diff_U16
+        CMP R4,DPP0:c_tia_tco_dif_min_tco_sub
+        JMPR cc_NC,L_C9784
+        MOV R12,#DATA16 04C46H
+        MOV R13,maf_kgh
+        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YWord
+        MOV R8,R4
+        MOV R12,#DATA16 04C56H
+        MOV R13,tco_sub_word
+        MOV R14,maf_kgh
+        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YWord
+        MOVBZ R13,RL4
+        MOV R12,R8
+        CALLS 00FH,Read_MulDiv_MD
+        MOV R9,R4
+        JMPR cc_UC,L_C97AC
+L_C9784:                 ; 0xc9784
+        MOV R12,#DATA16 04C4EH
+        MOV R13,maf_kgh
+        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YWord
+        MOV R8,R4
+        MOV R12,#DATA16 04C62H
+        MOV R13,tco_sub_word
+        MOV R14,maf_kgh
+        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YWord
+        MOVBZ R13,RL4
+        MOV R12,R8
+        CALLS 00FH,Read_MulDiv_MD
+        MOV R9,R4
+L_C97AC:                 ; 0xc97ac
+        MOVB RL4,tco_sub_state
+        CMPB RL4,#05H
+        JMPA cc_UGT,Diag_DTC_dd1a2b
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        ADD R4,#DATA16 04C88H
+        MOV R4,[R4]
+        JMPI cc_UC,[R4]
+
+S_C9216 ENDS
+        END

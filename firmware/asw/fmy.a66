@@ -1,0 +1,687 @@
+; asw/fmy.a66
+; 0xD9BE8-0xDA226  (1598 bytes, 6 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_conf_mil_fmy                       EQU  090152H
+
+PUBLIC  Calc_Fmy_Count, DTC_Capture_FreezeFrame, Find_Fmy_Slot, NVM_Restore_s210, NVM_Save_s210, Set_Conf_MIL_FMY
+EXTERN  Clear_Fault_Slot:NEAR, Delay_Loop_da664:NEAR, Elevated_Write_Routine_prg_zone_wrapper:NEAR, OBD_Readiness_Grp4:NEAR
+EXTERN  Read_FreezeFrame_1:NEAR, Read_FreezeFrame_2:NEAR, Sat_HiByte_ff:NEAR, xor_routine:NEAR
+
+S_D9BE8 SECTION CODE AT 0D9BE8H
+
+; ======== Calc_Fmy_Count  (@0xd9be8) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by dominant output signals): Fault-memory entry counts: fmy_f_anz / fmy_s_f_anz
+        ; (freeze-frame/stored DTC counts).
+        ; ------------------------------------------------------------
+Calc_Fmy_Count:
+        MOV [-R0],R9
+        MOV [-R0],R7
+        MOV [-R0],R6
+        JB lv_pl.0BH,L_D9BF6
+        JMPA cc_UC,L_D9CDA
+L_D9BF6:                 ; 0xd9bf6
+        MOVB RL4,fmy_f_anz
+        CMPB RL4,#00H
+        JMPR cc_ULE,L_D9CDA
+        MOVB RL6,#00H
+        JMPR cc_UC,L_D9CD4
+L_D9C02:                 ; 0xd9c02
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOV R9,#DATA16 0D0D0H
+        ADD R9,R5
+        MOVB RL4,[R9]
+        ANDB RL4,#DATA16 00040H
+        JMPR cc_NE,L_D9CD2
+        MOVB RL4,[R9+#0AH]
+        ANDB RL4,#DATA16 00020H
+        JMPR cc_EQ,L_D9CD2
+        MOVB RL4,[R9+#0AH]
+        ANDB RL4,#DATA16 00010H
+        JMPR cc_NE,L_D9CD2
+        MOVB RL4,[R9+#0AH]
+        ANDB RL4,#DATA16 00008H
+        JMPR cc_EQ,L_D9C5A
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOVB RL5,[R4+#0522EH]
+        JMPR cc_EQ,L_D9C5A
+        JB lv_conf_mis.04H,L_D9CD2
+L_D9C5A:                 ; 0xd9c5a
+        MOV R4,R9
+        ADD R4,#03H
+        MOVB RL5,[R4]
+        SUBB RL5,#01H
+        MOVB [R4],RL5
+        CMPB RL5,#00H
+        JMPR cc_NE,L_D9CCE
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R12,RL5
+        CALLS 00DH,Clear_Fault_Slot
+        MOVB RL7,#00H
+L_D9C76:                 ; 0xd9c76
+        MOVB RL4,#00H
+        MOVBZ R5,RL7
+        MOV R2,R9
+        ADD R2,R5
+        MOVB [R2],RL4
+        ADDB RL7,#01H
+        CMPB RL7,#DATA16 0000EH
+        JMPR cc_C,L_D9C76
+        MOVB RL7,RL4
+        JMPR cc_UC,L_D9C8E
+L_D9C8C:                 ; 0xd9c8c
+        ADDB RL7,#01H
+L_D9C8E:                 ; 0xd9c8e
+        MOVBZ R4,RL7
+        MOVB RL5,[R4+#0C441H]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOV R4,#DATA16 0D0D0H
+        ADD R4,R5
+        CMP R4,R9
+        JMPR cc_NE,L_D9C8C
+        MOV R12,#DATA16 0C3DBH
+        MOVBZ R13,fmy_f_anz
+        MOVBZ R14,RL6
+        CALLS 00DH,Delay_Loop_da664
+        ADDB fmy_f_anz,ONES
+        MOV R12,#DATA16 0C441H
+        MOVBZ R13,fmy_s_f_anz
+        MOVBZ R14,RL7
+        CALLS 00DH,Delay_Loop_da664
+        ADDB fmy_s_f_anz,ONES
+        JMPR cc_UC,L_D9CD4
+L_D9CCE:                 ; 0xd9cce
+        ADDB RL6,#01H
+        JMPR cc_UC,L_D9CD4
+L_D9CD2:                 ; 0xd9cd2
+        ADDB RL6,#01H
+L_D9CD4:                 ; 0xd9cd4
+        CMPB RL6,fmy_f_anz
+        JMPR cc_C,L_D9C02
+L_D9CDA:                 ; 0xd9cda
+        CALLS 00DH,OBD_Readiness_Grp4
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Find_Fmy_Slot  (@0xd9ce6) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Find_Fmy_Slot:
+        MOV [-R0],R12
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOVB RL7,#00H
+        JMPR cc_UC,L_D9D08
+L_D9CF4:                 ; 0xd9cf4
+        MOVBZ R4,RL7
+        MOVB RL5,[R4+#0C3DBH]
+        MOVB RL4,[R0+#08H]
+        CMPB RL4,RL5
+        JMPR cc_NE,L_D9D06
+        MOV R8,R7
+        JMPR cc_UC,L_D9D0E
+L_D9D06:                 ; 0xd9d06
+        ADDB RL7,#01H
+L_D9D08:                 ; 0xd9d08
+        CMPB RL7,fmy_f_anz
+        JMPR cc_C,L_D9CF4
+L_D9D0E:                 ; 0xd9d0e
+        MOV R4,R8
+        MOVBZ R4,RL4
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOV R9,#DATA16 0D0D0H
+        ADD R9,R5
+        MOVB RL6,#00H
+L_D9D28:                 ; 0xd9d28
+        MOVB RL4,#00H
+        MOVBZ R5,RL6
+        MOV R2,R9
+        ADD R2,R5
+        MOVB [R2],RL4
+        ADDB RL6,#01H
+        CMPB RL6,#DATA16 0000EH
+        JMPR cc_C,L_D9D28
+        MOVB RL6,RL4
+        JMPR cc_UC,L_D9D40
+L_D9D3E:                 ; 0xd9d3e
+        ADDB RL6,#01H
+L_D9D40:                 ; 0xd9d40
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#0C441H]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOV R4,#DATA16 0D0D0H
+        ADD R4,R5
+        CMP R4,R9
+        JMPR cc_NE,L_D9D3E
+        MOV R12,#DATA16 0C3DBH
+        MOVBZ R13,fmy_f_anz
+        MOV R4,R8
+        MOVBZ R14,RL4
+        CALLS 00DH,Delay_Loop_da664
+        ADDB fmy_f_anz,ONES
+        MOV R12,#DATA16 0C441H
+        MOVBZ R13,fmy_s_f_anz
+        MOVBZ R14,RL6
+        CALLS 00DH,Delay_Loop_da664
+        ADDB fmy_s_f_anz,ONES
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        ADD R0,#02H
+        RETS
+
+; ======== Set_Conf_MIL_FMY  (@0xd9d8c) ========
+Set_Conf_MIL_FMY:
+        BSET lv_conf_mis.06H
+        MOVB RL4,DPP0:c_conf_mil_fmy
+        JMPR cc_EQ,L_D9DA2
+        CMPB RL4,#02H
+        JMPR cc_EQ,L_D9DAA
+        CMPB RL4,#03H
+        JMPR cc_EQ,L_D9DB6
+        CMPB RL4,#04H
+        JMPR cc_EQ,L_D9DC0
+        JMPR cc_UC,L_D9DCC
+L_D9DA2:                 ; 0xd9da2
+        BCLR lv_conf_mis.06H
+        MOVB conf_mil_fmy_sam,ZEROS
+        RETS
+L_D9DAA:                 ; 0xd9daa
+        BSET lv_conf_mis.07H
+        BSET lv_conf_mis.04H
+        MOVB RL4,#02H
+        MOVB conf_mil_fmy_sam,RL4
+        RETS
+L_D9DB6:                 ; 0xd9db6
+        BSET lv_conf_mis.04H
+        MOVB RL4,#03H
+        MOVB conf_mil_fmy_sam,RL4
+        RETS
+L_D9DC0:                 ; 0xd9dc0
+        BSET lv_conf_mis.04H
+        BSET lv_conf_mis.05H
+        MOVB RL4,#04H
+        MOVB conf_mil_fmy_sam,RL4
+        RETS
+L_D9DCC:                 ; 0xd9dcc
+        MOVB RL4,#01H
+        MOVB conf_mil_fmy_sam,RL4
+        RETS
+
+; ======== NVM_Restore_s210  (@0xd9dd4) ========
+        ; ------------------------------------------------------------
+        ; NVM adaptation I/O: restores <- validated NVM block (DAT_00f890 base) section; xor_routine checksum.
+        ; Section offset in name.
+        ; ------------------------------------------------------------
+NVM_Restore_s210:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R6
+        JNB can_fd58.02H,L_D9DE2
+        JMPA cc_UC,L_D9F12
+L_D9DE2:                 ; 0xd9de2
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 00210H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#DATA16 001C8H
+        CALLS 00DH,xor_routine
+        MOV R10,diag_f890
+        MOV R11,diag_f892
+        EXTP R11, #02H
+        MOV R5,[R10+#03D8H]
+        NOP
+        CMP R5,R4
+        JMPR cc_NE,L_D9F12
+        EXTP R11, #02H
+        MOVB RL4,[R10+#0210H]
+        NOP
+        CMPB RL4,#DATA16 0001EH
+        JMPR cc_UGT,L_D9E44
+        EXTP R11, #02H
+        MOVB RL4,[R10+#0210H]
+        NOP
+        MOVB fmy_f_anz,RL4
+        JMPR cc_UC,L_D9E4C
+L_D9E44:                 ; 0xd9e44
+        MOVB RL4,#DATA16 0001EH
+        MOVB fmy_f_anz,RL4
+L_D9E4C:                 ; 0xd9e4c
+        MOVB RL4,fmy_f_anz
+        MOVB fmy_s_f_anz,RL4
+        MOV R4,diag_f890
+        MOV R5,diag_f892
+        EXTP R5, #02H
+        MOV R2,[R4+#03D4H]
+        NOP
+        MOV kwp_d664,R2
+        MOV R9,#00H
+        JMPR cc_UC,L_D9F08
+L_D9E6C:                 ; 0xd9e6c
+        MOV R4,diag_f890
+        MOV R5,diag_f892
+        ADD R4,#DATA16 00211H
+        ADD R4,R9
+        EXTP R5, #01H
+        MOVB RL3,[R4]
+        MOVB [R9+#0C3DBH],RL3
+        MOV R4,diag_f890
+        MOV R5,diag_f892
+        ADD R4,#DATA16 00211H
+        ADD R4,R9
+        EXTP R5, #01H
+        MOVB RL3,[R4]
+        MOVB [R9+#0C441H],RL3
+        MOVB RL4,[R9+#0C3DBH]
+        MOVBZ R4,RL4
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOV R8,#DATA16 0D0D0H
+        ADD R8,R5
+        MOVB RL6,#00H
+L_D9EAE:                 ; 0xd9eae
+        MOV R4,diag_f890
+        MOV R5,diag_f892
+        ADD R4,#DATA16 0022FH
+        MOV R2,R9
+        SHL R2,#03H
+        SUB R2,R9
+        SHL R2,#01H
+        MOVBZ R3,RL6
+        ADD R3,R2
+        ADD R4,R3
+        EXTP R5, #01H
+        MOVB RL3,[R4]
+        MOVBZ R4,RL6
+        MOV R2,R8
+        ADD R2,R4
+        MOVB [R2],RL3
+        ADDB RL6,#01H
+        CMPB RL6,#DATA16 0000EH
+        JMPR cc_C,L_D9EAE
+        MOVB RL4,[R8]
+        MOVBZ R4,RL4
+        AND R4,#DATA16 00040H
+        JMPR cc_EQ,L_D9F06
+        MOVB RL6,[R9+#0C3DBH]
+        MOVBZ R4,RL6
+        AND R4,#DATA16 0000FH
+        MOV R5,#01H
+        SHL R5,R4
+        MOV R4,#DATA16 0FD7AH
+        MOVBZ R2,RL6
+        SHR R2,#04H
+        SHL R2,#01H
+        ADD R4,R2
+        MOV R2,[R4]
+        OR R2,R5
+        MOV [R4],R2
+L_D9F06:                 ; 0xd9f06
+        ADD R9,#01H
+L_D9F08:                 ; 0xd9f08
+        MOVBZ R4,fmy_f_anz
+        CMP R9,R4
+        JMPR cc_C,L_D9E6C
+        JMPR cc_UC,L_D9F1A
+L_D9F12:                 ; 0xd9f12
+        MOV R4,trt_word
+        MOV kwp_d664,R4
+L_D9F1A:                 ; 0xd9f1a
+        MOV R6,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== NVM_Save_s210  (@0xd9f22) ========
+        ; ------------------------------------------------------------
+        ; NVM adaptation I/O: saves RAM-> validated NVM block (DAT_00f890 base) section; xor_routine checksum.
+        ; Section offset in name.
+        ; ------------------------------------------------------------
+NVM_Save_s210:
+        MOV [-R0],R6
+        MOVB RL4,fmy_f_anz
+        CMPB RL4,#DATA16 0001EH
+        JMPR cc_UGT,L_D9F34
+        MOVB tmp32_lo,RL4
+        JMPR cc_UC,L_D9F3C
+L_D9F34:                 ; 0xd9f34
+        MOVB RL4,#DATA16 0001EH
+        MOVB tmp32_lo,RL4
+L_D9F3C:                 ; 0xd9f3c
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 00210H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0F6F2H
+        MOV R15,#01H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 00211H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0C3DBH
+        MOVBZ R15,tmp32_lo
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 003D4H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0D664H
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOVB RL6,#00H
+        JMPR cc_UC,L_D9FFA
+L_D9FB4:                 ; 0xd9fb4
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 0022FH
+        MOVBZ R4,RL6
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        ADD R12,R5
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOV R14,#DATA16 0D0D0H
+        ADD R14,R5
+        MOV R15,#0EH
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        ADDB RL6,#01H
+L_D9FFA:                 ; 0xd9ffa
+        CMPB RL6,tmp32_lo
+        JMPR cc_C,L_D9FB4
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 003D6H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0F852H
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 00210H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#DATA16 001C8H
+        CALLS 00DH,xor_routine
+        MOV tmp32_lo,R4
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 003D8H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0F6F2H
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R6,[R0+]
+        RETS
+
+; ======== DTC_Capture_FreezeFrame  (@0xda086) ========
+        ; DTC_Capture_FreezeFrame(void): snapshots live environmental/sensor values into their freeze-frame
+        ; shadow vars (amp_hb, maf_kgh_diag_4, lambda, ti_cyl_hb, etc.) and rebuilds the stored-fault
+        ; freeze-frame arrays dtc_fmy_0_/dtc_fmy_cfm_0_ for each entry in fmy_f_anz. Run by the DTC update
+        ; routines when a fault is reported.
+DTC_Capture_FreezeFrame:
+        MOV [-R0],R9
+        MOV [-R0],R6
+        MOVB RL4,diag_cc8b
+        MOVB amp_hb,RL4
+        MOVB RL5,diag_f7c3
+        MOVB cp_vsdiag_hb,RL5
+        MOV R4,teg_dyn
+        SHR R4,#07H
+        MOVB teg_dyn_hb,RL4
+        MOV R4,cppwm
+        SHR R4,#07H
+        MOVB cppwm_hb,RL4
+        MOVB RL3,diag_f781
+        MOVB tco_sub_dif_diag_hb,RL3
+        MOVB RL2,diag_cab1
+        MOVB isapwm_isa_hb,RL2
+        MOVB RL1,diag_cab3
+        MOVB opg_av_isa_hb,RL1
+        MOVB RL4,diag_cbaf
+        MOVB ivvtpwm_in_1_hb,RL4
+        MOVB RL6,#00H
+L_DA0D0:                 ; 0xda0d0
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R5,[R4+#0FA1AH]
+        CMP R5,#DATA16 0BFFFH
+        JMPR cc_UGT,L_DA102
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R5,[R4+#0FA1AH]
+        MOV R2,#DATA16 0AAAAH
+        MULU R5,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0FH
+        SHR R5,#0FH
+        SHL R2,#01H
+        OR R4,R2
+        MOV R9,R4
+        JMPR cc_UC,L_DA106
+L_DA102:                 ; 0xda102
+        MOV R9,#DATA16 0FFFFH
+L_DA106:                 ; 0xda106
+        MOV R4,R9
+        SHR R4,#08H
+        MOVBZ R5,RL6
+        MOVB [R5+#0F504H],RL4
+        ADDB RL6,#01H
+        MOVBZ R4,RL6
+        CMP R4,#03H
+        JMPR cc_SLE,L_DA0D0
+        MOV R4,maf_kgh
+        CMP R4,#DATA16 07FFEH
+        JMPR cc_UGT,L_DA12A
+        SHR R4,#07H
+        MOVB maf_kgh_diag_4,RL4
+        JMPR cc_UC,L_DA12E
+L_DA12A:                 ; 0xda12a
+        MOVB maf_kgh_diag_4,ONES
+L_DA12E:                 ; 0xda12e
+        MOV R4,maf_kgh_mes
+        CMP R4,#DATA16 07FFEH
+        JMPR cc_UGT,L_DA140
+        SHR R4,#07H
+        MOVB maf_kgh_mes_4,RL4
+        JMPR cc_UC,L_DA144
+L_DA140:                 ; 0xda140
+        MOVB maf_kgh_mes_4,ONES
+L_DA144:                 ; 0xda144
+        MOV R4,v_dtp_mes
+        SHR R4,#02H
+        MOVB v_dtp_mes_hb,RL4
+        MOV R12,v_dtp_dif_diag
+        CALLS 00FH,Sat_HiByte_ff
+        MOVB v_dtp_dif_diag_lb,RL4
+        MOV R4,diagcp_mdl_estim
+        SHR R4,#08H
+        MOVB diagcp_mdl_estim_hb,RL4
+        MOV R4,dtp_mv
+        ASHR R4,#08H
+        MOVB dtp_mv_hb,RL4
+        MOV R4,lam_bank_1_lam_up_lam_mv
+        ASHR R4,#08H
+        MOVB lam_mv_1_hb,RL4
+        MOV R4,lam_bank_1_lam_up_ti_lam
+        ASHR R4,#08H
+        MOVB ti_lam_1_hb,RL4
+        MOVB RL5,diag_c7c5
+        MOVB vls_mmv_min_1_hb,RL5
+        MOVB RL3,diag_c813
+        MOVB r_up_ls_1_hb,RL3
+        MOVB RL2,lam_bank_1_ls_cur_struct_r_up_ls
+        MOVB r_up_ls_1_lb,RL2
+        MOVB RL1,diag_c835
+        MOVB r_down_ls_1_hb,RL1
+        MOVB RL4,lam_bank_1_ls_cur_struct_r_down_ls
+        MOVB r_down_ls_1_lb,RL4
+        MOVB RL4,diag_c90d
+        MOVB t_sum_min_fsd_1_hb,RL4
+        MOVB RL4,diag_c90b
+        MOVB t_sum_max_fsd_1_hb,RL4
+        MOVB RL6,#00H
+L_DA1BC:                 ; 0xda1bc
+        CMPB RL6,fmy_f_anz
+        JMPR cc_C,L_DA1D6
+        MOV R4,#00H
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        MOV [R5+#0F884H],R4
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        MOV [R5+#0D668H],R4
+        JMPR cc_UC,L_DA21A
+L_DA1D6:                 ; 0xda1d6
+        MOVBZ R12,RL6
+        CALLS 00DH,Read_FreezeFrame_1
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        MOV [R5+#0F884H],R4
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0DDH]
+        MOVBZ R4,RL4
+        AND R4,#DATA16 0000FH
+        JMPR cc_EQ,L_DA210
+        MOVBZ R12,RL6
+        CALLS 00DH,Read_FreezeFrame_2
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        MOV [R5+#0D668H],R4
+        JMPR cc_UC,L_DA21A
+L_DA210:                 ; 0xda210
+        MOV R4,#00H
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        MOV [R5+#0D668H],R4
+L_DA21A:                 ; 0xda21a
+        ADDB RL6,#01H
+        CMPB RL6,#05H
+        JMPR cc_C,L_DA1BC
+        MOV R6,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_D9BE8 ENDS
+        END

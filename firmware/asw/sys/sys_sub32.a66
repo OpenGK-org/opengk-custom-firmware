@@ -1,0 +1,105 @@
+; asw/sys/sys_sub32.a66
+; 0xDFCD4-0xDFD70  (156 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Interp_Scale_Buffer, Is_BL_Prog_Session, Sub32_8
+
+S_DFCD4 SECTION CODE AT 0DFCD4H
+
+; ======== Is_BL_Prog_Session  (@0xdfcd4) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Is_BL_Prog_Session:
+        MOV [-R0],R6
+        MOVB RL6,#00H
+        MOVB RL4,bl_prog_session_state
+        JMPR cc_EQ,L_DFCE4
+        CMPB RL4,#05H
+        JMPR cc_EQ,L_DFCE4
+        MOVB RL6,#01H
+L_DFCE4:                 ; 0xdfce4
+        MOVB RL4,RL6
+        MOV R6,[R0+]
+        RETS
+
+; ======== Sub32_8  (@0xdfcea) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Sub32_8:
+        MOV [-R0],R6
+        MOVB RL6,#01H
+        MOV R4,R12
+        MOV R5,R13
+        SUB R4,#DATA16 02000H
+        SUBC R5,#DATA16 00008H
+        JMPR cc_NE,L_DFCFE
+        MOVB RL6,#00H
+L_DFCFE:                 ; 0xdfcfe
+        MOVB RL4,RL6
+        MOV R6,[R0+]
+        RETS
+
+; ======== Interp_Scale_Buffer  (@0xdfd04) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified): Interpolation/scaling helper over a buffer (param_1+0xe000 offset addressing).
+        ; ------------------------------------------------------------
+Interp_Scale_Buffer:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOVB RL7,#00H
+        MOV R4,R12
+        MOV R5,R13
+        SUB R4,#DATA16 02000H
+        SUBC R5,#DATA16 00008H
+        JMPR cc_C,L_DFD62
+        MOV R4,R12
+        MOV R5,R13
+        MOV R10,R15
+        MOV R11,#00H
+        ADD R4,R10
+        ADDC R5,R11
+        SUB R4,#DATA16 08000H
+        SUBC R5,#DATA16 00008H
+        JMPR cc_UGT,L_DFD62
+        MOV R8,#00H
+        JMPR cc_UC,L_DFD58
+L_DFD36:                 ; 0xdfd36
+        MOVB RL6,[R14]
+        MOV R9,ADDRSEL2_FE1A
+        BCLR PSW.0BH
+        MOV ADDRSEL2,#DATA16 00821H
+        EXTS R13, #01H
+        MOVB [R12],RL6
+        MOV ADDRSEL2_FE1A,R9
+        BSET PSW.0BH
+        MOV R4,R8
+        ADDB RL4,#01H
+        MOV R8,R4
+        ADD R14,#01H
+        ADD R12,#01H
+        ADDC R13,#00H
+L_DFD58:                 ; 0xdfd58
+        MOV R4,R8
+        MOVBZ R4,RL4
+        CMP R4,R15
+        JMPR cc_C,L_DFD36
+        JMPR cc_UC,L_DFD64
+L_DFD62:                 ; 0xdfd62
+        MOVB RL7,#01H
+L_DFD64:                 ; 0xdfd64
+        MOVB RL4,RL7
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_DFCD4 ENDS
+        END

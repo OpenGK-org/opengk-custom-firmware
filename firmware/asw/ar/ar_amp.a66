@@ -1,0 +1,66 @@
+; asw/ar/ar_amp.a66
+; 0xC400C-0xC4082  (118 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_amp_ini                            EQU  0904B4H
+
+PUBLIC  Nop_c4080, Reset_Dcc92_06e, Reset_amp_ad_00c, Reset_amp_mdl_026, Reset_ar_red_ad_add_048
+
+S_C400C SECTION CODE AT 0C400CH
+
+; ======== Reset_amp_ad_00c  (@0xc400c) ========
+Reset_amp_ad_00c:
+        MOV R4,DPP0:c_amp_ini
+        MOV amp_ad,R4
+        MOV ar_red_ad_add,ZEROS
+        MOV g_cc92,ZEROS
+        MOV ar_red_ad_fac,ZEROS
+        MOV g_cc94,ZEROS
+        RETS
+
+; ======== Reset_amp_mdl_026  (@0xc4026) ========
+Reset_amp_mdl_026:
+        MOV R4,amp_ad
+        MOV amp_mdl,R4
+        MOV amp,R4
+        MOV map_mdl_mv,R4
+        MOV map_mdl,R4
+        MOV amp_mdl_dif_i_mmv,ZEROS
+        MOV amp_ad_dif,ZEROS
+        MOV ar_red_dif_i_rel_mmv,ZEROS
+        RETS
+
+; ======== Reset_ar_red_ad_add_048  (@0xc4048) ========
+Reset_ar_red_ad_add_048:
+        MOV R4,ar_red_ad_add
+        ASHR R4,#01H
+        MOV R5,g_cc92
+        ASHR R5,#01H
+        ADD R4,R5
+        MOV ar_red_ad_add,R4
+        MOV R5,ar_red_ad_fac
+        ASHR R5,#01H
+        MOV R2,g_cc94
+        ASHR R2,#01H
+        ADD R5,R2
+        MOV ar_red_ad_fac,R5
+        RETS
+
+; ======== Reset_Dcc92_06e  (@0xc406e) ========
+Reset_Dcc92_06e:
+        MOV R4,ar_red_ad_add
+        MOV g_cc92,R4
+        MOV R5,ar_red_ad_fac
+        MOV g_cc94,R5
+        RETS
+
+; ======== Nop_c4080  (@0xc4080) ========
+Nop_c4080:
+        RETS
+
+S_C400C ENDS
+        END

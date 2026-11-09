@@ -1,0 +1,81 @@
+; asw/sys/sys_index.a66
+; 0xCCA56-0xCCACC  (118 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Find_FlashCmd_Index, Nop_ccac2, Resolve_Paged_Addr
+
+S_CCA56 SECTION CODE AT 0CCA56H
+
+; ======== Find_FlashCmd_Index  (@0xcca56) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Find_FlashCmd_Index:
+        MOV R13,#00H
+L_CCA58:                 ; 0xcca58
+        MOVB RL4,[R13+#04FA2H]
+        MOV R5,R12
+        CMPB RL4,RL5
+        JMPR cc_EQ,L_CCA68
+        ADD R13,#01H
+        CMP R13,#06H
+        JMPR cc_C,L_CCA58
+L_CCA68:                 ; 0xcca68
+        MOV R4,R13
+        RETS
+
+; ======== Resolve_Paged_Addr  (@0xcca6c) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Resolve_Paged_Addr:
+        MOV [-R0],R13
+        MOV [-R0],R12
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV R9,[R0+#04H]
+        MOV R8,[R0+#06H]
+        SHL R8,#02H
+        MOV R4,#DATA16 0C000H
+        AND R4,R9
+        ROL R4,#02H
+        OR R8,R4
+        AND R9,#DATA16 03FFFH
+        CMP R8,DPP0_FE00
+        JMPR cc_EQ,L_CCAB8
+        CMP R8,DPP1_FE02
+        JMPR cc_EQ,L_CCAB0
+        CMP R8,DPP2_FE04
+        JMPR cc_EQ,L_CCAAA
+        CMP R8,DPP3_FE06
+        JMPR cc_NE,L_CCAB6
+        OR R9,#DATA16 0C000H
+        JMPR cc_UC,L_CCAB8
+L_CCAAA:                 ; 0xccaaa
+        OR R9,#DATA16 08000H
+        JMPR cc_UC,L_CCAB8
+L_CCAB0:                 ; 0xccab0
+        OR R9,#DATA16 04000H
+        JMPR cc_UC,L_CCAB8
+L_CCAB6:                 ; 0xccab6
+        MOV R9,#00H
+L_CCAB8:                 ; 0xccab8
+        MOV R4,R9
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        ADD R0,#04H
+        RETS
+
+; ======== Nop_ccac2  (@0xccac2) ========
+Nop_ccac2:
+        EXTS R13, #03H
+        MOV [R12],R14
+        ADD R12,#02H
+        MOV [R12],R15
+        RETS
+
+S_CCA56 ENDS
+        END

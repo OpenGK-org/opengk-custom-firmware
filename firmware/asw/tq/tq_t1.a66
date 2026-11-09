@@ -1,0 +1,1095 @@
+; asw/tq/tq_t1.a66
+; 0xA3F1A-0xA4B22  (3080 bytes, 7 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  CCP_Main_Task, Calc_CPU_Load_Idle, Read_T1_Extended, Reset_CC26IC_f1a, Reset_CC26IC_f38, Reset_Df68f_9ac
+PUBLIC  Reset_T1_f44
+EXTERN  Add32_Carry:NEAR, CCP_Check_Checksum:NEAR, CCP_Cmd_Entry:NEAR, CCP_Init:NEAR
+EXTERN  Calc_FCO:NEAR, Calc_IGA_ER_Adapt:NEAR, Calc_Lamb_ER_Adapt:NEAR, Calc_N_SP_Add_Cat:NEAR
+EXTERN  Calc_TRT_Word:NEAR, Compare_Buffers_Eq:NEAR, Diag_CRC16:NEAR, Diag_Output_SecAir:NEAR
+EXTERN  Div_Frac_U16_Q16:NEAR, EngIgn_DisableOutputs:NEAR, EngInj_DisableOutputs:NEAR, IVVT_Hold_Adjust:NEAR
+EXTERN  Init_ECU_Ports:NEAR, KWP_Session_Setup:NEAR, Nop_a535e:NEAR, Output_CC5_P2_5_Enable:NEAR
+EXTERN  Push_To_System_Stack:NEAR, Read_Coding_Nibble:NEAR, Reset_CC10IC_514:NEAR, Reset_CC29IC_2b4:NEAR
+EXTERN  Reset_Dfba4_e0a:NEAR, Reset_Dfbae_e8e:NEAR, Reset_Dfd62_338:NEAR, Reset_Dfd62_830:NEAR
+EXTERN  Reset_Dfd62_8ca:NEAR, Reset_P3_4f0:NEAR, Set_lv_err_com_resp_imob:NEAR, SpinHalt_a3d48:NEAR
+EXTERN  SpinHalt_a3eae:NEAR
+
+S_A3F1A SECTION CODE AT 0A3F1AH
+
+; ======== Reset_CC26IC_f1a  (@0xa3f1a) ========
+Reset_CC26IC_f1a:
+        EXTR #01H
+        MOV CC26IC,#DATA16 0005BH
+        BFLDH CCM6_FF26,#0FH,#0DH
+        MOV R4,T1_FE52
+        ADD R4,#DATA16 000BCH
+        MOV CC26_FE74,R4
+        MOVB RL4,#09H
+        MOVB div_maf_tick,RL4
+        RETS
+
+; ======== Reset_CC26IC_f38  (@0xa3f38) ========
+Reset_CC26IC_f38:
+        EXTR #01H
+        BFLDL 0F174H,#0FFH,#00H
+        BFLDH CCM6_FF26,#0FH,#00H
+        RETS
+
+; ======== Reset_T1_f44  (@0xa3f44) ========
+Reset_T1_f44:
+        BFLDH T01CON_FF50,#04FH,#00H
+        BFLDH T78CON_FF20,#04FH,#00H
+        MOV T1,#DATA16 00000H
+        EXTR #01H
+        MOV T8,#DATA16 00000H
+        MOV T1IC,#DATA16 00074H
+        EXTR #01H
+        MOV T8IC,#DATA16 00075H
+        BFLDH T01CON_FF50,#04FH,#044H
+        BFLDH T78CON_FF20,#04FH,#044H
+        RETS
+        BFLDH T01CON_FF50,#04FH,#00H
+        BFLDH T78CON_FF20,#04FH,#00H
+        BFLDL 0FF9EH,#0FFH,#00H
+        EXTR #01H
+        BFLDL 0F17CH,#0FFH,#00H
+        RETS
+        MOV [-R0],R12
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R8,[R12]
+        MOV R9,[R12+#02H]
+        MOV R12,[R0+#08H]
+        CALLS 00AH,Read_T1_Extended
+        MOV R4,[R0+#08H]
+        MOV R6,[R4+]
+        MOV R7,[R4]
+        SUB R6,R8
+        SUBC R7,R9
+        MOV R4,R6
+        MOV R5,R7
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV R8,R4
+        MOV R4,#DATA16 05555H
+        MULU R8,R4
+        MOV R9,MDH_FE0C
+        ; ------------------------------------------------------------
+        ; inj-domain ISR timing cell (writers: CC0INT_Handler)
+        ; ------------------------------------------------------------
+        MOV R8,0FE0EH
+        MOV R4,R6
+        MOV R2,#DATA16 05555H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R6,R4
+        MOV R7,R5
+        MOV R4,R5
+        MOV R5,0FF1CH
+        ADD R8,R4
+        ADDC R9,R5
+        CMP R9,#DATA16 04000H
+        JMPR cc_NE,L_A3FE2
+        CMP R8,#00H
+L_A3FE2:                 ; 0xa3fe2
+        JMPR cc_C,L_A3FEE
+        MOV R4,#DATA16 0FFFFH
+        MOV R5,#DATA16 0FFFFH
+        JMPR cc_UC,L_A4012
+L_A3FEE:                 ; 0xa3fee
+        MOV R4,R8
+        MOV R5,R9
+        ADD R4,R4
+        ADDC R5,R5
+        ADD R4,R4
+        ADDC R5,R5
+        MOV R10,#DATA16 0FFFFH
+        MOV R11,#00H
+        AND R10,R6
+        AND R11,R7
+        MOV R2,R11
+        SHR R10,#0EH
+        SHR R11,#0EH
+        SHL R2,#02H
+        OR R10,R2
+        ADD R4,R10
+        ADDC R5,R11
+L_A4012:                 ; 0xa4012
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        ADD R0,#02H
+        RETS
+
+; ======== Read_T1_Extended  (@0xa401e) ========
+        ; ------------------------------------------------------------
+        ; Seg-A ISR helper (verified by SFR/CCP usage): Read extended 32-bit timer T1 + overflow counter
+        ; DAT_00fbb0 (atomic, T1IC-safe).
+        ; ------------------------------------------------------------
+Read_T1_Extended:
+        MOV R4,T1_FE52
+        JMPR cc_N,L_A4032
+        ATOMIC #02H
+        MOV R5,ign_cc_mode
+        JNB XP3IC.07H,L_A404A
+        ADD R5,#01H
+        JMPR cc_UC,L_A404A
+L_A4032:                 ; 0xa4032
+        MOV R5,ign_cc_mode
+        CMP ONES,T1_FE52
+        JMPR cc_NN,L_A404A
+        ATOMIC #02H
+        JNB T1IC.07H,L_A4044
+        JMPR cc_UC,L_A404A
+L_A4044:                 ; 0xa4044
+        MOV R5,ign_cc_mode
+        SUB R5,#01H
+L_A404A:                 ; 0xa404a
+        MOV [R12+#02H],R5
+        MOV [R12],R4
+        RETS
+        MOV R4,R12
+        MOVBZ R5,tq_hi_wr
+        MOVB [R5+#0F62EH],RL4
+        MOVB RL4,tq_hi_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_wr,RL4
+        MOVB RL4,tq_hi_wr
+        CMPB RL4,tq_hi_rd
+        JMPR cc_NE,L_A4084
+        BSET sched_flags.01H
+        MOVB RL4,tq_hi_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_rd,RL4
+L_A4084:                 ; 0xa4084
+        RETS
+        MOV R4,R12
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_A40B8
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_A40B8:                 ; 0xa40b8
+        RETS
+        MOV R4,R12
+        MOVBZ R5,tq_lo_wr
+        MOVB [R5+#0F66EH],RL4
+        MOVB RL4,tq_lo_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_wr,RL4
+        MOVB RL4,tq_lo_wr
+        CMPB RL4,tq_lo_rd
+        JMPR cc_NE,L_A40EC
+        BSET sched_flags.03H
+        MOVB RL4,tq_lo_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_rd,RL4
+L_A40EC:                 ; 0xa40ec
+        RETS
+
+; ======== Calc_CPU_Load_Idle  (@0xa40ee) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by ccp_/bl_/cpu output signals): Idle-task CPU-load measurement: cpu_load / t_ast.
+        ; ------------------------------------------------------------
+Calc_CPU_Load_Idle:
+        MOV [-R0],R9
+        MOV [-R0],R6
+L_A40F2:                 ; 0xa40f2
+        JB sched_flags.04H,L_A40FA
+        JMPA cc_UC,L_A4902
+L_A40FA:                 ; 0xa40fa
+        BCLR sched_flags.04H
+        EXTP #00H, #02H
+        MOV R4,lv_isc_25e
+        MOV R5,lv_isc_260
+        CALLS 00CH,Push_To_System_Stack
+        BSET lv_err_com_resp_imob.07H
+        MOVB RL4,lv_sched_diag_inh
+        ANDB RL4,#01H
+        JMPR cc_NE,L_A41A6
+        MOVB RL4,#DATA16 00011H
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_A414A
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_A414A:                 ; 0xa414a
+        MOVB RL4,#DATA16 00023H
+        MOVBZ R5,tq_lo_wr
+        MOVB [R5+#0F66EH],RL4
+        MOVB RL4,tq_lo_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_wr,RL4
+        MOVB RL4,tq_lo_wr
+        CMPB RL4,tq_lo_rd
+        JMPR cc_NE,L_A417E
+        BSET sched_flags.03H
+        MOVB RL4,tq_lo_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_rd,RL4
+L_A417E:                 ; 0xa417e
+        MOVB RL4,conf_diagcp
+        JMPR cc_EQ,L_A41A6
+        MOV R4,adc_cp_prs
+        AND R4,#DATA16 003FFH
+        MOVBZ R5,idx_cp_prs_ring
+        SHL R5,#01H
+        MOV [R5+#0F7EEH],R4
+        SUBB idx_cp_prs_ring,ONES
+        MOVB RL4,idx_cp_prs_ring
+        ANDB RL4,#DATA16 0000FH
+        MOVB idx_cp_prs_ring,RL4
+L_A41A6:                 ; 0xa41a6
+        MOVB RL6,#00H
+L_A41A8:                 ; 0xa41a8
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R9,[R4+#0F93CH]
+        JMPR cc_EQ,L_A41EA
+        SUB R9,#01H
+        JMPR cc_NE,L_A41E2
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV [R4+#0F93CH],R9
+        MOV R4,#DATA16 02164H
+        MOV R5,#DATA16 0000AH
+        MOVBZ R2,RL6
+        SHL R2,#02H
+        MOV R3,#00H
+        ADD R4,R2
+        ADDC R5,R3
+        CALLS 00DH,Add32_Carry
+        MOV DPP0,#DATA16 00024H
+        MOV R4,R10
+        MOV R5,R11
+        CALLS 00CH,Push_To_System_Stack
+        JMPR cc_UC,L_A41EA
+L_A41E2:                 ; 0xa41e2
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV [R4+#0F93CH],R9
+L_A41EA:                 ; 0xa41ea
+        ADDB RL6,#01H
+        CMPB RL6,#01H
+        JMPR cc_C,L_A41A8
+        ADDB div_sched_fast,ONES
+        MOVB RL4,div_sched_fast
+        JMPA cc_NE,L_A4606
+        MOVB RL4,#02H
+        MOVB div_sched_fast,RL4
+        MOV WDTCON,#DATA16 0EA01H
+        SRVWDT
+        SUB ctr_wdt_service,ONES
+        BSET sched_flags2.0FH
+        MOVB RL4,#DATA16 00010H
+        MOVBZ R5,tq_hi_wr
+        MOVB [R5+#0F62EH],RL4
+        MOVB RL4,tq_hi_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_wr,RL4
+        MOVB RL4,tq_hi_wr
+        CMPB RL4,tq_hi_rd
+        JMPR cc_NE,L_A4244
+        BSET sched_flags.01H
+        MOVB RL4,tq_hi_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_rd,RL4
+L_A4244:                 ; 0xa4244
+        JNB lv_conf_mis.09H,L_A427C
+        MOVB RL4,#DATA16 00030H
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_A427C
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_A427C:                 ; 0xa427c
+        MOVB RL4,lv_sched_diag_inh
+        ANDB RL4,#01H
+        JMPA cc_NE,L_A4482
+        MOVB RL4,#02H
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_A42B8
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_A42B8:                 ; 0xa42b8
+        MOVB RL4,#03H
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_A42EA
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_A42EA:                 ; 0xa42ea
+        MOVB RL4,#04H
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_A431C
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_A431C:                 ; 0xa431c
+        MOVB RL4,#05H
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_A434E
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_A434E:                 ; 0xa434e
+        MOVB RL4,#06H
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_A4380
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_A4380:                 ; 0xa4380
+        MOVB RL4,#07H
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_A43B2
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_A43B2:                 ; 0xa43b2
+        MOVB RL4,#08H
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_A43E4
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_A43E4:                 ; 0xa43e4
+        MOVB RL4,#09H
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_A4416
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_A4416:                 ; 0xa4416
+        CALLS 00DH,Calc_FCO
+        MOVB RL4,#DATA16 0001AH
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_A444E
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_A444E:                 ; 0xa444e
+        MOVB RL4,#DATA16 0003EH
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_A4482
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_A4482:                 ; 0xa4482
+        MOVB RL4,#DATA16 00024H
+        MOVBZ R5,tq_hi_wr
+        MOVB [R5+#0F62EH],RL4
+        MOVB RL4,tq_hi_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_wr,RL4
+        MOVB RL4,tq_hi_wr
+        CMPB RL4,tq_hi_rd
+        JMPR cc_NE,L_A44B6
+        BSET sched_flags.01H
+        MOVB RL4,tq_hi_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_rd,RL4
+L_A44B6:                 ; 0xa44b6
+        MOVB RL4,#DATA16 00028H
+        MOVBZ R5,tq_lo_wr
+        MOVB [R5+#0F66EH],RL4
+        MOVB RL4,tq_lo_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_wr,RL4
+        MOVB RL4,tq_lo_wr
+        CMPB RL4,tq_lo_rd
+        JMPR cc_NE,L_A44EA
+        BSET sched_flags.03H
+        MOVB RL4,tq_lo_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_rd,RL4
+L_A44EA:                 ; 0xa44ea
+        MOVB RL4,#DATA16 00029H
+        MOVBZ R5,tq_lo_wr
+        MOVB [R5+#0F66EH],RL4
+        MOVB RL4,tq_lo_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_wr,RL4
+        MOVB RL4,tq_lo_wr
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa4508 [dpp]  W:{-}  R:{-}
+        ; ------------------------------------------------------------
+        CMPB RL4,tq_lo_rd
+        JMPR cc_NE,L_A451E
+        BSET sched_flags.03H
+        MOVB RL4,tq_lo_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_rd,RL4
+L_A451E:                 ; 0xa451e
+        MOVB RL4,#DATA16 00034H
+        MOVBZ R5,tq_lo_wr
+        MOVB [R5+#0F66EH],RL4
+        MOVB RL4,tq_lo_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_wr,RL4
+        MOVB RL4,tq_lo_wr
+        CMPB RL4,tq_lo_rd
+        JMPR cc_NE,lv_isc_a4552
+        BSET sched_flags.03H
+        MOVB RL4,tq_lo_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_rd,RL4
+        ; ------------------------------------------------------------
+        ; (likely) RAM/paged global @0xa4552 [dpp]  W:{-}  R:{Calc_CPU_Load_Idle}
+        ; ------------------------------------------------------------
+lv_isc_a4552:            ; 0xa4552
+        MOVB RL4,#DATA16 00035H
+        MOVBZ R5,tq_lo_wr
+        MOVB [R5+#0F66EH],RL4
+        MOVB RL4,tq_lo_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_wr,RL4
+        MOVB RL4,tq_lo_wr
+        CMPB RL4,tq_lo_rd
+        JMPR cc_NE,L_A4586
+        BSET sched_flags.03H
+        MOVB RL4,tq_lo_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_rd,RL4
+L_A4586:                 ; 0xa4586
+        MOVB RL4,#DATA16 00036H
+        MOVBZ R5,tq_lo_wr
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa458e [dpp]  W:{-}  R:{-}
+        ; ------------------------------------------------------------
+        MOVB [R5+#0F66EH],RL4
+        MOVB RL4,tq_lo_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_wr,RL4
+        MOVB RL4,tq_lo_wr
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa45a4 [dpp]  W:{-}  R:{-}
+        ; ------------------------------------------------------------
+        CMPB RL4,tq_lo_rd
+        JMPR cc_NE,L_A45BA
+        BSET sched_flags.03H
+        MOVB RL4,tq_lo_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_rd,RL4
+L_A45BA:                 ; 0xa45ba
+        MOVB RL6,#00H
+L_A45BC:                 ; 0xa45bc
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R9,[R4+#0F93EH]
+        JMPR cc_EQ,L_A45FE
+        SUB R9,#01H
+        JMPR cc_NE,L_A45F6
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV [R4+#0F93EH],R9
+        MOV R4,#DATA16 02168H
+        MOV R5,#DATA16 0000AH
+        MOVBZ R2,RL6
+        SHL R2,#02H
+        MOV R3,#00H
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa45e0 [dpp]  W:{-}  R:{-}
+        ; ------------------------------------------------------------
+        ADD R4,R2
+        ADDC R5,R3
+        CALLS 00DH,Add32_Carry
+        MOV DPP0,#DATA16 00024H
+        MOV R4,R10
+        MOV R5,R11
+        CALLS 00CH,Push_To_System_Stack
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa45f4 [dpp]  W:{-}  R:{-}
+        ; ------------------------------------------------------------
+        JMPR cc_UC,L_A45FE
+L_A45F6:                 ; 0xa45f6
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV [R4+#0F93EH],R9
+L_A45FE:                 ; 0xa45fe
+        ADDB RL6,#01H
+        CMPB RL6,#DATA16 0000BH
+        JMPR cc_C,L_A45BC
+L_A4606:                 ; 0xa4606
+        ADDB div_sched_med,ONES
+        MOVB RL4,div_sched_med
+        JMPA cc_NE,L_A47DC
+        MOVB RL4,#DATA16 00014H
+        MOVB div_sched_med,RL4
+        MOV R12,ctr_cpu_idle
+        MOV R13,#DATA16 073CFH
+        CALLS 00FH,Div_Frac_U16_Q16
+        NEG R4
+        MOV cpu_load,R4
+        MOV ctr_cpu_idle,ZEROS
+        MOVB RL4,lv_sched_diag_inh
+        ANDB RL4,#01H
+        JMPA cc_NE,L_A4790
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_A4652
+        JB lv_pl.04H,L_A4652
+        MOV R4,t_ast
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_NC,L_A4652
+        ADD R4,#01H
+        MOV t_ast,R4
+L_A4652:                 ; 0xa4652
+        CALLS 00CH,Calc_N_SP_Add_Cat
+        CALLS 00AH,Calc_IGA_ER_Adapt
+        CALLS 00AH,Calc_Lamb_ER_Adapt
+        MOVB RL4,#DATA16 00019H
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_A4692
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_A4692:                 ; 0xa4692
+        MOVB RL4,#DATA16 0001BH
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_A46C6
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_A46C6:                 ; 0xa46c6
+        MOVB RL4,#0FH
+        MOVBZ R5,tq_lo_wr
+        MOVB [R5+#0F66EH],RL4
+        MOVB RL4,tq_lo_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_wr,RL4
+        MOVB RL4,tq_lo_wr
+        CMPB RL4,tq_lo_rd
+        JMPR cc_NE,L_A46F8
+        BSET sched_flags.03H
+        MOVB RL4,tq_lo_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_rd,RL4
+L_A46F8:                 ; 0xa46f8
+        MOVB RL4,#0BH
+        MOVBZ R5,tq_lo_wr
+        MOVB [R5+#0F66EH],RL4
+        MOVB RL4,tq_lo_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_wr,RL4
+        MOVB RL4,tq_lo_wr
+        CMPB RL4,tq_lo_rd
+        JMPR cc_NE,L_A472A
+        BSET sched_flags.03H
+        MOVB RL4,tq_lo_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_rd,RL4
+L_A472A:                 ; 0xa472a
+        MOVB RL4,#0AH
+        MOVBZ R5,tq_lo_wr
+        MOVB [R5+#0F66EH],RL4
+        MOVB RL4,tq_lo_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_wr,RL4
+        MOVB RL4,tq_lo_wr
+        CMPB RL4,tq_lo_rd
+        JMPR cc_NE,L_A475C
+        BSET sched_flags.03H
+        MOVB RL4,tq_lo_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_rd,RL4
+L_A475C:                 ; 0xa475c
+        MOVB RL4,#DATA16 00038H
+        MOVBZ R5,tq_lo_wr
+        MOVB [R5+#0F66EH],RL4
+        MOVB RL4,tq_lo_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_wr,RL4
+        MOVB RL4,tq_lo_wr
+        CMPB RL4,tq_lo_rd
+        JMPR cc_NE,L_A4790
+        BSET sched_flags.03H
+        MOVB RL4,tq_lo_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_rd,RL4
+L_A4790:                 ; 0xa4790
+        MOVB RL6,#00H
+L_A4792:                 ; 0xa4792
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R9,[R4+#0F954H]
+        JMPR cc_EQ,L_A47D4
+        SUB R9,#01H
+        JMPR cc_NE,L_A47CC
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV [R4+#0F954H],R9
+        MOV R4,#DATA16 02194H
+        MOV R5,#DATA16 0000AH
+        MOVBZ R2,RL6
+        SHL R2,#02H
+        MOV R3,#00H
+        ADD R4,R2
+        ADDC R5,R3
+        CALLS 00DH,Add32_Carry
+        MOV DPP0,#DATA16 00024H
+        MOV R4,R10
+        MOV R5,R11
+        CALLS 00CH,Push_To_System_Stack
+        JMPR cc_UC,L_A47D4
+L_A47CC:                 ; 0xa47cc
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV [R4+#0F954H],R9
+L_A47D4:                 ; 0xa47d4
+        ADDB RL6,#01H
+        CMPB RL6,#DATA16 00019H
+        JMPR cc_C,L_A4792
+L_A47DC:                 ; 0xa47dc
+        ADD div_sched_slow,ONES
+        MOV R4,div_sched_slow
+        JMPA cc_NE,L_A4902
+        MOV R4,#DATA16 000C8H
+        MOV div_sched_slow,R4
+        MOVB RL4,lv_sched_diag_inh
+        ANDB RL4,#01H
+        JMPR cc_NE,L_A485E
+        MOVB RL4,#DATA16 00040H
+        MOVBZ R5,tq_lo_wr
+        MOVB [R5+#0F66EH],RL4
+        MOVB RL4,tq_lo_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_wr,RL4
+        MOVB RL4,tq_lo_wr
+        CMPB RL4,tq_lo_rd
+        JMPR cc_NE,L_A482C
+        BSET sched_flags.03H
+        MOVB RL4,tq_lo_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_rd,RL4
+L_A482C:                 ; 0xa482c
+        MOVB RL4,#0CH
+        MOVBZ R5,tq_lo_wr
+        MOVB [R5+#0F66EH],RL4
+        MOVB RL4,tq_lo_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_wr,RL4
+        MOVB RL4,tq_lo_wr
+        CMPB RL4,tq_lo_rd
+        JMPR cc_NE,L_A485E
+        BSET sched_flags.03H
+        MOVB RL4,tq_lo_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_rd,RL4
+L_A485E:                 ; 0xa485e
+        MOVB RL4,#DATA16 00037H
+        MOVBZ R5,tq_lo_wr
+        MOVB [R5+#0F66EH],RL4
+        MOVB RL4,tq_lo_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_wr,RL4
+        MOVB RL4,tq_lo_wr
+        CMPB RL4,tq_lo_rd
+        JMPR cc_NE,L_A4892
+        BSET sched_flags.03H
+        MOVB RL4,tq_lo_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_rd,RL4
+L_A4892:                 ; 0xa4892
+        MOVB RL6,#00H
+L_A4894:                 ; 0xa4894
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R9,[R4+#0F986H]
+        JMPR cc_EQ,L_A48D6
+        SUB R9,#01H
+        JMPR cc_NE,L_A48CE
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV [R4+#0F986H],R9
+        MOV R4,#DATA16 021F8H
+        MOV R5,#DATA16 0000AH
+        MOVBZ R2,RL6
+        SHL R2,#02H
+        MOV R3,#00H
+        ADD R4,R2
+        ADDC R5,R3
+        CALLS 00DH,Add32_Carry
+        MOV DPP0,#DATA16 00024H
+        MOV R4,R10
+        MOV R5,R11
+        CALLS 00CH,Push_To_System_Stack
+        JMPR cc_UC,L_A48D6
+L_A48CE:                 ; 0xa48ce
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV [R4+#0F986H],R9
+L_A48D6:                 ; 0xa48d6
+        ADDB RL6,#01H
+        CMPB RL6,#DATA16 00008H
+        JMPR cc_C,L_A4894
+        JMPR cc_UC,L_A4902
+L_A48E0:                 ; 0xa48e0
+        MOV R4,can_sched_flags0
+        PRIOR R9,R4
+        MOV R4,#DATA16 07FFFH
+        ROR R4,R9
+        AND can_sched_flags0,R4
+        MOV R4,R9
+        SHL R4,#02H
+        MOV R10,R4
+        MOV R4,[R10+#06324H]
+        MOV R5,[R10+#06326H]
+        CALLS 00CH,Push_To_System_Stack
+L_A4902:                 ; 0xa4902
+        MOV R4,can_sched_flags0
+        JMPR cc_NE,L_A48E0
+        MOVB RL6,tq_hi_rd
+        CMPB RL6,tq_hi_wr
+        JMPR cc_EQ,L_A493A
+        MOVB RL4,#01H
+        ADDB RL4,RL6
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_rd,RL4
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#0F62EH]
+        MOVBZ R4,RL5
+        SHL R4,#02H
+        MOV R10,R4
+        MOV R4,[R10+#06218H]
+        MOV R5,[R10+#0621AH]
+        CALLS 00CH,Push_To_System_Stack
+        JMPA cc_UC,L_A40F2
+L_A493A:                 ; 0xa493a
+        MOVB RL6,tq_mid_rd
+        CMPB RL6,tq_mid_wr
+        JMPR cc_EQ,L_A496C
+        MOVB RL4,#01H
+        ADDB RL4,RL6
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#0F64EH]
+        MOVBZ R4,RL5
+        SHL R4,#02H
+        MOV R10,R4
+        MOV R4,[R10+#06218H]
+        MOV R5,[R10+#0621AH]
+        CALLS 00CH,Push_To_System_Stack
+        JMPA cc_UC,L_A40F2
+L_A496C:                 ; 0xa496c
+        MOVB RL6,tq_lo_rd
+        CMPB RL6,tq_lo_wr
+        JMPR cc_EQ,L_A499E
+        MOVB RL4,#01H
+        ADDB RL4,RL6
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_rd,RL4
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#0F66EH]
+        MOVBZ R4,RL5
+        SHL R4,#02H
+        MOV R10,R4
+        MOV R4,[R10+#06218H]
+        MOV R5,[R10+#0621AH]
+        CALLS 00CH,Push_To_System_Stack
+        JMPA cc_UC,L_A40F2
+L_A499E:                 ; 0xa499e
+        SUB ctr_cpu_idle,ONES
+        CALLS 00CH,Diag_CRC16
+        JMPA cc_UC,L_A40F2
+        RETS
+
+; ======== Reset_Df68f_9ac  (@0xa49ac) ========
+Reset_Df68f_9ac:
+        MOVB RL4,#01H
+        MOVB div_sched_fast,RL4
+        MOVB RL4,#02H
+        MOVB div_sched_med,RL4
+        MOV R4,#01H
+        MOV div_sched_slow,R4
+        RETS
+
+; ======== CCP_Main_Task  (@0xa49c0) ========
+        ; CCP_Main_Task: top-level CCP service task and CRO routing glue. Reached via a task pointer table (no
+        ; direct xref), so Ghidra never materialised it. Runs CCP_Init(0a53a0) then the CCP sub-handlers in
+        ; sequence and finally CCP_Cmd_Entry(channel) to receive/dispatch the next CRO into
+        ; CCP_Cmd_StateMachine.
+CCP_Main_Task:
+        CALLS 00AH,CCP_Check_Checksum
+        CALLS 00AH,CCP_Init
+        CALLS 00AH,Init_ECU_Ports
+        CALLS 00AH,Reset_T1_f44
+        CALLS 00AH,Set_lv_err_com_resp_imob
+        CALLS 00AH,SpinHalt_a3eae
+        CALLS 00AH,Reset_Dfbae_e8e
+        CALLS 00AH,Reset_Dfba4_e0a
+        CALLS 00AH,Reset_Dfd62_8ca
+        CALLS 00AH,Reset_Dfd62_830
+        CALLS 00AH,Reset_Dfd62_338
+        CALLS 00AH,Diag_Output_SecAir
+        CALLS 00AH,Reset_CC26IC_f1a
+        CALLS 00AH,Reset_CC10IC_514
+        BSET PSW.0BH
+        CALLS 00AH,Reset_P3_4f0
+        MOVB RL4,#05H
+        MOVB bl_prog_session_state,RL4
+        CALLS 00AH,SpinHalt_a3d48
+        CALLS 00DH,Calc_TRT_Word
+        CALLS 00AH,EngIgn_DisableOutputs
+        CALLS 00AH,EngInj_DisableOutputs
+        MOV R12,#DATA16 0E7ECH
+        MOV R13,#DATA16 0E7EEH
+        CALLS 00AH,Compare_Buffers_Eq
+        JNB PSW.06H,L_A4A38
+        MOV R12,#DATA16 0E7ECH
+        MOV R13,#DATA16 0E7EEH
+        MOV R14,#DATA16 056A9H
+        CALLS 00AH,Nop_a535e
+        CALLS 00AH,Read_Coding_Nibble
+L_A4A38:                 ; 0xa4a38
+        CALLS 00AH,Output_CC5_P2_5_Enable
+        CALLS 00AH,IVVT_Hold_Adjust
+        CALLS 00AH,Reset_Dfba4_e0a
+        MOV R12,#00H
+        CALLS 00AH,CCP_Cmd_Entry
+        BSET can_sched_flags2.0CH
+        BSET can_sched_flags2.0DH
+        CALLS 00AH,Reset_CC29IC_2b4
+        BSET can_sched_flags2.0BH
+        BSET can_sched_flags2.0AH
+        BSET can_sched_flags2.09H
+        BSET can_sched_flags2.08H
+        CALLS 00AH,Reset_Df68f_9ac
+        MOV R12,#DATA16 0286EH
+        MOV R13,#DATA16 00028H
+        EXTP #00H, #02H
+        MOV R4,ccp_25a
+        MOV R5,ccp_25c
+        CALLS 00CH,Push_To_System_Stack
+        CALLS 00DH,KWP_Session_Setup
+        MOV R4,#DATA16 0FFEEH
+        MOV c_p3_max_kwp,R4
+        MOV R12,#00H
+        EXTP #00H, #02H
+        MOV R4,ccp_206
+        MOV R5,ccp_208
+        CALLS 00CH,Push_To_System_Stack
+        BCLR sched_flags.04H
+L_A4A96:                 ; 0xa4a96
+        JNB sched_flags.04H,L_A4A96
+        MOVB RL4,#DATA16 00010H
+        MOVBZ R5,tq_hi_wr
+        MOVB [R5+#0F62EH],RL4
+        MOVB RL4,tq_hi_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_wr,RL4
+        MOVB RL4,tq_hi_wr
+        CMPB RL4,tq_hi_rd
+        JMPR cc_NE,L_A4ACE
+        BSET sched_flags.01H
+        MOVB RL4,tq_hi_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_rd,RL4
+L_A4ACE:                 ; 0xa4ace
+        MOVB RL4,#0DH
+        MOVBZ R5,tq_hi_wr
+        MOVB [R5+#0F62EH],RL4
+        MOVB RL4,tq_hi_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_wr,RL4
+        MOVB RL4,tq_hi_wr
+        CMPB RL4,tq_hi_rd
+        JMPR cc_NE,L_A4B00
+        BSET sched_flags.01H
+        MOVB RL4,tq_hi_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_hi_rd,RL4
+L_A4B00:                 ; 0xa4b00
+        MOV R4,WDT_FEAE
+        SUB R4,#DATA16 09200H
+        MOV R5,#DATA16 003A9H
+        MOV 0FE0EH,R4
+        DIVU R5
+        MOV R4,0FE0EH
+        SHR R4,#01H
+        MOV ctr_wdt_service,R4
+        CALLS 00AH,Calc_CPU_Load_Idle
+        RETS
+
+S_A3F1A ENDS
+        END

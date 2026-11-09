@@ -1,0 +1,478 @@
+; asw/cp/cp_purge_3.a66
+; 0xCCACC-0xCCEF6  (1066 bytes, 7 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_n_cp_bol                           EQU  090295H
+c_n_cp_tol                           EQU  090296H
+c_tco_min_cp                         EQU  090385H
+c_tia_min_cp                         EQU  0903BBH
+c_cl_min_cp                          EQU  0904D4H
+c_t_1_cp                             EQU  0906B4H
+c_t_2_cp                             EQU  0906B8H
+c_t_min_cp                           EQU  090706H
+c_ti_t_ad_1                          EQU  0907A0H
+c_lam_0_cp_min                       EQU  0908AAH
+c_prs_max_1_cps                      EQU  0908ECH
+c_prs_max_2_cps                      EQU  0908EEH
+c_prs_max_3_cps                      EQU  0908F0H
+c_ti_lam_min_cp                      EQU  090904H
+ldp_tco_st_id_t_ast_cp                      EQU  090A86H
+ldpm_n_32_ip_rel_flow_min_cps     EQU  090ACDH
+ldpm_maf_ip_rel_flow_min_cps      EQU  090AD6H
+ldpm_tia_ip_ti_lam_max_cp                         EQU  090C96H
+ldpm_n_32_ip_maf_cp_bol                        EQU  090CF6H
+id_t_ast_cp__tco_st                  EQU  091D9CH
+ip_fuel_flow_max_cp__n_32__maf       EQU  0929F4H
+ip_lam_0_cp_max__tia                 EQU  092BDCH
+ip_rel_flow_max_cps__n_32__maf       EQU  0936F6H
+ip_ti_lam_max_cp__tia                EQU  094390H
+ip_maf_cp_bol__n_32                  EQU  095FBDH
+ip_maf_cp_tol__n_32                  EQU  095FC3H
+
+PUBLIC  CanPurge_Calc_Limits, CanPurge_SetAct, CanPurge_SetAct_3, CanPurge_Set_TState, CanPurge_State_Ctl, EvapEmission_Duration_TCP
+PUBLIC  Lookup_TI_AST_CP
+EXTERN  Get_Byte_Y_Axis:NEAR, Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_X_Axis:NEAR, Get_IP_Byte_Y_Axis:NEAR
+EXTERN  Get_IP_Word_2D_Table:NEAR, Get_IP_Word_3D_Table:NEAR, Read_Word_Far:NEAR
+
+S_CCACC SECTION CODE AT 0CCACCH
+
+; ======== CanPurge_Set_TState  (@0xccacc) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by cp/cat_diag/isa output signals): Set purge timing state cp_t_state.
+        ; ------------------------------------------------------------
+CanPurge_Set_TState:
+        MOVB RL4,conf_cp
+        JMPR cc_EQ,L_CCAD6
+        MOV cp_t_state,ZEROS
+L_CCAD6:                 ; 0xccad6
+        RETS
+
+; ======== Lookup_TI_AST_CP  (@0xccad8) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Lookup_TI_AST_CP:
+        MOVB RL4,conf_cp
+        JMPR cc_EQ,L_CCAFE
+        MOV R12,#DATA16 POF ldp_tco_st_id_t_ast_cp
+        MOV R13,#DATA16 PAG ldp_tco_st_id_t_ast_cp
+        MOVBZ R14,tco_st
+        CALLS 00FH,Get_Byte_Y_Axis
+        MOV R12,#DATA16 POF id_t_ast_cp__tco_st
+        MOV R13,#DATA16 PAG id_t_ast_cp__tco_st
+        CALLS 00FH,Read_Word_Far
+        MOV lv_ti_cf16,R4
+L_CCAFE:                 ; 0xccafe
+        RETS
+
+; ======== CanPurge_SetAct  (@0xccb00) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by cp/evap/dtp/diagcp output signals + DTC): Set purge-active flag lv_cp_act.
+        ; ------------------------------------------------------------
+CanPurge_SetAct:
+        MOVB RL4,conf_cp
+        JMPR cc_EQ,L_CCB0A
+        BSET lv_cp_act.0EH
+        BCLR lv_cp_act.06H
+L_CCB0A:                 ; 0xccb0a
+        RETS
+
+; ======== CanPurge_SetAct_3  (@0xccb0c) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by cp/cat_diag/isa output signals): Set purge-active flag lv_cp_act (variant).
+        ; ------------------------------------------------------------
+CanPurge_SetAct_3:
+        CALLA cc_UC,CanPurge_State_Ctl
+        CALLA cc_UC,EvapEmission_Duration_TCP
+        JNB lv_cp_act.05H,L_CCB22
+        JB lv_fcut_fast.0BH,L_CCB22
+        CALLA cc_UC,CanPurge_Calc_Limits
+        RETS
+L_CCB22:                 ; 0xccb22
+        BCLR lv_cp_act.0BH
+        RETS
+
+; ======== CanPurge_State_Ctl  (@0xccb26) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by cp/evap/dtp/diagcp output signals + DTC): Purge activation control: lv_cp_act
+        ; + cp_t_state / cp_state gating.
+        ; ------------------------------------------------------------
+CanPurge_State_Ctl:
+        JB lv_ast.02H,L_CCB44
+        BCMP lv_cdn_diag_maf_dif_ch_int.0BH,lv_pl.04H
+        JMPR cc_V,L_CCB44
+        MOV R4,t_ast
+        CMP R4,lv_ti_cf16
+        JMPR cc_ULE,L_CCB44
+        MOVB RL4,tco
+        CMPB RL4,DPP0:c_tco_min_cp
+        JMPR cc_NC,L_CCB58
+L_CCB44:                 ; 0xccb44
+        BCLR lv_cp_act.05H
+        BCLR lv_cp_act.06H
+        MOV cp_t_state,ZEROS
+        MOV cp_state,ZEROS
+        BSET lv_cp_act.0EH
+        BCLR lv_cp_act.0CH
+        BCLR lv_cp_act.0DH
+        RET
+L_CCB58:                 ; 0xccb58
+        BSET lv_cp_act.05H
+        RET
+
+; ======== EvapEmission_Duration_TCP  (@0xccb5c) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (MS42, verified): canister-purge duration state machine (cp_t_state, t_cp, c_t_1/2_cp)
+        ; (was FUN_0ccb5c)
+        ; ------------------------------------------------------------
+EvapEmission_Duration_TCP:
+        JNB lv_cp_act.0EH,L_CCB80
+        JB lv_cp_act.05H,L_CCB68
+        JMPA cc_UC,L_CCC86
+L_CCB68:                 ; 0xccb68
+        MOV R4,#01H
+        MOV cp_t_state,R4
+        MOV R5,#01H
+        MOV cp_state,R5
+        MOV t_cp,ZEROS
+        MOV t_cp_ad_1,ZEROS
+        BCLR lv_cp_act.0EH
+        RET
+L_CCB80:                 ; 0xccb80
+        MOV R4,cp_t_state
+        JMPR cc_EQ,L_CCB94
+        CMP R4,#01H
+        JMPR cc_EQ,L_CCB9A
+        CMP R4,#02H
+        JMPR cc_EQ,L_CCBF4
+        CMP R4,#03H
+        JMPR cc_EQ,L_CCC4E
+        JMPR cc_UC,L_CCC74
+L_CCB94:                 ; 0xccb94
+        MOV t_cp,ZEROS
+        RET
+L_CCB9A:                 ; 0xccb9a
+        MOV R4,cp_state
+        CMP R4,#04H
+        JMPR cc_NE,L_CCBD2
+        MOV R5,cl_mmv
+        CMP R5,DPP0:c_cl_min_cp
+        JMPR cc_NC,L_CCBD2
+        MOV R2,t_cp
+        CMP R2,DPP0:c_t_min_cp
+        JMPR cc_ULE,L_CCBD2
+        MOV R3,DPP0:c_t_1_cp
+        ADD R3,DPP0:c_ti_t_ad_1
+        SUB R3,t_cp
+        MOV t_cp_ad_1,R3
+        MOV R1,#03H
+        MOV cp_t_state,R1
+        MOV t_cp,ZEROS
+        RET
+L_CCBD2:                 ; 0xccbd2
+        SUB t_cp,ONES
+        MOV R4,t_cp
+        CMP R4,DPP0:c_t_1_cp
+        JMPR cc_C,L_CCC86
+        MOV R5,#03H
+        MOV cp_t_state,R5
+        MOV t_cp,ZEROS
+        MOV R4,DPP0:c_ti_t_ad_1
+        MOV t_cp_ad_1,R4
+        RET
+L_CCBF4:                 ; 0xccbf4
+        MOV R4,cp_state
+        CMP R4,#04H
+        JMPR cc_NE,L_CCC2C
+        MOV R5,cl_mmv
+        CMP R5,DPP0:c_cl_min_cp
+        JMPR cc_NC,L_CCC2C
+        MOV R2,t_cp
+        CMP R2,DPP0:c_t_min_cp
+        JMPR cc_ULE,L_CCC2C
+        MOV R3,DPP0:c_t_2_cp
+        ADD R3,DPP0:c_ti_t_ad_1
+        SUB R3,t_cp
+        MOV t_cp_ad_1,R3
+        MOV R1,#03H
+        MOV cp_t_state,R1
+        MOV t_cp,ZEROS
+        RET
+L_CCC2C:                 ; 0xccc2c
+        SUB t_cp,ONES
+        MOV R4,t_cp
+        CMP R4,DPP0:c_t_2_cp
+        JMPR cc_C,L_CCC86
+        MOV R5,#03H
+        MOV cp_t_state,R5
+        MOV t_cp,ZEROS
+        MOV R4,DPP0:c_ti_t_ad_1
+        MOV t_cp_ad_1,R4
+        RET
+L_CCC4E:                 ; 0xccc4e
+        SUB t_cp,ONES
+        MOV R4,t_cp
+        CMP R4,t_cp_ad_1
+        JMPR cc_C,L_CCC86
+        MOV R5,#02H
+        MOV cp_t_state,R5
+        BCLR lv_fcut_fast.07H
+        BCLR lv_fcut_fast.09H
+        BCLR lv_fcut_fast.08H
+        BCLR lv_cp_act.0DH
+        MOV t_cp,ZEROS
+        MOV t_cp_ad_1,ZEROS
+        RET
+L_CCC74:                 ; 0xccc74
+        MOV R4,#03H
+        MOV cp_t_state,R4
+        MOV t_cp,ZEROS
+        MOV R5,DPP0:c_ti_t_ad_1
+        MOV t_cp_ad_1,R5
+L_CCC86:                 ; 0xccc86
+        RET
+
+; ======== CanPurge_Calc_Limits  (@0xccc88) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen signals, verified): Evaporative Emission Control: purge fuel/flow limits
+        ; + enable (lv_cp_act)
+        ; ------------------------------------------------------------
+CanPurge_Calc_Limits:
+        JNB state_out_act.0DH,L_CCC92
+        JB lv_cp_act.0FH,L_CCC92
+        BCLR lv_fcut_fast.0AH
+L_CCC92:                 ; 0xccc92
+        BMOV lv_cp_act.0FH,state_out_act.0DH
+        MOV R12,#DATA16 POF ldpm_n_32_ip_rel_flow_min_cps
+        MOV R13,#DATA16 PAG ldpm_n_32_ip_rel_flow_min_cps
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_maf_ip_rel_flow_min_cps
+        MOV R13,#DATA16 PAG ldpm_maf_ip_rel_flow_min_cps
+        MOVBZ R14,lv_iga_cc2b
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_fuel_flow_max_cp__n_32__maf
+        MOV R13,#DATA16 PAG ip_fuel_flow_max_cp__n_32__maf
+        CALLS 00FH,Get_IP_Word_3D_Table
+        ADD R4,#DATA16 08000H
+        MOV lv_cp_cf10,R4
+        MOV R12,#DATA16 POF ip_rel_flow_max_cps__n_32__maf
+        MOV R13,#DATA16 PAG ip_rel_flow_max_cps__n_32__maf
+        CALLS 00FH,Get_IP_Word_3D_Table
+        MOV cp_flow_lim,R4
+        MOV R12,#DATA16 POF ldpm_tia_ip_ti_lam_max_cp
+        MOV R13,#DATA16 PAG ldpm_tia_ip_ti_lam_max_cp
+        MOVBZ R14,tia
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_ti_lam_max_cp__tia
+        MOV R13,#DATA16 PAG ip_ti_lam_max_cp__tia
+        CALLS 00FH,Get_IP_Word_2D_Table
+        ADD R4,#DATA16 08000H
+        CMP R4,lam_bank_1_lam_up_ti_lam
+        JMPR cc_SLT,L_CCD0A
+        MOV R4,lam_bank_1_lam_up_ti_lam
+        CMP R4,DPP0:c_ti_lam_min_cp
+        JMPR cc_SGE,L_CCD20
+L_CCD0A:                 ; 0xccd0a
+        JB lv_act_diagcps.03H,L_CCD20
+        BSET lv_cp_act.07H
+        BCLR lv_cp_act.08H
+        BCLR lv_cp_act.09H
+        BCLR lv_cp_act.0AH
+        BCLR lv_cp_act.0BH
+        BCLR lv_cp_act.0CH
+        BCLR lv_cp_act.0DH
+        BCLR lv_cp_act.06H
+        RET
+L_CCD20:                 ; 0xccd20
+        BCLR lv_cp_act.07H
+        MOVB RL4,pat_inh_iv
+        JMPR cc_NE,L_CCD2E
+        JB lv_pl.02H,L_CCD2E
+        JMPR cc_UC,L_CCD32
+L_CCD2E:                 ; 0xccd2e
+        MOV R4,#01H
+        JMPR cc_UC,L_CCD34
+L_CCD32:                 ; 0xccd32
+        MOV R4,#00H
+L_CCD34:                 ; 0xccd34
+        MOV R5,#00H
+        BMOV R5.00H,lv_cp_set_close.07H
+        OR R4,R5
+        JMPR cc_NE,L_CCD6A
+        JB lv_act_diagcps.03H,L_CCD6A
+        JB lv_fcut_fast.08H,L_CCD6A
+        MOV R4,prs_cps
+        CMP R4,DPP0:c_prs_max_1_cps
+        JMPR cc_SLT,L_CCD6A
+        MOV R5,cp_state
+        CMP R5,#01H
+        JMPR cc_NE,L_CCD5E
+        CMP R4,DPP0:c_prs_max_2_cps
+        JMPR cc_SLT,L_CCD6A
+L_CCD5E:                 ; 0xccd5e
+        MOV R4,lv_cp_cf10
+        JMPR cc_EQ,L_CCD6A
+        MOV R5,cp_flow_lim
+        JMPR cc_NE,L_CCD9E
+L_CCD6A:                 ; 0xccd6a
+        MOVB RL4,pat_inh_iv
+        JMPR cc_NE,L_CCD74
+        JNB lv_pl.02H,L_CCD8E
+L_CCD74:                 ; 0xccd74
+        MOV R4,cp_norm_deac_state
+        CMP R4,#02H
+        JMPR cc_NE,L_CCD8E
+        MOV R5,cp_t_state
+        CMP R5,#03H
+        JMPR cc_NE,L_CCD8E
+        BSET lv_fcut_fast.0AH
+        MOV R2,cl_mmv
+        MOV cl_mmv_norm_purge_end,R2
+L_CCD8E:                 ; 0xccd8e
+        BSET lv_cp_act.08H
+        BCLR lv_cp_act.09H
+        BCLR lv_cp_act.0AH
+        BCLR lv_cp_act.0BH
+        BCLR lv_cp_act.0CH
+        BCLR lv_cp_act.0DH
+        BCLR lv_cp_act.06H
+        RET
+L_CCD9E:                 ; 0xccd9e
+        BCLR lv_cp_act.08H
+        MOV R4,cp_t_state
+        CMP R4,#03H
+        JMPR cc_NE,L_CCDB4
+        MOV R5,cp_state
+        CMP R5,#01H
+        JMPR cc_EQ,L_CCDD0
+        CMP R5,#02H
+        JMPR cc_EQ,L_CCDD0
+L_CCDB4:                 ; 0xccdb4
+        JB lv_inh_int_puc_1.05H,L_CCDD0
+        MOV R4,lam_bank_1_lam_up_lam_up_carrier
+        AND R4,#DATA16 00010H
+        JMPR cc_NE,L_CCDD0
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_CCDDE
+        MOVB RL4,tia
+        CMPB RL4,DPP0:c_tia_min_cp
+        JMPR cc_NC,L_CCDDE
+L_CCDD0:                 ; 0xccdd0
+        BSET lv_cp_act.09H
+        BCLR lv_cp_act.0AH
+        BCLR lv_cp_act.0BH
+        BCLR lv_cp_act.0CH
+        BCLR lv_cp_act.0DH
+        BCLR lv_cp_act.06H
+        RET
+L_CCDDE:                 ; 0xccdde
+        BCLR lv_cp_act.09H
+        BSET lv_cp_act.06H
+        JB lv_inh_int_puc_1.06H,L_CCE08
+        MOV R4,lam_bank_1_lam_up_lam_up_carrier
+        AND R4,#01H
+        JMPR cc_EQ,L_CCE08
+        MOV R4,lam_bank_1_lam_up_lam_up_carrier
+        AND R4,#DATA16 00008H
+        JMPR cc_NE,L_CCE08
+        MOV R4,lam_bank_1_lam_up_lam_up_carrier
+        AND R4,#04H
+        JMPR cc_NE,L_CCE08
+        MOVB RL4,conf_cp
+        CMPB RL4,#01H
+        JMPR cc_NE,L_CCE12
+L_CCE08:                 ; 0xcce08
+        BSET lv_cp_act.0AH
+        BCLR lv_cp_act.0BH
+        BCLR lv_cp_act.0CH
+        BCLR lv_cp_act.0DH
+        RET
+L_CCE12:                 ; 0xcce12
+        BCLR lv_cp_act.0AH
+        JNB lv_fcut_fast.07H,L_CCE28
+        BCLR lv_cp_act.0BH
+        JB lv_fcut_fast.09H,L_CCE22
+        BSET lv_cp_act.0CH
+        RET
+L_CCE22:                 ; 0xcce22
+        BCLR lv_cp_act.0CH
+        BSET lv_cp_act.0DH
+        RET
+L_CCE28:                 ; 0xcce28
+        JNB lv_cp_set_close.04H,L_CCEE6
+        JB lv_cp_act.0BH,L_CCE8A
+        MOV R4,cp_norm_deac_state
+        CMP R4,#01H
+        JMPR cc_EQ,L_CCE8A
+        MOV R5,lam_bank_1_lam_up_lam_mv
+        MOV cp_flow,R5
+        MOV R12,#DATA16 POF ldpm_tia_ip_ti_lam_max_cp
+        MOV R13,#DATA16 PAG ldpm_tia_ip_ti_lam_max_cp
+        MOVBZ R14,tia
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_lam_0_cp_max__tia
+        MOV R13,#DATA16 PAG ip_lam_0_cp_max__tia
+        CALLS 00FH,Get_IP_Word_2D_Table
+        ADD R4,#DATA16 08000H
+        CMP R4,cp_flow
+        JMPR cc_SLE,L_CCE70
+        MOV R4,cp_flow
+        CMP R4,DPP0:c_lam_0_cp_min
+        JMPR cc_SGT,L_CCE86
+L_CCE70:                 ; 0xcce70
+        BSET lv_cp_act.08H
+        MOV R4,#03H
+        MOV cp_t_state,R4
+        MOV t_cp,ZEROS
+        MOV R5,DPP0:c_ti_t_ad_1
+        MOV t_cp_ad_1,R5
+        RET
+L_CCE86:                 ; 0xcce86
+        BSET lv_cp_act.0BH
+        RET
+L_CCE8A:                 ; 0xcce8a
+        MOV R12,#DATA16 POF ldpm_n_32_ip_maf_cp_bol
+        MOV R13,#DATA16 PAG ldpm_n_32_ip_maf_cp_bol
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        JNB lv_cam_ad_di_ivvt.08H,L_CCEE0
+        MOVB RL4,n_32
+        CMPB RL4,DPP0:c_n_cp_tol
+        JMPR cc_NC,L_CCEE0
+        CMPB RL4,DPP0:c_n_cp_bol
+        JMPR cc_ULE,L_CCEE0
+        MOV R4,prs_cps
+        CMP R4,DPP0:c_prs_max_3_cps
+        JMPR cc_SLE,L_CCEE0
+        MOV R12,#DATA16 POF ip_maf_cp_tol__n_32
+        MOV R13,#DATA16 PAG ip_maf_cp_tol__n_32
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        CMPB RL4,lv_iga_cc2b
+        JMPR cc_ULE,L_CCEE0
+        MOV R12,#DATA16 POF ip_maf_cp_bol__n_32
+        MOV R13,#DATA16 PAG ip_maf_cp_bol__n_32
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        CMPB RL4,lv_iga_cc2b
+        JMPR cc_NC,L_CCEE0
+        BSET lv_cp_act.0BH
+        RET
+L_CCEE0:                 ; 0xccee0
+        BCLR lv_cp_act.0BH
+        BSET lv_cp_act.0AH
+        RET
+L_CCEE6:                 ; 0xccee6
+        BSET lv_cp_act.08H
+        BCLR lv_cp_act.09H
+        BCLR lv_cp_act.0AH
+        BCLR lv_cp_act.0BH
+        BCLR lv_cp_act.0CH
+        BCLR lv_cp_act.0DH
+        BCLR lv_cp_act.06H
+        RET
+
+S_CCACC ENDS
+        END

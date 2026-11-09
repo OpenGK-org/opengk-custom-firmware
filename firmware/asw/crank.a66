@@ -1,0 +1,178 @@
+; asw/crank.a66
+; 0xB7BC8-0xB7D82  (442 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Calc_N_Grd, Calc_Seg_Timing, Tail_f0b7bc8_bf8
+EXTERN  Add_r12_r13_Return_r4:NEAR, Clamp_S16:NEAR, Div_U32_U16_Round:NEAR, Lsr_U32:NEAR
+EXTERN  Lsr_U32_Ovf:NEAR, MulDiv_Round_S16:NEAR, Sat_Sub_S16_v2:NEAR, mul32:NEAR
+
+S_B7BC8 SECTION CODE AT 0B7BC8H
+
+; ======== Calc_N_Grd  (@0xb7bc8) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by lsh/ls_cur/n_grd/mtv output signals): Engine-speed gradient: n_grd from n_32
+        ; over t_seg_av (acceleration).
+        ; ------------------------------------------------------------
+Calc_N_Grd:
+        MOVB n_32,ZEROS
+        MOV n_C93C,ZEROS
+        MOV R12,#00H
+L_B7BD2:                 ; 0xb7bd2
+        MOV R4,0FF1EH
+        MOV R5,R12
+        SHL R5,#01H
+        MOV [R5+#0C940H],R4
+        CMPI1 R12,#03H
+        JMPR cc_SLT,L_B7BD2
+        MOV t_seg_av,ONES
+        MOV g_c94a,ONES
+        MOV g_c948,ONES
+        MOVB g_c24d,ZEROS
+        MOVB n_grd,ZEROS
+        RETS
+
+; ======== Tail_f0b7bc8_bf8  (@0xb7bf8) ========
+Tail_f0b7bc8_bf8:
+        CALLS 00BH,Calc_N_Grd
+        RETS
+
+; ======== Calc_Seg_Timing  (@0xb7bfe) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by lsh/ls_cur/n_grd/mtv output signals): Segment timing: seg_nr / t_seg_av
+        ; (segment period) + n_32 + n_grd.
+        ; ------------------------------------------------------------
+Calc_Seg_Timing:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOVB RL4,imob_f5d4
+        MOVB seg_nr,RL4
+        MOVBZ R9,RL4
+        MOVB RL5,[R9+#065EFH]
+        MOVB idx_knk_load_zone,RL5
+        MOVB RL3,[R9+#065F0H]
+        MOVB ctr_cyl_knk,RL3
+        MOVB RL2,[R9+#065F1H]
+        MOVB g_c250,RL2
+        MOV R4,crank_tim_17
+        JMPR cc_EQ,L_B7C6A
+        MOV R5,crank_tim_17
+        PRIOR R4,R5
+        MOV R9,#DATA16 00010H
+        SUB R9,R4
+        MOV R12,crank_tim_16
+        MOV R13,crank_tim_17
+        MOV R14,R9
+        CALLS 00FH,Lsr_U32_Ovf
+        MOV [-R0],R4
+        MOV R12,#DATA16 0D4A8H
+        MOV R13,#DATA16 00055H
+        MOV R14,R9
+        CALLS 00FH,Lsr_U32
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,[R0+]
+        CALLS 00FH,Div_U32_U16_Round
+        MOV n_C93C,R4
+        MOV R9,0FF1EH
+        JMPR cc_UC,L_B7CB4
+L_B7C6A:                 ; 0xb7c6a
+        MOV R9,crank_tim_16
+        MOV R12,#DATA16 0D4A8H
+        MOV R13,#DATA16 00055H
+        MOV R14,R9
+        CALLS 00FH,Div_U32_U16_Round
+        MOV n_C93C,R4
+        MOV R4,crank_tim_16
+        MOV R5,crank_tim_17
+        SUB R4,#DATA16 0BFFFH
+        SUBC R5,#00H
+        JMPR cc_UGT,L_B7CB0
+        MOV R4,crank_tim_16
+        MOV R5,crank_tim_17
+        MOV R10,#DATA16 0AAAAH
+        MOV R11,#00H
+        CALLS 00DH,mul32
+        MOV R2,R5
+        SHR R4,#0FH
+        SHR R5,#0FH
+        SHL R2,#01H
+        OR R4,R2
+        MOV R9,R4
+        JMPR cc_UC,L_B7CB4
+L_B7CB0:                 ; 0xb7cb0
+        MOV R9,#DATA16 0FFFFH
+L_B7CB4:                 ; 0xb7cb4
+        MOVBZ R4,seg_nr
+        SHL R4,#01H
+        MOV [R4+#0C940H],R9
+        MOV t_seg_av,R9
+        MOV R4,n_C93C
+        CMP R4,#DATA16 01FE0H
+        JMPR cc_NC,L_B7CD4
+        SHR R4,#05H
+        MOVB n_32,RL4
+        JMPR cc_UC,L_B7CD8
+L_B7CD4:                 ; 0xb7cd4
+        MOVB n_32,ONES
+L_B7CD8:                 ; 0xb7cd8
+        MOVB RL4,n_grd
+        MOVB g_c24d,RL4
+        MOV R12,R9
+        MOVBZ R4,g_c250
+        SHL R4,#01H
+        MOV R13,[R4+#0C940H]
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV g_c948,R4
+        MOVBZ R5,g_c250
+        SHL R5,#01H
+        MOV R12,[R5+#0C940H]
+        MOVBZ R5,ctr_cyl_knk
+        SHL R5,#01H
+        MOV R13,[R5+#0C940H]
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV g_c94a,R4
+        MOV R5,g_c948
+        SHR R5,#01H
+        SHR R4,#01H
+        ADD R5,R4
+        MOV R7,R5
+        MOV R8,#00H
+        MOV R12,g_c94a
+        MOV R13,g_c948
+        CALLS 00FH,Sat_Sub_S16_v2
+        MOV R9,R4
+        MOV R12,#DATA16 04A80H
+        MOV R13,#DATA16 0055DH
+        MOV R14,g_c948
+        CALLS 00FH,Div_U32_U16_Round
+        MOV R12,R4
+        MOV R4,#DATA16 05B8DH
+        MULU R12,R4
+        MOV R13,MDH_FE0C
+        MOV R12,0FE0EH
+        MOV R14,#04H
+        CALLS 00FH,Lsr_U32
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,g_c94a
+        CALLS 00FH,Div_U32_U16_Round
+        MOV R12,R4
+        MOV R13,R9
+        MOV R14,R7
+        CALLS 00FH,MulDiv_Round_S16
+        MOV R12,R4
+        MOV R13,#DATA16 0FF80H
+        MOV R14,#DATA16 0007FH
+        CALLS 00FH,Clamp_S16
+        MOVB n_grd,RL4
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_B7BC8 ENDS
+        END

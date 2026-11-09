@@ -1,0 +1,375 @@
+; asw/tqi/tqi_msr.a66
+; 0xC622C-0xC6584  (856 bytes, 7 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_vs_min_msr                         EQU  09043CH
+lc_inh_msr                           EQU  090474H
+lc_tq_fast_ena                       EQU  090491H
+lc_tq_iga_ena                        EQU  090492H
+c_n_add_asr                          EQU  090628H
+c_t_max_msr                          EQU  0906FEH
+c_tq_msr_int_max                     EQU  0907C2H
+c_tqi_bol_set_hys                    EQU  090954H
+
+PUBLIC  Calc_TQI_ASR_FAST, Calc_TQI_MSR, Calc_TQI_Min_Pu, Calc_TQI_Req_MinMax, ClrBits_lv_asr_act_30e, Reset_tq_msr_int_306
+PUBLIC  Reset_tqi_req_slow_2d6
+EXTERN  Add_r12_r13_Return_r4:NEAR, Get_IP_Byte_2D_Table_DWord_YByte:NEAR, Get_IP_Word_2D_Table_DWord_YByte:NEAR, Get_IP_Word_2D_Table_DWord_YWord:NEAR
+EXTERN  Get_IP_Word_3D_Table_DWord_XByte_YByte:NEAR, Mul_Q15_Sat_Signed:NEAR, Sat_Add_S16:NEAR, Sat_Add_S16_v2:NEAR
+
+S_C622C SECTION CODE AT 0C622CH
+
+; ======== Calc_TQI_Min_Pu  (@0xc622c) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS2000, verified): Minimum indicated torque at trailing throttle
+        ; ------------------------------------------------------------
+Calc_TQI_Min_Pu:
+        MOV [-R0],R9
+        MOV R12,#DATA16 04BA2H
+        MOVBZ R13,n_32
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YByte
+        MOV tqi_min_pu_1,R4
+        MOV R12,#DATA16 04BB6H
+        MOV R13,amp
+        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YWord
+        MOV R13,R4
+        ADD R13,#DATA16 08000H
+        MOV R12,tqi_min_pu_1
+        CALLS 00FH,Sat_Add_S16
+        MOV tqi_min_pu_1,R4
+        JNB lv_pl.02H,L_C6294
+        MOV R12,#DATA16 04BAEH
+        MOVBZ R13,n_32
+        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        ADD R4,#DATA16 08000H
+        MOV tqi_add_puc,R4
+        MOV R12,tqi_min_pu_1
+        MOV R13,R4
+        CALLS 00FH,Sat_Add_S16
+        MOV R9,R4
+        CMP R9,#00H
+        JMPR cc_SLE,L_C628C
+        MOV R4,R9
+        JMPR cc_UC,L_C628E
+L_C628C:                 ; 0xc628c
+        MOV R4,#00H
+L_C628E:                 ; 0xc628e
+        MOV tqi_min_pu,R4
+        JMPR cc_UC,L_C629C
+L_C6294:                 ; 0xc6294
+        MOV R4,tqi_min_pu_1
+        MOV tqi_min_pu,R4
+L_C629C:                 ; 0xc629c
+        MOV R12,tqi_ref_lamb_scc
+        MOV R13,eff_iga_min
+        CALLS 00FH,Mul_Q15_Sat_Signed
+        MOV tqi_bol,R4
+        MOV R5,tqi_sp
+        CMP R5,tqi_bol
+        JMPR cc_SGE,L_C62BC
+        BSET lv_asr_act.02H
+        BSET lv_asr_act.03H
+        JMPR cc_UC,L_C62D2
+L_C62BC:                 ; 0xc62bc
+        MOV R12,tqi_bol
+        MOV R13,DPP0:c_tqi_bol_set_hys
+        CALLS 00FH,Sat_Add_S16
+        CMP R4,tqi_sp
+        JMPR cc_SGE,L_C62D2
+        BCLR lv_asr_act.02H
+        BCLR lv_asr_act.03H
+L_C62D2:                 ; 0xc62d2
+        MOV R9,[R0+]
+        RETS
+
+; ======== Reset_tqi_req_slow_2d6  (@0xc62d6) ========
+Reset_tqi_req_slow_2d6:
+        MOV tqi_req_slow,ZEROS
+        MOV tqi_req_fast,ZEROS
+        BCLR lv_asr_act.04H
+        BSET lv_asr_act.05H
+        BSET lv_asr_act.06H
+        BCLR lv_asr_act.07H
+        MOV R4,#DATA16 07FFFH
+        MOV tqi_asr_fast,R4
+        MOV R5,#DATA16 07FFFH
+        MOV tqi_asr_slow,R5
+        BCLR lv_asr_act.08H
+        BCLR lv_asr_act.09H
+        BCLR lv_asr_act.0AH
+        MOV tqi_msr,ZEROS
+        MOV tq_msr_int,ZEROS
+        RETS
+
+; ======== Reset_tq_msr_int_306  (@0xc6306) ========
+Reset_tq_msr_int_306:
+        MOV tq_msr_int,ZEROS
+        BCLR lv_asr_act.0AH
+        RETS
+
+; ======== ClrBits_lv_asr_act_30e  (@0xc630e) ========
+ClrBits_lv_asr_act_30e:
+        BCLR lv_asr_act.0BH
+        RETS
+
+; ======== Calc_TQI_ASR_FAST  (@0xc6312) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (MS42, verified): ASR fast torque: tqi_asr_fast=tqi_asr_req when enabled else disabled
+        ; (was FUN_0c6312)
+        ; ------------------------------------------------------------
+Calc_TQI_ASR_FAST:
+        JNB can_fd58.09H,L_C6370
+        JNB lv_pl.00H,L_C6366
+        JB lv_asr_req.0AH,L_C6366
+        JB lv_dur_igc_0_err.00H,L_C6366
+        JB lv_dur_igc_0_err.01H,L_C6366
+        JB lv_dur_igc_0_err.02H,L_C6366
+        JB lv_dur_igc_0_err.03H,L_C6366
+        JB lv_cam_err.02H,L_C6366
+        JB lv_cam_err.03H,L_C6366
+        JB lv_cps_err.05H,L_C6366
+        MOV R12,n_sp_is
+        MOV R13,DPP0:c_n_add_asr
+        CALLS 00FH,Add_r12_r13_Return_r4
+        CMP R4,n_C93C
+        JMPR cc_NC,L_C6366
+        MOVB RL4,tqi_tcs_can
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NC,L_C6366
+        JNB lv_asr_req.04H,L_C6366
+        BSET lv_asr_act.07H
+        MOV R4,tqi_asr_req
+        MOV tqi_asr_fast,R4
+        RETS
+L_C6366:                 ; 0xc6366
+        BCLR lv_asr_act.07H
+        MOV R4,#DATA16 07FFFH
+        MOV tqi_asr_fast,R4
+L_C6370:                 ; 0xc6370
+        RETS
+
+; ======== Calc_TQI_MSR  (@0xc6372) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (MS42, verified): MSR engine-drag torque: tqi_msr=tqi_msr_req, tq_msr_int integ,
+        ; c_tq_msr_int_max
+        ; (was FUN_0c6372)
+        ; ------------------------------------------------------------
+Calc_TQI_MSR:
+        JB can_fd58.09H,L_C637A
+        JMPA cc_UC,L_C645C
+L_C637A:                 ; 0xc637a
+        JNB lv_asr_req.07H,L_C63C8
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_C63C8
+        JB lv_pl.04H,L_C63C8
+        JB lv_asr_req.04H,L_C63C8
+        JB lv_asr_act.0BH,L_C63C8
+        JB lv_asr_act.0AH,L_C63C8
+        MOV R12,#DATA16 04BBEH
+        MOVBZ R13,n_32
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        CMPB RL4,tqi_msr_can
+        JMPR cc_ULE,L_C63C8
+        MOVB RL4,DPP0:lc_inh_msr
+        JMPR cc_NE,L_C63C8
+        JB lv_cam_err.00H,L_C63C8
+        JB lv_asr_req.0AH,L_C63C8
+        MOVB RL5,vs
+        CMPB RL5,DPP0:c_vs_min_msr
+        JMPR cc_ULE,L_C63C8
+        JB lv_dur_igc_0_err.0DH,L_C63C8
+        JB lv_dur_igc_0_err.0EH,L_C63C8
+        BSET lv_asr_act.08H
+        JMPR cc_UC,L_C63CA
+L_C63C8:                 ; 0xc63c8
+        BCLR lv_asr_act.08H
+L_C63CA:                 ; 0xc63ca
+        JNB lv_asr_req.07H,L_C63F0
+        JNB lv_asr_act.08H,L_C63F0
+        MOVBZ R12,tqi_tcs_can
+        MOVBZ R13,tqi_msr_can
+        CALLS 00FH,Add_r12_r13_Return_r4
+        CMP R4,#DATA16 000FFH
+        JMPR cc_NE,L_C63F0
+        BSET lv_asr_act.09H
+        MOV R4,tqi_msr_req
+        MOV tqi_msr,R4
+        JMPR cc_UC,L_C63F6
+L_C63F0:                 ; 0xc63f0
+        BCLR lv_asr_act.09H
+        MOV tqi_msr,ZEROS
+L_C63F6:                 ; 0xc63f6
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_C6432
+        JB lv_asr_req.07H,L_C6404
+        MOV tq_msr_int,ZEROS
+        JMPR cc_UC,L_C6420
+L_C6404:                 ; 0xc6404
+        MOV R12,tqi_msr_req
+        MOV R13,tq_loss
+        CALLS 00FH,Sat_Add_S16
+        MOV R13,R4
+        ASHR R13,#05H
+        MOV R12,tq_msr_int
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV tq_msr_int,R4
+L_C6420:                 ; 0xc6420
+        MOV R4,tq_msr_int
+        JMPR cc_EQ,L_C6430
+        CMP R4,DPP0:c_tq_msr_int_max
+        JMPR cc_C,L_C6432
+        BSET lv_asr_act.0AH
+        JMPR cc_UC,L_C6432
+L_C6430:                 ; 0xc6430
+        BCLR lv_asr_act.0AH
+L_C6432:                 ; 0xc6432
+        JB lv_asr_req.07H,L_C643C
+        MOV t_msr,ZEROS
+        JMPR cc_UC,L_C644A
+L_C643C:                 ; 0xc643c
+        MOV R12,t_msr
+        MOV R13,#01H
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV t_msr,R4
+L_C644A:                 ; 0xc644a
+        MOV R4,t_msr
+        JMPR cc_EQ,L_C645A
+        CMP R4,DPP0:c_t_max_msr
+        JMPR cc_C,L_C645C
+        BSET lv_asr_act.0BH
+        RETS
+L_C645A:                 ; 0xc645a
+        BCLR lv_asr_act.0BH
+L_C645C:                 ; 0xc645c
+        RETS
+
+; ======== Calc_TQI_Req_MinMax  (@0xc645e) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS31, verified): Minimum/Maximum Torque Request Selection (tqi_req_slow/fast)
+        ; ------------------------------------------------------------
+Calc_TQI_Req_MinMax:
+        MOVB RL4,DPP0:lc_tq_fast_ena
+        BMOVN lv_asr_act.05H,PSW.03H
+        MOVB RL5,DPP0:lc_tq_iga_ena
+        BMOVN lv_asr_act.06H,PSW.03H
+        MOV R4,tqi_add_act
+        CMP R4,tqi_gs_slow_dec
+        JMPR cc_NC,L_C647E
+        MOV R12,tqi_add_act
+        JMPR cc_UC,L_C6482
+L_C647E:                 ; 0xc647e
+        MOV R12,tqi_gs_slow_dec
+L_C6482:                 ; 0xc6482
+        CMP R12,tqi_n_max
+        JMPR cc_SGE,L_C648A
+        JMPR cc_UC,L_C648E
+L_C648A:                 ; 0xc648a
+        MOV R12,tqi_n_max
+L_C648E:                 ; 0xc648e
+        CMP R12,tqi_asr_slow
+        JMPR cc_NC,L_C6498
+        MOV R4,R12
+        JMPR cc_UC,L_C649C
+L_C6498:                 ; 0xc6498
+        MOV R4,tqi_asr_slow
+L_C649C:                 ; 0xc649c
+        MOV tqi_inter_slow,R4
+        MOV R5,tqi_min_req
+        CMP R5,tqi_gs_slow_inc
+        JMPR cc_ULE,L_C64B0
+        MOV R12,tqi_min_req
+        JMPR cc_UC,L_C64B4
+L_C64B0:                 ; 0xc64b0
+        MOV R12,tqi_gs_slow_inc
+L_C64B4:                 ; 0xc64b4
+        CMP R12,tqi_inter_slow
+        JMPR cc_SLE,L_C64BE
+        MOV R4,R12
+        JMPR cc_UC,L_C64C2
+L_C64BE:                 ; 0xc64be
+        MOV R4,tqi_inter_slow
+L_C64C2:                 ; 0xc64c2
+        MOV R5,tqi_msr
+        CMP R5,R4
+        JMPR cc_SLE,L_C64D0
+        MOV R4,tqi_msr
+        JMPR cc_UC,L_C64DE
+L_C64D0:                 ; 0xc64d0
+        CMP R12,tqi_inter_slow
+        JMPR cc_SLE,L_C64DA
+        MOV R4,R12
+        JMPR cc_UC,L_C64DE
+L_C64DA:                 ; 0xc64da
+        MOV R4,tqi_inter_slow
+L_C64DE:                 ; 0xc64de
+        MOV tqi_req_slow,R4
+        MOV R5,tqi_n_max
+        CMP R5,tqi_req_tra
+        JMPR cc_SGE,L_C64F2
+        MOV R4,tqi_n_max
+        JMPR cc_UC,L_C64F6
+L_C64F2:                 ; 0xc64f2
+        MOV R4,tqi_req_tra
+L_C64F6:                 ; 0xc64f6
+        MOV tqi_ems,R4
+        CMP R4,tqi_gs_fast_dec
+        JMPR cc_NC,L_C6506
+        MOV R12,tqi_ems
+        JMPR cc_UC,L_C650A
+L_C6506:                 ; 0xc6506
+        MOV R12,tqi_gs_fast_dec
+L_C650A:                 ; 0xc650a
+        CMP R12,tqi_asr_fast
+        JMPR cc_NC,L_C6514
+        MOV R4,R12
+        JMPR cc_UC,L_C6518
+L_C6514:                 ; 0xc6514
+        MOV R4,tqi_asr_fast
+L_C6518:                 ; 0xc6518
+        MOV tqi_inter_fast,R4
+        MOV R5,tqi_min_req
+        CMP R5,tqi_inter_fast
+        JMPR cc_SLE,L_C652C
+        MOV R4,tqi_min_req
+        JMPR cc_UC,L_C6530
+L_C652C:                 ; 0xc652c
+        MOV R4,tqi_inter_fast
+L_C6530:                 ; 0xc6530
+        MOV R5,tqi_msr
+        CMP R5,R4
+        JMPR cc_SLE,L_C653E
+        MOV R4,tqi_msr
+        JMPR cc_UC,L_C6552
+L_C653E:                 ; 0xc653e
+        MOV R4,tqi_min_req
+        CMP R4,tqi_inter_fast
+        JMPR cc_SLE,L_C654E
+        MOV R4,tqi_min_req
+        JMPR cc_UC,L_C6552
+L_C654E:                 ; 0xc654e
+        MOV R4,tqi_inter_fast
+L_C6552:                 ; 0xc6552
+        MOV tqi_req_fast_dec,R4
+        MOV R5,tqi_gs_fast_inc
+        MOV tqi_req_fast_inc,R5
+        CMP R4,tqi_req_fast_inc
+        JMPR cc_SLE,L_C656A
+        MOV R4,tqi_req_fast_dec
+        JMPR cc_UC,L_C656E
+L_C656A:                 ; 0xc656a
+        MOV R4,tqi_req_fast_inc
+L_C656E:                 ; 0xc656e
+        MOV tqi_req_fast,R4
+        MOV R5,tqi_req_fast_inc
+        CMP R5,tqi_req_fast_dec
+        JMPR cc_SLE,L_C6580
+        BSET lv_asr_act.04H
+        RETS
+L_C6580:                 ; 0xc6580
+        BCLR lv_asr_act.04H
+        RETS
+
+S_C622C ENDS
+        END

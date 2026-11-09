@@ -1,0 +1,163 @@
+; asw/knk/knk_maps.a66
+; 0xC2F9E-0xC30F0  (338 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_iga_ad1_inc_knk                    EQU  0901D0H
+c_tco_max_ad2_knk                    EQU  090378H
+c_tco_min_ad2_knk                    EQU  090382H
+ldp_tco__fac_iga_max_knk            EQU  090B39H
+ip_fac_iga_max_knk__tco              EQU  09562DH
+
+PUBLIC  Calc_Fac_IGA_Max_Knk, Clamp_IGA_Knk_Maps, Store_Knks_Gain_NVM
+EXTERN  Elevated_Write_Routine_prg_zone_wrapper:NEAR, Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_Y_Axis:NEAR, xor_routine:NEAR
+
+S_C2F9E SECTION CODE AT 0C2F9EH
+
+; ======== Calc_Fac_IGA_Max_Knk  (@0xc2f9e) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS31, verified): Load dynamics correction (fac_iga_max_knk vs tco)
+        ; ------------------------------------------------------------
+Calc_Fac_IGA_Max_Knk:
+        MOV R12,#DATA16 POF ldp_tco__fac_iga_max_knk
+        MOV R13,#DATA16 PAG ldp_tco__fac_iga_max_knk
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_fac_iga_max_knk__tco
+        MOV R13,#DATA16 PAG ip_fac_iga_max_knk__tco
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB fac_iga_max_knk,RL4
+        MOVB RL5,tco
+        CMPB RL5,DPP0:c_tco_min_ad2_knk
+        JMPR cc_ULE,L_C2FD2
+        CMPB RL5,DPP0:c_tco_max_ad2_knk
+        JMPR cc_NC,L_C2FD2
+        BSET lv_cam_ad_avl_nvmy_ivvt.0CH
+        RETS
+L_C2FD2:                 ; 0xc2fd2
+        BCLR lv_cam_ad_avl_nvmy_ivvt.0CH
+        RETS
+
+; ======== Clamp_IGA_Knk_Maps  (@0xc2fd6) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by knock output signals/NVM/DTC): Clamp knock ignition-adaptation maps
+        ; iga_ad_0..3[n][maf] to ceiling 0x80 (no advance beyond base).
+        ; ------------------------------------------------------------
+Clamp_IGA_Knk_Maps:
+        MOV R12,#00H
+L_C2FD8:                 ; 0xc2fd8
+        MOV R4,#DATA16 0F395H
+        ADD R4,R12
+        MOVB RL5,[R4]
+        ADDB RL5,DPP0:c_iga_ad1_inc_knk
+        MOVB [R4],RL5
+        MOVB RL4,[R12+#0F395H]
+        CMPB RL4,#DATA16 00080H
+        JMPR cc_ULE,L_C2FF8
+        MOVB RL4,#DATA16 00080H
+        MOVB [R12+#0F395H],RL4
+L_C2FF8:                 ; 0xc2ff8
+        MOV R4,#DATA16 0F3D1H
+        ADD R4,R12
+        MOVB RL5,[R4]
+        ADDB RL5,DPP0:c_iga_ad1_inc_knk
+        MOVB [R4],RL5
+        MOVB RL4,[R12+#0F3D1H]
+        CMPB RL4,#DATA16 00080H
+        JMPR cc_ULE,L_C3018
+        MOVB RL4,#DATA16 00080H
+        MOVB [R12+#0F3D1H],RL4
+L_C3018:                 ; 0xc3018
+        MOV R4,#DATA16 0F40DH
+        ADD R4,R12
+        MOVB RL5,[R4]
+        ADDB RL5,DPP0:c_iga_ad1_inc_knk
+        MOVB [R4],RL5
+        MOVB RL4,[R12+#0F40DH]
+        CMPB RL4,#DATA16 00080H
+        JMPR cc_ULE,L_C3038
+        MOVB RL4,#DATA16 00080H
+        MOVB [R12+#0F40DH],RL4
+L_C3038:                 ; 0xc3038
+        MOV R4,#DATA16 0F449H
+        ADD R4,R12
+        MOVB RL5,[R4]
+        ADDB RL5,DPP0:c_iga_ad1_inc_knk
+        MOVB [R4],RL5
+        MOVB RL4,[R12+#0F449H]
+        CMPB RL4,#DATA16 00080H
+        JMPR cc_ULE,L_C3058
+        MOVB RL4,#DATA16 00080H
+        MOVB [R12+#0F449H],RL4
+L_C3058:                 ; 0xc3058
+        ADD R12,#01H
+        CMP R12,#DATA16 0003CH
+        JMPR cc_C,L_C2FD8
+        RETS
+
+; ======== Store_Knks_Gain_NVM  (@0xc3062) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by knock output signals/NVM/DTC): Persist knks_cmd_gain_ad to NVM (prg-zone
+        ; elevated write @f890+0x5d2) with xor_routine checksum update.
+        ; ------------------------------------------------------------
+Store_Knks_Gain_NVM:
+        SUB R0,#02H
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        ADD R12,#DATA16 005D2H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0C304H
+        MOV R15,#04H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        ADD R12,#DATA16 005D2H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#04H
+        CALLS 00DH,xor_routine
+        MOV [R0],R4
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        ADD R12,#DATA16 005D6H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,R0
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        ADD R0,#02H
+        RETS
+
+S_C2F9E ENDS
+        END

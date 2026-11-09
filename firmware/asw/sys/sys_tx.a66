@@ -1,0 +1,129 @@
+; asw/sys/sys_tx.a66
+; 0xA8536-0xA85F0  (186 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  SMARTRA_asc0_rx_isr, SMARTRA_tx_len_8570, SMARTRA_tx_payload, SMARTRA_tx_payload_last, SMARTRA_tx_sync
+EXTERN  SMARTRA_isr_epilogue:NEAR
+
+S_A8536 SECTION CODE AT 0A8536H
+
+; ======== SMARTRA_asc0_rx_isr  (@0xa8536) ========
+        ; ------------------------------------------------------------
+        ; SMARTRA ASC0 single-wire ISR = half-duplex frame engine. Dispatched per byte via jump table
+        ; @0x64be indexed by smartra_io_subphase (0xf5ba); smartra_comms_phase (0xf5b8) is the high-level
+        ; phase used by SMARTRA_comms_timeout_monitor. Wire format (both directions, same frame buffer
+        ; 0xc51b):
+        ;   TX (ECU->SMARTRA): 0x49 'I' sync | LEN | code | data... | SUM   SUM=byte-sum of LEN+code+data
+        ;   RX (SMARTRA->ECU): 0x69 'i' echo | LEN(<=0x14) | data... | SUM
+        ; TX subphases: 0=tx_sync 2=tx_len 4/6=tx_payload 8=tx_cksum 0xa=tx_to_rx.
+        ; RX subphases: 0xc=rx_sync 0xe=rx_len 0x10=rx_payload 0x12=rx_cksum_verify 0x14=done 0x16=error.
+        ; Errors: bit fd5e.0 = sync/length/checksum fault; bit fd5c.14 = inter-byte timeout (timer>0x25b).
+        ; Frames are produced/consumed by SMARTRA_runtime_auth_sm / SMARTRA_auth_protocol_sm.
+        ; ------------------------------------------------------------
+        ; ASC0 S0 receive ISR for the SMARTRA single-wire immo line = the frame assembler/transmitter.
+        ; Structure (now recovered):
+        ;   0xa853c: if DAT_00fd5e.1 set -> short path (latch fdb0/b2/b4 bit-capture), reti.
+        ;   0xa854e: DISPATCH - r0 = sub-phase byte @0xf5ba; r0 = *(jumptable @0x64be)[r0]; jmpi [r0].
+        ;   The jump table @0x64be is DPP-mapped RAM, POPULATED AT RUNTIME, so it reads 0xFF in the
+        ;   static image - THIS is why auto-analysis emits a bogus 256-way switch and leaves the per-phase
+        ;   handlers undisassembled. The handler code itself is present and valid; it just isn't auto-reached.
+        ; Per-phase handlers (reach via 'D' in the GUI; each ends with 'jmpa 0x0a86ec' epilogue):
+        ;   0xa8558, 0xa8570, 0xa859c, 0xa85ca, 0xa85f0, 0xa8602 (+ the data-phase tail 0xa8640..0xa86ea).
+        ; Register roles in the handlers: S0RBUF @0xFEB2 = received byte; S0TBUF @0xFEB0 = byte to transmit;
+        ; 0xc51b = KWP/SMARTRA frame buffer (indexed by 0xfa5e/0xfa60 byte counters); 0xf5b8/0xf5ba = TX/RX
+        ; sub-phase state advanced after each byte. This feeds the [type][code][payload] frames consumed by
+        ; SMARTRA_runtime_auth_sm / SMARTRA_auth_protocol_sm.
+SMARTRA_asc0_rx_isr:
+        SCXT CP,#DATA16 0FC12H
+        NOP
+        JB lv_err_com_resp_imob.01H,L_A854E
+        BCLR S0RIC.07H
+        BOR can_sched_flags1.09H,can_sched_flags0.09H
+        BMOV can_sched_flags0.09H,can_sched_flags2.09H
+        JMPA cc_UC,SMARTRA_isr_epilogue
+L_A854E:                 ; 0xa854e
+        MOVBZ R0,smartra_io_subphase            ; r0 = sub-phase @0xf5ba -> target from RAM jump table @0x64be (runtime-filled; 0xFF statically)
+        MOV R0,[R0+#064BEH]
+        JMPI cc_UC,[R0]                         ; computed jump to per-phase RX/TX handler (targets disassembled by this script)
+
+; ======== SMARTRA_tx_sync  (@0xa8558) ========
+        ; ------------------------------------------------------------
+        ; SMARTRA RX ISR per-phase handler. Reached via jmpi [r0] @0x0a8556 (RAM jump table @0x64be). S0RBUF
+        ; 0xFEB2=in, S0TBUF 0xFEB0=out, frame buf 0xc51b, sub-phase 0xf5b8/0xf5ba.
+        ; ------------------------------------------------------------
+SMARTRA_tx_sync:
+        MOVB S0TBUF,#DATA16 00049H
+        MOVB RL0,#04H
+        MOVB smartra_comms_phase,RL0
+        MOVB RL0,#02H
+        MOVB smartra_io_subphase,RL0
+        MOV smartra_byte_timer,ZEROS
+        JMPA cc_UC,SMARTRA_isr_epilogue
+
+; ======== SMARTRA_tx_len  (@0xa8570) ========
+        ; ------------------------------------------------------------
+        ; SMARTRA RX ISR per-phase handler. Reached via jmpi [r0] @0x0a8556 (RAM jump table @0x64be). S0RBUF
+        ; 0xFEB2=in, S0TBUF 0xFEB0=out, frame buf 0xc51b, sub-phase 0xf5b8/0xf5ba.
+        ; ------------------------------------------------------------
+SMARTRA_tx_len_8570:
+        MOV R0,#DATA16 0C51BH
+        ADD R0,#00H
+        MOV smartra_tx_ptr,R0
+        MOVB RL0,[R0]
+        MOVB S0TBUF_FEB0,RL0                    ; -> S0TBUF (0xFEB0): transmit next SMARTRA frame byte
+        MOVB smartra_frame_cksum,RL0
+        SUBB RL0,#01H
+        MOVB smartra_frame_len_rem,RL0
+        SUB smartra_tx_ptr,ONES
+        MOVB RL0,#04H
+        MOVB smartra_io_subphase,RL0
+        MOV smartra_byte_timer,ZEROS
+        JMPA cc_UC,SMARTRA_isr_epilogue
+
+; ======== SMARTRA_tx_payload  (@0xa859c) ========
+        ; ------------------------------------------------------------
+        ; SMARTRA RX ISR per-phase handler. Reached via jmpi [r0] @0x0a8556 (RAM jump table @0x64be). S0RBUF
+        ; 0xFEB2=in, S0TBUF 0xFEB0=out, frame buf 0xc51b, sub-phase 0xf5b8/0xf5ba.
+        ; ------------------------------------------------------------
+SMARTRA_tx_payload:
+        MOV R0,smartra_tx_ptr
+        MOVB RL0,[R0]
+        MOVB S0TBUF_FEB0,RL0
+        ADDB smartra_frame_cksum,RL0
+        SUB smartra_tx_ptr,ONES
+        ADDB smartra_frame_len_rem,ONES
+        JMPR cc_NE,L_A85BC
+        MOVB RL0,#08H
+        MOVB smartra_io_subphase,RL0
+        JMPR cc_UC,L_A85C2
+L_A85BC:                 ; 0xa85bc
+        MOVB RL0,#06H
+        MOVB smartra_io_subphase,RL0
+L_A85C2:                 ; 0xa85c2
+        MOV smartra_byte_timer,ZEROS
+        JMPA cc_UC,SMARTRA_isr_epilogue
+
+; ======== SMARTRA_tx_payload_last  (@0xa85ca) ========
+        ; ------------------------------------------------------------
+        ; SMARTRA RX ISR per-phase handler. Reached via jmpi [r0] @0x0a8556 (RAM jump table @0x64be). S0RBUF
+        ; 0xFEB2=in, S0TBUF 0xFEB0=out, frame buf 0xc51b, sub-phase 0xf5b8/0xf5ba.
+        ; ------------------------------------------------------------
+SMARTRA_tx_payload_last:
+        MOV R0,smartra_tx_ptr
+        MOVB RL0,[R0]
+        MOVB S0TBUF_FEB0,RL0
+        ADDB smartra_frame_cksum,RL0
+        SUB smartra_tx_ptr,ONES
+        ADDB smartra_frame_len_rem,ONES
+        JMPR cc_NE,L_A85E8
+        MOVB RL0,#08H
+        MOVB smartra_io_subphase,RL0
+L_A85E8:                 ; 0xa85e8
+        MOV smartra_byte_timer,ZEROS
+        JMPA cc_UC,SMARTRA_isr_epilogue
+
+S_A8536 ENDS
+        END

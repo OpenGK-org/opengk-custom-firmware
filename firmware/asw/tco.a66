@@ -1,0 +1,258 @@
+; asw/tco.a66
+; 0xB87E0-0xB89EE  (526 bytes, 8 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+ldp_tco_st_ip_t_ast_max_lscl          EQU  090DFDH
+ldp_tia_st_ip_t_tco_min               EQU  090E38H
+sstm_tkw_1_8                      EQU  090E46H
+ip_t_ast_max_lscl__tco_st            EQU  0937FEH
+ip_t_tco_min__tia_st                 EQU  093AF6H
+ip_tco_lam_min__tco_st               EQU  0965FCH
+ip_tco_lam_min_is__tco_st            EQU  096602H
+
+PUBLIC  Calc_FSD_Precond, Calc_FSD_Precond_2, Calc_RBM_TCO_Plaus, ClrBits_lv_inh_fsd_cp_7f8, ClrBits_state_rbm_tco_plaus_874, Reset_state_rbm_tco_plaus_86a
+PUBLIC  Set_lv_inh_fsd_cp_b87e, Set_lv_inh_fsd_cp_b87f
+EXTERN  Diag_DTC_dd1be:NEAR, Div_U32_U16_Round32:NEAR, Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_Y_Axis:NEAR
+EXTERN  Get_IP_Word_2D_Table:NEAR
+
+S_B87E0 SECTION CODE AT 0B87E0H
+
+; ======== Set_lv_inh_fsd_cp_b87e  (@0xb87e0) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Set_lv_inh_fsd_cp_b87e:
+        MOVB RL4,conf_cat_eff
+        CMPB RL4,#01H
+        JMPR cc_NE,L_B87EE
+        BCLR lv_inh_fsd_cp.05H
+        BCLR lv_inh_fsd_cp.04H
+        BCLR lv_inh_fsd_cp.07H
+L_B87EE:                 ; 0xb87ee
+        RETS
+
+; ======== Set_lv_inh_fsd_cp_b87f  (@0xb87f0) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Set_lv_inh_fsd_cp_b87f:
+        JB obd_sf.0DH,L_B87F6
+        BCLR lv_inh_fsd_cp.09H
+L_B87F6:                 ; 0xb87f6
+        RETS
+
+; ======== ClrBits_lv_inh_fsd_cp_7f8  (@0xb87f8) ========
+ClrBits_lv_inh_fsd_cp_7f8:
+        BCLR lv_inh_fsd_cp.09H
+        RETS
+
+; ======== Calc_FSD_Precond  (@0xb87fc) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by fsd/rbm/obd2 output signals): Fuel-system-diag preconditions: lv_inh_fsd_cp
+        ; from t_ast_max_lscl / t_tco_min (after-start + coolant time).
+        ; ------------------------------------------------------------
+Calc_FSD_Precond:
+        JB obd_sf.0DH,L_B8868
+        JB lv_cam_err.0CH,L_B885E
+        JB lv_cam_err.0DH,L_B885E
+        JB lv_cam_err.0EH,L_B885E
+        JB lv_lam_lim_1_err.00H,L_B885E
+        BCLR lv_inh_fsd_cp.09H
+        MOV t_ast_max_lscl,ZEROS
+        MOV R12,#DATA16 POF ldp_tia_st_ip_t_tco_min
+        MOV R13,#DATA16 PAG ldp_tia_st_ip_t_tco_min
+        MOVBZ R14,tia_st
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_t_tco_min__tia_st
+        MOV R13,#DATA16 PAG ip_t_tco_min__tia_st
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV t_tco_min,R4
+        MOV R12,#DATA16 POF ldp_tco_st_ip_t_ast_max_lscl
+        MOV R13,#DATA16 PAG ldp_tco_st_ip_t_ast_max_lscl
+        MOVBZ R14,tco_st
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_t_ast_max_lscl__tco_st
+        MOV R13,#DATA16 PAG ip_t_ast_max_lscl__tco_st
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV t_ast_max_lscl,R4
+        MOV R5,#05H
+        MOV lv_isc_f956,R5
+        RETS
+L_B885E:                 ; 0xb885e
+        BSET lv_inh_fsd_cp.09H
+        MOV R4,#DATA16 0FFFDH
+        AND g_f872,R4
+L_B8868:                 ; 0xb8868
+        RETS
+
+; ======== Reset_state_rbm_tco_plaus_86a  (@0xb886a) ========
+Reset_state_rbm_tco_plaus_86a:
+        MOVB state_rbm_tco_plaus,ZEROS
+        MOV rate_rbm_tco_plaus,ONES
+        RETS
+
+; ======== ClrBits_state_rbm_tco_plaus_874  (@0xb8874) ========
+ClrBits_state_rbm_tco_plaus_874:
+        MOVB RL4,#DATA16 000FDH
+        ANDB state_rbm_tco_plaus,RL4
+        RETS
+
+; ======== Calc_FSD_Precond_2  (@0xb887e) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by fsd/rbm/obd2 output signals): Fuel-system-diag preconditions (variant).
+        ; ------------------------------------------------------------
+Calc_FSD_Precond_2:
+        MOV [-R0],R6
+        JNB lv_cam_err.0CH,L_B8888
+        JMPA cc_UC,L_B8958
+L_B8888:                 ; 0xb8888
+        JNB lv_cam_err.0DH,L_B8890
+        JMPA cc_UC,L_B8958
+L_B8890:                 ; 0xb8890
+        JNB lv_cam_err.0EH,L_B8898
+        JMPA cc_UC,L_B8958
+L_B8898:                 ; 0xb8898
+        JB lv_lam_lim_1_err.00H,L_B8958
+        JNB sched_flags2.0EH,L_B88B8
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_B88B8
+        JB lv_pl.04H,L_B88B8
+        JB lv_pl.02H,L_B88B8
+        MOV R4,t_tco_min
+        JMPR cc_EQ,L_B88B8
+        SUB R4,#01H
+        MOV t_tco_min,R4
+L_B88B8:                 ; 0xb88b8
+        MOV R12,#DATA16 POF ldp_tco_st_ip_t_ast_max_lscl
+        MOV R13,#DATA16 PAG ldp_tco_st_ip_t_ast_max_lscl
+        MOVBZ R14,tco_st
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_t_ast_max_lscl__tco_st
+        MOV R13,#DATA16 PAG ip_t_ast_max_lscl__tco_st
+        CALLS 00FH,Get_IP_Word_2D_Table
+        CMP R4,t_ast
+        JMPR cc_NC,L_B88E2
+        MOV R4,t_ast
+        MOV t_ast_max_lscl,R4
+L_B88E2:                 ; 0xb88e2
+        MOV R12,#DATA16 POF sstm_tkw_1_8
+        MOV R13,#DATA16 PAG sstm_tkw_1_8
+        MOVBZ R14,tco_st
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_B8906
+        MOV R12,#DATA16 POF ip_tco_lam_min_is__tco_st
+        MOV R13,#DATA16 PAG ip_tco_lam_min_is__tco_st
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB RL6,RL4
+        JMPR cc_UC,L_B8914
+L_B8906:                 ; 0xb8906
+        MOV R12,#DATA16 POF ip_tco_lam_min__tco_st
+        MOV R13,#DATA16 PAG ip_tco_lam_min__tco_st
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB RL6,RL4
+L_B8914:                 ; 0xb8914
+        JNB obd_sf.0DH,L_B8950
+        CMPB RL6,tco_st
+        JMPR cc_ULE,L_B894C
+        CMPB RL6,tco
+        JMPR cc_NC,L_B892E
+        BCLR lv_inh_fsd_cp.08H
+        CALLS 00CH,Diag_DTC_dd1be
+        BSET lv_inh_fsd_cp.09H
+        JMPR cc_UC,L_B8962
+L_B892E:                 ; 0xb892e
+        CMPB RL6,tco_sub_byte_1_
+        JMPR cc_NC,L_B8944
+        MOV R4,t_tco_min
+        JMPR cc_NE,L_B8944
+        BSET lv_inh_fsd_cp.08H
+        CALLS 00CH,Diag_DTC_dd1be
+        BSET lv_inh_fsd_cp.09H
+        JMPR cc_UC,L_B8962
+L_B8944:                 ; 0xb8944
+        MOV R4,#05H
+        MOV lv_isc_f956,R4
+        JMPR cc_UC,L_B8962
+L_B894C:                 ; 0xb894c
+        BSET lv_inh_fsd_cp.09H
+        JMPR cc_UC,L_B8962
+L_B8950:                 ; 0xb8950
+        MOV R4,#05H
+        MOV lv_isc_f956,R4
+        JMPR cc_UC,L_B8962
+L_B8958:                 ; 0xb8958
+        BSET lv_inh_fsd_cp.09H
+        MOV R4,#DATA16 0FFFDH
+        AND g_f872,R4
+L_B8962:                 ; 0xb8962
+        MOV R6,[R0+]
+        RETS
+
+; ======== Calc_RBM_TCO_Plaus  (@0xb8966) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by state_rbm_/rate_rbm_ output signals): IUMPR rate-based monitor for TCO Plaus:
+        ; updates state_rbm_tco_plaus / rate_rbm_tco_plaus (in-use completion ratio = numerator/denominator).
+        ; ------------------------------------------------------------
+Calc_RBM_TCO_Plaus:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        JNB obd_sf.0DH,L_B89E8
+        MOVB RL4,state_rbm_tco_plaus
+        ANDB RL4,#01H
+        JMPR cc_NE,L_B8984
+        MOV R4,diag_f864
+        AND R4,#02H
+        JMPR cc_NE,L_B8984
+        MOVB RL4,#01H
+        ORB state_rbm_tco_plaus,RL4
+L_B8984:                 ; 0xb8984
+        MOVB RL4,state_rbm_tco_plaus
+        ANDB RL4,#02H
+        JMPR cc_NE,L_B89A2
+        JB lv_cam_err.0CH,L_B899C
+        JB lv_cam_err.0DH,L_B899C
+        JB lv_cam_err.0EH,L_B899C
+        JNB lv_lam_lim_1_err.00H,L_B89A2
+L_B899C:                 ; 0xb899c
+        MOVB RL4,#02H
+        ORB state_rbm_tco_plaus,RL4
+L_B89A2:                 ; 0xb89a2
+        MOVB RL4,state_rbm_tco_plaus
+        ANDB RL4,#04H
+        JMPR cc_NE,L_B89B0
+        MOVB RL4,#04H
+        ORB state_rbm_tco_plaus,RL4
+L_B89B0:                 ; 0xb89b0
+        MOV R12,ctr_comp_rbm_tco_plaus
+        MOV R13,#00H
+        MOV R13,R12
+        MOV R12,0FF1CH
+        MOV R14,ctr_cdn_rbm_tco_plaus
+        CALLS 00FH,Div_U32_U16_Round32
+        MOV R8,R4
+        MOV R9,R5
+        MOV R4,R9
+        SHR R8,#03H
+        SHR R9,#03H
+        SHL R4,#0DH
+        OR R8,R4
+        CMP R9,#00H
+        JMPR cc_NE,L_B89DA
+        CMP R8,#DATA16 0FFFFH
+L_B89DA:                 ; 0xb89da
+        JMPR cc_C,L_B89E2
+        MOV rate_rbm_tco_plaus,ONES
+        JMPR cc_UC,L_B89E8
+L_B89E2:                 ; 0xb89e2
+        MOV R4,R8
+        MOV rate_rbm_tco_plaus,R4
+L_B89E8:                 ; 0xb89e8
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_B87E0 ENDS
+        END

@@ -1,0 +1,315 @@
+; asw/can2.a66
+; 0xA58DC-0xA5B7C  (672 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  BL_CAN2_RxFrame, CCP_GetCalPageStatus_0x1c
+EXTERN  CCP_Rebuild_CanDaqObjects:NEAR, Move_xFF_items__from_PTR_R12_to_PTR_R13:NEAR
+
+S_A58DC SECTION CODE AT 0A58DCH
+
+; ======== CCP_GetCalPageStatus_0x1c  (@0xa58dc) ========
+CCP_GetCalPageStatus_0x1c:
+        MOV R13,#DATA16 0EE00H
+        MOV R4,[R13]
+        AND R4,#DATA16 08000H
+        JMPR cc_EQ,L_A58F0
+        MOVB RL4,#03H
+        MOVB [R12+#02H],RL4
+        JMPR cc_UC,L_A58F6
+L_A58F0:                 ; 0xa58f0
+        MOVB RL4,#00H
+        MOVB [R12+#02H],RL4
+L_A58F6:                 ; 0xa58f6
+        MOVB RL4,#00H
+        RETS
+        MOV [-R0],R9
+        MOVB RL4,can_c1a0
+        JMPR cc_NE,L_A598C
+        MOV R4,bl_can2_msgobj_idx
+        CMP R4,#06H
+        JMPR cc_NE,L_A598C
+        MOVB RL4,bl_can2_channel
+        CMPB RL4,#02H
+        JMPR cc_ULE,L_A591A
+        MOVB RL5,#02H
+        MOVB bl_can2_channel,RL5
+        JMPR cc_UC,L_A5928
+L_A591A:                 ; 0xa591a
+        MOVB RL4,bl_can2_channel
+        CMPB RL4,#01H
+        JMPR cc_NC,L_A5928
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa5922 [dpp]  W:{-}  R:{-}
+        ; ------------------------------------------------------------
+        MOVB RL5,#01H
+        MOVB bl_can2_channel,RL5
+L_A5928:                 ; 0xa5928
+        MOVB RL4,bl_can2_channel
+        CMPB RL4,#01H
+        JMPR cc_NE,L_A593E
+        MOV R9,#DATA16 0EF00H
+        MOV R4,bl_can2_msgobj_idx
+        SHL R4,#04H
+        ADD R9,R4
+        JMPR cc_UC,L_A594A
+L_A593E:                 ; 0xa593e
+        MOV R9,#DATA16 0EE00H
+        MOV R4,bl_can2_msgobj_idx
+        SHL R4,#04H
+        ADD R9,R4
+L_A594A:                 ; 0xa594a
+        MOV R4,#DATA16 05A95H
+        MOV [R9],R4
+        MOV R12,R9
+        ADD R12,#07H
+        MOV R13,bl_can2_rx_msgid
+        MOVBZ R14,can_c196
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa595c [dpp]  W:{-}  R:{-}
+        ; ------------------------------------------------------------
+        CALLS 00AH,Move_xFF_items__from_PTR_R12_to_PTR_R13
+        MOVB RL4,can_c196
+        CMPB RL4,#DATA16 00008H
+        JMPR cc_ULE,L_A5970
+        MOVB RL5,#08H
+        MOVB can_c196,RL5
+L_A5970:                 ; 0xa5970
+        MOVBZ R4,can_c196
+        SHL R4,#04H
+        MOV R5,R9
+        ADD R5,#06H
+        MOVB RL3,[R5]
+        ORB RL3,RL4
+        MOVB [R5],RL3
+        MOV R4,#DATA16 067A5H
+        MOV [R9],R4
+        MOVB RL4,#01H
+        MOVB g_c19f,RL4
+L_A598C:                 ; 0xa598c
+        MOV R9,[R0+]
+        RETS
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOVB RL4,can_c1a0
+        JMPR cc_NE,L_A5A38
+        MOV R4,bl_can2_msgobj_idx
+        CMP R4,#07H
+        JMPR cc_NE,L_A59A6
+        MOVB RL4,#01H
+        JMPR cc_UC,L_A59A8
+L_A59A6:                 ; 0xa59a6
+        MOVB RL4,#00H
+L_A59A8:                 ; 0xa59a8
+        MOV R5,bl_can2_msgobj_idx
+        CMP R5,#DATA16 00008H
+        JMPR cc_NE,L_A59B6
+        MOVB RL5,#01H
+        JMPR cc_UC,L_A59B8
+L_A59B6:                 ; 0xa59b6
+        MOVB RL5,#00H
+L_A59B8:                 ; 0xa59b8
+        ORB RL4,RL5
+        JMPR cc_EQ,L_A5A38
+        MOVB RL4,bl_can2_channel
+        CMPB RL4,#02H
+        JMPR cc_ULE,L_A59CC
+        MOVB RL5,#02H
+        MOVB bl_can2_channel,RL5
+        JMPR cc_UC,BL_CAN2_RxFrame
+L_A59CC:                 ; 0xa59cc
+        MOVB RL4,bl_can2_channel
+        CMPB RL4,#01H
+        JMPR cc_NC,BL_CAN2_RxFrame
+        MOVB RL5,#01H
+        MOVB bl_can2_channel,RL5
+
+; ======== BL_CAN2_RxFrame  (@0xa59da) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by ccp_/bl_/cpu output signals): Bootloader CAN2 receive frame: bl_can2_rx_dataword0/1
+        ; / bl_can2_rx_dlc.
+        ; ------------------------------------------------------------
+BL_CAN2_RxFrame:
+        MOVB RL4,bl_can2_channel
+        CMPB RL4,#01H
+        JMPR cc_NE,L_A59F0
+        MOV R9,#DATA16 0EF00H
+        MOV R4,bl_can2_msgobj_idx
+        SHL R4,#04H
+        ADD R9,R4
+        JMPR cc_UC,L_A59FC
+L_A59F0:                 ; 0xa59f0
+        MOV R9,#DATA16 0EE00H
+        MOV R4,bl_can2_msgobj_idx
+        SHL R4,#04H
+        ADD R9,R4
+L_A59FC:                 ; 0xa59fc
+        MOV R4,#DATA16 05599H
+        MOV [R9],R4
+        MOV R4,[R9+#02H]
+        SHL R4,#08H
+        SHR R4,#05H
+        MOV R5,[R9+#02H]
+        SHR R5,#0DH
+        ADD R4,R5
+        MOV R5,#00H
+        MOV bl_can2_rx_dataword0,R4
+        MOV bl_can2_rx_dataword1,R5
+        MOVB RL4,[R9+#06H]
+        MOVBZ R4,RL4
+        SHR R4,#04H
+        MOVB bl_can2_rx_dlc,RL4
+        MOV R12,bl_can2_rx_msgid
+        MOV R13,R9
+        ADD R13,#07H
+        MOVBZ R14,RL4
+        CALLS 00AH,Move_xFF_items__from_PTR_R12_to_PTR_R13
+        JMPR cc_UC,L_A5A54
+L_A5A38:                 ; 0xa5a38
+        MOV R8,#00H
+L_A5A3A:                 ; 0xa5a3a
+        MOVB RL4,#00H
+        MOV R5,bl_can2_rx_msgid
+        ADD R5,R8
+        MOVB [R5],RL4
+        MOV bl_can2_rx_dataword0,ZEROS
+        MOV bl_can2_rx_dataword1,ZEROS
+        MOVB bl_can2_rx_dlc,ZEROS
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa5a50 [dpp]  W:{-}  R:{-}
+        ; ------------------------------------------------------------
+        CMPI1 R8,#07H
+        JMPR cc_SLT,L_A5A3A
+L_A5A54:                 ; 0xa5a54
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOVB bl_can2_poll_result,ZEROS
+        MOV R8,#DATA16 0EF00H
+        MOV R4,[R8]
+        AND R4,#DATA16 08000H
+        JMPR cc_EQ,L_A5A76
+        MOVB RL4,#01H
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa5a70 [dpp]  W:{-}  R:{-}
+        ; ------------------------------------------------------------
+        MOVB can_c1a0,RL4
+        JMPR cc_UC,L_A5A7E
+L_A5A76:                 ; 0xa5a76
+        MOVB can_c1a0,ZEROS
+        MOVB can_c1a1,ZEROS
+L_A5A7E:                 ; 0xa5a7e
+        MOVB RL4,can_c1a0
+        JMPA cc_NE,L_A5B60
+        MOV R4,bl_can2_msgobj_idx
+        CMP R4,#06H
+        JMPR cc_NE,L_A5AE8
+        MOVB RL4,bl_can2_channel
+        CMPB RL4,#02H
+        JMPR cc_ULE,L_A5A9E
+        MOVB RL5,#02H
+        MOVB bl_can2_channel,RL5
+        JMPR cc_UC,L_A5AAC
+L_A5A9E:                 ; 0xa5a9e
+        MOVB RL4,bl_can2_channel
+        CMPB RL4,#01H
+        JMPR cc_NC,L_A5AAC
+        MOVB RL5,#01H
+        MOVB bl_can2_channel,RL5
+L_A5AAC:                 ; 0xa5aac
+        MOVB RL4,bl_can2_channel
+        CMPB RL4,#01H
+        JMPR cc_NE,L_A5AC2
+        MOV R9,#DATA16 0EF00H
+        MOV R4,bl_can2_msgobj_idx
+        SHL R4,#04H
+        ADD R9,R4
+        JMPR cc_UC,L_A5ACE
+L_A5AC2:                 ; 0xa5ac2
+        MOV R9,#DATA16 0EE00H
+        MOV R4,bl_can2_msgobj_idx
+        SHL R4,#04H
+        ADD R9,R4
+L_A5ACE:                 ; 0xa5ace
+        MOVB RL4,g_c19f
+        JMPR cc_EQ,L_A5B76
+        MOV R4,[R9]
+        AND R4,#DATA16 01000H
+        JMPR cc_EQ,L_A5B76
+        MOVB g_c19f,ZEROS
+        MOVB RL4,#01H
+        MOVB bl_can2_poll_result,RL4
+        JMPR cc_UC,L_A5B76
+L_A5AE8:                 ; 0xa5ae8
+        MOV R4,bl_can2_msgobj_idx
+        CMP R4,#07H
+        JMPR cc_NE,L_A5AF4
+        MOV R5,#01H
+        JMPR cc_UC,L_A5AF6
+L_A5AF4:                 ; 0xa5af4
+        MOV R5,#00H
+L_A5AF6:                 ; 0xa5af6
+        MOV R4,bl_can2_msgobj_idx
+        CMP R4,#DATA16 00008H
+        JMPR cc_NE,L_A5B04
+        MOV R2,#01H
+        JMPR cc_UC,L_A5B06
+L_A5B04:                 ; 0xa5b04
+        MOV R2,#00H
+L_A5B06:                 ; 0xa5b06
+        OR R5,R2
+        JMPR cc_EQ,L_A5B76
+        MOVB RL4,bl_can2_channel
+        CMPB RL4,#02H
+        JMPR cc_ULE,L_A5B1A
+        MOVB RL5,#02H
+        MOVB bl_can2_channel,RL5
+        JMPR cc_UC,L_A5B28
+L_A5B1A:                 ; 0xa5b1a
+        MOVB RL4,bl_can2_channel
+        CMPB RL4,#01H
+        JMPR cc_NC,L_A5B28
+        MOVB RL5,#01H
+        MOVB bl_can2_channel,RL5
+L_A5B28:                 ; 0xa5b28
+        MOVB RL4,bl_can2_channel
+        CMPB RL4,#01H
+        JMPR cc_NE,L_A5B3E
+        MOV R9,#DATA16 0EF00H
+        MOV R4,bl_can2_msgobj_idx
+        SHL R4,#04H
+        ADD R9,R4
+        JMPR cc_UC,L_A5B4A
+L_A5B3E:                 ; 0xa5b3e
+        MOV R9,#DATA16 0EE00H
+        MOV R4,bl_can2_msgobj_idx
+        SHL R4,#04H
+        ADD R9,R4
+L_A5B4A:                 ; 0xa5b4a
+        MOV R4,[R9]
+        AND R4,#DATA16 00200H
+        JMPR cc_EQ,L_A5B76
+        MOV R4,#DATA16 05599H
+        MOV [R9],R4
+        MOVB RL4,#01H
+        MOVB bl_can2_poll_result,RL4
+        JMPR cc_UC,L_A5B76
+L_A5B60:                 ; 0xa5b60
+        MOVB RL4,can_c1a1
+        JMPR cc_NE,L_A5B76
+        MOV R4,#DATA16 00041H
+        MOV [R8],R4
+        MOVB RL4,#01H
+        MOVB can_c1a1,RL4
+        CALLS 00AH,CCP_Rebuild_CanDaqObjects
+L_A5B76:                 ; 0xa5b76
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_A58DC ENDS
+        END

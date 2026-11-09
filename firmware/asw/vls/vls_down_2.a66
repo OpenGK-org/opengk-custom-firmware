@@ -1,0 +1,532 @@
+; asw/vls/vls_down_2.a66
+; 0xB89EE-0xB8EF0  (1282 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_ctr_end_vls_down_diag_pue          EQU  090177H
+c_ctr_max_vls_down_diag_pue          EQU  09017CH
+c_cycnr_vls_down_max                 EQU  090181H
+c_fac_vls_down_diag_max              EQU  0901BCH
+c_fac_vls_down_diag_min              EQU  0901BDH
+c_sum_vls_down_diag_min              EQU  09030EH
+c_maf_int_puc_beg_pue_diag           EQU  0905E4H
+c_maf_int_vls_down_pue               EQU  0905E8H
+c_maf_kgh_max_puc_down_diag          EQU  0905EAH
+c_maf_kgh_min_puc_down_diag          EQU  0905ECH
+c_vls_afl_thd_diag_ls_down           EQU  0907DEH
+c_vls_afr_thd_diag_ls_down           EQU  0907E6H
+c_vls_down_diag_min                  EQU  0907FEH
+c_vls_down_hys                       EQU  090800H
+c_vls_down_pue_diag_ls_down          EQU  09080EH
+c_vls_down_pue_diag_min              EQU  090810H
+c_vls_up_max_purge_vld               EQU  090828H
+ldp_maf_kgh__vls_down_max_cycnr     EQU  091A12H
+ip_vls_down_max_cycnr__maf_kgh       EQU  096B7CH
+
+PUBLIC  Calc_LS_Down_OBD2_PUC, Diag_Cat_Eff_VlsDown, Diag_DTC_dd23c, Diag_FSD_CP_VlsDown
+EXTERN  Add_r12_r13_Return_r4:NEAR, DTC_Update_Imm_V2:NEAR, DTC_Update_Immediate:NEAR, Diag_CP_FSD_SetDTC:NEAR
+EXTERN  Diag_Cat_Eff_Ena:NEAR, Diag_Cat_Eff_SetDTC:NEAR, Div_Frac_U16_Q16:NEAR, Div_Ratio_U8_Sat:NEAR
+EXTERN  Get_IP_Byte_2D_Table:NEAR, Get_IP_Word_Y_Axis:NEAR, Mul_U16_Hi:NEAR, Read_MulDiv_MD:NEAR
+
+S_B89EE SECTION CODE AT 0B89EEH
+
+; ======== Diag_Cat_Eff_VlsDown  (@0xb89ee) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified: DTC codes / state vars / output signals): Catalyst-efficiency monitor: rear-O2
+        ; (vls_down) oxygen-storage test state machine (states @cat_struct+0x180: 1..0x20). Measures vls_down
+        ; response vs c_fac_vls_down_diag over cycles, computes storage ratio -> sets lv_inh_fsd_cp.0x400 (cat
+        ; OK/aged); calls Diag_Cat_Eff_SetDTC.
+        ; ------------------------------------------------------------
+Diag_Cat_Eff_VlsDown:
+        MOV [-R0],R9
+        MOV R9,p_lam_bank1
+        JNB state_cat_diag.08H,L_B89FC
+        JMPA cc_UC,L_B8BE2
+L_B89FC:                 ; 0xb89fc
+        JB lv_inh_fsd_cp.01H,L_B8A04
+        JMPA cc_UC,L_B8BE2
+L_B8A04:                 ; 0xb8a04
+        CALLA cc_UC,Diag_Cat_Eff_Ena
+        CMPB RL4,#00H
+        JMPA cc_EQ,L_B8BAA
+        JB lv_pl.02H,L_B8A16
+        JMPA cc_UC,L_B8BA2
+L_B8A16:                 ; 0xb8a16
+        MOVB RL4,[R9+#0180H]
+        CMPB RL4,#01H
+        JMPA cc_EQ,L_B8BE2
+        CMPB RL4,#02H
+        JMPA cc_EQ,L_B8BB2
+        CMPB RL4,#04H
+        JMPR cc_EQ,L_B8A42
+        CMPB RL4,#DATA16 00008H
+        JMPR cc_EQ,L_B8A8A
+        CMPB RL4,#DATA16 00010H
+        JMPR cc_EQ,L_B8AEC
+        CMPB RL4,#DATA16 00020H
+        JMPA cc_EQ,L_B8B70
+        JMPA cc_UC,L_B8B9A
+L_B8A42:                 ; 0xb8a42
+        MOV R4,maf_kgh
+        CMP R4,DPP0:c_maf_kgh_min_puc_down_diag
+        JMPA cc_ULE,L_B8BE2
+        CMP R4,DPP0:c_maf_kgh_max_puc_down_diag
+        JMPA cc_NC,L_B8BE2
+        MOV R5,[R9+#0182H]
+        CMP R5,DPP0:c_vls_down_diag_min
+        JMPR cc_ULE,L_B8A80
+        MOV R12,[R9+#0182H]
+        MOVBZ R13,DPP0:c_fac_vls_down_diag_max
+        CALLS 00FH,Read_MulDiv_MD
+        MOV R5,[R9+#096H]
+        CMP R5,R4
+        JMPA cc_NC,L_B8BE2
+        MOVB RL4,#08H
+        MOVB [R9+#0180H],RL4
+        JMPA cc_UC,L_B8BE2
+L_B8A80:                 ; 0xb8a80
+        MOVB RL4,#01H
+        MOVB [R9+#0180H],RL4
+        JMPA cc_UC,L_B8BE2
+L_B8A8A:                 ; 0xb8a8a
+        MOV R12,[R9+#0184H]
+        MOV R13,DPP0:c_vls_down_hys
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV R5,[R9+#096H]
+        CMP R5,R4
+        JMPR cc_UGT,L_B8AE2
+        MOV R4,[R9+#096H]
+        MOV [R9+#0184H],R4
+        MOV R12,[R9+#0182H]
+        MOVBZ R13,DPP0:c_fac_vls_down_diag_min
+        CALLS 00FH,Read_MulDiv_MD
+        MOV R5,[R9+#096H]
+        CMP R5,R4
+        JMPR cc_ULE,L_B8AD6
+        MOVB RL4,[R9+#0186H]
+        CMPB RL4,#DATA16 000FFH
+        JMPA cc_NC,L_B8BE2
+        MOV R4,R9
+        ADD R4,#DATA16 00186H
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+        JMPA cc_UC,L_B8BE2
+L_B8AD6:                 ; 0xb8ad6
+        MOVB RL4,#DATA16 00010H
+        MOVB [R9+#0180H],RL4
+        JMPA cc_UC,L_B8BE2
+L_B8AE2:                 ; 0xb8ae2
+        MOVB RL4,#01H
+        MOVB [R9+#0180H],RL4
+        JMPA cc_UC,L_B8BE2
+L_B8AEC:                 ; 0xb8aec
+        MOVB RL4,[R9+#018AH]
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NC,L_B8B66
+        MOV R4,R9
+        ADD R4,#DATA16 0018AH
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+        MOV R4,maf_kgh
+        CMP R4,maf_kgh_min_puc
+        JMPR cc_NC,L_B8B10
+        MOV maf_kgh_min_puc,R4
+L_B8B10:                 ; 0xb8b10
+        MOV R12,#DATA16 POF ldp_maf_kgh__vls_down_max_cycnr
+        MOV R13,#DATA16 PAG ldp_maf_kgh__vls_down_max_cycnr
+        MOV R14,maf_kgh_min_puc
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_vls_down_max_cycnr__maf_kgh
+        MOV R13,#DATA16 PAG ip_vls_down_max_cycnr__maf_kgh
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVBZ R13,RL4
+        SHL R13,#08H
+        MOVB RL4,[R9+#0186H]
+        MOVBZ R12,RL4
+        CALLS 00FH,Div_Frac_U16_Q16
+        MOV [R9+#0188H],R4
+        MOV R12,[R9+#018CH]
+        MOV R13,[R9+#0188H]
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV [R9+#018CH],R4
+        MOV R12,[R9+#018CH]
+        MOVB RL4,[R9+#018AH]
+        MOVBZ R13,RL4
+        SHL R13,#09H
+        CALLS 00FH,Div_Ratio_U8_Sat
+        MOVB [R9+#018EH],RL4
+        MOVB [R9+#018FH],RL4
+L_B8B66:                 ; 0xb8b66
+        MOVB RL4,#DATA16 00020H
+        MOVB [R9+#0180H],RL4
+        JMPR cc_UC,L_B8BE2
+L_B8B70:                 ; 0xb8b70
+        MOVB RL4,[R9+#018AH]
+        CMPB RL4,DPP0:c_sum_vls_down_diag_min
+        JMPR cc_C,L_B8B92
+        MOVB RL4,[R9+#018EH]
+        CMPB RL4,DPP0:c_cycnr_vls_down_max
+        JMPR cc_UGT,L_B8B88
+        BCLR lv_inh_fsd_cp.0AH
+        JMPR cc_UC,L_B8B8A
+L_B8B88:                 ; 0xb8b88
+        BSET lv_inh_fsd_cp.0AH
+L_B8B8A:                 ; 0xb8b8a
+        BSET state_cat_diag.08H
+        CALLS 00CH,Diag_Cat_Eff_SetDTC
+        JMPR cc_UC,L_B8BE2
+L_B8B92:                 ; 0xb8b92
+        MOVB RL4,#01H
+        MOVB [R9+#0180H],RL4
+        JMPR cc_UC,L_B8BE2
+L_B8B9A:                 ; 0xb8b9a
+        MOVB RL4,#01H
+        MOVB [R9+#0180H],RL4
+        JMPR cc_UC,L_B8BE2
+L_B8BA2:                 ; 0xb8ba2
+        MOVB RL4,#02H
+        MOVB [R9+#0180H],RL4
+        JMPR cc_UC,L_B8BE2
+L_B8BAA:                 ; 0xb8baa
+        MOVB RL4,#01H
+        MOVB [R9+#0180H],RL4
+        JMPR cc_UC,L_B8BE2
+L_B8BB2:                 ; 0xb8bb2
+        MOV R4,[R9+#096H]
+        MOV [R9+#0182H],R4
+        MOV R4,[R9+#096H]
+        MOV [R9+#0184H],R4
+        MOV R4,maf_kgh
+        MOV maf_kgh_min_puc,R4
+        MOVB RL4,#00H
+        MOVB [R9+#0186H],RL4
+        MOV R4,#00H
+        MOV [R9+#0188H],R4
+        MOVB RL4,#00H
+        MOVB [R9+#018EH],RL4
+        MOVB RL4,#04H
+        MOVB [R9+#0180H],RL4
+L_B8BE2:                 ; 0xb8be2
+        MOV R9,[R0+]
+        RETS
+
+; ======== Diag_FSD_CP_VlsDown  (@0xb8be6) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified: DTC codes / state vars / output signals): Fuel-system-diag / canister-purge
+        ; rear-O2 plausibility state machine (states @struct+0x190/+400). Validates vls_down vs thresholds +
+        ; maf_int_pue integral during purge; sets lv_inh_fsd_cp bits 0x1000/0x2000/0x4000/0x8000; calls
+        ; Diag_CP_FSD_SetDTC.
+        ; ------------------------------------------------------------
+Diag_FSD_CP_VlsDown:
+        MOV [-R0],R9
+        MOV R9,p_lam_bank1
+        CALLA cc_UC,Diag_Cat_Eff_Ena
+        CMPB RL4,#00H
+        JMPR cc_EQ,L_B8BFC
+        JB lv_inh_fsd_cp.0FH,L_B8BFC
+        BSET lv_inh_fsd_cp.0EH
+        JMPR cc_UC,L_B8C00
+L_B8BFC:                 ; 0xb8bfc
+        BCLR lv_inh_fsd_cp.0EH
+        BSET lv_inh_fsd_cp.0DH
+L_B8C00:                 ; 0xb8c00
+        JB lv_inh_fsd_cp.0EH,L_B8C08
+        JMPA cc_UC,L_B8E12
+L_B8C08:                 ; 0xb8c08
+        MOV R4,[R9+#096H]
+        CMP R4,DPP0:c_vls_afl_thd_diag_ls_down
+        JMPR cc_NC,L_B8C14
+        BSET lv_err_pres_mwss.00H
+L_B8C14:                 ; 0xb8c14
+        MOV R4,[R9+#096H]
+        CMP R4,DPP0:c_vls_afr_thd_diag_ls_down
+        JMPR cc_ULE,L_B8C20
+        BSET lv_err_pres_mwss.01H
+L_B8C20:                 ; 0xb8c20
+        JNB state_cat_diag.0DH,L_B8C4E
+        MOV R4,[R9+#06AH]
+        MOV R5,[R9+#019AH]
+        CMP R4,R5
+        JMPR cc_ULE,L_B8C36
+        MOV R4,[R9+#06AH]
+        JMPR cc_UC,L_B8C3A
+L_B8C36:                 ; 0xb8c36
+        MOV R4,[R9+#019AH]
+L_B8C3A:                 ; 0xb8c3a
+        MOV [R9+#019AH],R4
+        MOV R4,[R9+#019AH]
+        CMP R4,DPP0:c_vls_up_max_purge_vld
+        JMPR cc_ULE,L_B8C4C
+        BSET lv_inh_fsd_cp.0CH
+        JMPR cc_UC,L_B8C4E
+L_B8C4C:                 ; 0xb8c4c
+        BCLR lv_inh_fsd_cp.0CH
+L_B8C4E:                 ; 0xb8c4e
+        MOVB RL4,[R9+#0190H]
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_B8C62
+        CMPB RL4,#02H
+        JMPR cc_EQ,L_B8C80
+        CMPB RL4,#04H
+        JMPR cc_EQ,L_B8CBA
+        JMPA cc_UC,L_B8E0A
+L_B8C62:                 ; 0xb8c62
+        JB lv_pl.02H,L_B8C6A
+        JMPA cc_UC,L_B8E18
+L_B8C6A:                 ; 0xb8c6a
+        BCLR lv_inh_fsd_cp.0CH
+        MOV R4,#00H
+        MOV [R9+#019AH],R4
+        MOV [R9+#0194H],R4
+        MOVB RL4,#02H
+        MOVB [R9+#0190H],RL4
+        JMPA cc_UC,L_B8E18
+L_B8C80:                 ; 0xb8c80
+        JNB lv_pl.02H,L_B8C88
+        JMPA cc_UC,L_B8E18
+L_B8C88:                 ; 0xb8c88
+        MOV R4,[R9+#096H]
+        MOV [R9+#0194H],R4
+        BCLR lv_inh_fsd_cp.0DH
+        MOV R4,#00H
+        MOV [R9+#0198H],R4
+        MOV maf_int_pue,ZEROS
+        MOV R4,[R9+#066H]
+        CMP R4,DPP0:c_maf_int_puc_beg_pue_diag
+        JMPR cc_ULE,L_B8CB0
+        MOVB RL4,#04H
+        MOVB [R9+#0190H],RL4
+        JMPA cc_UC,L_B8E18
+L_B8CB0:                 ; 0xb8cb0
+        MOVB RL4,#01H
+        MOVB [R9+#0190H],RL4
+        JMPA cc_UC,L_B8E18
+L_B8CBA:                 ; 0xb8cba
+        JNB lv_pl.02H,L_B8CC2
+        JMPA cc_UC,L_B8E02
+L_B8CC2:                 ; 0xb8cc2
+        JNB lv_inh_fsd_cp.0DH,L_B8CCA
+        JMPA cc_UC,L_B8DFA
+L_B8CCA:                 ; 0xb8cca
+        MOV R4,[R9+#0194H]
+        CMP R4,DPP0:c_vls_down_pue_diag_ls_down
+        JMPA cc_NC,L_B8DFA
+        MOV R4,[R9+#096H]
+        MOV R5,[R9+#0198H]
+        CMP R4,R5
+        JMPR cc_ULE,L_B8CE8
+        MOV R4,[R9+#096H]
+        JMPR cc_UC,L_B8CEC
+L_B8CE8:                 ; 0xb8ce8
+        MOV R4,[R9+#0198H]
+L_B8CEC:                 ; 0xb8cec
+        MOV [R9+#0198H],R4
+        JB lv_cam_ad_di_ivvt.09H,L_B8D14
+        MOVB RL4,diag_c240
+        JMPR cc_NE,L_B8D14
+        MOV R12,maf_kgh
+        MOV R13,#DATA16 007F8H
+        CALLS 00FH,Mul_U16_Hi
+        MOV R13,R4
+        MOV R12,maf_int_pue
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV maf_int_pue,R4
+L_B8D14:                 ; 0xb8d14
+        MOV R4,[R9+#0198H]
+        CMP R4,DPP0:c_vls_down_pue_diag_min
+        JMPR cc_C,L_B8D6C
+        BSET lv_inh_fsd_cp.0DH
+        MOVB RL4,[R9+#0191H]
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NC,L_B8D36
+        MOV R4,R9
+        ADD R4,#DATA16 00191H
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+L_B8D36:                 ; 0xb8d36
+        MOVB RL4,[R9+#0192H]
+        CMPB RL4,#00H
+        JMPR cc_ULE,L_B8D4A
+        MOV R4,R9
+        ADD R4,#DATA16 00192H
+        MOVB RL5,[R4]
+        SUBB RL5,#01H
+        MOVB [R4],RL5
+L_B8D4A:                 ; 0xb8d4a
+        MOV R4,[R9+#0198H]
+        MOV R5,[R9+#019CH]
+        CMP R4,R5
+        JMPR cc_ULE,L_B8D5C
+        MOV R4,[R9+#0198H]
+        JMPR cc_UC,L_B8D60
+L_B8D5C:                 ; 0xb8d5c
+        MOV R4,[R9+#019CH]
+L_B8D60:                 ; 0xb8d60
+        MOV [R9+#019CH],R4
+        MOVB RL4,#01H
+        MOVB [R9+#0190H],RL4
+        JMPR cc_UC,L_B8DC8
+L_B8D6C:                 ; 0xb8d6c
+        MOV R4,maf_int_pue
+        CMP R4,DPP0:c_maf_int_vls_down_pue
+        JMPR cc_ULE,L_B8DC8
+        JNB lv_inh_fsd_cp.0CH,L_B8DC8
+        BSET lv_inh_fsd_cp.0DH
+        MOVB RL4,[R9+#0191H]
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NC,L_B8D92
+        MOV R4,R9
+        ADD R4,#DATA16 00191H
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+L_B8D92:                 ; 0xb8d92
+        MOVB RL4,[R9+#0192H]
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NC,L_B8DA8
+        MOV R4,R9
+        ADD R4,#DATA16 00192H
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+L_B8DA8:                 ; 0xb8da8
+        MOV R4,[R9+#0198H]
+        MOV R5,[R9+#019CH]
+        CMP R4,R5
+        JMPR cc_ULE,L_B8DBA
+        MOV R4,[R9+#0198H]
+        JMPR cc_UC,L_B8DBE
+L_B8DBA:                 ; 0xb8dba
+        MOV R4,[R9+#019CH]
+L_B8DBE:                 ; 0xb8dbe
+        MOV [R9+#019CH],R4
+        MOVB RL4,#01H
+        MOVB [R9+#0190H],RL4
+L_B8DC8:                 ; 0xb8dc8
+        MOVB RL4,[R9+#0191H]
+        CMPB RL4,DPP0:c_ctr_end_vls_down_diag_pue
+        JMPR cc_C,L_B8DF6
+        BSET lv_inh_fsd_cp.0FH
+        MOVB RL4,[R9+#0192H]
+        CMPB RL4,DPP0:c_ctr_max_vls_down_diag_pue
+        JMPR cc_C,L_B8DE6
+        JB lv_err_pres_mwss.01H,L_B8DE6
+        BSET lv_inh_fsd_cp.0BH
+        JMPR cc_UC,L_B8DE8
+L_B8DE6:                 ; 0xb8de6
+        BCLR lv_inh_fsd_cp.0BH
+L_B8DE8:                 ; 0xb8de8
+        CALLS 00CH,Diag_CP_FSD_SetDTC
+        MOV R4,[R9+#019CH]
+        MOV [R9+#0196H],R4
+        JMPR cc_UC,L_B8E18
+L_B8DF6:                 ; 0xb8df6
+        BCLR lv_inh_fsd_cp.0FH
+        JMPR cc_UC,L_B8E18
+L_B8DFA:                 ; 0xb8dfa
+        MOVB RL4,#01H
+        MOVB [R9+#0190H],RL4
+        JMPR cc_UC,L_B8E18
+L_B8E02:                 ; 0xb8e02
+        MOVB RL4,#01H
+        MOVB [R9+#0190H],RL4
+        JMPR cc_UC,L_B8E18
+L_B8E0A:                 ; 0xb8e0a
+        MOVB RL4,#01H
+        MOVB [R9+#0190H],RL4
+        JMPR cc_UC,L_B8E18
+L_B8E12:                 ; 0xb8e12
+        MOVB RL4,#01H
+        MOVB [R9+#0190H],RL4
+L_B8E18:                 ; 0xb8e18
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_LS_Down_OBD2_PUC  (@0xb8e1c) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by fsd/rbm/obd2 output signals): Rear-O2 OBD2 power-up-check: vls_down_tran_puc
+        ; / cycnr_vls_down_act / maf_kgh_min_puc.
+        ; ------------------------------------------------------------
+Calc_LS_Down_OBD2_PUC:
+        MOVB RL4,conf_cat_eff
+        CMPB RL4,#01H
+        JMPR cc_NE,L_B8E4E
+        MOV maf_kgh_min_puc,ZEROS
+        MOV lam_bank_1_ls_down_obd2_struct_vls_down_tran_puc,ZEROS
+        MOVB lam_bank_1_ls_down_obd2_struct_cycnr_vls_down_act,ZEROS
+        MOVB lam_bank_1_ls_down_obd2_struct_ctr_vls_down_diag,ZEROS
+        MOV lam_bank_1_ls_down_obd2_struct_ctr_cycnr_quo_vls_down_sum,ZEROS
+        MOVB lam_bank_1_ls_down_obd2_struct_cycnr_ratio_vls_down,ZEROS
+        MOV lam_bank_1_ls_down_obd2_struct_cycnr_quo_vls_down,ZEROS
+        MOV R4,#DATA16 0FE7FH
+        AND lam_bank_1_ls_down_obd2_struct_ls_down_obd2_carrier,R4
+        MOVB RL4,#02H
+        MOVB obd_c8cc,RL4
+L_B8E4E:                 ; 0xb8e4e
+        RETS
+
+; ======== Diag_DTC_dd23c  (@0xb8e50) ========
+        ; ------------------------------------------------------------
+        ; Per-fault DTC setter: sets dtc_test_result and updates the DTC at status-address 0xd23c. Name = DTC
+        ; status RAM address (unique per fault).
+        ; ------------------------------------------------------------
+Diag_DTC_dd23c:
+        MOVB RL4,conf_cat_eff
+        CMPB RL4,#01H
+        JMPR cc_NE,L_B8EEE
+        MOV maf_int_pue,ZEROS
+        JB lv_cam_ad_di_ivvt.09H,L_B8EC4
+        MOVB dtc_test_result,ZEROS
+        MOV R12,#DATA16 0D2BAH
+        MOV R13,#DATA16 05530H
+        CALLS 00DH,DTC_Update_Imm_V2
+        BMOV lv_cps_err.03H,dtc_status_work.06H
+        MOVBZ R4,dtc_done_o2_2
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_B8E86
+        MOV R4,#DATA16 0FFF7H
+        AND dtc_st_grp_cp,R4
+L_B8E86:                 ; 0xb8e86
+        MOV R4,diag_f864
+        AND R4,#DATA16 00200H
+        JMPR cc_NE,L_B8EC4
+        JB lv_lam_lim_1_err.09H,L_B8EC4
+        MOV R4,dtc_st_grp_cp
+        AND R4,#DATA16 00008H
+        JMPR cc_NE,L_B8EC4
+        JB lv_cps_err.03H,L_B8EC4
+        MOV R12,#DATA16 0D23CH
+        MOV R13,#DATA16 0546AH
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_lam_lim_1_err.0AH,dtc_status_work.06H
+        MOVBZ R4,diag_d246
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_B8EC4
+        MOV R4,#DATA16 0FBFFH
+        AND diag_f864,R4
+L_B8EC4:                 ; 0xb8ec4
+        BCLR lv_inh_fsd_cp.0BH
+        BCLR lv_inh_fsd_cp.0FH
+        BCLR lv_inh_fsd_cp.0CH
+        BCLR lv_inh_fsd_cp.0EH
+        MOVB lam_bank_1_ls_down_obd2_struct_ctr_vls_down_diag_pue,ZEROS
+        MOVB lam_bank_1_ls_down_obd2_struct_ctr_diag_vls_down_diag_pue,ZEROS
+        MOV lam_bank_1_ls_down_obd2_struct_vls_diag_pue_ls_down,ZEROS
+        MOV lam_bank_1_ls_down_obd2_struct_vls_diag_pue_max_ls_down,ZEROS
+        MOV lam_bank_1_ls_down_obd2_struct_vls_up_cat_purge_max,ZEROS
+        MOV lam_bank_1_ls_down_obd2_struct_vls_down_pue,ZEROS
+        BCLR lv_err_pres_mwss.00H
+        BCLR lv_err_pres_mwss.01H
+        MOVB RL4,#01H
+        MOVB diag_c8dc,RL4
+L_B8EEE:                 ; 0xb8eee
+        RETS
+
+S_B89EE ENDS
+        END

@@ -1,0 +1,3779 @@
+; asw/comm/comm_m01_2.a66
+; 0xE05AC-0xE2736  (8586 bytes, 26 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+kwp_9004c                            EQU  09004CH
+kwp_9004d                            EQU  09004DH
+kwp_9004e                            EQU  09004EH
+kwp_9004f                            EQU  09004FH
+kwp_90050                            EQU  090050H
+kwp_90051                            EQU  090051H
+kwp_90052                            EQU  090052H
+kwp_90053                            EQU  090053H
+kwp_90054                            EQU  090054H
+kwp_90055                            EQU  090055H
+kwp_90056                            EQU  090056H
+kwp_90057                            EQU  090057H
+c_cat_max_diag                       EQU  090138H
+c_cycnr_vls_down_max                 EQU  090181H
+c_diagcp_dia_max                     EQU  090185H
+c_diagcp_dia_min                     EQU  090187H
+c_kwp_io_vin_1                       EQU  090207H
+c_kwp_io_vin_10                      EQU  090208H
+c_kwp_io_vin_11                      EQU  090209H
+c_kwp_io_vin_12                      EQU  09020AH
+c_kwp_io_vin_13                      EQU  09020BH
+c_kwp_io_vin_14                      EQU  09020CH
+c_kwp_io_vin_15                      EQU  09020DH
+c_kwp_io_vin_16                      EQU  09020EH
+c_kwp_io_vin_17                      EQU  09020FH
+c_kwp_io_vin_2                       EQU  090210H
+c_kwp_io_vin_3                       EQU  090211H
+c_kwp_io_vin_4                       EQU  090212H
+c_kwp_io_vin_5                       EQU  090213H
+c_kwp_io_vin_6                       EQU  090214H
+c_kwp_io_vin_7                       EQU  090215H
+c_kwp_io_vin_8                       EQU  090216H
+c_kwp_io_vin_9                       EQU  090217H
+c_vls_cyc_afl_ratio_mv_max           EQU  09041EH
+c_vls_cyc_afr_ratio_mv_max           EQU  09041FH
+c_frc_stc_lsh_down_obd2              EQU  09055CH
+c_frc_stc_lsh_up_obd2                EQU  09055EH
+c_t_sum_max_max_fsd                  EQU  09072EH
+c_t_sum_min_max_fsd                  EQU  090730H
+c_vls_afl                            EQU  0907D8H
+c_vls_afr                            EQU  0907E0H
+c_vls_down_pue_diag_min              EQU  090810H
+c_dtp_dif_cps_diagcp                 EQU  09086AH
+c_dtp_dif_diagcp                     EQU  09086CH
+c_dtp_dif_min_diagcp                 EQU  090870H
+c_vls_cyc_dif_max                    EQU  090979H
+c_vls_cyc_dif_min                    EQU  09097AH
+
+PUBLIC  KWP_App_Read_DataBlock_By_RecordId, KWP_Build_ECUID_Response, KWP_Build_VIN_Response, KWP_ClearLearnedValues, KWP_OBD_Svc09_VehicleInfo, KWP_ReadRecord_Fmt2
+PUBLIC  KWP_ReadRecord_Single, L_E0940, OBD_M01_PID30_WarmupsSinceClear, OBD_M01_PID31_DistSinceClear, OBD_M01_PID32_EvapVaporPressure, OBD_M01_PID33_BaroPressure
+PUBLIC  OBD_M01_PID3C_CatTemp_B1S1, OBD_M01_PID3E_CatTemp_B2S1, OBD_M01_PID40_SupportedPID_41_60, OBD_M01_PID41_MonitorStatus_ThisCycle, OBD_M01_PID42_CtrlModuleVoltage, OBD_M01_PID43_AbsoluteLoad
+PUBLIC  OBD_M01_PID44_CmdEquivRatio, OBD_M01_PID45_RelThrottlePos, OBD_M01_PID46_AmbientAirTemp, OBD_M01_PID4D_TimeMILOn, OBD_M01_PID4E_TimeSinceDTCClear, RetC_5_4ba
+PUBLIC  RetC_6_704, RetC_fe_936, RetC_ff_93c
+EXTERN  Calc_CtrlModule_Voltage:NEAR, Div_Ratio_U8_Sat:NEAR, Div_S32_Signed:NEAR, Div_U32_U16_Round32:NEAR
+EXTERN  Get_DTC_Record_2:NEAR, L_E2868:NEAR, OBD_Scale_FuelSys:NEAR, OBD_Scale_FuelTrim:NEAR
+EXTERN  OBD_Scale_RPM:NEAR, OBD_Scale_Temp:NEAR, Read_FreezeFrame_1:NEAR, Read_FreezeFrame_2:NEAR
+EXTERN  Read_MulDiv_MD:NEAR, Reset_Adaptive_LearnedValues:NEAR, RetC_fe_85e:NEAR, RetC_ff_864:NEAR
+EXTERN  Ret_Const_fe0f:NEAR, Sat_HiByte_ff:NEAR, Sel_Ovf_U16:NEAR, sub_r12_r13_rets_r4:NEAR
+
+S_E05AC SECTION CODE AT 0E05ACH
+
+; ======== OBD_M01_PID30_WarmupsSinceClear  (@0xe05ac) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x30 handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID30_WarmupsSinceClear:
+        MOVB RL4,ctr_wup_dtc_clr
+        MOVB [R9],RL4
+        MOVB RL7,#01H
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID31_DistSinceClear  (@0xe05b8) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x31 handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID31_DistSinceClear:
+        MOV R4,dist_dtc_clr
+        SHR R4,#08H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB RL4,dist_dtc_clr
+        MOVB [R9],RL4
+        MOVB RL7,#02H
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID32_EvapVaporPressure  (@0xe05d0) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x32 handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID32_EvapVaporPressure:
+        MOV R4,dtp_sword
+        MOV R5,#02H
+        MOV 0FE0EH,R4
+        DIV R5
+        MOV R4,0FE0EH
+        MOV [R0+#02H],R4
+        ASHR R4,#08H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB RL4,[R0+#02H]
+        MOVB [R9],RL4
+        MOVB RL7,#02H
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID33_BaroPressure  (@0xe05f8) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x33 handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID33_BaroPressure:
+        MOV R12,amp
+        MOV R4,#DATA16 00079H
+        MOV 0FE0EH,R12
+        DIVU R4
+        MOV R12,0FE0EH
+        CALLS 00FH,Sat_HiByte_ff
+        MOVB [R9],RL4
+        MOVB RL7,#01H
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID3C_CatTemp_B1S1  (@0xe0616) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x3C handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID3C_CatTemp_B1S1:
+        MOV R4,temp_cat_mdl_1
+        ADD R4,#DATA16 00280H
+        MOV R2,#05H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#03H
+        SHR R5,#03H
+        SHL R2,#0DH
+        OR R4,R2
+        MOV R8,R4
+        SHR R4,#08H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOV R4,R8
+        MOVB [R9],RL4
+        MOVB RL7,#02H
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID3E_CatTemp_B2S1  (@0xe0648) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x3E handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID3E_CatTemp_B2S1:
+        MOV R4,teg_cat_down_mdl_1
+        ADD R4,#DATA16 00280H
+        MOV R2,#05H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#03H
+        SHR R5,#03H
+        SHL R2,#0DH
+        OR R4,R2
+        MOV R8,R4
+        SHR R4,#08H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOV R4,R8
+        MOVB [R9],RL4
+        MOVB RL7,#02H
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID40_SupportedPID_41_60  (@0xe067a) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x40 handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID40_SupportedPID_41_60:
+        MOVB RL6,#DATA16 000FCH
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],RL6
+        MOVB RL6,#0CH
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],RL6
+        MOVB RL4,#00H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB [R9],RL4
+        MOVB RL7,#04H
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID41_MonitorStatus_ThisCycle  (@0xe069c) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x41 handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID41_MonitorStatus_ThisCycle:
+        MOVB RL4,#00H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB RL6,#04H
+        JNB lv_conf_mis.02H,L_E06AC
+        MOVB RL6,#05H
+L_E06AC:                 ; 0xe06ac
+        JNB lv_conf_mis.01H,L_E06B2
+        ORB RL6,#02H
+L_E06B2:                 ; 0xe06b2
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],RL6
+        MOVB RL6,#00H
+        JNB lv_conf_mis.01H,L_E06C2
+        MOVB RL6,#DATA16 00061H
+L_E06C2:                 ; 0xe06c2
+        MOVB RL4,conf_diagcp
+        JMPR cc_EQ,L_E06CA
+        ORB RL6,#04H
+L_E06CA:                 ; 0xe06ca
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],RL6
+        MOVB RL6,#00H
+        JB lv_conf_mis.01H,L_E06DA
+        JMPA cc_UC,L_E07A6
+L_E06DA:                 ; 0xe06da
+        MOV R4,diag_f864
+        AND R4,#DATA16 08000H
+        JMPR cc_EQ,L_E06E6
+        MOVB RL6,#01H
+L_E06E6:                 ; 0xe06e6
+        JNB lv_cps_err.01H,L_E06F2
+        MOV R4,dtc_st_grp_cp
+        AND R4,#02H
+        JMPR cc_EQ,L_E0772
+L_E06F2:                 ; 0xe06f2
+        JNB lv_cps_err.02H,L_E06FE
+        MOV R4,dtc_st_grp_cp
+        AND R4,#04H
+        JMPR cc_EQ,L_E0772
+L_E06FE:                 ; 0xe06fe
+        JNB lv_cps_err.03H,L_E070C
+        MOV R4,dtc_st_grp_cp
+        AND R4,#DATA16 00008H
+        JMPR cc_EQ,L_E0772
+L_E070C:                 ; 0xe070c
+        JNB lv_lam_lim_1_err.05H,L_E071A
+        MOV R4,diag_f864
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_E0772
+L_E071A:                 ; 0xe071a
+        JNB lv_lam_lim_1_err.06H,L_E0728
+        MOV R4,diag_f864
+        AND R4,#DATA16 00040H
+        JMPR cc_EQ,L_E0772
+L_E0728:                 ; 0xe0728
+        JNB lv_lam_lim_1_err.09H,L_E0736
+        MOV R4,diag_f864
+        AND R4,#DATA16 00200H
+        JMPR cc_EQ,L_E0772
+L_E0736:                 ; 0xe0736
+        MOV R4,dtc_st_grp_cp
+        AND R4,#02H
+        JMPR cc_NE,L_E076E
+        MOV R4,dtc_st_grp_cp
+        AND R4,#04H
+        JMPR cc_NE,L_E076E
+        MOV R4,dtc_st_grp_cp
+        AND R4,#DATA16 00008H
+        JMPR cc_NE,L_E076E
+        MOV R4,diag_f864
+        AND R4,#DATA16 00020H
+        JMPR cc_NE,L_E076E
+        MOV R4,diag_f864
+        AND R4,#DATA16 00040H
+        JMPR cc_NE,L_E076E
+        MOV R4,diag_f864
+        AND R4,#DATA16 00200H
+        JMPR cc_EQ,L_E0772
+L_E076E:                 ; 0xe076e
+        ORB RL6,#DATA16 00020H
+L_E0772:                 ; 0xe0772
+        JNB lv_lam_lim_1_err.0DH,L_E0780
+        MOV R4,diag_f864
+        AND R4,#DATA16 02000H
+        JMPR cc_EQ,L_E07A6
+L_E0780:                 ; 0xe0780
+        JNB lv_lam_lim_1_err.0EH,L_E078E
+        MOV R4,diag_f864
+        AND R4,#DATA16 04000H
+        JMPR cc_EQ,L_E07A6
+L_E078E:                 ; 0xe078e
+        MOV R4,diag_f864
+        AND R4,#DATA16 02000H
+        JMPR cc_NE,L_E07A2
+        MOV R4,diag_f864
+        AND R4,#DATA16 04000H
+        JMPR cc_EQ,L_E07A6
+L_E07A2:                 ; 0xe07a2
+        ORB RL6,#DATA16 00040H
+L_E07A6:                 ; 0xe07a6
+        MOVB RL4,conf_diagcp
+        JMPR cc_EQ,L_E0826
+        JNB lv_cps_err.0AH,L_E07BA
+        MOV R4,dtc_st_grp_cp
+        AND R4,#DATA16 00400H
+        JMPR cc_EQ,L_E0826
+L_E07BA:                 ; 0xe07ba
+        JNB lv_cps_err.0BH,L_E07C8
+        MOV R4,dtc_st_grp_cp
+        AND R4,#DATA16 00800H
+        JMPR cc_EQ,L_E0826
+L_E07C8:                 ; 0xe07c8
+        JNB lv_cps_err.0CH,L_E07D6
+        MOV R4,dtc_st_grp_cp
+        AND R4,#DATA16 01000H
+        JMPR cc_EQ,L_E0826
+L_E07D6:                 ; 0xe07d6
+        JNB lv_cps_err.0DH,L_E07E4
+        MOV R4,dtc_st_grp_cp
+        AND R4,#DATA16 02000H
+        JMPR cc_EQ,L_E0826
+L_E07E4:                 ; 0xe07e4
+        JNB lv_cps_err.06H,L_E07F2
+        MOV R4,dtc_st_grp_cp
+        AND R4,#DATA16 00040H
+        JMPR cc_EQ,L_E0826
+L_E07F2:                 ; 0xe07f2
+        MOV R4,dtc_st_grp_cp
+        AND R4,#DATA16 00400H
+        JMPR cc_NE,L_E0824
+        MOV R4,dtc_st_grp_cp
+        AND R4,#DATA16 00800H
+        JMPR cc_NE,L_E0824
+        MOV R4,dtc_st_grp_cp
+        AND R4,#DATA16 01000H
+        JMPR cc_NE,L_E0824
+        MOV R4,dtc_st_grp_cp
+        AND R4,#DATA16 02000H
+        JMPR cc_NE,L_E0824
+        MOV R4,dtc_st_grp_cp
+        AND R4,#DATA16 00040H
+        JMPR cc_EQ,L_E0826
+L_E0824:                 ; 0xe0824
+        ORB RL6,#04H
+L_E0826:                 ; 0xe0826
+        MOVB [R9],RL6
+        MOVB RL7,#04H
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID42_CtrlModuleVoltage  (@0xe082e) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x42 handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID42_CtrlModuleVoltage:
+        MOVBZ R4,vb
+        MOV R2,#DATA16 06590H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R10,#DATA16 000FFH
+        MOV R11,#00H
+        CALLS 00DH,Calc_CtrlModule_Voltage
+        MOV R8,R4
+        SHR R4,#08H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOV R4,R8
+        MOVB [R9],RL4
+        MOVB RL7,#02H
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID43_AbsoluteLoad  (@0xe085e) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x43 handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID43_AbsoluteLoad:
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E0866
+        MOV R8,#00H
+        JMPR cc_UC,L_E08B2
+L_E0866:                 ; 0xe0866
+        JNB lv_cam_err.02H,L_E087E
+        MOVB RL4,obd_ff_ctl
+        ANDB RL4,#02H
+        JMPR cc_NE,L_E087A
+        MOVB RL4,obd_ff_ctl
+        ANDB RL4,#04H
+        JMPR cc_EQ,L_E087E
+L_E087A:                 ; 0xe087a
+        MOV R8,#00H
+        JMPR cc_UC,L_E08B2
+L_E087E:                 ; 0xe087e
+        JNB lv_cam_err.02H,L_E0890
+        MOVB RL4,obd_ff_ctl
+        ANDB RL4,#01H
+        JMPR cc_EQ,L_E0890
+        MOV R8,#DATA16 0FFFFH
+        JMPR cc_UC,L_E08B2
+L_E0890:                 ; 0xe0890
+        MOV R12,maf_word
+        MOV R13,#00H
+        MOV R4,R12
+        SHL R12,#08H
+        SHL R13,#08H
+        SHR R4,#08H
+        OR R13,R4
+        MOV R14,maf_max_cor
+        CALLS 00FH,Div_U32_U16_Round32
+        MOV R12,R4
+        MOV R13,R5
+        CALLS 00FH,Sel_Ovf_U16
+        MOV R8,R4
+L_E08B2:                 ; 0xe08b2
+        MOV R4,R8
+        SHR R4,#08H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOV R4,R8
+        MOVB [R9],RL4
+        MOVB RL7,#02H
+        JMPR cc_UC,L_E0940
+
+; ======== OBD_M01_PID44_CmdEquivRatio  (@0xe08c4) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x44 handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID44_CmdEquivRatio:
+        MOV R4,lamb_sp
+        CMP R4,#DATA16 00800H
+        JMPR cc_NC,L_E08D4
+        MOV R8,R4
+        SHL R8,#05H
+        JMPR cc_UC,L_E08D8
+L_E08D4:                 ; 0xe08d4
+        MOV R8,#DATA16 0FFFFH
+L_E08D8:                 ; 0xe08d8
+        MOV R4,R8
+        SHR R4,#08H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOV R4,R8
+        MOVB [R9],RL4
+        MOVB RL7,#02H
+        JMPR cc_UC,L_E0940
+
+; ======== OBD_M01_PID45_RelThrottlePos  (@0xe08ea) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x45 handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID45_RelThrottlePos:
+        MOV R12,tps_av
+        MOV R13,#DATA16 032E0H
+        CALLS 00FH,Div_Ratio_U8_Sat
+        MOVB [R9],RL4
+        MOVB RL7,#01H
+        JMPR cc_UC,L_E0940
+
+; ======== OBD_M01_PID46_AmbientAirTemp  (@0xe08fc) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x46 handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID46_AmbientAirTemp:
+        MOVBZ R12,tam
+        CALLS 00EH,OBD_Scale_Temp
+        MOVB [R9],RL4
+        MOVB RL7,#01H
+        JMPR cc_UC,L_E0940
+
+; ======== OBD_M01_PID4D_TimeMILOn  (@0xe090a) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x4D handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID4D_TimeMILOn:
+        MOV R4,t_act_mil
+        SHR R4,#08H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB RL4,t_act_mil
+        MOVB [R9],RL4
+        MOVB RL7,#02H
+        JMPR cc_UC,L_E0940
+
+; ======== OBD_M01_PID4E_TimeSinceDTCClear  (@0xe0920) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x4E handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID4E_TimeSinceDTCClear:
+        MOV R4,t_dtc_clr
+        SHR R4,#08H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB RL4,t_dtc_clr
+        MOVB [R9],RL4
+        MOVB RL7,#02H
+        JMPR cc_UC,L_E0940
+
+; ======== RetC_fe_936  (@0xe0936) ========
+RetC_fe_936:
+        MOVB RL7,#DATA16 000FEH
+        JMPR cc_UC,L_E0940
+
+; ======== RetC_ff_93c  (@0xe093c) ========
+RetC_ff_93c:
+        MOVB RL7,#DATA16 000FFH
+L_E0940:                 ; 0xe0940
+        MOVB RL4,RL7
+        ADD R0,#06H
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        ADD R0,#02H
+        RETS
+
+; ======== KWP_ReadRecord_Fmt2  (@0xe0950) ========
+KWP_ReadRecord_Fmt2:
+        MOV [-R0],R12
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        SUB R0,#06H
+        JB lv_conf_mis.04H,L_E0964
+        JMPA cc_UC,L_E0E16
+L_E0964:                 ; 0xe0964
+        MOV R9,R12
+        MOVB RL4,[R9+]
+        MOVB [R0+#04H],RL4
+        MOVB RL5,[R9+]
+        JMPA cc_NE,L_E0E10
+        CMPB RL4,#00H
+        JMPR cc_EQ,L_E0A3C
+        CMPB RL4,#02H
+        JMPR cc_EQ,L_E0A6C
+        CMPB RL4,#03H
+        JMPA cc_EQ,L_E0AAC
+        CMPB RL4,#04H
+        JMPA cc_EQ,L_E0AE0
+        CMPB RL4,#05H
+        JMPA cc_EQ,L_E0AF6
+        CMPB RL4,#06H
+        JMPA cc_EQ,L_E0B12
+        CMPB RL4,#07H
+        JMPA cc_EQ,L_E0B3A
+        CMPB RL4,#DATA16 00008H
+        JMPA cc_EQ,L_E0B62
+        CMPB RL4,#DATA16 00009H
+        JMPA cc_EQ,L_E0B76
+        CMPB RL4,#DATA16 0000BH
+        JMPA cc_EQ,L_E0B8A
+        CMPB RL4,#DATA16 0000CH
+        JMPA cc_EQ,L_E0B92
+        CMPB RL4,#DATA16 0000DH
+        JMPA cc_EQ,L_E0BAE
+        CMPB RL4,#DATA16 0000EH
+        JMPA cc_EQ,L_E0BC6
+        CMPB RL4,#DATA16 0000FH
+        JMPA cc_EQ,L_E0BFC
+        CMPB RL4,#DATA16 00010H
+        JMPA cc_EQ,L_E0C18
+        CMPB RL4,#DATA16 00011H
+        JMPA cc_EQ,L_E0C48
+        CMPB RL4,#DATA16 0001FH
+        JMPA cc_EQ,L_E0C5E
+        CMPB RL4,#DATA16 00020H
+        JMPA cc_EQ,L_E0C82
+        CMPB RL4,#DATA16 0002EH
+        JMPA cc_EQ,L_E0CB6
+        CMPB RL4,#DATA16 0002FH
+        JMPA cc_EQ,L_E0CDE
+        CMPB RL4,#DATA16 00033H
+        JMPA cc_EQ,L_E0D04
+        CMPB RL4,#DATA16 00040H
+        JMPA cc_EQ,L_E0D2E
+        CMPB RL4,#DATA16 00042H
+        JMPA cc_EQ,L_E0D4E
+        CMPB RL4,#DATA16 00043H
+        JMPA cc_EQ,L_E0D86
+        CMPB RL4,#DATA16 00044H
+        JMPA cc_EQ,L_E0DA6
+        CMPB RL4,#DATA16 00045H
+        JMPA cc_EQ,L_E0DD6
+        CMPB RL4,#DATA16 00046H
+        JMPA cc_EQ,L_E0DF2
+        JMPA cc_UC,L_E0E0A
+L_E0A3C:                 ; 0xe0a3c
+        MOVB RL7,#DATA16 00078H
+        JNB lv_conf_mis.00H,L_E0A48
+        MOVB RL7,#DATA16 0007EH
+L_E0A48:                 ; 0xe0a48
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],RL7
+        MOVB RL7,#DATA16 0001FH
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],RL7
+        MOVB RL7,#DATA16 00080H
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],RL7
+        MOVB RL7,#03H
+        MOVB [R9],RL7
+        MOVB RL6,#05H
+        JMPA cc_UC,L_E0E1A
+L_E0A6C:                 ; 0xe0a6c
+        MOVB RL4,obd_ff_mon_id
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_EQ,L_E0A9C
+        JNB obd_sf.04H,L_E0A90
+        MOVBZ R12,RL4
+        CALLS 00DH,Get_DTC_Record_2
+        MOV [R0],R4
+        SHR R4,#08H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB RL4,[R0]
+        MOVB [R9],RL4
+        JMPR cc_UC,L_E0AA6
+L_E0A90:                 ; 0xe0a90
+        MOVB RL4,#00H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB [R9],RL4
+        JMPR cc_UC,L_E0AA6
+L_E0A9C:                 ; 0xe0a9c
+        MOVB RL4,#00H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB [R9],RL4
+L_E0AA6:                 ; 0xe0aa6
+        MOVB RL6,#03H
+        JMPA cc_UC,L_E0E1A
+L_E0AAC:                 ; 0xe0aac
+        JNB obd_sf.04H,L_E0AD8
+        JNB lv_conf_mis.00H,L_E0AD0
+        MOV R12,obd_ff_lam_carrier
+        MOVBZ R13,obd_ff_lam_ready
+        CALLS 00EH,OBD_Scale_FuelSys
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOVB [R9],RL4
+        MOVB RL6,#03H
+        JMPA cc_UC,L_E0E1A
+L_E0AD0:                 ; 0xe0ad0
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0AD8:                 ; 0xe0ad8
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0AE0:                 ; 0xe0ae0
+        JNB obd_sf.04H,L_E0AEE
+        MOVB [R9],obd_ff_load
+        MOVB RL6,#02H
+        JMPA cc_UC,L_E0E1A
+L_E0AEE:                 ; 0xe0aee
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0AF6:                 ; 0xe0af6
+        JNB obd_sf.04H,L_E0B0A
+        MOVBZ R12,obd_ff_tco
+        CALLS 00EH,OBD_Scale_Temp
+        MOVB [R9],RL4
+        MOVB RL6,#02H
+        JMPA cc_UC,L_E0E1A
+L_E0B0A:                 ; 0xe0b0a
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0B12:                 ; 0xe0b12
+        JNB obd_sf.04H,L_E0B32
+        JNB lv_conf_mis.00H,L_E0B2A
+        MOV R12,obd_ff_ti_lam
+        CALLS 00EH,OBD_Scale_FuelTrim
+        MOVB [R9],RL4
+        MOVB RL6,#02H
+        JMPA cc_UC,L_E0E1A
+L_E0B2A:                 ; 0xe0b2a
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0B32:                 ; 0xe0b32
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0B3A:                 ; 0xe0b3a
+        JNB obd_sf.04H,L_E0B5A
+        JNB lv_conf_mis.00H,L_E0B52
+        MOV R12,obd_ff_lam_ad
+        CALLS 00EH,OBD_Scale_FuelTrim
+        MOVB [R9],RL4
+        MOVB RL6,#02H
+        JMPA cc_UC,L_E0E1A
+L_E0B52:                 ; 0xe0b52
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0B5A:                 ; 0xe0b5a
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0B62:                 ; 0xe0b62
+        JNB obd_sf.04H,L_E0B6E
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0B6E:                 ; 0xe0b6e
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0B76:                 ; 0xe0b76
+        JNB obd_sf.04H,L_E0B82
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0B82:                 ; 0xe0b82
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0B8A:                 ; 0xe0b8a
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0B92:                 ; 0xe0b92
+        JNB obd_sf.04H,L_E0BA6
+        MOV R12,R9
+        MOV R13,obd_ff_rpm
+        CALLS 00EH,OBD_Scale_RPM
+        MOVB RL6,#03H
+        JMPA cc_UC,L_E0E1A
+L_E0BA6:                 ; 0xe0ba6
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0BAE:                 ; 0xe0bae
+        JNB obd_sf.04H,L_E0BBE
+        MOVB RL4,obd_ff_vs
+        MOVB [R9],RL4
+        MOVB RL6,#02H
+        JMPA cc_UC,L_E0E1A
+L_E0BBE:                 ; 0xe0bbe
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0BC6:                 ; 0xe0bc6
+        JNB obd_sf.04H,L_E0BF4
+        MOVB RL7,obd_ff_iga
+        CMPB RL7,#DATA16 00017H
+        JMPR cc_NC,L_E0BD8
+        MOVB RL7,#DATA16 00017H
+L_E0BD8:                 ; 0xe0bd8
+        MOVBZ R12,RL7
+        MOV R13,#DATA16 000C0H
+        CALLS 00FH,Ret_Const_fe0f
+        MOVBZ R13,RL4
+        MOV R12,#DATA16 00110H
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOVB [R9],RL4
+        MOVB RL6,#02H
+        JMPA cc_UC,L_E0E1A
+L_E0BF4:                 ; 0xe0bf4
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0BFC:                 ; 0xe0bfc
+        JNB obd_sf.04H,L_E0C10
+        MOVBZ R12,obd_ff_tia
+        CALLS 00EH,OBD_Scale_Temp
+        MOVB [R9],RL4
+        MOVB RL6,#02H
+        JMPA cc_UC,L_E0E1A
+L_E0C10:                 ; 0xe0c10
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0C18:                 ; 0xe0c18
+        JNB obd_sf.04H,L_E0C40
+        MOV R12,obd_ff_maf
+        MOV R13,#DATA16 000DEH
+        CALLS 00FH,Read_MulDiv_MD
+        MOV [R0+#02H],R4
+        SHR R4,#08H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB RL4,[R0+#02H]
+        MOVB [R9],RL4
+        MOVB RL6,#03H
+        JMPA cc_UC,L_E0E1A
+L_E0C40:                 ; 0xe0c40
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0C48:                 ; 0xe0c48
+        JNB obd_sf.04H,L_E0C56
+        MOVB [R9],obd_ff_tps_raw
+        MOVB RL6,#02H
+        JMPA cc_UC,L_E0E1A
+L_E0C56:                 ; 0xe0c56
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0C5E:                 ; 0xe0c5e
+        JNB obd_sf.04H,L_E0C7A
+        MOV R4,obd_ff_tast
+        SHR R4,#08H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB RL4,obd_ff_tast
+        MOVB [R9],RL4
+        MOVB RL6,#03H
+        JMPA cc_UC,L_E0E1A
+L_E0C7A:                 ; 0xe0c7a
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0C82:                 ; 0xe0c82
+        MOVB RL4,#00H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB RL7,RL4
+        MOVB RL4,conf_cp
+        JMPR cc_EQ,L_E0C94
+        MOVB RL7,#04H
+L_E0C94:                 ; 0xe0c94
+        MOVB RL4,conf_diagcp
+        JMPR cc_EQ,L_E0C9C
+        ORB RL7,#02H
+L_E0C9C:                 ; 0xe0c9c
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],RL7
+        MOVB RL7,#DATA16 00020H
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],RL7
+        MOVB RL4,#01H
+        MOVB [R9],RL4
+        MOVB RL6,#05H
+        JMPA cc_UC,L_E0E1A
+L_E0CB6:                 ; 0xe0cb6
+        MOVB RL4,conf_cp
+        JMPR cc_EQ,L_E0CD6
+        JNB obd_sf.04H,L_E0CCE
+        MOV R4,obd_ff_cp_duty
+        SHR R4,#07H
+        MOVB [R9],RL4
+        MOVB RL6,#02H
+        JMPA cc_UC,L_E0E1A
+L_E0CCE:                 ; 0xe0cce
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0CD6:                 ; 0xe0cd6
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0CDE:                 ; 0xe0cde
+        MOVB RL4,conf_diagcp
+        JMPR cc_EQ,L_E0CFC
+        JNB obd_sf.04H,L_E0CF4
+        MOVB RL5,obd_ff_purge_vol
+        MOVB [R9],RL5
+        MOVB RL6,#02H
+        JMPA cc_UC,L_E0E1A
+L_E0CF4:                 ; 0xe0cf4
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0CFC:                 ; 0xe0cfc
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0D04:                 ; 0xe0d04
+        JNB obd_sf.04H,L_E0D26
+        MOV R12,obd_ff_amp
+        MOV R4,#DATA16 00079H
+        MOV 0FE0EH,R12
+        DIVU R4
+        MOV R12,0FE0EH
+        CALLS 00FH,Sat_HiByte_ff
+        MOVB [R9],RL4
+        MOVB RL6,#02H
+        JMPA cc_UC,L_E0E1A
+L_E0D26:                 ; 0xe0d26
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E0E1A
+L_E0D2E:                 ; 0xe0d2e
+        MOVB RL7,#DATA16 0007CH
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],RL7
+        MOVB RL4,#00H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB [R9],RL4
+        MOVB RL6,#05H
+        JMPA cc_UC,L_E0E1A
+L_E0D4E:                 ; 0xe0d4e
+        JNB obd_sf.04H,L_E0D80
+        MOVBZ R4,obd_ff_vbat
+        MOV R2,#DATA16 06590H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R10,#DATA16 000FFH
+        MOV R11,#00H
+        CALLS 00DH,Calc_CtrlModule_Voltage
+        MOV R8,R4
+        SHR R4,#08H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOV R4,R8
+        MOVB [R9],RL4
+        MOVB RL6,#03H
+        JMPR cc_UC,L_E0E1A
+L_E0D80:                 ; 0xe0d80
+        MOVB RL6,#DATA16 000FEH
+        JMPR cc_UC,L_E0E1A
+L_E0D86:                 ; 0xe0d86
+        JNB obd_sf.04H,L_E0DA0
+        MOV R4,obd_ff_maf_ratio
+        SHR R4,#08H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB RL4,obd_ff_maf_ratio
+        MOVB [R9],RL4
+        MOVB RL6,#03H
+        JMPR cc_UC,L_E0E1A
+L_E0DA0:                 ; 0xe0da0
+        MOVB RL6,#DATA16 000FEH
+        JMPR cc_UC,L_E0E1A
+L_E0DA6:                 ; 0xe0da6
+        JNB obd_sf.04H,L_E0DD0
+        MOV R4,obd_ff_lamb_sp
+        CMP R4,#DATA16 00800H
+        JMPR cc_NC,L_E0DBA
+        MOV R8,R4
+        SHL R8,#05H
+        JMPR cc_UC,L_E0DBE
+L_E0DBA:                 ; 0xe0dba
+        MOV R8,#DATA16 0FFFFH
+L_E0DBE:                 ; 0xe0dbe
+        MOV R4,R8
+        SHR R4,#08H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOV R4,R8
+        MOVB [R9],RL4
+        MOVB RL6,#03H
+        JMPR cc_UC,L_E0E1A
+L_E0DD0:                 ; 0xe0dd0
+        MOVB RL6,#DATA16 000FEH
+        JMPR cc_UC,L_E0E1A
+L_E0DD6:                 ; 0xe0dd6
+        JNB obd_sf.04H,L_E0DEC
+        MOV R12,obd_ff_tps
+        MOV R13,#DATA16 032E0H
+        CALLS 00FH,Div_Ratio_U8_Sat
+        MOVB [R9],RL4
+        MOVB RL6,#02H
+        JMPR cc_UC,L_E0E1A
+L_E0DEC:                 ; 0xe0dec
+        MOVB RL6,#DATA16 000FEH
+        JMPR cc_UC,L_E0E1A
+L_E0DF2:                 ; 0xe0df2
+        JNB obd_sf.04H,L_E0E04
+        MOVBZ R12,obd_ff_tam
+        CALLS 00EH,OBD_Scale_Temp
+        MOVB [R9],RL4
+        MOVB RL6,#02H
+        JMPR cc_UC,L_E0E1A
+L_E0E04:                 ; 0xe0e04
+        MOVB RL6,#DATA16 000FEH
+        JMPR cc_UC,L_E0E1A
+L_E0E0A:                 ; 0xe0e0a
+        MOVB RL6,#DATA16 000FEH
+        JMPR cc_UC,L_E0E1A
+L_E0E10:                 ; 0xe0e10
+        MOVB RL6,#DATA16 000FEH
+        JMPR cc_UC,L_E0E1A
+L_E0E16:                 ; 0xe0e16
+        MOVB RL6,#DATA16 000FFH
+L_E0E1A:                 ; 0xe0e1a
+        MOVB RL4,RL6
+        ADD R0,#06H
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        ADD R0,#02H
+        RETS
+
+; ======== KWP_ReadRecord_Single  (@0xe0e2a) ========
+KWP_ReadRecord_Single:
+        MOV [-R0],R13
+        MOV [-R0],R12
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        SUB R0,#02H
+        JB lv_conf_mis.04H,L_E0E40
+        JMPA cc_UC,L_E1058
+L_E0E40:                 ; 0xe0e40
+        MOV R8,#01H
+        MOVB RL4,fmy_f_anz
+        JMPA cc_EQ,L_E1046
+        MOVB RL7,#00H
+        MOVB RL6,#00H
+        JMPR cc_UC,L_E0EFA
+L_E0E50:                 ; 0xe0e50
+        MOVB RL4,[R0+#0CH]
+        CMPB RL4,#03H
+        JMPR cc_NE,L_E0E90
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0DAH]
+        ANDB RL4,#04H
+        JMPR cc_EQ,L_E0EF8
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOVB RL5,[R4+#0522EH]
+        ANDB RL5,#DATA16 00010H
+        JMPR cc_EQ,L_E0EF8
+        ADDB RL7,#01H
+        JMPR cc_UC,L_E0EF8
+L_E0E90:                 ; 0xe0e90
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOVB RL5,[R4+#0522EH]
+        MOVBZ R5,RL5
+        AND R5,#DATA16 00010H
+        JMPR cc_EQ,L_E0EF8
+        MOVBZ R5,RL6
+        MOVB RL4,[R5+#0C3DBH]
+        MOVBZ R4,RL4
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0DCH]
+        CMPB RL4,#03H
+        JMPR cc_NC,L_E0EE0
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0DAH]
+        ANDB RL4,#DATA16 00008H
+        JMPR cc_NE,L_E0EF8
+L_E0EE0:                 ; 0xe0ee0
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0DCH]
+        JMPR cc_EQ,L_E0EF8
+        ADDB RL7,#01H
+L_E0EF8:                 ; 0xe0ef8
+        ADDB RL6,#01H
+L_E0EFA:                 ; 0xe0efa
+        CMPB RL6,fmy_f_anz
+        JMPR cc_C,L_E0E50
+        MOV R4,[R0+#0AH]
+        ADD R4,#01H
+        MOV [R0+#0AH],R4
+        SUB R4,#01H
+        MOVB [R4],RL7
+        CMPB RL7,#00H
+        JMPA cc_EQ,L_E1034
+        MOVB RL7,#00H
+        MOVB RL6,#00H
+        JMPA cc_UC,L_E1024
+L_E0F1C:                 ; 0xe0f1c
+        MOVB RL4,#00H
+        MOVB [R0],RL4
+        MOVB RL5,[R0+#0CH]
+        CMPB RL5,#03H
+        JMPR cc_NE,L_E0F88
+        MOVBZ R4,RL6
+        MOVB RL3,[R4+#0C3DBH]
+        MOVBZ R4,RL3
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0DAH]
+        ANDB RL4,#04H
+        JMPR cc_EQ,L_E1022
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOVB RL5,[R4+#0522EH]
+        ANDB RL5,#DATA16 00010H
+        JMPR cc_EQ,L_E1022
+        MOVBZ R12,RL6
+        CALLS 00DH,Read_FreezeFrame_2
+        MOV R9,R4
+        SHR R4,#08H
+        MOV R5,[R0+#0AH]
+        ADD R5,#01H
+        MOV [R0+#0AH],R5
+        SUB R5,#01H
+        MOVB [R5],RL4
+        MOV R4,R9
+        MOV R5,[R0+#0AH]
+        ADD R5,#01H
+        MOV [R0+#0AH],R5
+        SUB R5,#01H
+        MOVB [R5],RL4
+        ADDB RL7,#02H
+        JMPR cc_UC,L_E1022
+L_E0F88:                 ; 0xe0f88
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOVB RL5,[R4+#0522EH]
+        MOVBZ R5,RL5
+        AND R5,#DATA16 00010H
+        JMPR cc_EQ,L_E0FF2
+        MOVBZ R5,RL6
+        MOVB RL4,[R5+#0C3DBH]
+        MOVBZ R4,RL4
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0DCH]
+        CMPB RL4,#03H
+        JMPR cc_NC,L_E0FD8
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0DAH]
+        ANDB RL4,#DATA16 00008H
+        JMPR cc_NE,L_E0FF2
+L_E0FD8:                 ; 0xe0fd8
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0DCH]
+        JMPR cc_EQ,L_E0FF2
+        MOVB RL4,#01H
+        MOVB [R0],RL4
+L_E0FF2:                 ; 0xe0ff2
+        MOVB RL4,[R0]
+        CMPB RL4,#01H
+        JMPR cc_NE,L_E1022
+        MOVBZ R12,RL6
+        CALLS 00DH,Read_FreezeFrame_1
+        MOV R9,R4
+        SHR R4,#08H
+        MOV R5,[R0+#0AH]
+        ADD R5,#01H
+        MOV [R0+#0AH],R5
+        SUB R5,#01H
+        MOVB [R5],RL4
+        MOV R4,R9
+        MOV R5,[R0+#0AH]
+        ADD R5,#01H
+        MOV [R0+#0AH],R5
+        SUB R5,#01H
+        MOVB [R5],RL4
+        ADDB RL7,#02H
+L_E1022:                 ; 0xe1022
+        ADDB RL6,#01H
+L_E1024:                 ; 0xe1024
+        CMPB RL6,fmy_f_anz
+        JMPA cc_C,L_E0F1C
+        MOVB RL4,#01H
+        ADDB RL4,RL7
+        MOV R8,R4
+        JMPR cc_UC,L_E105C
+L_E1034:                 ; 0xe1034
+        MOVB RL4,#00H
+        MOV R5,[R0+#0AH]
+        ADD R5,#01H
+        MOV [R0+#0AH],R5
+        SUB R5,#01H
+        MOVB [R5],RL4
+        JMPR cc_UC,L_E105C
+L_E1046:                 ; 0xe1046
+        MOVB RL4,#00H
+        MOV R5,[R0+#0AH]
+        ADD R5,#01H
+        MOV [R0+#0AH],R5
+        SUB R5,#01H
+        MOVB [R5],RL4
+        JMPR cc_UC,L_E105C
+L_E1058:                 ; 0xe1058
+        MOV R8,#DATA16 000FFH
+L_E105C:                 ; 0xe105c
+        MOV R4,R8
+        ADD R0,#02H
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        ADD R0,#04H
+        RETS
+
+; ======== KWP_ClearLearnedValues  (@0xe106c) ========
+        ; Clear/reset learned (adaptive) values service. Gated by lv_conf_mis&0x10, DAT_00fd58&0x200,
+        ; lv_cdn_diag_maf_dif_ch_int&0x800. Calls Reset_Adaptive_LearnedValues @0da226. Invoked by
+        ; KWP_App_Process_Record_0a316a.
+KWP_ClearLearnedValues:
+        MOV [-R0],R6
+        JNB lv_conf_mis.04H,L_E1088
+        JNB can_fd58.09H,L_E1082
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E1082
+        CALLS 00DH,Reset_Adaptive_LearnedValues
+        MOVB RL6,#00H
+        JMPR cc_UC,L_E108C
+L_E1082:                 ; 0xe1082
+        MOVB RL6,#DATA16 000FDH
+        JMPR cc_UC,L_E108C
+L_E1088:                 ; 0xe1088
+        MOVB RL6,#DATA16 000FFH
+L_E108C:                 ; 0xe108c
+        MOVB RL4,RL6
+        MOV R6,[R0+]
+        RETS
+
+; ======== KWP_App_Read_DataBlock_By_RecordId  (@0xe1092) ========
+KWP_App_Read_DataBlock_By_RecordId:
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R14,p_lam_bank1
+        JB lv_conf_mis.04H,L_E10A2
+        JMPA cc_UC,L_E2484
+L_E10A2:                 ; 0xe10a2
+        MOVB RL4,[R12+]
+        MOV R13,R4
+        CMPB RL4,#00H
+        JMPR cc_EQ,L_E1150
+        CMPB RL4,#DATA16 00020H
+        JMPR cc_EQ,L_E1186
+        CMPB RL4,#DATA16 00040H
+        JMPA cc_EQ,L_E11B2
+        CMPB RL4,#DATA16 00060H
+        JMPA cc_EQ,L_E11D4
+        CMPB RL4,#DATA16 00080H
+        JMPA cc_EQ,L_E11F2
+        CMPB RL4,#DATA16 000A0H
+        JMPA cc_EQ,L_E121C
+        CMPB RL4,#01H
+        JMPA cc_EQ,L_E123C
+        CMPB RL4,#02H
+        JMPA cc_EQ,L_E15F8
+        CMPB RL4,#DATA16 00021H
+        JMPA cc_EQ,L_E1758
+        CMPB RL4,#DATA16 00039H
+        JMPA cc_EQ,L_E1826
+        CMPB RL4,#DATA16 0003AH
+        JMPA cc_EQ,L_E1902
+        CMPB RL4,#DATA16 0003BH
+        JMPA cc_EQ,L_E19DE
+        CMPB RL4,#DATA16 0003CH
+        JMPA cc_EQ,L_E1ADA
+        CMPB RL4,#DATA16 0003DH
+        JMPA cc_EQ,L_E1BE0
+        CMPB RL4,#DATA16 00041H
+        JMPA cc_EQ,L_E1CB2
+        CMPB RL4,#DATA16 00042H
+        JMPA cc_EQ,L_E1D42
+        CMPB RL4,#DATA16 00081H
+        JMPA cc_EQ,L_E1DD2
+        CMPB RL4,#DATA16 000A1H
+        JMPA cc_EQ,L_E1F5C
+        CMPB RL4,#DATA16 000A2H
+        JMPA cc_EQ,L_E2020
+        CMPB RL4,#DATA16 000A3H
+        JMPA cc_EQ,L_E2138
+        CMPB RL4,#DATA16 000A4H
+        JMPA cc_EQ,L_E2250
+        CMPB RL4,#DATA16 000A5H
+        JMPA cc_EQ,L_E2368
+        JMPA cc_UC,L_E247E
+L_E1150:                 ; 0xe1150
+        MOVB RL7,#00H
+        MOVB RL4,conf_lam
+        JMPR cc_EQ,L_E1168
+        MOVB RL7,#DATA16 00080H
+        MOVB RL5,conf_cat_eff
+        CMPB RL5,#01H
+        JMPR cc_NE,L_E1168
+        MOVB RL7,#DATA16 000C0H
+L_E1168:                 ; 0xe1168
+        MOV R4,R12
+        ADD R12,#01H
+        MOVB [R4],RL7
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL7,#01H
+        MOVB [R12],RL7
+        MOVB RL6,#05H
+        JMPA cc_UC,L_E2488
+L_E1186:                 ; 0xe1186
+        MOVB RL7,#DATA16 00080H
+        MOV R4,R12
+        ADD R12,#01H
+        MOVB [R4],RL7
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL7,RL4
+        MOVB RL4,conf_diagcp
+        JMPR cc_EQ,L_E11AA
+        MOVB RL7,#DATA16 000F9H
+L_E11AA:                 ; 0xe11aa
+        MOVB [R12],RL7
+        MOVB RL6,#05H
+        JMPA cc_UC,L_E2488
+L_E11B2:                 ; 0xe11b2
+        MOVB RL7,#DATA16 000C0H
+        MOV R4,R12
+        ADD R12,#01H
+        MOVB [R4],RL7
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL7,#01H
+        MOVB [R12],RL7
+        MOVB RL6,#05H
+        JMPA cc_UC,L_E2488
+L_E11D4:                 ; 0xe11d4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL7,#01H
+        MOVB [R12],RL7
+        MOVB RL6,#05H
+        JMPA cc_UC,L_E2488
+L_E11F2:                 ; 0xe11f2
+        JNB lv_conf_mis.01H,L_E11FC
+        MOVB RL7,#DATA16 00080H
+        JMPR cc_UC,L_E11FE
+L_E11FC:                 ; 0xe11fc
+        MOVB RL7,#00H
+L_E11FE:                 ; 0xe11fe
+        MOV R4,R12
+        ADD R12,#01H
+        MOVB [R4],RL7
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL7,#01H
+        MOVB [R12],RL7
+        MOVB RL6,#05H
+        JMPA cc_UC,L_E2488
+L_E121C:                 ; 0xe121c
+        MOVB RL7,#DATA16 000F8H
+        MOV R4,R12
+        ADD R12,#01H
+        MOVB [R4],RL7
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB [R12],RL4
+        MOVB RL6,#05H
+        JMPA cc_UC,L_E2488
+L_E123C:                 ; 0xe123c
+        MOVB RL4,conf_lam
+        JMPA cc_EQ,L_E15F0
+        MOVB RL5,#01H
+        MOV R4,R12
+        ADD R12,#01H
+        MOVB [R4],RL5
+        MOVB RL4,#0AH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,obd_mode06_avail
+        AND R4,#02H
+        JMPR cc_EQ,L_E1268
+        MOVB RL4,dtc_done_m06_o2up
+        ANDB RL4,#DATA16 00020H
+        JMPA cc_EQ,L_E14BE
+L_E1268:                 ; 0xe1268
+        MOV R4,DPP0:c_vls_afl
+        MOV R5,R4
+        SHL R5,#02H
+        ADD R5,R4
+        SHL R5,#03H
+        SHR R5,#08H
+        MOV R2,R12
+        ADD R12,#01H
+        MOVB [R2],RL5
+        MOV R4,DPP0:c_vls_afl
+        MOV R5,R4
+        SHL R5,#02H
+        ADD R5,R4
+        SHL R5,#03H
+        MOV R2,R12
+        ADD R12,#01H
+        MOVB [R2],RL5
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 000FFH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,R13
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#02H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#0AH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,DPP0:c_vls_afr
+        MOV R5,R4
+        SHL R5,#02H
+        ADD R5,R4
+        SHL R5,#03H
+        SHR R5,#08H
+        MOV R2,R12
+        ADD R12,#01H
+        MOVB [R2],RL5
+        MOV R4,DPP0:c_vls_afr
+        MOV R5,R4
+        SHL R5,#02H
+        ADD R5,R4
+        SHL R5,#03H
+        MOV R2,R12
+        ADD R12,#01H
+        MOVB [R2],RL5
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 000FFH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,R13
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00082H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00084H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVBS R4,obd_c8c7
+        MOV R2,#DATA16 003E8H
+        MUL R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R10,#DATA16 00040H
+        MOV R11,#00H
+        CALLS 00DH,Div_S32_Signed
+        ASHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVBS R4,obd_c8c7
+        MOV R2,#DATA16 003E8H
+        MUL R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R10,#DATA16 00040H
+        MOV R11,#00H
+        CALLS 00DH,Div_S32_Signed
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVBS R4,DPP0:c_vls_cyc_dif_min
+        MOV R2,#DATA16 003E8H
+        MUL R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R10,#DATA16 00040H
+        MOV R11,#00H
+        CALLS 00DH,Div_S32_Signed
+        ASHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVBS R4,DPP0:c_vls_cyc_dif_min
+        MOV R2,#DATA16 003E8H
+        MUL R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R10,#DATA16 00040H
+        MOV R11,#00H
+        CALLS 00DH,Div_S32_Signed
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVBS R4,DPP0:c_vls_cyc_dif_max
+        MOV R2,#DATA16 003E8H
+        MUL R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R10,#DATA16 00040H
+        MOV R11,#00H
+        CALLS 00DH,Div_S32_Signed
+        ASHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVBS R4,DPP0:c_vls_cyc_dif_max
+        MOV R2,#DATA16 003E8H
+        MUL R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R10,#DATA16 00040H
+        MOV R11,#00H
+        CALLS 00DH,Div_S32_Signed
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,R13
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00087H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00020H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,[R14+#017AH]
+        MOVBZ R4,RL4
+        SHL R4,#02H
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,[R14+#017AH]
+        MOVBZ R4,RL4
+        SHL R4,#02H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVBZ R4,DPP0:c_vls_cyc_afr_ratio_mv_max
+        SHL R4,#02H
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVBZ R4,DPP0:c_vls_cyc_afr_ratio_mv_max
+        SHL R4,#02H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,R13
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00088H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00020H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,[R14+#0179H]
+        MOVBZ R4,RL4
+        SHL R4,#02H
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,[R14+#0179H]
+        MOVBZ R4,RL4
+        SHL R4,#02H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVBZ R4,DPP0:c_vls_cyc_afl_ratio_mv_max
+        SHL R4,#02H
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVBZ R4,DPP0:c_vls_cyc_afl_ratio_mv_max
+        SHL R4,#02H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        JMPA cc_UC,L_E15E8
+L_E14BE:                 ; 0xe14be
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,R13
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#02H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#0AH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,R13
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00082H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00084H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,R13
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00087H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00020H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,R13
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00088H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00020H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+L_E15E8:                 ; 0xe15e8
+        MOVB RL6,#DATA16 0002DH
+        JMPA cc_UC,L_E2488
+L_E15F0:                 ; 0xe15f0
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E2488
+L_E15F8:                 ; 0xe15f8
+        MOVB RL4,conf_cat_eff
+        CMPB RL4,#01H
+        JMPA cc_NE,L_E1750
+        MOVB RL5,#DATA16 00085H
+        MOV R4,R12
+        ADD R12,#01H
+        MOVB [R4],RL5
+        MOVB RL4,#DATA16 00020H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,obd_mode06_avail
+        AND R4,#04H
+        JMPR cc_EQ,L_E1628
+        MOVB RL4,dtc_done_m06_cat
+        ANDB RL4,#DATA16 00020H
+        JMPR cc_EQ,L_E1670
+L_E1628:                 ; 0xe1628
+        MOVB RL4,[R14+#018FH]
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,[R14+#018FH]
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVBZ R4,DPP0:c_cycnr_vls_down_max
+        SHL R4,#01H
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVBZ R4,DPP0:c_cycnr_vls_down_max
+        SHL R4,#01H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        JMPR cc_UC,L_E1696
+L_E1670:                 ; 0xe1670
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+L_E1696:                 ; 0xe1696
+        MOV R4,R13
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00086H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#0AH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,obd_mode06_avail
+        AND R4,#DATA16 00008H
+        JMPR cc_EQ,L_E16C4
+        MOVB RL4,dtc_done_m06_o2dn
+        ANDB RL4,#DATA16 00020H
+        JMPR cc_EQ,L_E1722
+L_E16C4:                 ; 0xe16c4
+        MOV R4,[R14+#0196H]
+        MOV R5,R4
+        SHL R5,#02H
+        ADD R5,R4
+        SHL R5,#03H
+        SHR R5,#08H
+        MOV R4,R12
+        ADD R12,#01H
+        MOVB [R4],RL5
+        MOV R4,[R14+#0196H]
+        MOV R5,R4
+        SHL R5,#02H
+        ADD R5,R4
+        SHL R5,#03H
+        MOV R4,R12
+        ADD R12,#01H
+        MOVB [R4],RL5
+        MOV R4,DPP0:c_vls_down_pue_diag_min
+        MOV R5,R4
+        SHL R5,#02H
+        ADD R5,R4
+        SHL R5,#03H
+        SHR R5,#08H
+        MOV R2,R12
+        ADD R12,#01H
+        MOVB [R2],RL5
+        MOV R4,DPP0:c_vls_down_pue_diag_min
+        MOV R5,R4
+        SHL R5,#02H
+        ADD R5,R4
+        SHL R5,#03H
+        MOV R2,R12
+        ADD R12,#01H
+        MOVB [R2],RL5
+        MOVB RL4,#DATA16 000FFH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        JMPR cc_UC,L_E1748
+L_E1722:                 ; 0xe1722
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+L_E1748:                 ; 0xe1748
+        MOVB RL6,#DATA16 00012H
+        JMPA cc_UC,L_E2488
+L_E1750:                 ; 0xe1750
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E2488
+L_E1758:                 ; 0xe1758
+        JNB lv_conf_mis.01H,L_E181E
+        MOVB RL4,#DATA16 000B4H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#03H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,obd_mode06_avail2
+        AND R4,#DATA16 08000H
+        JMPR cc_EQ,L_E1782
+        MOVB RL4,dtc_done_m06_misrate
+        ANDB RL4,#DATA16 00020H
+        JMPR cc_EQ,L_E17F2
+L_E1782:                 ; 0xe1782
+        MOVB RL4,[R14+#0126H]
+        MOVBZ R4,RL4
+        MOV R5,#DATA16 00019H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        SHR R4,#04H
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,[R14+#0126H]
+        MOVBZ R4,RL4
+        MOV R5,#DATA16 00019H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        SHR R4,#04H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVBZ R4,DPP0:c_cat_max_diag
+        MOV R5,#DATA16 00019H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        SHR R4,#04H
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVBZ R4,DPP0:c_cat_max_diag
+        MOV R5,#DATA16 00019H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        SHR R4,#04H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        JMPR cc_UC,L_E1818
+L_E17F2:                 ; 0xe17f2
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+L_E1818:                 ; 0xe1818
+        MOVB RL6,#09H
+        JMPA cc_UC,L_E2488
+L_E181E:                 ; 0xe181e
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E2488
+L_E1826:                 ; 0xe1826
+        MOVB RL4,conf_diagcp
+        JMPR cc_EQ,L_E18FA
+        MOVB RL5,#DATA16 000A2H
+        MOV R4,R12
+        ADD R12,#01H
+        MOVB [R4],RL5
+        MOVB RL4,#DATA16 000FEH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,obd_mode06_avail
+        AND R4,#DATA16 01000H
+        JMPR cc_EQ,L_E1854
+        MOVB RL4,dtc_done_m06_cp_dtp
+        ANDB RL4,#DATA16 00020H
+        JMPR cc_EQ,L_E18CE
+L_E1854:                 ; 0xe1854
+        MOV R4,dtp_mv_mod_6_sword
+        CMP R4,DPP0:c_dtp_dif_min_diagcp
+        JMPR cc_SGE,L_E18CE
+        MOV R4,dtp_mv_mod_6_sword
+        MOV R5,#02H
+        MOV 0FE0EH,R4
+        DIV R5
+        MOV R4,0FE0EH
+        ASHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,dtp_mv_mod_6_sword
+        MOV R5,#02H
+        MOV 0FE0EH,R4
+        DIV R5
+        MOV R4,0FE0EH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 000C0H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,DPP0:c_dtp_dif_diagcp
+        MOV R5,#02H
+        MOV 0FE0EH,R4
+        DIV R5
+        MOV R4,0FE0EH
+        ASHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,DPP0:c_dtp_dif_diagcp
+        MOV R5,#02H
+        MOV 0FE0EH,R4
+        DIV R5
+        MOV R4,0FE0EH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        JMPR cc_UC,L_E18F4
+L_E18CE:                 ; 0xe18ce
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+L_E18F4:                 ; 0xe18f4
+        MOVB RL6,#09H
+        JMPA cc_UC,L_E2488
+L_E18FA:                 ; 0xe18fa
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E2488
+L_E1902:                 ; 0xe1902
+        MOVB RL4,conf_diagcp
+        JMPR cc_EQ,L_E19D6
+        MOVB RL5,#DATA16 000A2H
+        MOV R4,R12
+        ADD R12,#01H
+        MOVB [R4],RL5
+        MOVB RL4,#DATA16 000FEH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,obd_mode06_avail
+        AND R4,#DATA16 01000H
+        JMPR cc_EQ,L_E1930
+        MOVB RL4,dtc_done_m06_cp_dtp
+        ANDB RL4,#DATA16 00020H
+        JMPR cc_EQ,L_E19AA
+L_E1930:                 ; 0xe1930
+        MOV R4,dtp_mv_mod_6_sword
+        CMP R4,DPP0:c_dtp_dif_min_diagcp
+        JMPR cc_SGE,L_E19AA
+        MOV R4,dtp_mv_mod_6_sword
+        MOV R5,#02H
+        MOV 0FE0EH,R4
+        DIV R5
+        MOV R4,0FE0EH
+        ASHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,dtp_mv_mod_6_sword
+        MOV R5,#02H
+        MOV 0FE0EH,R4
+        DIV R5
+        MOV R4,0FE0EH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 000C0H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,DPP0:c_dtp_dif_diagcp
+        MOV R5,#02H
+        MOV 0FE0EH,R4
+        DIV R5
+        MOV R4,0FE0EH
+        ASHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,DPP0:c_dtp_dif_diagcp
+        MOV R5,#02H
+        MOV 0FE0EH,R4
+        DIV R5
+        MOV R4,0FE0EH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        JMPR cc_UC,L_E19D0
+L_E19AA:                 ; 0xe19aa
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+L_E19D0:                 ; 0xe19d0
+        MOVB RL6,#09H
+        JMPA cc_UC,L_E2488
+L_E19D6:                 ; 0xe19d6
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E2488
+L_E19DE:                 ; 0xe19de
+        MOVB RL4,conf_diagcp
+        JMPR cc_EQ,L_E1AD2
+        MOVB RL5,#DATA16 000A2H
+        MOV R4,R12
+        ADD R12,#01H
+        MOVB [R4],RL5
+        MOVB RL4,#03H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,obd_mode06_avail
+        AND R4,#DATA16 00800H
+        JMPR cc_EQ,L_E1A0A
+        MOVB RL4,dtc_done_m06_cp_dia
+        ANDB RL4,#DATA16 00020H
+        JMPR cc_EQ,L_E1AA6
+L_E1A0A:                 ; 0xe1a0a
+        MOVBZ R4,diagcp_dia_mod_6
+        MOV R2,#DATA16 019E5H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0CH
+        SHR R5,#0CH
+        SHL R2,#04H
+        OR R4,R2
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVBZ R4,diagcp_dia_mod_6
+        MOV R2,#DATA16 019E5H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0CH
+        SHR R5,#0CH
+        SHL R2,#04H
+        OR R4,R2
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVBZ R4,DPP0:c_diagcp_dia_max
+        MOV R2,#DATA16 019E5H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0CH
+        SHR R5,#0CH
+        SHL R2,#04H
+        OR R4,R2
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVBZ R4,DPP0:c_diagcp_dia_max
+        MOV R2,#DATA16 019E5H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0CH
+        SHR R5,#0CH
+        SHL R2,#04H
+        OR R4,R2
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        JMPR cc_UC,L_E1ACC
+L_E1AA6:                 ; 0xe1aa6
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+L_E1ACC:                 ; 0xe1acc
+        MOVB RL6,#09H
+        JMPA cc_UC,L_E2488
+L_E1AD2:                 ; 0xe1ad2
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E2488
+L_E1ADA:                 ; 0xe1ada
+        MOVB RL4,conf_diagcp
+        JMPA cc_EQ,L_E1BD8
+        MOVB RL5,#DATA16 000A2H
+        MOV R4,R12
+        ADD R12,#01H
+        MOVB [R4],RL5
+        MOVB RL4,#03H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,obd_mode06_avail
+        AND R4,#DATA16 00400H
+        JMPR cc_EQ,L_E1B08
+        MOVB RL4,dtc_done_m06_cp_dia2
+        ANDB RL4,#DATA16 00020H
+        JMPR cc_EQ,L_E1BAC
+L_E1B08:                 ; 0xe1b08
+        MOVB RL4,diagcp_dia_mod_6
+        CMPB RL4,DPP0:c_diagcp_dia_max
+        JMPR cc_NC,L_E1BAC
+        MOVBZ R4,RL4
+        MOV R2,#DATA16 019E5H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0CH
+        SHR R5,#0CH
+        SHL R2,#04H
+        OR R4,R2
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVBZ R4,diagcp_dia_mod_6
+        MOV R2,#DATA16 019E5H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0CH
+        SHR R5,#0CH
+        SHL R2,#04H
+        OR R4,R2
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVBZ R4,DPP0:c_diagcp_dia_min
+        MOV R2,#DATA16 019E5H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0CH
+        SHR R5,#0CH
+        SHL R2,#04H
+        OR R4,R2
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVBZ R4,DPP0:c_diagcp_dia_min
+        MOV R2,#DATA16 019E5H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0CH
+        SHR R5,#0CH
+        SHL R2,#04H
+        OR R4,R2
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        JMPR cc_UC,L_E1BD2
+L_E1BAC:                 ; 0xe1bac
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+L_E1BD2:                 ; 0xe1bd2
+        MOVB RL6,#09H
+        JMPA cc_UC,L_E2488
+L_E1BD8:                 ; 0xe1bd8
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E2488
+L_E1BE0:                 ; 0xe1be0
+        MOVB RL4,conf_diagcp
+        JMPR cc_EQ,L_E1CAA
+        MOVB RL5,#DATA16 000A8H
+        MOV R4,R12
+        ADD R12,#01H
+        MOVB [R4],RL5
+        MOVB RL4,#DATA16 000FEH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,obd_mode06_avail
+        AND R4,#DATA16 00040H
+        JMPR cc_EQ,L_E1C0E
+        MOVB RL4,dtc_done_m06_cp_cps
+        ANDB RL4,#DATA16 00020H
+        JMPR cc_EQ,L_E1C7E
+L_E1C0E:                 ; 0xe1c0e
+        MOV R4,dtp_dif_cor_mod_6_sword
+        MOV R5,#02H
+        MOV 0FE0EH,R4
+        DIV R5
+        MOV R4,0FE0EH
+        ASHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,dtp_dif_cor_mod_6_sword
+        MOV R5,#02H
+        MOV 0FE0EH,R4
+        DIV R5
+        MOV R4,0FE0EH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,DPP0:c_dtp_dif_cps_diagcp
+        MOV R5,#02H
+        MOV 0FE0EH,R4
+        DIV R5
+        MOV R4,0FE0EH
+        ASHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,DPP0:c_dtp_dif_cps_diagcp
+        MOV R5,#02H
+        MOV 0FE0EH,R4
+        DIV R5
+        MOV R4,0FE0EH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00040H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        JMPR cc_UC,L_E1CA4
+L_E1C7E:                 ; 0xe1c7e
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+L_E1CA4:                 ; 0xe1ca4
+        MOVB RL6,#09H
+        JMPA cc_UC,L_E2488
+L_E1CAA:                 ; 0xe1caa
+        MOVB RL6,#DATA16 000FEH
+        JMPA cc_UC,L_E2488
+L_E1CB2:                 ; 0xe1cb2
+        MOVB RL4,#DATA16 000B0H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00024H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,obd_mode06_avail2
+        AND R4,#DATA16 02000H
+        JMPR cc_EQ,L_E1CDA
+        MOVB RL4,dtc_done_m06_lsh_up
+        ANDB RL4,#DATA16 00020H
+        JMPR cc_EQ,L_E1D16
+L_E1CDA:                 ; 0xe1cda
+        MOV R4,[R14+#01A6H]
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,[R14+#01A6H]
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,DPP0:c_frc_stc_lsh_up_obd2
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,DPP0:c_frc_stc_lsh_up_obd2
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        JMPR cc_UC,L_E1D3C
+L_E1D16:                 ; 0xe1d16
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+L_E1D3C:                 ; 0xe1d3c
+        MOVB RL6,#09H
+        JMPA cc_UC,L_E2488
+L_E1D42:                 ; 0xe1d42
+        MOVB RL4,#DATA16 000B0H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00024H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,obd_mode06_avail2
+        AND R4,#DATA16 04000H
+        JMPR cc_EQ,L_E1D6A
+        MOVB RL4,dtc_done_m06_lsh_down
+        ANDB RL4,#DATA16 00020H
+        JMPR cc_EQ,L_E1DA6
+L_E1D6A:                 ; 0xe1d6a
+        MOV R4,[R14+#01B4H]
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,[R14+#01B4H]
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,DPP0:c_frc_stc_lsh_down_obd2
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,DPP0:c_frc_stc_lsh_down_obd2
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        JMPR cc_UC,L_E1DCC
+L_E1DA6:                 ; 0xe1da6
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+L_E1DCC:                 ; 0xe1dcc
+        MOVB RL6,#09H
+        JMPA cc_UC,L_E2488
+L_E1DD2:                 ; 0xe1dd2
+        MOVB RL4,#DATA16 000F0H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00011H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,obd_mode06_avail
+        AND R4,#DATA16 00010H
+        JMPR cc_EQ,L_E1DFA
+        MOVB RL4,dtc_done_m06_fsd
+        ANDB RL4,#DATA16 00020H
+        JMPR cc_EQ,L_E1EEC
+L_E1DFA:                 ; 0xe1dfa
+        MOV R4,[R14+#01BEH]
+        MOV R5,#05H
+        MOV 0FE0EH,R4
+        DIVU R5
+        MOV R4,0FE0EH
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,[R14+#01BEH]
+        MOV R5,#05H
+        MOV 0FE0EH,R4
+        DIVU R5
+        MOV R4,0FE0EH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,DPP0:c_t_sum_max_max_fsd
+        MOV R5,#05H
+        MOV 0FE0EH,R4
+        DIVU R5
+        MOV R4,0FE0EH
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,DPP0:c_t_sum_max_max_fsd
+        MOV R5,#05H
+        MOV 0FE0EH,R4
+        DIVU R5
+        MOV R4,0FE0EH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,R13
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 000F1H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00011H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,[R14+#01C0H]
+        MOV R5,#05H
+        MOV 0FE0EH,R4
+        DIVU R5
+        MOV R4,0FE0EH
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,[R14+#01C0H]
+        MOV R5,#05H
+        MOV 0FE0EH,R4
+        DIVU R5
+        MOV R4,0FE0EH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,DPP0:c_t_sum_min_max_fsd
+        MOV R5,#05H
+        MOV 0FE0EH,R4
+        DIVU R5
+        MOV R4,0FE0EH
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,DPP0:c_t_sum_min_max_fsd
+        MOV R5,#05H
+        MOV 0FE0EH,R4
+        DIVU R5
+        MOV R4,0FE0EH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        JMPR cc_UC,L_E1F54
+L_E1EEC:                 ; 0xe1eec
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,R13
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 000F1H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00011H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+L_E1F54:                 ; 0xe1f54
+        MOVB RL6,#DATA16 00012H
+        JMPA cc_UC,L_E2488
+L_E1F5C:                 ; 0xe1f5c
+        MOVB RL4,#0CH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00024H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,dtc_mil_grp
+        AND R4,#DATA16 00080H
+        JMPR cc_EQ,L_E1F82
+        MOVB RL4,dtc_st_mis_cyl0
+        ANDB RL4,#DATA16 00020H
+        JMPR cc_EQ,L_E1FF4
+L_E1F82:                 ; 0xe1f82
+        MOV R4,dtc_mil_grp
+        AND R4,#DATA16 00100H
+        JMPR cc_EQ,L_E1F96
+        MOVB RL4,dtc_st_mis_cyl1
+        ANDB RL4,#DATA16 00020H
+        JMPR cc_EQ,L_E1FF4
+L_E1F96:                 ; 0xe1f96
+        MOV R4,dtc_mil_grp
+        AND R4,#DATA16 00200H
+        JMPR cc_EQ,L_E1FAA
+        MOVB RL4,dtc_st_mis_cyl2
+        ANDB RL4,#DATA16 00020H
+        JMPR cc_EQ,L_E1FF4
+L_E1FAA:                 ; 0xe1faa
+        MOV R4,dtc_mil_grp
+        AND R4,#DATA16 00400H
+        JMPR cc_EQ,L_E1FBE
+        MOVB RL4,dtc_st_mis_cyl3
+        ANDB RL4,#DATA16 00020H
+        JMPR cc_EQ,L_E1FF4
+L_E1FBE:                 ; 0xe1fbe
+        MOV R4,ctr_mis_tot_dc
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,ctr_mis_tot_dc
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 000FFH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        JMPR cc_UC,L_E201A
+L_E1FF4:                 ; 0xe1ff4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+L_E201A:                 ; 0xe201a
+        MOVB RL6,#09H
+        JMPA cc_UC,L_E2488
+L_E2020:                 ; 0xe2020
+        MOVB RL4,#0CH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00024H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,dtc_mil_grp
+        AND R4,#DATA16 00080H
+        JMPR cc_EQ,L_E2046
+        MOVB RL4,dtc_st_mis_cyl0
+        ANDB RL4,#DATA16 00020H
+        JMPR cc_EQ,L_E20CA
+L_E2046:                 ; 0xe2046
+        MOV R4,ctr_mis_dc_cyl_0_
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,ctr_mis_dc_cyl_0_
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 000FFH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,R13
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#0BH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00024H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,ctr_mis_dc_mmv_cyl_0_
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,ctr_mis_dc_mmv_cyl_0_
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 000FFH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        JMPR cc_UC,L_E2130
+L_E20CA:                 ; 0xe20ca
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,R13
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#0BH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00024H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+L_E2130:                 ; 0xe2130
+        MOVB RL6,#DATA16 00012H
+        JMPA cc_UC,L_E2488
+L_E2138:                 ; 0xe2138
+        MOVB RL4,#0CH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00024H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,dtc_mil_grp
+        AND R4,#DATA16 00400H
+        JMPR cc_EQ,L_E215E
+        MOVB RL4,dtc_st_mis_cyl3
+        ANDB RL4,#DATA16 00020H
+        JMPR cc_EQ,L_E21E2
+L_E215E:                 ; 0xe215e
+        MOV R4,ctr_mis_dc_cyl_3_
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,ctr_mis_dc_cyl_3_
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 000FFH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,R13
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#0BH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00024H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,ctr_mis_dc_mmv_cyl_3_
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,ctr_mis_dc_mmv_cyl_3_
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 000FFH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        JMPR cc_UC,L_E2248
+L_E21E2:                 ; 0xe21e2
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,R13
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#0BH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00024H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+L_E2248:                 ; 0xe2248
+        MOVB RL6,#DATA16 00012H
+        JMPA cc_UC,L_E2488
+L_E2250:                 ; 0xe2250
+        MOVB RL4,#0CH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00024H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,dtc_mil_grp
+        AND R4,#DATA16 00100H
+        JMPR cc_EQ,L_E2276
+        MOVB RL4,dtc_st_mis_cyl1
+        ANDB RL4,#DATA16 00020H
+        JMPR cc_EQ,L_E22FA
+L_E2276:                 ; 0xe2276
+        MOV R4,ctr_mis_dc_cyl_1_
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,ctr_mis_dc_cyl_1_
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 000FFH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,R13
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#0BH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00024H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,ctr_mis_dc_mmv_cyl_1_
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,ctr_mis_dc_mmv_cyl_1_
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 000FFH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        JMPR cc_UC,L_E2360
+L_E22FA:                 ; 0xe22fa
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,R13
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#0BH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00024H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+L_E2360:                 ; 0xe2360
+        MOVB RL6,#DATA16 00012H
+        JMPA cc_UC,L_E2488
+L_E2368:                 ; 0xe2368
+        MOVB RL4,#0CH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00024H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,dtc_mil_grp
+        AND R4,#DATA16 00200H
+        JMPR cc_EQ,L_E238E
+        MOVB RL4,dtc_st_mis_cyl2
+        ANDB RL4,#DATA16 00020H
+        JMPR cc_EQ,L_E2412
+L_E238E:                 ; 0xe238e
+        MOV R4,ctr_mis_dc_cyl_2_
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,ctr_mis_dc_cyl_2_
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 000FFH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,R13
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#0BH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00024H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,ctr_mis_dc_mmv_cyl_2_
+        SHR R4,#08H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,ctr_mis_dc_mmv_cyl_2_
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 000FFH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        JMPR cc_UC,L_E2478
+L_E2412:                 ; 0xe2412
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R4,R13
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#0BH
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#DATA16 00024H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+        MOV R5,R12
+        ADD R12,#01H
+        MOVB [R5],RL4
+L_E2478:                 ; 0xe2478
+        MOVB RL6,#DATA16 00012H
+        JMPR cc_UC,L_E2488
+L_E247E:                 ; 0xe247e
+        MOVB RL6,#DATA16 000FEH
+        JMPR cc_UC,L_E2488
+L_E2484:                 ; 0xe2484
+        MOVB RL6,#DATA16 000FFH
+L_E2488:                 ; 0xe2488
+        MOVB RL4,RL6
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        RETS
+
+; ======== KWP_OBD_Svc09_VehicleInfo  (@0xe2490) ========
+        ; OBD-II Mode 09 (vehicle info) reader. case2=VIN (17 bytes, c_kwp_io_vin_* or DAT_003e1d.. if
+        ; maf-trim variant), case4=Calibration ID (from s_OPENGK01OG0001... @0x4c), case6=CVN, case8=ECU
+        ; serial/ID block (DAT_00c4d0..). Returns #bytes.
+KWP_OBD_Svc09_VehicleInfo:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R9,R12
+        JB lv_conf_mis.04H,L_E24A2
+        JMPA cc_UC,RetC_ff_864
+L_E24A2:                 ; 0xe24a2
+        MOVB RL7,[R9+]
+        MOVB RL4,RL7
+        CMPB RL4,#DATA16 00008H
+        JMPA cc_UGT,RetC_fe_85e
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        ADD R4,#DATA16 05B9CH
+        MOV R4,[R4]
+        JMPI cc_UC,[R4]
+
+; ======== RetC_5_4ba  (@0xe24ba) ========
+RetC_5_4ba:
+        MOV R8,#DATA16 00055H
+        MOV R4,R8
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB RL6,#05H
+        JMPA cc_UC,L_E2868
+
+; ======== KWP_Build_VIN_Response  (@0xe24e0) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified): KWP/OBD VIN response builder: writes 17 VIN bytes (c_kwp_io_vin_1..17, or flashed
+        ; VIN @0x3e1d if lv_maf_trim.0) into response buffer (r9); returns length 0x13.
+        ; ------------------------------------------------------------
+KWP_Build_VIN_Response:
+        JB lv_maf_trim.00H,L_E257C
+        MOVB RL4,#01H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:c_kwp_io_vin_1
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:c_kwp_io_vin_2
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:c_kwp_io_vin_3
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:c_kwp_io_vin_4
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:c_kwp_io_vin_5
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:c_kwp_io_vin_6
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:c_kwp_io_vin_7
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:c_kwp_io_vin_8
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:c_kwp_io_vin_9
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:c_kwp_io_vin_10
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:c_kwp_io_vin_11
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:c_kwp_io_vin_12
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:c_kwp_io_vin_13
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:c_kwp_io_vin_14
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:c_kwp_io_vin_15
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:c_kwp_io_vin_16
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:c_kwp_io_vin_17
+        MOVB RL6,#DATA16 00013H
+        JMPA cc_UC,L_E2868
+L_E257C:                 ; 0xe257c
+        MOVB RL4,#01H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        EXTP #00H, #01H
+        MOVB RL4,kwp_vin_3e1d
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        EXTP #00H, #01H
+        MOVB RL4,kwp_vin_3e1e
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        EXTP #00H, #01H
+        MOVB RL4,kwp_vin_3e1f
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        EXTP #00H, #01H
+        MOVB RL4,kwp_vin_3e20
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        EXTP #00H, #01H
+        MOVB RL4,kwp_vin_3e21
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        EXTP #00H, #01H
+        MOVB RL4,kwp_vin_3e22
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        EXTP #00H, #01H
+        MOVB RL4,kwp_vin_3e23
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        EXTP #00H, #01H
+        MOVB RL4,kwp_vin_3e24
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        EXTP #00H, #01H
+        MOVB RL4,kwp_vin_3e25
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        EXTP #00H, #01H
+        MOVB RL4,kwp_vin_3e26
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        EXTP #00H, #01H
+        MOVB RL4,kwp_vin_3e27
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        EXTP #00H, #01H
+        MOVB RL4,kwp_vin_3e28
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        EXTP #00H, #01H
+        MOVB RL4,kwp_vin_3e29
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        EXTP #00H, #01H
+        MOVB RL4,kwp_vin_3e2a
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        EXTP #00H, #01H
+        MOVB RL4,kwp_vin_3e2b
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        EXTP #00H, #01H
+        MOVB RL4,kwp_vin_3e2c
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        EXTP #00H, #01H
+        MOVB RL4,kwp_vin_3e2d
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB RL6,#DATA16 00013H
+        JMPA cc_UC,L_E2868
+
+; ======== KWP_Build_ECUID_Response  (@0xe267a) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified): KWP ECU-identification response builder: writes the CAL-ID/ECU-ID string
+        ; 'OPENGK01OG0001...' into the response buffer.
+        ; ------------------------------------------------------------
+KWP_Build_ECUID_Response:
+        MOVB RL4,#01H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:kwp_9004c
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:kwp_9004d
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:kwp_9004e
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:kwp_9004f
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:kwp_90050
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:kwp_90051
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:kwp_90052
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:kwp_90053
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:kwp_90054
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:kwp_90055
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:kwp_90056
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],DPP0:kwp_90057
+        MOVB RL4,#00H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB RL6,#DATA16 00012H
+        JMPA cc_UC,L_E2868
+
+; ======== RetC_6_704  (@0xe2704) ========
+RetC_6_704:
+        MOVB RL4,#01H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB RL4,#00H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOV R4,diag_cdc0
+        SHR R4,#08H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB RL4,diag_cdc0
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB RL6,#06H
+        JMPA cc_UC,L_E2868
+
+S_E05AC ENDS
+        END

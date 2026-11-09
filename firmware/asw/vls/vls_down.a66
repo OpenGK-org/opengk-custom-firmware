@@ -1,0 +1,347 @@
+; asw/vls/vls_down.a66
+; 0xB6050-0xB6384  (820 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_fac_vls_down_mmv_hys               EQU  0901BEH
+c_t_dly_puc_end_vls_down             EQU  0906E0H
+c_temp_cat_down_ls_ready             EQU  09076CH
+c_vls_afl_ready                      EQU  0907DCH
+c_vls_afr_ready                      EQU  0907E4H
+c_vls_down_crlc                      EQU  0907FAH
+c_vls_down_crlc_off                  EQU  0907FCH
+c_vls_down_ini_max                   EQU  090802H
+c_vls_down_ini_min                   EQU  090804H
+c_vls_down_mmv_hys_min               EQU  09080CH
+
+PUBLIC  Calc_LS_Down_Sig, Init_LS_Down, LS_Down_ReadyCheck, Nop_b60cc, Reset_Dfd68_050
+EXTERN  Abs_Diff_U16:NEAR, Abs_S16_Simple:NEAR, Add_r12_r13_Return_r4:NEAR, Clamp_U16:NEAR
+EXTERN  Interp_U16:NEAR, Read_MulDiv_MD:NEAR, Sat_Sub_S16_v2:NEAR, sub_r12_r13_rets_r4:NEAR
+
+S_B6050 SECTION CODE AT 0B6050H
+
+; ======== Reset_Dfd68_050  (@0xb6050) ========
+Reset_Dfd68_050:
+        BCLR diag_fd68.00H
+        MOVB g_c244,ZEROS
+        BCLR lv_cam_ad_di_ivvt.0AH
+        MOV lam_bank_1_ls_down_struct_ls_down_carrier,ZEROS
+        MOV g_f960,ZEROS
+        RETS
+
+; ======== Init_LS_Down  (@0xb6062) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS31, verified): Downstream oxygen sensor (ls_down struct init)
+        ; ------------------------------------------------------------
+Init_LS_Down:
+        MOV [-R0],R6
+        BCLR diag_fd68.00H
+        MOVB g_c244,ZEROS
+        BCLR lv_cam_ad_di_ivvt.0AH
+        MOV lam_bank_1_ls_down_struct_ls_down_carrier,ZEROS
+        MOV R4,DPP0:c_vls_down_ini_max
+        SHL R4,#06H
+        MOV lam_bank_1_ls_down_struct_vls_down_mmv_max,R4
+        MOV R5,DPP0:c_vls_down_ini_min
+        SHL R5,#06H
+        MOV lam_bank_1_ls_down_struct_vls_down_mmv_min,R5
+        MOV R2,DPP0:c_vls_down_ini_max
+        MOV lam_bank_1_ls_down_struct_vls_down_bol,R2
+        MOV R3,DPP0:c_vls_down_ini_min
+        MOV lam_bank_1_ls_down_struct_vls_down_tol,R3
+        MOV R1,DPP0:c_vls_down_mmv_hys_min
+        MOV lam_bank_1_ls_down_struct_vls_down_mmv_hys,R1
+        MOVB g_c808,ZEROS
+        MOV g_c806,ZEROS
+        MOV lam_bank_1_ls_down_struct_drv1_vls_down_abs_max,ZEROS
+        MOV lam_bank_1_ls_down_struct_drv1_vls_down_mmv_min,ZEROS
+        MOV lam_bank_1_ls_down_struct_drv1_vls_down_mmv,ZEROS
+        MOVB RL6,#00H
+L_B60B2:                 ; 0xb60b2
+        MOV R4,#00H
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        MOV [R5+#0C7FAH],R4
+        ADDB RL6,#01H
+        CMPB RL6,#05H
+        JMPR cc_ULE,L_B60B2
+        MOV R4,#01H
+        MOV g_f960,R4
+        MOV R6,[R0+]
+        RETS
+
+; ======== Nop_b60cc  (@0xb60cc) ========
+Nop_b60cc:
+        RETS
+
+; ======== Calc_LS_Down_Sig  (@0xb60ce) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS31, verified): Downstream oxygen sensor signal voltage (vls_down)
+        ; ------------------------------------------------------------
+Calc_LS_Down_Sig:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R7,p_lam_bank1
+        JB lv_err_com_resp_imob.06H,L_B60EA
+        MOV R4,g_fa70
+        AND R4,#DATA16 003FFH
+        MOV [R7+#096H],R4
+L_B60EA:                 ; 0xb60ea
+        MOV R4,[R7+#096H]
+        SHR R4,#02H
+        MOVB [R7+#098H],RL4
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_B60FC
+        JMPA cc_UC,L_B630C
+L_B60FC:                 ; 0xb60fc
+        JB lv_pl.09H,L_B6104
+        JMPA cc_UC,L_B630C
+L_B6104:                 ; 0xb6104
+        MOV R12,[R7+#096H]
+        MOV R13,[R7+#0ACH]
+        CALLS 00FH,Sat_Sub_S16_v2
+        MOV R9,R4
+        SHL R9,#06H
+        MOV R4,[R7+#096H]
+        MOV [R7+#0ACH],R4
+        MOVB RL4,[R7+#0BCH]
+        CMPB RL4,#05H
+        JMPR cc_ULE,L_B612C
+        BSET diag_fd68.03H
+        MOVB RL4,#00H
+        MOVB [R7+#0BCH],RL4
+L_B612C:                 ; 0xb612c
+        JNB diag_fd68.03H,L_B614C
+        MOVB RL4,[R7+#0BCH]
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        MOV R2,R7
+        ADD R2,#DATA16 000AEH
+        ADD R2,R4
+        MOV R4,R7
+        ADD R4,#DATA16 000BAH
+        MOV R5,[R4]
+        SUB R5,[R2]
+        MOV [R4],R5
+L_B614C:                 ; 0xb614c
+        MOVB RL4,[R7+#0BCH]
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        MOV R5,R7
+        ADD R5,#DATA16 000AEH
+        ADD R5,R4
+        MOV [R5],R9
+        MOV R4,R7
+        ADD R4,#DATA16 000BAH
+        MOV R5,[R4]
+        ADD R5,R9
+        MOV [R4],R5
+        JNB diag_fd68.03H,L_B6182
+        MOV R4,[R7+#0BAH]
+        MOV R5,#06H
+        MOV 0FE0EH,R4
+        DIV R5
+        MOV R4,0FE0EH
+        MOV [R7+#0A4H],R4
+L_B6182:                 ; 0xb6182
+        MOV R4,R7
+        ADD R4,#DATA16 000BCH
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+        MOV R4,#00H
+        MOV [R7+#0A8H],R4
+        MOVB RL6,#00H
+L_B6196:                 ; 0xb6196
+        MOV R4,R7
+        ADD R4,#DATA16 000AEH
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        ADD R4,R5
+        MOV R12,[R4]
+        CALLS 00DH,Abs_S16_Simple
+        MOV R8,R4
+        MOV R4,[R7+#0A8H]
+        CMP R8,R4
+        JMPR cc_ULE,L_B61B6
+        MOV [R7+#0A8H],R8
+L_B61B6:                 ; 0xb61b6
+        ADDB RL6,#01H
+        CMPB RL6,#05H
+        JMPR cc_ULE,L_B6196
+        JNB lv_pl.02H,L_B61C4
+        JMPA cc_UC,L_B62FA
+L_B61C4:                 ; 0xb61c4
+        MOV R4,[R7+#0AAH]
+        JMPA cc_NE,L_B62EC
+        BSET diag_fd68.02H
+        MOV R4,[R7+#096H]
+        MOV R5,[R7+#09AH]
+        CMP R4,R5
+        JMPR cc_NC,L_B61E0
+        MOV R8,DPP0:c_vls_down_crlc
+        JMPR cc_UC,L_B61E4
+L_B61E0:                 ; 0xb61e0
+        MOV R8,DPP0:c_vls_down_crlc_off
+L_B61E4:                 ; 0xb61e4
+        MOV R12,[R7+#0A0H]
+        MOV R13,[R7+#096H]
+        SHL R13,#06H
+        MOV R14,R8
+        CALLS 00FH,Interp_U16
+        MOV [R7+#0A0H],R4
+        MOV R4,[R7+#096H]
+        MOV R5,[R7+#09CH]
+        CMP R4,R5
+        JMPR cc_ULE,L_B6210
+        MOV R4,#00H
+        MOV [R7+#0A6H],R4
+        MOV R8,DPP0:c_vls_down_crlc
+        JMPR cc_UC,L_B6228
+L_B6210:                 ; 0xb6210
+        MOV R4,[R7+#0A4H]
+        MOV R5,[R7+#0A6H]
+        CMP R4,R5
+        JMPR cc_SGE,L_B6224
+        MOV R4,[R7+#0A4H]
+        MOV [R7+#0A6H],R4
+L_B6224:                 ; 0xb6224
+        MOV R8,DPP0:c_vls_down_crlc_off
+L_B6228:                 ; 0xb6228
+        MOV R12,[R7+#09EH]
+        MOV R13,[R7+#096H]
+        SHL R13,#06H
+        MOV R14,R8
+        CALLS 00FH,Interp_U16
+        MOV [R7+#09EH],R4
+        MOV R12,[R7+#09EH]
+        MOV R13,[R7+#0A0H]
+        CALLS 00FH,Abs_Diff_U16
+        MOV R12,R4
+        MOVBZ R13,DPP0:c_fac_vls_down_mmv_hys
+        CALLS 00FH,Read_MulDiv_MD
+        MOV [R7+#0A2H],R4
+        MOV R12,[R7+#0A2H]
+        MOV R13,DPP0:c_vls_down_mmv_hys_min
+        MOV R14,#DATA16 03333H
+        CALLS 00FH,Clamp_U16
+        MOV [R7+#0A2H],R4
+        MOV R12,[R7+#09EH]
+        MOV R13,[R7+#0A0H]
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV R8,R4
+        MOV R4,[R7+#0A2H]
+        SHL R4,#01H
+        CMP R8,R4
+        JMPR cc_UGT,L_B62C4
+        BSET diag_fd68.01H
+        MOV R12,[R7+#09EH]
+        MOV R13,[R7+#0A0H]
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV R8,R4
+        SHR R4,#01H
+        SHR R4,#06H
+        MOV [R7+#09AH],R4
+        MOV [R7+#09CH],R4
+        MOV R12,[R7+#09CH]
+        SHL R12,#06H
+        MOV R13,[R7+#0A2H]
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV [R7+#09EH],R4
+        MOV R12,[R7+#09AH]
+        SHL R12,#06H
+        MOV R13,[R7+#0A2H]
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV [R7+#0A0H],R4
+        JMPR cc_UC,L_B6312
+L_B62C4:                 ; 0xb62c4
+        BCLR diag_fd68.01H
+        MOV R12,[R7+#09EH]
+        MOV R13,[R7+#0A2H]
+        CALLS 00FH,sub_r12_r13_rets_r4
+        SHR R4,#06H
+        MOV [R7+#09CH],R4
+        MOV R12,[R7+#0A0H]
+        MOV R13,[R7+#0A2H]
+        CALLS 00FH,Add_r12_r13_Return_r4
+        SHR R4,#06H
+        MOV [R7+#09AH],R4
+        JMPR cc_UC,L_B6312
+L_B62EC:                 ; 0xb62ec
+        MOV R4,R7
+        ADD R4,#DATA16 000AAH
+        MOV R5,[R4]
+        SUB R5,#01H
+        MOV [R4],R5
+        JMPR cc_UC,L_B6312
+L_B62FA:                 ; 0xb62fa
+        MOV R4,DPP0:c_t_dly_puc_end_vls_down
+        MOV [R7+#0AAH],R4
+        BCLR diag_fd68.02H
+        MOV R4,#00H
+        MOV [R7+#0A6H],R4
+        JMPR cc_UC,L_B6312
+L_B630C:                 ; 0xb630c
+        MOV R4,#00H
+        MOV [R7+#0A6H],R4
+L_B6312:                 ; 0xb6312
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== LS_Down_ReadyCheck  (@0xb631c) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signal): Downstream (rear) O2 sensor readiness monitor: debounces
+        ; ls_down_carrier vs vls_down ready thresholds + cat temp; sets lv_cam_ad_di_ivvt.0x400.
+        ; ------------------------------------------------------------
+LS_Down_ReadyCheck:
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_B632A
+        BCLR diag_fd68.00H
+        MOVB g_c244,ZEROS
+        BCLR lv_cam_ad_di_ivvt.0AH
+        JMPR cc_UC,L_B6340
+L_B632A:                 ; 0xb632a
+        JNB lv_pl.09H,L_B6340
+        MOVB RL4,g_c244
+        CMPB RL4,#DATA16 0000AH
+        JMPR cc_ULE,L_B633C
+        BSET lv_cam_ad_di_ivvt.0AH
+        JMPR cc_UC,L_B6340
+L_B633C:                 ; 0xb633c
+        SUBB g_c244,ONES
+L_B6340:                 ; 0xb6340
+        JNB lv_cam_ad_di_ivvt.0AH,L_B636E
+        MOV R4,lam_bank_1_ls_down_struct_ls_down_carrier
+        AND R4,#01H
+        JMPR cc_NE,L_B636E
+        MOV R4,lam_bank_1_ls_down_struct_vls_down
+        CMP R4,DPP0:c_vls_afr_ready
+        JMPR cc_UGT,L_B6366
+        CMP R4,DPP0:c_vls_afl_ready
+        JMPR cc_C,L_B6366
+        MOV R5,temp_cat_word
+        CMP R5,DPP0:c_temp_cat_down_ls_ready
+        JMPR cc_ULE,L_B636E
+L_B6366:                 ; 0xb6366
+        BSET diag_fd68.00H
+        MOV R4,#01H
+        OR lam_bank_1_ls_down_struct_ls_down_carrier,R4
+L_B636E:                 ; 0xb636e
+        MOV R4,lam_bank_1_ls_down_struct_ls_down_carrier
+        AND R4,#01H
+        JMPR cc_EQ,L_B637C
+        MOV g_f960,ZEROS
+        RETS
+L_B637C:                 ; 0xb637c
+        MOV R4,#01H
+        MOV g_f960,R4
+        RETS
+
+S_B6050 ENDS
+        END

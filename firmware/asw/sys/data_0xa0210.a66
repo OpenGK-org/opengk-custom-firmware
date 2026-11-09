@@ -1,0 +1,13 @@
+; asw/sys/data_0xa0210.a66
+; 0xA0210-0xA0214  (4 bytes, 0 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+
+S_A0210 SECTION CODE AT 0A0210H
+        JMPS 008H,cstart_reset_selftest_ramtest
+
+S_A0210 ENDS
+        END

@@ -1,0 +1,505 @@
+; asw/cfa.a66
+; 0xD791A-0xD7D78  (1118 bytes, 8 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_t_dur_low_hys                      EQU  090337H
+c_t_rtd_dec_2_cfa                    EQU  09034FH
+t_rtd_cfa_dec                        EQU  090350H
+c_t_rtd_inc_2_0_cfa                  EQU  090351H
+c_t_rtd_inc_2_1_cfa                  EQU  090352H
+t_rtd_cfa_inc_m                      EQU  090353H
+t_rtd_cfa_inc_a                      EQU  090354H
+c_tco_hys_cfa                        EQU  090374H
+c_tco_max_rly_fan_m                  EQU  09037CH
+c_tco_on_cfa_es                      EQU  090395H
+c_vs_1_cfa                           EQU  090422H
+c_vs_2_cfa                           EQU  090423H
+c_vs_3_cfa                           EQU  090424H
+c_vs_hys_1_cfa                       EQU  090428H
+c_vs_hys_2_cfa                       EQU  090429H
+c_t_off_cfa_st                       EQU  090720H
+
+PUBLIC  Calc_VS_STATE_CFA, Reset_state_cfa_is_92a, Set_Out_Latch_B0, Set_Out_Latch_B1, Set_Out_Latch_B12, Set_Out_Latch_B2
+PUBLIC  Set_Out_Latch_Clr, Set_lv_cdn_diag_maf_dif_ch_int
+EXTERN  Get_Byte_3D_Table_DWord_XByte_YByte:NEAR, sub_r12_13_ret_r4:NEAR
+
+S_D791A SECTION CODE AT 0D791AH
+
+; ======== Set_lv_cdn_diag_maf_dif_ch_int  (@0xd791a) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Set_lv_cdn_diag_maf_dif_ch_int:
+        BCLR lv_cdn_diag_maf_dif_ch_int.02H
+        MOVB RL4,pwl_dly_ctr
+        JMPR cc_EQ,L_D7928
+        SUBB RL4,#01H
+        MOVB pwl_dly_ctr,RL4
+L_D7928:                 ; 0xd7928
+        RETS
+
+; ======== Reset_state_cfa_is_92a  (@0xd792a) ========
+Reset_state_cfa_is_92a:
+        MOVB state_cfa_is,ZEROS
+        MOVB state_cfa,ZEROS
+        MOVB t_cfa_rtd,ZEROS
+        MOVB t_cfa_low_hys,ZEROS
+        BSET lv_cdn_diag_maf_dif_ch_int.02H
+        BCLR lv_cdn_diag_maf_dif_ch_int.05H
+        MOVB vs_state_cfa_prev,ZEROS
+        MOVB vs_state_cfa,ZEROS
+        MOVB state_cfa_is_prev,ZEROS
+        BCLR lv_cdn_diag_maf_dif_ch_int.00H
+        RETS
+
+; ======== Calc_VS_STATE_CFA  (@0xd794e) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (MS42, verified): cooling-fan vehicle-speed state machine (c_vs_1/2/3_cfa + hysteresis ->
+        ; vs_state_cfa)
+        ; (was FUN_0d794e)
+        ; ------------------------------------------------------------
+Calc_VS_STATE_CFA:
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOVB RL4,vs_state_cfa
+        MOVB vs_state_cfa_prev,RL4
+        JB lv_cam_err.07H,L_D79D0
+        JB lv_cam_err.08H,L_D79D0
+        MOVB RL5,vs
+        CMPB RL5,DPP0:c_vs_3_cfa
+        JMPR cc_UGT,L_D79C8
+        MOVB RL3,vs_state_cfa
+        CMPB RL3,#02H
+        JMPR cc_NE,L_D798E
+        MOVBZ R12,DPP0:c_vs_3_cfa
+        MOVBZ R13,DPP0:c_vs_hys_2_cfa
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL4,vs
+        JMPR cc_ULE,L_D79D4
+        MOVB RL4,#01H
+        MOVB vs_state_cfa,RL4
+        JMPR cc_UC,L_D79D4
+L_D798E:                 ; 0xd798e
+        JNB imob_fda0.0FH,L_D7998
+        MOVB RL6,DPP0:c_vs_1_cfa
+        JMPR cc_UC,L_D799C
+L_D7998:                 ; 0xd7998
+        MOVB RL6,DPP0:c_vs_2_cfa
+L_D799C:                 ; 0xd799c
+        MOVB RL4,vs_state_cfa
+        CMPB RL4,#01H
+        JMPR cc_NE,L_D79BA
+        MOVBZ R12,RL6
+        MOVBZ R13,DPP0:c_vs_hys_1_cfa
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL4,vs
+        JMPR cc_ULE,L_D79D4
+        MOVB vs_state_cfa,ZEROS
+        JMPR cc_UC,L_D79D4
+L_D79BA:                 ; 0xd79ba
+        CMPB RL6,vs
+        JMPR cc_NC,L_D79D4
+        MOVB RL4,#01H
+        MOVB vs_state_cfa,RL4
+        JMPR cc_UC,L_D79D4
+L_D79C8:                 ; 0xd79c8
+        MOVB RL4,#02H
+        MOVB vs_state_cfa,RL4
+        JMPR cc_UC,L_D79D4
+L_D79D0:                 ; 0xd79d0
+        MOVB vs_state_cfa,ZEROS
+L_D79D4:                 ; 0xd79d4
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_D7A08
+        MOV R4,t_ast
+        CMP R4,DPP0:c_t_off_cfa_st
+        JMPR cc_ULE,L_D79FE
+        MOV R5,cfa_pwl_flag
+        JMPR cc_EQ,L_D79F8
+        MOV cfa_pwl_flag,ZEROS
+        MOVB RL4,pwl_dly_ctr
+        JMPR cc_EQ,L_D79F8
+        SUBB RL4,#01H
+        MOVB pwl_dly_ctr,RL4
+L_D79F8:                 ; 0xd79f8
+        BSET lv_cdn_diag_maf_dif_ch_int.02H
+        BCLR lv_cdn_diag_maf_dif_ch_int.03H
+        JMPR cc_UC,L_D7A7A
+L_D79FE:                 ; 0xd79fe
+        MOV R4,cfa_pwl_flag
+        JMPR cc_NE,L_D7A7A
+        BCLR lv_cdn_diag_maf_dif_ch_int.02H
+        JMPR cc_UC,L_D7A7A
+L_D7A08:                 ; 0xd7a08
+        JNB lv_cdn_diag_maf_dif_ch_int.02H,L_D7A56
+        MOV R4,cfa_pwl_flag
+        JMPR cc_NE,L_D7A56
+        JB lv_cdn_diag_maf_dif_ch_int.03H,L_D7A48
+        BSET lv_cdn_diag_maf_dif_ch_int.03H
+        MOVB RL4,tco
+        CMPB RL4,DPP0:c_tco_on_cfa_es
+        JMPR cc_C,L_D7A44
+        MOV R12,#DATA16 051A4H
+        MOVBZ R13,RL4
+        MOVBZ R14,tia
+        CALLS 00FH,Get_Byte_3D_Table_DWord_XByte_YByte
+        MOVB RL7,RL4
+        JMPR cc_EQ,L_D7A40
+        MOVBZ R4,RL7
+        MOV cfa_pwl_flag,R4
+        SUBB pwl_dly_ctr,ONES
+        JMPR cc_UC,L_D7A56
+L_D7A40:                 ; 0xd7a40
+        BCLR lv_cdn_diag_maf_dif_ch_int.02H
+        JMPR cc_UC,L_D7A56
+L_D7A44:                 ; 0xd7a44
+        BCLR lv_cdn_diag_maf_dif_ch_int.02H
+        JMPR cc_UC,L_D7A56
+L_D7A48:                 ; 0xd7a48
+        BCLR lv_cdn_diag_maf_dif_ch_int.02H
+        MOVB RL4,pwl_dly_ctr
+        JMPR cc_EQ,L_D7A56
+        SUBB RL4,#01H
+        MOVB pwl_dly_ctr,RL4
+L_D7A56:                 ; 0xd7a56
+        JB lv_cdn_diag_maf_dif_ch_int.04H,L_D7A64
+        JNB lv_act_cle_slv_ivvt.00H,L_D7A64
+        SUBB pwl_dly_ctr,ONES
+        BSET lv_cdn_diag_maf_dif_ch_int.04H
+L_D7A64:                 ; 0xd7a64
+        JNB lv_cdn_diag_maf_dif_ch_int.04H,L_D7A7A
+        JB lv_act_cle_slv_ivvt.00H,L_D7A7A
+        MOVB RL4,pwl_dly_ctr
+        JMPR cc_EQ,L_D7A78
+        SUBB RL4,#01H
+        MOVB pwl_dly_ctr,RL4
+L_D7A78:                 ; 0xd7a78
+        BCLR lv_cdn_diag_maf_dif_ch_int.04H
+L_D7A7A:                 ; 0xd7a7a
+        MOVB RL4,state_cfa_is
+        MOVB state_cfa_is_prev,RL4
+        JB lv_cdn_diag_maf_dif_ch_int.02H,L_D7A8A
+        JMPA cc_UC,L_D7C62
+L_D7A8A:                 ; 0xd7a8a
+        JNB lv_cam_err.0CH,L_D7A92
+        JMPA cc_UC,L_D7C5A
+L_D7A92:                 ; 0xd7a92
+        JNB lv_cam_err.0DH,L_D7A9A
+        JMPA cc_UC,L_D7C5A
+L_D7A9A:                 ; 0xd7a9a
+        JNB lv_cam_err.0EH,L_D7AA2
+        JMPA cc_UC,L_D7C5A
+L_D7AA2:                 ; 0xd7aa2
+        JNB lv_lam_lim_1_err.00H,L_D7AAA
+        JMPA cc_UC,L_D7C5A
+L_D7AAA:                 ; 0xd7aaa
+        JNB lv_lam_lim_1_err.01H,L_D7AB2
+        JMPA cc_UC,L_D7C5A
+L_D7AB2:                 ; 0xd7ab2
+        JNB lv_acp_err.05H,L_D7ABA
+        JMPA cc_UC,L_D7C5A
+L_D7ABA:                 ; 0xd7aba
+        MOVB RL5,conf_acp
+        JMPR cc_EQ,L_D7B4A
+        JNB lv_im_acin.04H,L_D7B34
+        MOVB RL3,state_acp
+        CMPB RL3,#03H
+        JMPR cc_NE,L_D7AE2
+        MOV R12,#DATA16 051ECH
+        MOVBZ R13,tco
+        MOVBZ R14,vs_state_cfa
+        CALLS 00FH,Get_Byte_3D_Table_DWord_XByte_YByte
+        MOVB state_cfa_new,RL4
+        JMPR cc_UC,L_D7B78
+L_D7AE2:                 ; 0xd7ae2
+        MOVB RL4,state_acp
+        CMPB RL4,#02H
+        JMPR cc_NE,L_D7B00
+        MOV R12,#DATA16 051E0H
+        MOVBZ R13,tco
+        MOVBZ R14,vs_state_cfa
+        CALLS 00FH,Get_Byte_3D_Table_DWord_XByte_YByte
+        MOVB state_cfa_new,RL4
+        JMPR cc_UC,L_D7B78
+L_D7B00:                 ; 0xd7b00
+        MOVB RL4,state_acp
+        CMPB RL4,#01H
+        JMPR cc_NE,L_D7B1E
+        MOV R12,#DATA16 051D4H
+        MOVBZ R13,tco
+        MOVBZ R14,vs_state_cfa
+        CALLS 00FH,Get_Byte_3D_Table_DWord_XByte_YByte
+        MOVB state_cfa_new,RL4
+        JMPR cc_UC,L_D7B78
+L_D7B1E:                 ; 0xd7b1e
+        MOV R12,#DATA16 051C8H
+        MOVBZ R13,tco
+        MOVBZ R14,vs_state_cfa
+        CALLS 00FH,Get_Byte_3D_Table_DWord_XByte_YByte
+        MOVB state_cfa_new,RL4
+        JMPR cc_UC,L_D7B78
+L_D7B34:                 ; 0xd7b34
+        MOV R12,#DATA16 051B0H
+        MOVBZ R13,tco
+        MOVBZ R14,vs_state_cfa
+        CALLS 00FH,Get_Byte_3D_Table_DWord_XByte_YByte
+        MOVB state_cfa_new,RL4
+        JMPR cc_UC,L_D7B78
+L_D7B4A:                 ; 0xd7b4a
+        JNB lv_im_acin.04H,L_D7B64
+        MOV R12,#DATA16 051BCH
+        MOVBZ R13,tco
+        MOVBZ R14,vs_state_cfa
+        CALLS 00FH,Get_Byte_3D_Table_DWord_XByte_YByte
+        MOVB state_cfa_new,RL4
+        JMPR cc_UC,L_D7B78
+L_D7B64:                 ; 0xd7b64
+        MOV R12,#DATA16 051B0H
+        MOVBZ R13,tco
+        MOVBZ R14,vs_state_cfa
+        CALLS 00FH,Get_Byte_3D_Table_DWord_XByte_YByte
+        MOVB state_cfa_new,RL4
+L_D7B78:                 ; 0xd7b78
+        BCMP lv_cdn_diag_maf_dif_ch_int.00H,lv_im_acin.04H
+        JMPR cc_N,L_D7B92
+        MOVB RL4,vs_state_cfa_prev
+        CMPB RL4,vs_state_cfa
+        JMPR cc_NE,L_D7B92
+        MOVB RL5,state_cfa_new
+        CMPB RL5,state_cfa_1
+        JMPR cc_ULE,L_D7BEC
+L_D7B92:                 ; 0xd7b92
+        MOVB RL4,state_cfa_1
+        JMPR cc_NE,L_D7BAC
+        MOVB RL5,state_cfa_new
+        CMPB RL5,#03H
+        JMPR cc_NE,L_D7BAC
+        JB lv_cdn_diag_maf_dif_ch_int.05H,L_D7BAC
+        BSET lv_cdn_diag_maf_dif_ch_int.05H
+        MOVB t_cfa_low_hys,ZEROS
+        JMPR cc_UC,L_D7BF2
+L_D7BAC:                 ; 0xd7bac
+        MOVB tco_hys_cfa,ZEROS
+        JNB lv_cdn_diag_maf_dif_ch_int.05H,L_D7BDC
+        MOVB RL4,state_cfa_new
+        CMPB RL4,#03H
+        JMPR cc_NE,L_D7BDC
+        MOVB RL5,t_cfa_low_hys
+        CMPB RL5,DPP0:c_t_dur_low_hys
+        JMPR cc_C,L_D7BD0
+        BCLR lv_cdn_diag_maf_dif_ch_int.05H
+        MOVB RL3,#03H
+        MOVB state_cfa_1,RL3
+        JMPR cc_UC,L_D7BF2
+L_D7BD0:                 ; 0xd7bd0
+        SUBB t_cfa_low_hys,ONES
+        MOVB RL4,#01H
+        MOVB state_cfa_1,RL4
+        JMPR cc_UC,L_D7BF2
+L_D7BDC:                 ; 0xd7bdc
+        MOVB RL4,state_cfa_new
+        MOVB state_cfa_1,RL4
+        BCLR lv_cdn_diag_maf_dif_ch_int.05H
+        MOVB t_cfa_low_hys,ZEROS
+        JMPR cc_UC,L_D7BF2
+L_D7BEC:                 ; 0xd7bec
+        BCLR lv_cdn_diag_maf_dif_ch_int.05H
+        MOVB t_cfa_low_hys,ZEROS
+L_D7BF2:                 ; 0xd7bf2
+        MOVB RL4,state_cfa_new
+        CMPB RL4,state_cfa_1
+        JMPR cc_NC,L_D7C12
+        MOVB RL5,tco_hys_cfa
+        JMPR cc_NE,L_D7C12
+        MOVBZ R12,tco
+        MOVBZ R13,DPP0:c_tco_hys_cfa
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB tco_hys_cfa,RL4
+L_D7C12:                 ; 0xd7c12
+        MOVB RL4,tco
+        CMPB RL4,tco_hys_cfa
+        JMPR cc_NC,L_D7C2E
+        MOVB RL5,state_cfa_new
+        MOVB state_cfa_1,RL5
+        MOVB tco_hys_cfa,ZEROS
+        BCLR lv_cdn_diag_maf_dif_ch_int.05H
+        MOVB t_cfa_low_hys,ZEROS
+L_D7C2E:                 ; 0xd7c2e
+        JNB lv_im_acin.06H,L_D7C50
+        JNB lv_im_acin.04H,L_D7C50
+        MOVB RL4,tco
+        CMPB RL4,DPP0:c_tco_max_rly_fan_m
+        JMPR cc_NC,L_D7C48
+        MOVB RL5,#04H
+        MOVB state_cfa_is,RL5
+        JMPR cc_UC,L_D7C66
+L_D7C48:                 ; 0xd7c48
+        MOVB RL4,#03H
+        MOVB state_cfa_is,RL4
+        JMPR cc_UC,L_D7C66
+L_D7C50:                 ; 0xd7c50
+        MOVB RL4,state_cfa_1
+        MOVB state_cfa_is,RL4
+        JMPR cc_UC,L_D7C66
+L_D7C5A:                 ; 0xd7c5a
+        MOVB RL4,#03H
+        MOVB state_cfa_is,RL4
+        JMPR cc_UC,L_D7C66
+L_D7C62:                 ; 0xd7c62
+        MOVB state_cfa_is,ZEROS
+L_D7C66:                 ; 0xd7c66
+        BMOV lv_cdn_diag_maf_dif_ch_int.00H,lv_im_acin.04H
+        MOVB RL4,state_cfa_is
+        CMPB RL4,state_cfa_is_prev
+        JMPR cc_NE,L_D7C86
+        MOVB RL5,t_cfa_rtd
+        JMPR cc_NE,L_D7C80
+        MOVB state_cfa,RL4
+        JMPR cc_UC,L_D7CDE
+L_D7C80:                 ; 0xd7c80
+        ADDB t_cfa_rtd,ONES
+        JMPR cc_UC,L_D7CDE
+L_D7C86:                 ; 0xd7c86
+        MOVB RL4,state_cfa_is
+        CMPB RL4,state_cfa_is_prev
+        JMPR cc_ULE,L_D7CC8
+        JNB lv_im_acin.06H,L_D7CB0
+        JNB lv_im_acin.04H,L_D7CB0
+        JNB lv_cdn_diag_maf_dif_ch_int.01H,L_D7CA6
+        MOVB RL5,DPP0:c_t_rtd_inc_2_1_cfa
+        MOVB t_cfa_rtd,RL5
+        JMPR cc_UC,L_D7CDE
+L_D7CA6:                 ; 0xd7ca6
+        MOVB RL4,DPP0:t_rtd_cfa_inc_a
+        MOVB t_cfa_rtd,RL4
+        JMPR cc_UC,L_D7CDE
+L_D7CB0:                 ; 0xd7cb0
+        JNB lv_cdn_diag_maf_dif_ch_int.01H,L_D7CBE
+        MOVB RL4,DPP0:c_t_rtd_inc_2_0_cfa
+        MOVB t_cfa_rtd,RL4
+        JMPR cc_UC,L_D7CDE
+L_D7CBE:                 ; 0xd7cbe
+        MOVB RL4,DPP0:t_rtd_cfa_inc_m
+        MOVB t_cfa_rtd,RL4
+        JMPR cc_UC,L_D7CDE
+L_D7CC8:                 ; 0xd7cc8
+        JNB lv_cdn_diag_maf_dif_ch_int.01H,L_D7CD6
+        MOVB RL4,DPP0:c_t_rtd_dec_2_cfa
+        MOVB t_cfa_rtd,RL4
+        JMPR cc_UC,L_D7CDE
+L_D7CD6:                 ; 0xd7cd6
+        MOVB RL4,DPP0:t_rtd_cfa_dec
+        MOVB t_cfa_rtd,RL4
+L_D7CDE:                 ; 0xd7cde
+        MOVB RL4,state_cfa
+        CMPB RL4,#04H
+        JMPR cc_UGT,L_D7D72
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        ADD R4,#DATA16 051F8H
+        MOV R4,[R4]
+        JMPI cc_UC,[R4]
+
+; ======== Set_Out_Latch_Clr  (@0xd7cf2) ========
+        ; ------------------------------------------------------------
+        ; Digital-output-latch driver (fd94=request/fd96=state, fd98=feedback; CC5/P2.5=fuel-pump relay):
+        ; Output-latch driver: clears fd94/fd96 output channel bits per fd98 state.
+        ; ------------------------------------------------------------
+Set_Out_Latch_Clr:
+        BCLR state_out_fault.0AH
+        JB state_out_req.01H,L_D7CFA
+        BCLR state_out_diag.0AH
+L_D7CFA:                 ; 0xd7cfa
+        BCLR state_out_fault.08H
+        JB state_out_req.05H,L_D7D02
+        BCLR state_out_diag.08H
+L_D7D02:                 ; 0xd7d02
+        BCLR state_out_fault.09H
+        JB state_out_req.03H,L_D7D72
+        BCLR state_out_diag.09H
+        JMPR cc_UC,L_D7D72
+
+; ======== Set_Out_Latch_B2  (@0xd7d0c) ========
+        ; ------------------------------------------------------------
+        ; Digital-output-latch driver (fd94=request/fd96=state, fd98=feedback; CC5/P2.5=fuel-pump relay):
+        ; Output-latch driver: fd94 bit 0x400 channel.
+        ; ------------------------------------------------------------
+Set_Out_Latch_B2:
+        BSET state_out_fault.0AH
+        JB state_out_req.01H,L_D7D14
+        BSET state_out_diag.0AH
+L_D7D14:                 ; 0xd7d14
+        BCLR state_out_fault.08H
+        JB state_out_req.05H,L_D7D1C
+        BCLR state_out_diag.08H
+L_D7D1C:                 ; 0xd7d1c
+        BCLR state_out_fault.09H
+        JB state_out_req.03H,L_D7D72
+        BCLR state_out_diag.09H
+        JMPR cc_UC,L_D7D72
+
+; ======== Set_Out_Latch_B1  (@0xd7d26) ========
+        ; ------------------------------------------------------------
+        ; Digital-output-latch driver (fd94=request/fd96=state, fd98=feedback; CC5/P2.5=fuel-pump relay):
+        ; Output-latch driver: fd94 bit 0x200 channel.
+        ; ------------------------------------------------------------
+Set_Out_Latch_B1:
+        BCLR state_out_fault.0AH
+        JB state_out_req.01H,L_D7D2E
+        BCLR state_out_diag.0AH
+L_D7D2E:                 ; 0xd7d2e
+        BCLR state_out_fault.08H
+        JB state_out_req.05H,L_D7D36
+        BCLR state_out_diag.08H
+L_D7D36:                 ; 0xd7d36
+        BSET state_out_fault.09H
+        JB state_out_req.03H,L_D7D72
+        BSET state_out_diag.09H
+        JMPR cc_UC,L_D7D72
+
+; ======== Set_Out_Latch_B12  (@0xd7d40) ========
+        ; ------------------------------------------------------------
+        ; Digital-output-latch driver (fd94=request/fd96=state, fd98=feedback; CC5/P2.5=fuel-pump relay):
+        ; Output-latch driver: fd94 bits 0x200|0x400 channels.
+        ; ------------------------------------------------------------
+Set_Out_Latch_B12:
+        BSET state_out_fault.0AH
+        JB state_out_req.01H,L_D7D48
+        BSET state_out_diag.0AH
+L_D7D48:                 ; 0xd7d48
+        BCLR state_out_fault.08H
+        JB state_out_req.05H,L_D7D50
+        BCLR state_out_diag.08H
+L_D7D50:                 ; 0xd7d50
+        BSET state_out_fault.09H
+        JB state_out_req.03H,L_D7D72
+        BSET state_out_diag.09H
+        JMPR cc_UC,L_D7D72
+
+; ======== Set_Out_Latch_B0  (@0xd7d5a) ========
+        ; ------------------------------------------------------------
+        ; Digital-output-latch driver (fd94=request/fd96=state, fd98=feedback; CC5/P2.5=fuel-pump relay):
+        ; Output-latch driver: fd94 bit 0x100 channel.
+        ; ------------------------------------------------------------
+Set_Out_Latch_B0:
+        BCLR state_out_fault.0AH
+        JB state_out_req.01H,L_D7D62
+        BCLR state_out_diag.0AH
+L_D7D62:                 ; 0xd7d62
+        BSET state_out_fault.08H
+        JB state_out_req.05H,L_D7D6A
+        BSET state_out_diag.08H
+L_D7D6A:                 ; 0xd7d6a
+        BCLR state_out_fault.09H
+        JB state_out_req.03H,L_D7D72
+        BCLR state_out_diag.09H
+L_D7D72:                 ; 0xd7d72
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        RETS
+
+S_D791A ENDS
+        END

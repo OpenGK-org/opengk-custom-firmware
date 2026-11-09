@@ -1,0 +1,370 @@
+; asw/cop.a66
+; 0xD648A-0xD6824  (922 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+diag_90008                           EQU  090008H
+diag_90009                           EQU  090009H
+diag_9000a                           EQU  09000AH
+diag_9000b                           EQU  09000BH
+diag_9000c                           EQU  09000CH
+diag_9000d                           EQU  09000DH
+c_conf_mis                           EQU  090153H
+c_iga_min_cop                        EQU  0901DFH
+c_maf_min_hys_cop                    EQU  090231H
+c_vs_hys_cop                         EQU  09042AH
+c_vs_min_cop                         EQU  090437H
+c_ti_cop_inc                         EQU  09078AH
+sstm_n_1_8                        EQU  090D1BH
+sst_zw_mw_kr_kf_lm_min_ks         EQU  090D22H
+sstm_tkw_1_8                      EQU  090E46H
+sst_lm_kf_ti_ks                  EQU  090E91H
+sst_zw_mw_kr_kf_ti_ks_zw             EQU  090E98H
+ip_maf_min_cop__n__iga_cop           EQU  095FC9H
+ip_tco_lam_min__tco_st               EQU  0965FCH
+ip_ti_cop__n__maf                    EQU  0966D4H
+ip_ti_cop_iga__iga_cop               EQU  0966F8H
+
+PUBLIC  Calc_COP_IGA_TI, Calc_ECU_Diag_SF, Sched_Diag_Tasks, Set_Conf_VS
+EXTERN  Acq_TOIL_2:NEAR, Add_Clamp_U8:NEAR, Calc_Conf_CP:NEAR, Calc_Conf_CatEff:NEAR
+EXTERN  Calc_Conf_Lam:NEAR, Calc_Conf_Mis:NEAR, Calc_Evap_RBM_Cond:NEAR, Calc_FAC_WF_VO_Fdout:NEAR
+EXTERN  Calc_Fcut_State:NEAR, Calc_LS_Up_OBD2_CycNr:NEAR, Calc_MAF_Dif_CH_Upd:NEAR, Calc_MAF_Int_CH:NEAR
+EXTERN  Calc_MAF_Model_Const:NEAR, Calc_MAF_Trim_EOL:NEAR, Calc_MAF_Trim_State:NEAR, Calc_RBM_CPS_Mecha:NEAR
+EXTERN  Calc_RBM_Cat_Diag:NEAR, Calc_RBM_DTP_Noise:NEAR, Calc_RBM_Leak_Large:NEAR, Calc_RBM_Leak_Small:NEAR
+EXTERN  Calc_RBM_MAF_Dif_CH:NEAR, Calc_RBM_TCO_Plaus:NEAR, Calc_RBM_TCO_Stuck:NEAR, Calc_RBM_TCO_Stuck_Rng:NEAR
+EXTERN  Calc_RBM_TIA_Plaus:NEAR, Calc_RBM_TOil_Stuck:NEAR, Calc_RBM_Th_Det:NEAR, Calc_TAst_OBD:NEAR
+EXTERN  Calc_TEG_Cor:NEAR, Calc_TEG_Dyn_Hys:NEAR, Calc_TEG_Model:NEAR, Calc_TI_AS:NEAR
+EXTERN  Calc_TOil_Model:NEAR, Calc_VS:NEAR, Calc_lamb_sp:NEAR, Calc_maf_fac_alti_mmv:NEAR
+EXTERN  DTC_Calc_Activation_MIL:NEAR, DiagCP_Set_Config:NEAR, Diag_Coding_MAF_TPS_Plaus:NEAR, Diag_DTC_dd63a:NEAR
+EXTERN  Diag_TOIL:NEAR, Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_2D_Table_DWord_YByte:NEAR, Get_IP_Byte_3D_Table:NEAR
+EXTERN  Get_IP_Byte_X_Axis:NEAR, Get_IP_Byte_Y_Axis:NEAR, IVVT_Task_Group_2:NEAR, Learn_TPS_AdMmv_IS:NEAR
+EXTERN  Lookup_Dc204_Tco:NEAR, Lookup_Lamb_ER_Ad_Fac:NEAR, NVM_Restore_s5aa:NEAR, NVM_Restore_s5ae:NEAR
+EXTERN  RBM_Inc_IgnCyc_Ctr:NEAR, Sat_Add_S8:NEAR, Sat_Add_U8:NEAR, Set_Conf_ACP:NEAR
+EXTERN  Set_Conf_Ad_Rst:NEAR, Set_Conf_MIL_FMY:NEAR, Set_Conf_MTV:NEAR, Set_Conf_VIN_Diag:NEAR
+EXTERN  Set_PL_Flags:NEAR, Set_lv_conf_mis:NEAR, Set_lv_maf_trim_e2d7:NEAR, Set_lv_maf_trim_e31a:NEAR
+EXTERN  Set_lv_pl:NEAR, sub_r12_13_ret_r4:NEAR, sub_r12_r13_rets_r4:NEAR
+
+S_D648A SECTION CODE AT 0D648AH
+
+; ======== Sched_Diag_Tasks  (@0xd648a) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified: DTC codes / state vars / output signals): Periodic diagnostic/calc task
+        ; scheduler: runs ~40 subsystem functions each cycle (MAF trim, TEG model+hys, cat/evap/TOIL diags,
+        ; TPS learn, etc.). Top of the slow diagnostic task group.
+        ; ------------------------------------------------------------
+Sched_Diag_Tasks:
+        CALLS 00DH,Calc_TI_AS
+        CALLS 00DH,Calc_MAF_Trim_EOL
+        CALLS 00CH,Calc_MAF_Model_Const
+        CALLS 00CH,Calc_maf_fac_alti_mmv
+        CALLS 00AH,Lookup_Dc204_Tco
+        CALLS 00AH,Lookup_Lamb_ER_Ad_Fac
+        CALLS 00CH,Learn_TPS_AdMmv_IS
+        CALLS 00BH,Calc_FAC_WF_VO_Fdout
+        JNB lv_conf_mis.04H,L_D64B2
+        CALLS 00DH,Diag_Coding_MAF_TPS_Plaus
+L_D64B2:                 ; 0xd64b2
+        JNB lv_conf_mis.00H,L_D64BA
+        CALLS 00DH,Calc_LS_Up_OBD2_CycNr
+L_D64BA:                 ; 0xd64ba
+        CALLS 00BH,Calc_TOil_Model
+        CALLS 00BH,Acq_TOIL_2
+        CALLS 00BH,Diag_TOIL
+        CALLS 00BH,Calc_lamb_sp
+        CALLS 00DH,Calc_MAF_Trim_State
+        CALLS 00BH,Calc_Fcut_State
+        CALLS 00EH,Set_lv_maf_trim_e31a
+        CALLS 00CH,IVVT_Task_Group_2
+        CALLS 00BH,Diag_DTC_dd63a
+        CALLS 00BH,Calc_MAF_Int_CH
+        CALLS 00BH,Calc_TEG_Cor
+        CALLS 00CH,Calc_TEG_Model
+        CALLS 00CH,Calc_TEG_Dyn_Hys
+        CALLS 00BH,Calc_RBM_Cat_Diag
+        CALLS 00DH,Calc_Evap_RBM_Cond
+        CALLS 00DH,Calc_RBM_DTP_Noise
+        CALLS 00DH,Calc_RBM_CPS_Mecha
+        CALLS 00DH,Calc_RBM_Leak_Small
+        CALLS 00DH,Calc_RBM_Leak_Large
+        CALLS 00CH,Calc_RBM_TCO_Stuck
+        CALLS 00CH,Calc_RBM_TCO_Stuck_Rng
+        CALLS 00BH,Calc_RBM_TCO_Plaus
+        CALLS 00BH,Calc_RBM_Th_Det
+        CALLS 00BH,Calc_RBM_TOil_Stuck
+        CALLS 00DH,Calc_RBM_MAF_Dif_CH
+        CALLS 00CH,Calc_RBM_TIA_Plaus
+        CALLS 00BH,RBM_Inc_IgnCyc_Ctr
+        CALLS 00CH,Set_Conf_VIN_Diag
+        CALLS 00EH,Calc_TAst_OBD
+        RETS
+
+; ======== Calc_COP_IGA_TI  (@0xd6530) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (MS42, verified): component-protection: iga_cop=Sat_Add(iga_mv_adj_knk,iga_bas_temp_cor),
+        ; ti_cop
+        ; (was FUN_0d6530)
+        ; ------------------------------------------------------------
+Calc_COP_IGA_TI:
+        MOV [-R0],R9
+        MOV [-R0],R6
+        MOVB RL4,iga_mv_adj_knk
+        ADDB RL4,#DATA16 00080H
+        MOVBS R12,RL4
+        MOVB RL4,iga_bas_temp_cor
+        MOVBS R13,RL4
+        CALLS 00FH,Sat_Add_S8
+        ADDB RL4,#DATA16 00080H
+        MOVB iga_cop,RL4
+        JNB lv_pl.00H,L_D6628
+        MOV R12,#DATA16 POF sstm_n_1_8
+        MOV R13,#DATA16 PAG sstm_n_1_8
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF sst_zw_mw_kr_kf_lm_min_ks
+        MOV R13,#DATA16 PAG sst_zw_mw_kr_kf_lm_min_ks
+        MOVBZ R14,iga_cop
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        JNB lv_iga_dif_max_er.0DH,L_D65B6
+        MOVBZ R12,DPP0:c_vs_min_cop
+        MOVBZ R13,DPP0:c_vs_hys_cop
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL4,vs
+        JMPR cc_ULE,L_D6644
+        MOVB RL4,iga_cop
+        CMPB RL4,DPP0:c_iga_min_cop
+        JMPR cc_UGT,L_D65B0
+        MOV R12,#DATA16 POF ip_maf_min_cop__n__iga_cop
+        MOV R13,#DATA16 PAG ip_maf_min_cop__n__iga_cop
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R12,RL4
+        MOVBZ R13,DPP0:c_maf_min_hys_cop
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL4,lv_iga_cc2b
+        JMPR cc_ULE,L_D6644
+L_D65B0:                 ; 0xd65b0
+        BCLR lv_iga_dif_max_er.0DH
+        BSET lv_iga_dif_max_er.0CH
+        JMPR cc_UC,L_D6644
+L_D65B6:                 ; 0xd65b6
+        MOV R12,#DATA16 POF sstm_tkw_1_8
+        MOV R13,#DATA16 PAG sstm_tkw_1_8
+        MOVBZ R14,tco_st
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_tco_lam_min__tco_st
+        MOV R13,#DATA16 PAG ip_tco_lam_min__tco_st
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB RL6,RL4
+        MOV R12,#DATA16 POF sstm_n_1_8
+        MOV R13,#DATA16 PAG sstm_n_1_8
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF sst_zw_mw_kr_kf_lm_min_ks
+        MOV R13,#DATA16 PAG sst_zw_mw_kr_kf_lm_min_ks
+        MOVBZ R14,iga_cop
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        CMPB RL6,tco
+        JMPR cc_NC,L_D6644
+        MOVB RL4,iga_cop
+        CMPB RL4,DPP0:c_iga_min_cop
+        JMPR cc_UGT,L_D6616
+        MOV R12,#DATA16 POF ip_maf_min_cop__n__iga_cop
+        MOV R13,#DATA16 PAG ip_maf_min_cop__n__iga_cop
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        CMPB RL4,lv_iga_cc2b
+        JMPR cc_ULE,L_D6620
+L_D6616:                 ; 0xd6616
+        MOVB RL4,vs
+        CMPB RL4,DPP0:c_vs_min_cop
+        JMPR cc_ULE,L_D6644
+L_D6620:                 ; 0xd6620
+        BSET lv_iga_dif_max_er.0BH
+        BSET lv_iga_dif_max_er.0DH
+        BSET lv_iga_dif_max_er.0CH
+        JMPR cc_UC,L_D6644
+L_D6628:                 ; 0xd6628
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_D6634
+        JB lv_pl.04H,L_D6634
+        JNB lv_pl.02H,L_D6640
+L_D6634:                 ; 0xd6634
+        MOV ti_cop,ZEROS
+        BCLR lv_iga_dif_max_er.0BH
+        BCLR lv_iga_dif_max_er.0DH
+        BCLR lv_iga_dif_max_er.0CH
+        JMPR cc_UC,L_D6644
+L_D6640:                 ; 0xd6640
+        BCLR lv_iga_dif_max_er.0DH
+        BSET lv_iga_dif_max_er.0CH
+L_D6644:                 ; 0xd6644
+        JNB lv_iga_dif_max_er.0BH,L_D671C
+        JNB lv_iga_dif_max_er.0DH,L_D6704
+        JB abs_def.04H,L_D6660
+        MOV R12,#DATA16 050A4H
+        MOVBZ R13,vs
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        MOVB RL6,RL4
+        JMPR cc_UC,L_D666E
+L_D6660:                 ; 0xd6660
+        MOV R12,#DATA16 050ACH
+        MOVBZ R13,vs
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        MOVB RL6,RL4
+L_D666E:                 ; 0xd666e
+        MOV R12,#DATA16 POF sstm_n_1_8
+        MOV R13,#DATA16 PAG sstm_n_1_8
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF sst_lm_kf_ti_ks
+        MOV R13,#DATA16 PAG sst_lm_kf_ti_ks
+        MOVBZ R14,lv_iga_cc2b
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_ti_cop__n__maf
+        MOV R13,#DATA16 PAG ip_ti_cop__n__maf
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R9,RL4
+        MOV R12,R9
+        MOVBZ R13,RL6
+        CALLS 00FH,Sat_Add_U8
+        MOVBZ R4,RL4
+        MOV R9,R4
+        MOV R12,#DATA16 POF sst_zw_mw_kr_kf_ti_ks_zw
+        MOV R13,#DATA16 PAG sst_zw_mw_kr_kf_ti_ks_zw
+        MOVBZ R14,iga_cop
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_ti_cop_iga__iga_cop
+        MOV R13,#DATA16 PAG ip_ti_cop_iga__iga_cop
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        ADDB RL4,#DATA16 00080H
+        MOVBS R13,RL4
+        MOV R4,R9
+        MOVBZ R12,RL4
+        CALLS 00FH,Add_Clamp_U8
+        MOVBZ R4,RL4
+        SHL R4,#04H
+        MOV R9,R4
+        CMP R4,#DATA16 00800H
+        JMPR cc_ULE,L_D66E2
+        MOV R9,#DATA16 00800H
+L_D66E2:                 ; 0xd66e2
+        JNB lv_iga_dif_max_er.0CH,L_D66FE
+        MOV R4,DPP0:c_ti_cop_inc
+        ADD ti_cop,R4
+        MOV R5,ti_cop
+        CMP R5,R9
+        JMPR cc_C,L_D671C
+        MOV ti_cop,R9
+        BCLR lv_iga_dif_max_er.0CH
+        JMPR cc_UC,L_D671C
+L_D66FE:                 ; 0xd66fe
+        MOV ti_cop,R9
+        JMPR cc_UC,L_D671C
+L_D6704:                 ; 0xd6704
+        MOV R12,ti_cop
+        MOV R13,DPP0:c_ti_cop_inc
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV ti_cop,R4
+        CMP R4,#00H
+        JMPR cc_NE,L_D671C
+        BCLR lv_iga_dif_max_er.0BH
+        BCLR lv_iga_dif_max_er.0CH
+L_D671C:                 ; 0xd671c
+        MOV R6,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_ECU_Diag_SF  (@0xd6722) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signals): ECU self-diagnosis status flags: ecu_diag_sf_word /
+        ; lv_ecu_err.
+        ; ------------------------------------------------------------
+Calc_ECU_Diag_SF:
+        MOVB RL4,DPP0:diag_90008
+        CMPB RL4,DPP1:0A0056H
+        JMPR cc_NE,L_D6770
+        MOVB RL5,DPP0:diag_90009
+        CMPB RL5,DPP1:0A0057H
+        JMPR cc_NE,L_D6770
+        MOVB RL3,DPP0:diag_9000a
+        CMPB RL3,DPP1:0A0058H
+        JMPR cc_NE,L_D6770
+        MOVB RL2,DPP0:diag_9000b
+        CMPB RL2,DPP1:0A0059H
+        JMPR cc_NE,L_D6770
+        MOVB RL1,DPP0:diag_9000c
+        CMPB RL1,DPP1:0A005AH
+        JMPR cc_NE,L_D6770
+        MOVB RL4,DPP0:diag_9000d
+        CMPB RL4,DPP1:0A005BH
+        JMPR cc_NE,L_D6770
+        MOVB RL4,#DATA16 000FEH
+        ANDB lv_sched_diag_inh,RL4
+        MOV R4,#DATA16 0FFDFH
+        AND ecu_diag_sf_word,R4
+        JMPR cc_UC,L_D6792
+L_D6770:                 ; 0xd6770
+        MOV R4,#DATA16 00020H
+        OR ecu_diag_sf_word,R4
+        MOVB RL4,DPP1:0A004CH
+        CMPB RL4,#DATA16 000A8H
+        JMPR cc_EQ,L_D678C
+        MOVB RL5,#DATA16 000FEH
+        ANDB lv_sched_diag_inh,RL5
+        JMPR cc_UC,L_D6792
+L_D678C:                 ; 0xd678c
+        MOVB RL4,#01H
+        ORB lv_sched_diag_inh,RL4
+L_D6792:                 ; 0xd6792
+        MOV R12,#DATA16 00020H
+        CALLS 00DH,DTC_Calc_Activation_MIL
+        BMOV lv_ecu_err.03H,dtc_status_work.06H
+        MOVBZ R4,dtc_ecu_flags
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D67B0
+        MOV R4,#DATA16 0FFF7H
+        AND dtc_st_grp_ecu,R4
+L_D67B0:                 ; 0xd67b0
+        RETS
+
+; ======== Set_Conf_VS  (@0xd67b2) ========
+Set_Conf_VS:
+        CALLS 00CH,Calc_Conf_Lam
+        CALLS 00CH,Calc_Conf_CatEff
+        CALLS 00DH,Set_Conf_MIL_FMY
+        MOVB RL4,DPP0:c_conf_mis
+        CMPB RL4,#01H
+        JMPR cc_NE,L_D67C8
+        BSET lv_conf_mis.02H
+L_D67C8:                 ; 0xd67c8
+        CALLS 00CH,Calc_Conf_CP
+        CALLS 00DH,DiagCP_Set_Config
+        CALLS 00CH,Set_lv_conf_mis
+        CALLS 00BH,Set_Conf_ACP
+        CALLS 00DH,NVM_Restore_s5aa
+        CALLS 00DH,NVM_Restore_s5ae
+        BSET lv_conf_mis.09H
+        JB can_fd58.02H,L_D67FC
+        MOV R4,diag_f890
+        MOV R5,diag_f892
+        EXTP R5, #02H
+        MOVB RL3,[R4+#0641H]
+        NOP
+        MOVB conf_vs,RL3
+        JMPR cc_UC,L_D6802
+L_D67FC:                 ; 0xd67fc
+        MOVB RL4,#03H
+        MOVB conf_vs,RL4
+L_D6802:                 ; 0xd6802
+        CALLS 00CH,Calc_VS
+        CALLS 00BH,Calc_Conf_Mis
+        CALLS 00DH,Set_PL_Flags
+        CALLS 00DH,Calc_MAF_Dif_CH_Upd
+        CALLS 00BH,Set_Conf_MTV
+        CALLS 00EH,Set_lv_maf_trim_e2d7
+        CALLS 00EH,Set_lv_pl
+        CALLS 00DH,Set_Conf_Ad_Rst
+        RETS
+
+S_D648A ENDS
+        END

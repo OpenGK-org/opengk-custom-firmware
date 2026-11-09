@@ -1,0 +1,100 @@
+; asw/comm/comm_ccp_4.a66
+; 0xA651A-0xA65B8  (158 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  CCP_Session_Ctl, CCP_Session_Ctl_2, CCP_Set_Flags_2, Check_Threshold_a6580, Init_KeyBuf_c508
+EXTERN  CCP_Parse_Cmd:NEAR, CCP_Resp_Dispatch:NEAR, CCP_Submit_Cmd:NEAR
+
+S_A651A SECTION CODE AT 0A651AH
+
+; ======== Init_KeyBuf_c508  (@0xa651a) ========
+        ; ------------------------------------------------------------
+        ; Seg-A helper (verified): Initialize 3-byte buffer DAT_00c508 to 0xff.
+        ; ------------------------------------------------------------
+Init_KeyBuf_c508:
+        MOV [-R0],R6
+        MOVB RL6,#00H
+L_A651E:                 ; 0xa651e
+        MOVB RL4,#DATA16 000FFH
+        MOVBZ R5,RL6
+        MOVB [R5+#0C508H],RL4
+        ADDB RL6,#01H
+        CMPB RL6,#03H
+        JMPR cc_C,L_A651E
+        MOV R6,[R0+]
+        RETS
+
+; ======== CCP_Session_Ctl  (@0xa6532) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by ccp_/bl_/cpu output signals): CCP session control: ccp_engine_flags /
+        ; ccp_session_state.
+        ; ------------------------------------------------------------
+CCP_Session_Ctl:
+        BSET ccp_engine_flags.0CH
+        MOV R4,#01H
+        MOV ccp_d756,R4
+        MOV R12,#DATA16 00070H
+        CALLS 00AH,CCP_Submit_Cmd
+        CALLS 00AH,Init_KeyBuf_c508
+        BSET ccp_engine_flags.0EH
+        MOV R4,#DATA16 00030H
+        MOV ccp_session_state,R4
+        RETS
+
+; ======== CCP_Session_Ctl_2  (@0xa6552) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by ccp_/bl_/cpu output signals): CCP session control (variant).
+        ; ------------------------------------------------------------
+CCP_Session_Ctl_2:
+        MOVB RL4,#DATA16 0001EH
+        MOVB ccp_d74c,RL4
+        MOV R12,#DATA16 0D74CH
+        CALLS 00AH,CCP_Resp_Dispatch
+        BCLR ccp_engine_flags.0AH
+        MOV R12,#DATA16 0006EH
+        CALLS 00AH,CCP_Submit_Cmd
+        JNB ccp_engine_flags.0EH,L_A657A
+        MOV R12,#DATA16 0C50FH
+        CALLS 00AH,Check_Threshold_a6580
+        BCLR ccp_engine_flags.0EH
+L_A657A:                 ; 0xa657a
+        MOV ccp_session_state,ZEROS
+        RETS
+
+; ======== Check_Threshold_a6580  (@0xa6580) ========
+        ; ------------------------------------------------------------
+        ; Seg-A helper (verified): Threshold compare of param byte vs coding-array delta.
+        ; ------------------------------------------------------------
+Check_Threshold_a6580:
+        MOVBZ R4,DPP1:0A2434H
+        MOVBZ R5,DPP1:0A2433H
+        SUB R4,R5
+        MOVB RL5,[R12]
+        MOVBZ R5,RL5
+        CMP R5,R4
+        JMPR cc_SGT,L_A659A
+        MOVB RL4,[R12]
+        ADDB RL4,DPP1:0A2433H
+        MOVB [R12],RL4
+L_A659A:                 ; 0xa659a
+        RETS
+
+; ======== CCP_Set_Flags_2  (@0xa659c) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by ccp_/bl_/cpu output signals): Set CCP engine flags (variant).
+        ; ------------------------------------------------------------
+CCP_Set_Flags_2:
+        MOV R12,#DATA16 0C50FH
+        CALLS 00AH,Check_Threshold_a6580
+        BCLR ccp_engine_flags.0EH
+        MOVB RL4,#DATA16 00023H
+        MOVB ccp_d760,RL4
+        MOV R12,#DATA16 0D760H
+        CALLS 00AH,CCP_Parse_Cmd
+        RETS
+
+S_A651A ENDS
+        END

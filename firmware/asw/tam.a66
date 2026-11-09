@@ -1,0 +1,253 @@
+; asw/tam.a66
+; 0xB9874-0xB9A78  (516 bytes, 9 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_t_tam1                             EQU  090356H
+c_t_tam2                             EQU  090357H
+c_tam_ofs                            EQU  090366H
+c_vs_tam_min                         EQU  090448H
+sstm_n_2_3                   EQU  09110AH
+ldp_amp_ip_ti_fl                   EQU  09188EH
+ip_ti_fl__n__amp                     EQU  096916H
+
+PUBLIC  Acq_TAM, Acq_TAM_2, Calc_TAM_Min_DiagCP_9958, Calc_TEG_Cor, Calc_TI_FL, Calc_tam_min_diagcp
+PUBLIC  NVM_Save_s643, Restore_TAM_NVM, Set_tam_874
+EXTERN  Elevated_Write_Routine_prg_zone_wrapper:NEAR, Get_IP_Byte_3D_Table:NEAR, Get_IP_Word_X_Axis:NEAR, Get_IP_Word_Y_Axis:NEAR
+EXTERN  sub_r12_13_ret_r4:NEAR
+
+S_B9874 SECTION CODE AT 0B9874H
+
+; ======== Set_tam_874  (@0xb9874) ========
+Set_tam_874:
+        MOVB RL4,#DATA16 0005BH
+        MOVB tam,RL4
+        RETS
+
+; ======== Acq_TAM  (@0xb987e) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tam/toil/teg/th output signals): Ambient-air-temperature sensor acquisition:
+        ; t_tam1 / t_tam2 (filtered).
+        ; ------------------------------------------------------------
+Acq_TAM:
+        MOVB t_tam1,ZEROS
+        MOVB t_tam2,ZEROS
+        MOVB RL4,tia
+        CMPB RL4,tam
+        JMPR cc_NC,L_B9894
+        MOVB tam,RL4
+L_B9894:                 ; 0xb9894
+        MOVB RL4,tco
+        CMPB RL4,tam
+        JMPR cc_NC,L_B98A2
+        MOVB tam,RL4
+L_B98A2:                 ; 0xb98a2
+        RETS
+
+; ======== Acq_TAM_2  (@0xb98a4) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tam/toil/teg/th output signals): Ambient-air-temperature sensor acquisition
+        ; (second path).
+        ; ------------------------------------------------------------
+Acq_TAM_2:
+        JNB can_fd58.09H,L_B9956
+        MOVB RL4,tam
+        CMPB RL4,tia
+        JMPR cc_NC,L_B9924
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_B991A
+        JB lv_pl.04H,L_B991A
+        MOVB RL5,vs
+        CMPB RL5,DPP0:c_vs_tam_min
+        JMPR cc_ULE,L_B9908
+        MOVB RL3,t_tam1
+        CMPB RL3,DPP0:c_t_tam1
+        JMPR cc_NC,L_B98D4
+        ADDB RL3,#01H
+        MOVB t_tam1,RL3
+L_B98D4:                 ; 0xb98d4
+        MOVB RL4,t_tam2
+        CMPB RL4,DPP0:c_t_tam2
+        JMPR cc_NC,L_B98FE
+        MOVB RL5,t_tam1
+        CMPB RL5,DPP0:c_t_tam1
+        JMPR cc_C,L_B9902
+        MOVBZ R12,tia
+        MOVBZ R13,DPP0:c_tam_ofs
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB tam,RL4
+        MOVB t_tam1,ZEROS
+        JMPR cc_UC,L_B9902
+L_B98FE:                 ; 0xb98fe
+        MOVB t_tam1,ZEROS
+L_B9902:                 ; 0xb9902
+        MOVB t_tam2,ZEROS
+        JMPR cc_UC,L_B9934
+L_B9908:                 ; 0xb9908
+        MOVB RL4,t_tam2
+        CMPB RL4,DPP0:c_t_tam2
+        JMPR cc_NC,L_B9934
+        ADDB RL4,#01H
+        MOVB t_tam2,RL4
+        JMPR cc_UC,L_B9934
+L_B991A:                 ; 0xb991a
+        MOVB t_tam1,ZEROS
+        MOVB t_tam2,ZEROS
+        JMPR cc_UC,L_B9934
+L_B9924:                 ; 0xb9924
+        MOVB RL4,tia
+        MOVB tam,RL4
+        MOVB t_tam1,ZEROS
+        MOVB t_tam2,ZEROS
+L_B9934:                 ; 0xb9934
+        MOVB RL4,tam
+        CMPB RL4,#DATA16 00011H
+        JMPR cc_C,L_B994E
+        CMPB RL4,#DATA16 000B8H
+        JMPR cc_ULE,L_B9956
+        MOVB RL5,#DATA16 000B8H
+        MOVB tam,RL5
+        RETS
+L_B994E:                 ; 0xb994e
+        MOVB RL4,#DATA16 00011H
+        MOVB tam,RL4
+L_B9956:                 ; 0xb9956
+        RETS
+
+; ======== Calc_TAM_Min_DiagCP  (@0xb9958) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tam/toil/teg/th output signals): Minimum ambient temp gate for EVAP purge
+        ; diag: tam_min_diagcp.
+        ; ------------------------------------------------------------
+Calc_TAM_Min_DiagCP_9958:
+        MOVB RL4,tam
+        MOVB diag_c265,RL4
+        CALLS 00BH,Acq_TAM_2
+        JNB lv_err_pres_mwss.0AH,L_B9978
+        MOVB RL4,tam
+        CMPB RL4,tam_min_diagcp
+        JMPR cc_NC,L_B9984
+        MOVB tam_min_diagcp,RL4
+        RETS
+L_B9978:                 ; 0xb9978
+        MOVB RL4,tam
+        CMPB RL4,diag_c265
+        JMPR cc_EQ,L_B9984
+        BSET lv_err_pres_mwss.0BH
+L_B9984:                 ; 0xb9984
+        RETS
+
+; ======== Restore_TAM_NVM  (@0xb9986) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Restore_TAM_NVM:
+        JB lv_pl.0CH,L_B99A4
+        JB can_fd58.02H,L_B99A4
+        MOV R4,diag_f890
+        MOV R5,diag_f892
+        EXTP R5, #02H
+        MOVB RL3,[R4+#0643H]
+        NOP
+        MOVB tam,RL3
+        RETS
+L_B99A4:                 ; 0xb99a4
+        CALLS 00BH,Set_tam_874
+        RETS
+
+; ======== NVM_Save_s643  (@0xb99aa) ========
+        ; ------------------------------------------------------------
+        ; NVM adaptation I/O: saves RAM-> validated NVM block (DAT_00f890 base) section; xor_routine checksum.
+        ; Section offset in name.
+        ; ------------------------------------------------------------
+NVM_Save_s643:
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 00643H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0F384H
+        MOV R15,#01H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        RETS
+
+; ======== Calc_tam_min_diagcp  (@0xb99d2) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Calc_tam_min_diagcp:
+        CALLS 00BH,Acq_TAM
+        MOVB tam_min_diagcp,ZEROS
+        RETS
+
+; ======== Calc_TEG_Cor  (@0xb99dc) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tam/toil/teg/th output signals): Exhaust-gas-temperature model corrections:
+        ; add_teg_cor / fac_teg_min_cor / fac_teg_cat_down_min_cor.
+        ; ------------------------------------------------------------
+Calc_TEG_Cor:
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_B9A36
+        JB lv_pl.04H,L_B9A36
+        MOV add_teg_cor,ZEROS
+        MOVB RL4,#DATA16 00010H
+        MOVB fac_teg_min_cor,RL4
+        MOVB RL5,#DATA16 00010H
+        MOVB fac_teg_cat_down_min_cor,RL5
+        MOVB RL3,nr_pat
+        MOVB nr_pat_scc_teg_1,RL3
+        MOV R4,eff_iga_av
+        MOV eff_iga_av_cbk_1,R4
+        MOV R5,#00H
+        BMOV R5.00H,lv_maf_puls.0DH
+        AND R5,#01H
+        MOV R2,teg_inci_1_bf_lv_teg_min_thd
+        AND R2,#DATA16 0FFFEH
+        OR R2,R5
+        MOV teg_inci_1_bf_lv_teg_min_thd,R2
+        MOV R5,#00H
+        BMOV R5.00H,lv_maf_puls.0EH
+        AND R5,#01H
+        SHL R5,#01H
+        MOV R3,teg_inci_1_bf_lv_teg_min_thd
+        AND R3,#DATA16 0FFFDH
+        OR R3,R5
+        MOV teg_inci_1_bf_lv_teg_min_thd,R3
+L_B9A36:                 ; 0xb9a36
+        RETS
+
+; ======== Calc_TI_FL  (@0xb9a38) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signal): overrun/fuel-cut injection quantity ti_fl from n/amp 3D map;
+        ; 0 unless lv_err_tps_det.2 set.
+        ; ------------------------------------------------------------
+Calc_TI_FL:
+        JNB lv_err_tps_det.02H,L_B9A72
+        MOV R12,#DATA16 POF sstm_n_2_3
+        MOV R13,#DATA16 PAG sstm_n_2_3
+        MOV R14,n_C93C
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ldp_amp_ip_ti_fl
+        MOV R13,#DATA16 PAG ldp_amp_ip_ti_fl
+        MOV R14,amp
+        CALLS 00FH,Get_IP_Word_X_Axis
+        MOV R12,#DATA16 POF ip_ti_fl__n__amp
+        MOV R13,#DATA16 PAG ip_ti_fl__n__amp
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        SHL R4,#04H
+        MOV ti_fl,R4
+        RETS
+L_B9A72:                 ; 0xb9a72
+        MOV ti_fl,ZEROS
+        RETS
+
+S_B9874 ENDS
+        END

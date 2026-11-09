@@ -1,0 +1,304 @@
+; asw/plaus/plaus_tps.a66
+; 0xD0E24-0xD1110  (748 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_inc_maf_tps_plaus_1                EQU  090570H
+c_inc_maf_tps_plaus_2                EQU  090572H
+c_sum_lam_plaus_max_diag_1           EQU  0906A6H
+c_sum_lam_plaus_max_diag_2           EQU  0906A8H
+c_sum_maf_tps_plaus_max              EQU  0906AAH
+c_sum_maf_tps_plaus_max_diag_1       EQU  0906ACH
+c_sum_maf_tps_plaus_max_diag_2       EQU  0906AEH
+c_lam_max_ratio                      EQU  0908BEH
+c_lam_min_ratio                      EQU  0908C8H
+
+PUBLIC  DiagCP_Task_Group, Diag_MAF_TPS_Plaus_1, Diag_MAF_TPS_Plaus_2, Log_Event_f94a
+EXTERN  Add_r12_r13_Return_r4:NEAR, DTC_Update_Immediate:NEAR, DiagCP_Acq_Dtp:NEAR, DiagCP_CDN_Check:NEAR
+EXTERN  DiagCP_Calc_ClMmv:NEAR, DiagCP_State_Dispatch:NEAR
+
+S_D0E24 SECTION CODE AT 0D0E24H
+
+; ======== Diag_MAF_TPS_Plaus_1  (@0xd0e24) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by maf/tps output signals + DTC): MAF/TPS ratio plausibility monitor #1 (DTC
+        ; 0xd0de): sum_maf_tps_plaus_1 -> lv_err_maf_tps_ratio_2.
+        ; ------------------------------------------------------------
+Diag_MAF_TPS_Plaus_1:
+        JNB lv_amp_ad_rst.0FH,L_D0E6A
+        JNB state_lam_ctl.00H,L_D0E6A
+        MOV R4,sum_maf_tps_plaus_1
+        CMP R4,DPP0:c_sum_maf_tps_plaus_max
+        JMPR cc_NC,L_D0E44
+        MOV R12,R4
+        MOV R13,DPP0:c_inc_maf_tps_plaus_1
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV sum_maf_tps_plaus_1,R4
+L_D0E44:                 ; 0xd0e44
+        MOV R4,sum_maf_tps_plaus_diag_1
+        CMP R4,DPP0:c_sum_maf_tps_plaus_max_diag_1
+        JMPR cc_NC,L_D0E84
+        ADD R4,#01H
+        MOV sum_maf_tps_plaus_diag_1,R4
+        MOV R5,lam_bank_1_lam_up_ti_lam
+        CMP R5,DPP0:c_lam_max_ratio
+        JMPR cc_SGE,L_D0E64
+        CMP R5,DPP0:c_lam_min_ratio
+        JMPR cc_SGT,L_D0E84
+L_D0E64:                 ; 0xd0e64
+        SUB sum_lam_plaus_diag_1,ONES
+        JMPR cc_UC,L_D0E84
+L_D0E6A:                 ; 0xd0e6a
+        MOV R4,sum_maf_tps_plaus_1
+        JMPR cc_NE,L_D0E7C
+        MOV sum_lam_plaus_diag_1,ZEROS
+        MOV sum_maf_tps_plaus_diag_1,ZEROS
+        BCLR lv_err_maf_tps_ratio_2.04H
+        JMPR cc_UC,L_D0E84
+L_D0E7C:                 ; 0xd0e7c
+        JNB lv_err_maf_tps_ratio_2.02H,L_D0E84
+        ADD sum_maf_tps_plaus_1,ONES
+L_D0E84:                 ; 0xd0e84
+        JB lv_err_maf_tps_ratio_2.02H,L_D0E8C
+        JMPA cc_UC,L_D0F6C
+L_D0E8C:                 ; 0xd0e8c
+        MOV R4,sum_maf_tps_plaus_diag_1
+        CMP R4,DPP0:c_sum_maf_tps_plaus_max_diag_1
+        JMPR cc_C,L_D0F04
+        JNB lv_amp_ad_rst.0DH,L_D0EC2
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D0DEH
+        MOV R13,#DATA16 05244H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cam_err.01H,dtc_status_work.06H
+        MOVBZ R4,obd_d0e8
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D0EC2
+        MOV R4,#DATA16 0FFFDH
+        AND dtc_grp_maf_dif,R4
+L_D0EC2:                 ; 0xd0ec2
+        JNB lv_amp_ad_rst.0CH,L_D0EEE
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D0FAH
+        MOV R13,#DATA16 05270H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cam_err.03H,dtc_status_work.06H
+        MOVBZ R4,lv_maf_d104
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D0EEE
+        MOV R4,#DATA16 0FFF7H
+        AND dtc_grp_maf_dif,R4
+L_D0EEE:                 ; 0xd0eee
+        MOVB RL4,#00H
+        BMOV R4.00H,lv_amp_ad_rst.0CH
+        MOVB lv_maf_c385,RL4
+        MOVB RL5,#00H
+        BMOV R5.00H,lv_amp_ad_rst.0DH
+        MOVB lv_maf_c386,RL5
+        RETS
+L_D0F04:                 ; 0xd0f04
+        MOV R4,sum_maf_tps_plaus_diag_1
+        JMPR cc_NE,L_D0F58
+        BCLR lv_amp_ad_rst.0CH
+        BCLR lv_amp_ad_rst.0DH
+        MOVB dtc_test_result,ZEROS
+        MOV R12,#DATA16 0D0FAH
+        MOV R13,#DATA16 05270H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cam_err.03H,dtc_status_work.06H
+        MOVBZ R4,lv_maf_d104
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D0F34
+        MOV R4,#DATA16 0FFF7H
+        AND dtc_grp_maf_dif,R4
+L_D0F34:                 ; 0xd0f34
+        MOV R12,#DATA16 0D0DEH
+        MOV R13,#DATA16 05244H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cam_err.01H,dtc_status_work.06H
+        MOVBZ R4,obd_d0e8
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D0F6C
+        MOV R4,#DATA16 0FFFDH
+        AND dtc_grp_maf_dif,R4
+        RETS
+L_D0F58:                 ; 0xd0f58
+        MOV R4,sum_lam_plaus_diag_1
+        CMP R4,DPP0:c_sum_lam_plaus_max_diag_1
+        JMPR cc_UGT,L_D0F68
+        BSET lv_amp_ad_rst.0DH
+        BCLR lv_amp_ad_rst.0CH
+        RETS
+L_D0F68:                 ; 0xd0f68
+        BCLR lv_amp_ad_rst.0DH
+        BSET lv_amp_ad_rst.0CH
+L_D0F6C:                 ; 0xd0f6c
+        RETS
+
+; ======== Diag_MAF_TPS_Plaus_2  (@0xd0f6e) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by maf/tps output signals + DTC): MAF/TPS ratio plausibility monitor #2 (DTC
+        ; 0xd0fa): sum_maf_tps_plaus_2.
+        ; ------------------------------------------------------------
+Diag_MAF_TPS_Plaus_2:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        JNB lv_err_maf_tps_ratio_2.00H,L_D0FC4
+        JNB state_lam_ctl.00H,L_D0FC4
+        MOV R4,sum_maf_tps_plaus_2
+        CMP R4,DPP0:c_sum_maf_tps_plaus_max
+        JMPR cc_NC,L_D0F92
+        MOV R12,R4
+        MOV R13,DPP0:c_inc_maf_tps_plaus_2
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV sum_maf_tps_plaus_2,R4
+L_D0F92:                 ; 0xd0f92
+        MOV R4,sum_maf_tps_plaus_diag_2
+        CMP R4,DPP0:c_sum_maf_tps_plaus_max_diag_2
+        JMPR cc_NC,L_D0FDE
+        ADD R4,#01H
+        MOV sum_maf_tps_plaus_diag_2,R4
+        MOV R8,lam_bank_1_lam_up_ti_lam
+        MOV R5,maf_mdl_dif
+        MUL R8,R5
+        MOV R9,MDH_FE0C
+        MOV R8,0FE0EH
+        CMP R9,#00H
+        JMPR cc_SGT,L_D0FDE
+        JMPR cc_SLT,L_D0FBE
+        CMP R8,#00H
+        JMPR cc_NC,L_D0FDE
+L_D0FBE:                 ; 0xd0fbe
+        SUB sum_lam_plaus_diag_2,ONES
+        JMPR cc_UC,L_D0FDE
+L_D0FC4:                 ; 0xd0fc4
+        MOV R4,sum_maf_tps_plaus_2
+        JMPR cc_NE,L_D0FD6
+        MOV sum_lam_plaus_diag_2,ZEROS
+        MOV sum_maf_tps_plaus_diag_2,ZEROS
+        BSET lv_err_maf_tps_ratio_2.04H
+        JMPR cc_UC,L_D0FDE
+L_D0FD6:                 ; 0xd0fd6
+        JNB lv_err_maf_tps_ratio_2.02H,L_D0FDE
+        ADD sum_maf_tps_plaus_2,ONES
+L_D0FDE:                 ; 0xd0fde
+        JNB lv_err_maf_tps_ratio_2.02H,L_D1052
+        MOV R4,sum_maf_tps_plaus_diag_2
+        CMP R4,DPP0:c_sum_maf_tps_plaus_max_diag_2
+        JMPR cc_C,L_D1052
+        MOV R5,sum_lam_plaus_diag_2
+        CMP R5,DPP0:c_sum_lam_plaus_max_diag_2
+        JMPR cc_C,L_D1024
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D0FAH
+        MOV R13,#DATA16 05270H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cam_err.03H,dtc_status_work.06H
+        MOVBZ R4,lv_maf_d104
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D101E
+        MOV R4,#DATA16 0FFF7H
+        AND dtc_grp_maf_dif,R4
+L_D101E:                 ; 0xd101e
+        BSET lv_amp_ad_rst.0CH
+        BCLR lv_amp_ad_rst.0DH
+        JMPR cc_UC,L_D10A4
+L_D1024:                 ; 0xd1024
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D0DEH
+        MOV R13,#DATA16 05244H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cam_err.01H,dtc_status_work.06H
+        MOVBZ R4,obd_d0e8
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D104C
+        MOV R4,#DATA16 0FFFDH
+        AND dtc_grp_maf_dif,R4
+L_D104C:                 ; 0xd104c
+        BCLR lv_amp_ad_rst.0CH
+        BSET lv_amp_ad_rst.0DH
+        JMPR cc_UC,L_D10A4
+L_D1052:                 ; 0xd1052
+        MOV R4,sum_maf_tps_plaus_diag_2
+        JMPR cc_NE,L_D10A4
+        MOVB dtc_test_result,ZEROS
+        MOV R12,#DATA16 0D0FAH
+        MOV R13,#DATA16 05270H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cam_err.03H,dtc_status_work.06H
+        MOVBZ R4,lv_maf_d104
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D107E
+        MOV R4,#DATA16 0FFF7H
+        AND dtc_grp_maf_dif,R4
+L_D107E:                 ; 0xd107e
+        MOV R12,#DATA16 0D0DEH
+        MOV R13,#DATA16 05244H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cam_err.01H,dtc_status_work.06H
+        MOVBZ R4,obd_d0e8
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_D10A0
+        MOV R4,#DATA16 0FFFDH
+        AND dtc_grp_maf_dif,R4
+L_D10A0:                 ; 0xd10a0
+        BCLR lv_amp_ad_rst.0DH
+        BCLR lv_amp_ad_rst.0CH
+L_D10A4:                 ; 0xd10a4
+        MOVB RL4,#00H
+        BMOV R4.00H,lv_amp_ad_rst.0CH
+        MOVB lv_maf_c385,RL4
+        MOVB RL5,#00H
+        BMOV R5.00H,lv_amp_ad_rst.0DH
+        MOVB lv_maf_c386,RL5
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== DiagCP_Task_Group  (@0xd10be) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+DiagCP_Task_Group:
+        CALLS 00DH,DiagCP_Acq_Dtp
+        CALLA cc_UC,DiagCP_CDN_Check
+        JNB lv_err_maf_tps_ratio_2.0AH,L_D10CE
+        CALLS 00DH,DiagCP_State_Dispatch
+L_D10CE:                 ; 0xd10ce
+        CALLA cc_UC,DiagCP_Calc_ClMmv
+        RETS
+
+; ======== Log_Event_f94a  (@0xd10d4) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Log_Event_f94a:
+        MOV R4,#05H
+        MOV g_f94a,R4
+        MOVB RL4,#DATA16 00032H
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_D110E
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_D110E:                 ; 0xd110e
+        RETS
+
+S_D0E24 ENDS
+        END

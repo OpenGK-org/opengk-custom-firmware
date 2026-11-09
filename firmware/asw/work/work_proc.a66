@@ -1,0 +1,652 @@
+; asw/work/work_proc.a66
+; 0xDBCA4-0xDC25E  (1466 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Calc_Mis_Rate_FromFault, DTC_Status_Proc_1, DTC_Status_Proc_2, DTC_Status_Proc_3, Eval_DTC_Status
+EXTERN  DTC_Process_StatusByte:NEAR, Get_DTC_StatusBits:NEAR, OBD_Readiness_Grp2:NEAR
+
+S_DBCA4 SECTION CODE AT 0DBCA4H
+
+; ======== DTC_Status_Proc_1  (@0xdbca4) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by trt/ecu_diag/dtc output signals): DTC status-word processor (dtc_status_work).
+        ; ------------------------------------------------------------
+DTC_Status_Proc_1:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R9,R12
+        JB obd_sf.0DH,L_DBCB6
+        JMPA cc_UC,L_DBE6A
+L_DBCB6:                 ; 0xdbcb6
+        MOV R4,R9
+        MOVBZ R12,RL4
+        CALLS 00DH,Get_DTC_StatusBits
+        MOV R8,R4
+        CMPB RL4,#04H
+        JMPA cc_NC,L_DBE6A
+        MOV R4,R8
+        MOVBZ R4,RL4
+        SHL R4,#03H
+        MOVB RL7,[R4+#0D6BEH]
+        MOV R4,R8
+        MOVBZ R4,RL4
+        SHL R4,#03H
+        MOVB RL6,[R4+#0D6DEH]
+        MOVB RL4,mis_a_obd_ctr
+        CMPB RL4,#03H
+        JMPR cc_NC,L_DBD16
+        MOV R5,R8
+        MOVBZ R4,RL5
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D69EH]
+        ANDB RL5,#DATA16 00040H
+        JMPR cc_NE,L_DBD16
+        MOVB RL4,#DATA16 00040H
+        ANDB RL4,RL7
+        JMPR cc_EQ,L_DBD02
+        MOVB RL4,#DATA16 00010H
+        ANDB RL4,RL7
+        JMPR cc_EQ,L_DBD16
+L_DBD02:                 ; 0xdbd02
+        MOVB RL4,#DATA16 00040H
+        ANDB RL4,RL6
+        JMPA cc_EQ,L_DBE6A
+        MOVB RL4,#DATA16 00010H
+        ANDB RL4,RL6
+        JMPA cc_NE,L_DBE6A
+L_DBD16:                 ; 0xdbd16
+        MOV R4,R8
+        MOVBZ R4,RL4
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D69EH]
+        MOVBZ R4,RL5
+        AND R4,#DATA16 00010H
+        JMPA cc_NE,L_DBE6A
+        MOV R4,#DATA16 0D69EH
+        MOV R5,R8
+        MOVBZ R5,RL5
+        SHL R5,#03H
+        ADD R4,R5
+        MOVB RL5,[R4]
+        ORB RL5,#DATA16 00030H
+        MOVB [R4],RL5
+        MOV R4,R9
+        MOVBZ R4,RL4
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0DAH]
+        MOVBZ R4,RL4
+        MOV dtc_status_work,R4
+        BSET dtc_status_work.04H
+        BSET dtc_status_work.05H
+        MOV R12,#DATA16 0D69AH
+        MOV R4,R8
+        MOVBZ R4,RL4
+        SHL R4,#03H
+        ADD R12,R4
+        MOV R13,#DATA16 0CA68H
+        CALLS 00DH,DTC_Process_StatusByte
+        MOV R4,R8
+        MOVBZ R4,RL4
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D69FH]
+        CMPB RL5,#03H
+        JMPR cc_NC,L_DBE56
+        MOVB RL4,#DATA16 00040H
+        ANDB RL4,RL7
+        JMPR cc_EQ,L_DBD8A
+        MOVB RL4,#DATA16 00010H
+        ANDB RL4,RL7
+        JMPR cc_EQ,L_DBD9A
+L_DBD8A:                 ; 0xdbd8a
+        MOVB RL4,#DATA16 00040H
+        ANDB RL4,RL6
+        JMPR cc_EQ,L_DBDC4
+        MOVB RL4,#DATA16 00010H
+        ANDB RL4,RL6
+        JMPR cc_NE,L_DBDC4
+L_DBD9A:                 ; 0xdbd9a
+        MOV R4,R8
+        MOVBZ R4,RL4
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D69FH]
+        MOV R4,#DATA16 0D69FH
+        MOV R3,R8
+        MOVBZ R2,RL3
+        SHL R2,#03H
+        ADD R4,R2
+        MOVB RL3,[R4]
+        ADDB RL3,#01H
+        MOVB [R4],RL3
+        ORB RL5,RL3
+        ANDB RL5,#03H
+        MOV R4,R8
+        MOVBZ R4,RL4
+        SHL R4,#03H
+        MOVB [R4+#0D69FH],RL5
+L_DBDC4:                 ; 0xdbdc4
+        MOV R4,R8
+        MOVBZ R4,RL4
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D69FH]
+        MOV R4,#DATA16 0D69FH
+        MOV R3,R8
+        MOVBZ R2,RL3
+        SHL R2,#03H
+        ADD R4,R2
+        MOVB RL3,[R4]
+        ADDB RL3,#01H
+        MOVB [R4],RL3
+        ORB RL5,RL3
+        ANDB RL5,#03H
+        MOV R4,R8
+        MOVBZ R4,RL4
+        SHL R4,#03H
+        MOVB [R4+#0D69FH],RL5
+        MOV R4,R9
+        MOVBZ R4,RL4
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0DCH]
+        MOV R5,R8
+        MOVBZ R5,RL5
+        SHL R5,#03H
+        MOVB RL3,[R5+#0D69FH]
+        CMPB RL4,RL3
+        JMPR cc_NC,L_DBE28
+        MOV R4,R8
+        MOVBZ R4,RL4
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D69FH]
+        ANDB RL5,#03H
+        MOV R4,R9
+        MOVBZ R4,RL4
+        MOV R2,R4
+        SHL R2,#03H
+        SUB R2,R4
+        SHL R2,#01H
+        MOVB [R2+#0D0DCH],RL5
+L_DBE28:                 ; 0xdbe28
+        MOV R4,R8
+        MOVBZ R4,RL4
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D69FH]
+        CMPB RL5,#03H
+        JMPR cc_C,L_DBE56
+        MOV R4,#DATA16 0D69EH
+        MOV R5,R8
+        MOVBZ R5,RL5
+        SHL R5,#03H
+        ADD R4,R5
+        MOVB RL5,[R4]
+        ORB RL5,#DATA16 0000CH
+        MOVB [R4],RL5
+        BSET dtc_status_work.02H
+        BSET dtc_status_work.03H
+        MOV R4,R9
+        MOVBZ R12,RL4
+        CALLS 00DH,OBD_Readiness_Grp2
+L_DBE56:                 ; 0xdbe56
+        MOVB RL4,dtc_status_work
+        MOV R5,R9
+        MOVBZ R5,RL5
+        MOV R2,R5
+        SHL R2,#03H
+        SUB R2,R5
+        SHL R2,#01H
+        MOVB [R2+#0D0DAH],RL4
+L_DBE6A:                 ; 0xdbe6a
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== DTC_Status_Proc_2  (@0xdbe74) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by trt/ecu_diag/dtc output signals): DTC status-word processor (variant).
+        ; ------------------------------------------------------------
+DTC_Status_Proc_2:
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R7,R12
+        JB obd_sf.0DH,L_DBE82
+        JMPA cc_UC,L_DC076
+L_DBE82:                 ; 0xdbe82
+        MOVBZ R12,RL7
+        CALLS 00DH,Get_DTC_StatusBits
+        MOVB RL6,RL4
+        CMPB RL4,#04H
+        JMPA cc_NC,L_DC076
+        JNB lv_er_carb_b4.03H,L_DBE98
+        JMPA cc_UC,L_DBF86
+L_DBE98:                 ; 0xdbe98
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D6BEH]
+        MOVBZ R4,RL5
+        AND R4,#DATA16 00010H
+        JMPA cc_NE,L_DC076
+        MOV R4,#DATA16 0D6BEH
+        MOVBZ R5,RL6
+        SHL R5,#03H
+        ADD R4,R5
+        MOVB RL5,[R4]
+        ORB RL5,#DATA16 00030H
+        MOVB [R4],RL5
+        MOVBZ R4,RL7
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0DAH]
+        MOVBZ R4,RL4
+        MOV dtc_status_work,R4
+        BSET dtc_status_work.04H
+        BSET dtc_status_work.05H
+        MOV R12,#DATA16 0D6BAH
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        ADD R12,R4
+        MOV R13,#DATA16 0CA6CH
+        CALLS 00DH,DTC_Process_StatusByte
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D6BFH]
+        CMPB RL5,#03H
+        JMPR cc_NC,L_DBF70
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D6BFH]
+        MOV R4,#DATA16 0D6BFH
+        MOVBZ R2,RL6
+        SHL R2,#03H
+        ADD R4,R2
+        MOVB RL3,[R4]
+        ADDB RL3,#01H
+        MOVB [R4],RL3
+        ORB RL5,RL3
+        ANDB RL5,#03H
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB [R4+#0D6BFH],RL5
+        MOVBZ R4,RL7
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0DCH]
+        MOVBZ R5,RL6
+        SHL R5,#03H
+        MOVB RL3,[R5+#0D6BFH]
+        CMPB RL4,RL3
+        JMPR cc_NC,L_DBF48
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D6BFH]
+        ANDB RL5,#03H
+        MOVBZ R4,RL7
+        MOV R2,R4
+        SHL R2,#03H
+        SUB R2,R4
+        SHL R2,#01H
+        MOVB [R2+#0D0DCH],RL5
+L_DBF48:                 ; 0xdbf48
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D6BFH]
+        CMPB RL5,#03H
+        JMPR cc_C,L_DBF70
+        MOV R4,#DATA16 0D6BEH
+        MOVBZ R5,RL6
+        SHL R5,#03H
+        ADD R4,R5
+        MOVB RL5,[R4]
+        ORB RL5,#DATA16 0000CH
+        MOVB [R4],RL5
+        BSET dtc_status_work.02H
+        BSET dtc_status_work.03H
+        MOVBZ R12,RL7
+        CALLS 00DH,OBD_Readiness_Grp2
+L_DBF70:                 ; 0xdbf70
+        MOVB RL4,dtc_status_work
+        MOVBZ R5,RL7
+        MOV R2,R5
+        SHL R2,#03H
+        SUB R2,R5
+        SHL R2,#01H
+        MOVB [R2+#0D0DAH],RL4
+        JMPA cc_UC,L_DC076
+L_DBF86:                 ; 0xdbf86
+        MOVB RL4,mis_b4_obd_ctr
+        CMPB RL4,#04H
+        JMPR cc_C,L_DC076
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D6DEH]
+        MOVBZ R4,RL5
+        AND R4,#DATA16 00010H
+        JMPR cc_NE,L_DC076
+        MOV R4,#DATA16 0D6DEH
+        MOVBZ R5,RL6
+        SHL R5,#03H
+        ADD R4,R5
+        MOVB RL5,[R4]
+        ORB RL5,#DATA16 00030H
+        MOVB [R4],RL5
+        MOVBZ R4,RL7
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0DAH]
+        MOVBZ R4,RL4
+        MOV dtc_status_work,R4
+        BSET dtc_status_work.04H
+        BSET dtc_status_work.05H
+        MOV R12,#DATA16 0D6DAH
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        ADD R12,R4
+        MOV R13,#DATA16 0CA6CH
+        CALLS 00DH,DTC_Process_StatusByte
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D6DFH]
+        CMPB RL5,#03H
+        JMPR cc_NC,L_DC064
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D6DFH]
+        MOV R4,#DATA16 0D6DFH
+        MOVBZ R2,RL6
+        SHL R2,#03H
+        ADD R4,R2
+        MOVB RL3,[R4]
+        ADDB RL3,#01H
+        MOVB [R4],RL3
+        ORB RL5,RL3
+        ANDB RL5,#03H
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB [R4+#0D6DFH],RL5
+        MOVBZ R4,RL7
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0DCH]
+        MOVBZ R5,RL6
+        SHL R5,#03H
+        MOVB RL3,[R5+#0D6DFH]
+        CMPB RL4,RL3
+        JMPR cc_NC,L_DC03C
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D6DFH]
+        ANDB RL5,#03H
+        MOVBZ R4,RL7
+        MOV R2,R4
+        SHL R2,#03H
+        SUB R2,R4
+        SHL R2,#01H
+        MOVB [R2+#0D0DCH],RL5
+L_DC03C:                 ; 0xdc03c
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D6DFH]
+        CMPB RL5,#03H
+        JMPR cc_C,L_DC064
+        MOV R4,#DATA16 0D6DEH
+        MOVBZ R5,RL6
+        SHL R5,#03H
+        ADD R4,R5
+        MOVB RL5,[R4]
+        ORB RL5,#DATA16 0000CH
+        MOVB [R4],RL5
+        BSET dtc_status_work.02H
+        BSET dtc_status_work.03H
+        MOVBZ R12,RL7
+        CALLS 00DH,OBD_Readiness_Grp2
+L_DC064:                 ; 0xdc064
+        MOVB RL4,dtc_status_work
+        MOVBZ R5,RL7
+        MOV R2,R5
+        SHL R2,#03H
+        SUB R2,R5
+        SHL R2,#01H
+        MOVB [R2+#0D0DAH],RL4
+L_DC076:                 ; 0xdc076
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        RETS
+
+; ======== DTC_Status_Proc_3  (@0xdc07c) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by trt/ecu_diag/dtc output signals): DTC status-word processor (variant).
+        ; ------------------------------------------------------------
+DTC_Status_Proc_3:
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R7,R12
+        MOVBZ R4,RL7
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0DAH]
+        MOVBZ R4,RL4
+        MOV dtc_status_work,R4
+        JNB dtc_status_work.05H,L_DC176
+        MOVBZ R12,RL7
+        CALLS 00DH,Get_DTC_StatusBits
+        SUBB RL4,#04H
+        MOVB RL6,RL4
+        CMPB RL4,#02H
+        JMPR cc_NC,L_DC176
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D6FEH]
+        MOVBZ R4,RL5
+        AND R4,#DATA16 00010H
+        JMPR cc_NE,L_DC176
+        MOV R4,#DATA16 0D6FEH
+        MOVBZ R5,RL6
+        SHL R5,#03H
+        ADD R4,R5
+        MOVB RL5,[R4]
+        ORB RL5,#DATA16 00030H
+        MOVB [R4],RL5
+        MOVBZ R4,RL7
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0DAH]
+        MOVBZ R4,RL4
+        MOV dtc_status_work,R4
+        BSET dtc_status_work.04H
+        BSET dtc_status_work.05H
+        MOV R12,#DATA16 0D6FAH
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        ADD R12,R4
+        MOV R13,#DATA16 0C952H
+        CALLS 00DH,DTC_Process_StatusByte
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D6FFH]
+        CMPB RL5,#03H
+        JMPR cc_NC,L_DC164
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D6FFH]
+        MOV R4,#DATA16 0D6FFH
+        MOVBZ R2,RL6
+        SHL R2,#03H
+        ADD R4,R2
+        MOVB RL3,[R4]
+        ADDB RL3,#01H
+        MOVB [R4],RL3
+        ORB RL5,RL3
+        ANDB RL5,#03H
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB [R4+#0D6FFH],RL5
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D6FFH]
+        ANDB RL5,#03H
+        MOVBZ R4,RL7
+        MOV R2,R4
+        SHL R2,#03H
+        SUB R2,R4
+        SHL R2,#01H
+        MOVB [R2+#0D0DCH],RL5
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D6FFH]
+        CMPB RL5,#03H
+        JMPR cc_C,L_DC164
+        MOV R4,#DATA16 0D6FEH
+        MOVBZ R5,RL6
+        SHL R5,#03H
+        ADD R4,R5
+        MOVB RL5,[R4]
+        ORB RL5,#DATA16 0000CH
+        MOVB [R4],RL5
+        BSET dtc_status_work.02H
+        BSET dtc_status_work.03H
+        MOVBZ R12,RL7
+        CALLS 00DH,OBD_Readiness_Grp2
+L_DC164:                 ; 0xdc164
+        MOVB RL4,dtc_status_work
+        MOVBZ R5,RL7
+        MOV R2,R5
+        SHL R2,#03H
+        SUB R2,R5
+        SHL R2,#01H
+        MOVB [R2+#0D0DAH],RL4
+L_DC176:                 ; 0xdc176
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        RETS
+
+; ======== Eval_DTC_Status  (@0xdc17c) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Eval_DTC_Status:
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R7,R12
+        MOVBZ R4,RL7
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0DAH]
+        ANDB RL4,#DATA16 00020H
+        JMPR cc_NE,L_DC22A
+        MOV R4,#DATA16 0D0DAH
+        MOVBZ R5,RL7
+        MOV R2,R5
+        SHL R2,#03H
+        SUB R2,R5
+        SHL R2,#01H
+        ADD R4,R2
+        MOVB RL5,[R4]
+        ORB RL5,#DATA16 00020H
+        MOVB [R4],RL5
+        MOVBZ R4,RL7
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOVB RL5,[R4+#0522EH]
+        MOVBZ R5,RL5
+        AND R5,#DATA16 00060H
+        JMPR cc_EQ,L_DC22A
+        MOVBZ R12,RL7
+        CALLS 00DH,Get_DTC_StatusBits
+        MOVB RL6,RL4
+        CMPB RL4,#04H
+        JMPR cc_NC,L_DC20A
+        MOV R4,#DATA16 0D69EH
+        MOVBZ R5,RL6
+        SHL R5,#03H
+        ADD R4,R5
+        MOVB RL5,[R4]
+        ORB RL5,#DATA16 00020H
+        MOVB [R4],RL5
+        MOV R4,#DATA16 0D6BEH
+        MOVBZ R5,RL6
+        SHL R5,#03H
+        ADD R4,R5
+        MOVB RL5,[R4]
+        ORB RL5,#DATA16 00020H
+        MOVB [R4],RL5
+        MOV R4,#DATA16 0D6DEH
+        MOVBZ R5,RL6
+        SHL R5,#03H
+        ADD R4,R5
+        MOVB RL5,[R4]
+        ORB RL5,#DATA16 00020H
+        MOVB [R4],RL5
+        JMPR cc_UC,L_DC22A
+L_DC20A:                 ; 0xdc20a
+        MOVBZ R12,RL7
+        CALLS 00DH,Get_DTC_StatusBits
+        SUBB RL4,#04H
+        MOVB RL6,RL4
+        CMPB RL4,#02H
+        JMPR cc_NC,L_DC22A
+        MOV R4,#DATA16 0D6FEH
+        MOVBZ R5,RL6
+        SHL R5,#03H
+        ADD R4,R5
+        MOVB RL5,[R4]
+        ORB RL5,#DATA16 00020H
+        MOVB [R4],RL5
+L_DC22A:                 ; 0xdc22a
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        RETS
+
+; ======== Calc_Mis_Rate_FromFault  (@0xdc230) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Calc_Mis_Rate_FromFault:
+        MOV [-R0],R12
+        MOV [-R0],R6
+        MOVB RL4,[R0+#02H]
+        MOVBZ R12,RL4
+        CALLS 00DH,Get_DTC_StatusBits
+        MOVB RL6,RL4
+        CMPB RL4,#04H
+        JMPR cc_NC,L_DC256
+        MOVBZ R4,RL6
+        SHL R4,#03H
+        MOVB RL5,[R4+#0D69EH]
+        ANDB RL5,#DATA16 00010H
+        JMPR cc_EQ,L_DC256
+        BSET PSW.06H
+        JMPR cc_UC,L_DC258
+L_DC256:                 ; 0xdc256
+        BCLR PSW.06H
+L_DC258:                 ; 0xdc258
+        MOV R6,[R0+]
+        ADD R0,#02H
+        RETS
+
+S_DBCA4 ENDS
+        END

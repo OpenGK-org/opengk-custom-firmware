@@ -1,0 +1,590 @@
+; asw/comm/comm_kwp.a66
+; 0xE51CA-0xE57D2  (1544 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  KWP_App_SID_14_case, KWP_App_SID_1B_case, KWP_App_SID_1C_case, KWP_App_SID_1D_case, KWP_App_SID_1E_case
+EXTERN  L_E5A72:NEAR, SMARTRA_disable:NEAR
+
+S_E51CA SECTION CODE AT 0E51CAH
+
+; ======== KWP_App_SID_14_case  (@0xe51ca) ========
+KWP_App_SID_14_case:
+        MOV R4,kwp_msg_len
+        CMP R4,#02H
+        JMPR cc_NE,L_E51F6
+        MOVB RL4,n_32
+        JMPR cc_NE,L_E51EA
+        MOVB [R9],imob_data_ram_state_imob
+        MOV R4,#03H
+        MOV kwp_msg_len,R4
+        MOVB kwp_nrc,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E51EA:                 ; 0xe51ea
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPA cc_UC,L_E5A72
+L_E51F6:                 ; 0xe51f6
+        BSET lv_fmy_imob.05H
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPA cc_UC,L_E5A72
+
+; ======== KWP_App_SID_1B_case  (@0xe5204) ========
+KWP_App_SID_1B_case:
+        JB imob_bw.0AH,L_E520C
+        JMPA cc_UC,L_E537A
+L_E520C:                 ; 0xe520c
+        BCLR imob_bw.0AH
+        MOV R4,kwp_msg_len
+        CMP R4,#03H
+        JMPR cc_EQ,L_E521E
+        JB kwp_comms_flags.0BH,L_E521E
+        JMPA cc_UC,L_E5368
+L_E521E:                 ; 0xe521e
+        MOVB RL4,n_32
+        JMPA cc_NE,L_E5358
+        MOVB RL5,imob_data_ram_state_imob
+        CMPB RL5,#02H
+        JMPR cc_EQ,L_E5238
+        CMPB RL5,#01H
+        JMPR cc_EQ,L_E5238
+        CMPB RL5,#03H
+        JMPA cc_NE,L_E5358
+L_E5238:                 ; 0xe5238
+        MOVB RL4,[R9]
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_E5246
+        JB kwp_comms_flags.0BH,L_E5246
+        JMPA cc_UC,L_E5330
+L_E5246:                 ; 0xe5246
+        JNB kwp_comms_flags.0BH,L_E5304
+        MOVB RL4,imob_key_wr_done
+        JMPR cc_EQ,L_E52C8
+        BCLR kwp_comms_flags.0BH
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_E5264
+        CMPB RL4,#02H
+        JMPR cc_EQ,L_E5298
+        CMPB RL4,#04H
+        JMPR cc_EQ,L_E52A2
+        CMPB RL4,#03H
+        JMPR cc_EQ,L_E52AC
+        JMPR cc_UC,L_E52B8
+L_E5264:                 ; 0xe5264
+        MOVB RL4,#01H
+        MOVB key_state_imob,RL4
+        BCLR lv_fmy_imob.00H
+        MOVB RL5,imob_sdr_ctr
+        CMPB RL5,#05H
+        JMPR cc_NE,L_E527A
+        MOVB RL3,#02H
+        MOVB imob_sdr_ctr,RL3
+L_E527A:                 ; 0xe527a
+        MOVB RL4,#01H
+        MOVB imob_data_ctl_key_nr_learn_imob,RL4
+        MOVB RL5,#01H
+        MOVB imob_data_ram_state_imob,RL5
+        MOVB smartra_cmd,ZEROS
+        MOV R4,#02H
+        MOV kwp_msg_len,R4
+        MOVB kwp_nrc,ZEROS
+        BSET imob_bw.0AH
+        JMPR cc_UC,L_E52C0
+L_E5298:                 ; 0xe5298
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_E52C0
+L_E52A2:                 ; 0xe52a2
+        MOVB RL4,#DATA16 00091H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_E52C0
+L_E52AC:                 ; 0xe52ac
+        MOVB RL4,#DATA16 00090H
+        MOVB kwp_nrc,RL4
+        BSET imob_bw.0AH
+        JMPR cc_UC,L_E52C0
+L_E52B8:                 ; 0xe52b8
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+L_E52C0:                 ; 0xe52c0
+        MOVB imob_key_wr_done,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E52C8:                 ; 0xe52c8
+        MOVB RL4,#DATA16 0003CH
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_E52FC
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_E52FC:                 ; 0xe52fc
+        BSET kwp_comms_flags.0AH
+        BSET imob_bw.0AH
+        JMPA cc_UC,L_E5A72
+L_E5304:                 ; 0xe5304
+        MOVB RL4,#01H
+        MOVB imob_ca2a,RL4
+        MOVB imob_key_wr_idx,ZEROS
+        CALLS 00BH,SMARTRA_disable
+        MOVB RL4,#01H
+        MOVB smartra_proto_step,RL4
+        MOVB RL5,#DATA16 00078H
+        MOVB kwp_nrc,RL5
+        BSET kwp_comms_flags.0BH
+        MOV R4,kwp_msg_len
+        ADD kwp_buf_base,R4
+        BSET imob_bw.0AH
+        JMPA cc_UC,L_E5A72
+L_E5330:                 ; 0xe5330
+        MOVB RL4,[R9]
+        CMPB RL4,#02H
+        JMPR cc_NE,L_E5348
+        MOVB RL4,#DATA16 000F0H
+        MOVB [R9],RL4
+        MOV R4,#03H
+        MOV kwp_msg_len,R4
+        MOVB kwp_nrc,ZEROS
+        JMPR cc_UC,L_E5350
+L_E5348:                 ; 0xe5348
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+L_E5350:                 ; 0xe5350
+        MOVB imob_ca2a,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E5358:                 ; 0xe5358
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        MOVB imob_ca2a,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E5368:                 ; 0xe5368
+        BSET lv_fmy_imob.05H
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        MOVB imob_ca2a,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E537A:                 ; 0xe537a
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        MOVB imob_ca2a,ZEROS
+        JMPA cc_UC,L_E5A72
+
+; ======== KWP_App_SID_1C_case  (@0xe538a) ========
+KWP_App_SID_1C_case:
+        JB imob_bw.0AH,L_E5392
+        JMPA cc_UC,L_E54E8
+L_E5392:                 ; 0xe5392
+        BCLR imob_bw.0AH
+        MOV R4,kwp_msg_len
+        CMP R4,#03H
+        JMPR cc_EQ,L_E53A4
+        JB kwp_comms_flags.0BH,L_E53A4
+        JMPA cc_UC,L_E54D6
+L_E53A4:                 ; 0xe53a4
+        MOVB RL4,n_32
+        JMPA cc_NE,L_E54C6
+        MOVB RL5,imob_data_ram_state_imob
+        CMPB RL5,#01H
+        JMPA cc_NE,L_E54C6
+        MOVB RL3,imob_data_ctl_key_nr_learn_imob
+        CMPB RL3,#01H
+        JMPA cc_NE,L_E54C6
+        MOVB RL2,[R9]
+        CMPB RL2,#01H
+        JMPR cc_EQ,L_E53CA
+        JNB kwp_comms_flags.0BH,L_E549E
+L_E53CA:                 ; 0xe53ca
+        JNB kwp_comms_flags.0BH,L_E5474
+        MOVB RL4,imob_key_wr_done
+        JMPR cc_EQ,L_E5438
+        BCLR kwp_comms_flags.0BH
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_E53E8
+        CMPB RL4,#02H
+        JMPR cc_EQ,L_E5408
+        CMPB RL4,#04H
+        JMPR cc_EQ,L_E5412
+        CMPB RL4,#03H
+        JMPR cc_EQ,L_E541C
+        JMPR cc_UC,L_E5428
+L_E53E8:                 ; 0xe53e8
+        MOVB RL4,#01H
+        MOVB key_state_imob,RL4
+        BCLR lv_fmy_imob.00H
+        MOVB RL5,#02H
+        MOVB imob_data_ctl_key_nr_learn_imob,RL5
+        MOVB smartra_cmd,ZEROS
+        MOV R4,#02H
+        MOV kwp_msg_len,R4
+        MOVB kwp_nrc,ZEROS
+        BSET imob_bw.0AH
+        JMPR cc_UC,L_E5430
+L_E5408:                 ; 0xe5408
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_E5430
+L_E5412:                 ; 0xe5412
+        MOVB RL4,#DATA16 00091H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_E5430
+L_E541C:                 ; 0xe541c
+        MOVB RL4,#DATA16 00090H
+        MOVB kwp_nrc,RL4
+        BSET imob_bw.0AH
+        JMPR cc_UC,L_E5430
+L_E5428:                 ; 0xe5428
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+L_E5430:                 ; 0xe5430
+        MOVB imob_key_wr_done,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E5438:                 ; 0xe5438
+        MOVB RL4,#DATA16 0003CH
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_E546C
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_E546C:                 ; 0xe546c
+        BSET kwp_comms_flags.0AH
+        BSET imob_bw.0AH
+        JMPA cc_UC,L_E5A72
+L_E5474:                 ; 0xe5474
+        MOVB RL4,#01H
+        MOVB imob_ca2a,RL4
+        MOVB RL5,#01H
+        MOVB imob_key_wr_idx,RL5
+        MOVB RL3,#01H
+        MOVB smartra_proto_step,RL3
+        MOVB RL2,#DATA16 00078H
+        MOVB kwp_nrc,RL2
+        BSET kwp_comms_flags.0BH
+        MOV R4,kwp_msg_len
+        ADD kwp_buf_base,R4
+        BSET imob_bw.0AH
+        JMPA cc_UC,L_E5A72
+L_E549E:                 ; 0xe549e
+        MOVB RL4,[R9]
+        CMPB RL4,#02H
+        JMPR cc_NE,L_E54B6
+        MOVB RL4,#DATA16 000F0H
+        MOVB [R9],RL4
+        MOV R4,#03H
+        MOV kwp_msg_len,R4
+        MOVB kwp_nrc,ZEROS
+        JMPR cc_UC,L_E54BE
+L_E54B6:                 ; 0xe54b6
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+L_E54BE:                 ; 0xe54be
+        MOVB imob_ca2a,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E54C6:                 ; 0xe54c6
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        MOVB imob_ca2a,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E54D6:                 ; 0xe54d6
+        BSET lv_fmy_imob.05H
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        MOVB imob_ca2a,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E54E8:                 ; 0xe54e8
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        MOVB imob_ca2a,ZEROS
+        JMPA cc_UC,L_E5A72
+
+; ======== KWP_App_SID_1D_case  (@0xe54f8) ========
+KWP_App_SID_1D_case:
+        JB imob_bw.0AH,L_E5500
+        JMPA cc_UC,L_E5656
+L_E5500:                 ; 0xe5500
+        BCLR imob_bw.0AH
+        MOV R4,kwp_msg_len
+        CMP R4,#03H
+        JMPR cc_EQ,L_E5512
+        JB kwp_comms_flags.0BH,L_E5512
+        JMPA cc_UC,L_E5644
+L_E5512:                 ; 0xe5512
+        MOVB RL4,n_32
+        JMPA cc_NE,L_E5634
+        MOVB RL5,imob_data_ram_state_imob
+        CMPB RL5,#01H
+        JMPA cc_NE,L_E5634
+        MOVB RL3,imob_data_ctl_key_nr_learn_imob
+        CMPB RL3,#02H
+        JMPA cc_NE,L_E5634
+        MOVB RL2,[R9]
+        CMPB RL2,#01H
+        JMPR cc_EQ,L_E5538
+        JNB kwp_comms_flags.0BH,L_E560C
+L_E5538:                 ; 0xe5538
+        JNB kwp_comms_flags.0BH,L_E55E2
+        MOVB RL4,imob_key_wr_done
+        JMPR cc_EQ,L_E55A6
+        BCLR kwp_comms_flags.0BH
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_E5556
+        CMPB RL4,#02H
+        JMPR cc_EQ,L_E5576
+        CMPB RL4,#04H
+        JMPR cc_EQ,L_E5580
+        CMPB RL4,#03H
+        JMPR cc_EQ,L_E558A
+        JMPR cc_UC,L_E5596
+L_E5556:                 ; 0xe5556
+        MOVB RL4,#01H
+        MOVB key_state_imob,RL4
+        BCLR lv_fmy_imob.00H
+        MOVB RL5,#03H
+        MOVB imob_data_ctl_key_nr_learn_imob,RL5
+        MOVB smartra_cmd,ZEROS
+        MOV R4,#02H
+        MOV kwp_msg_len,R4
+        MOVB kwp_nrc,ZEROS
+        BSET imob_bw.0AH
+        JMPR cc_UC,L_E559E
+L_E5576:                 ; 0xe5576
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_E559E
+L_E5580:                 ; 0xe5580
+        MOVB RL4,#DATA16 00091H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_E559E
+L_E558A:                 ; 0xe558a
+        MOVB RL4,#DATA16 00090H
+        MOVB kwp_nrc,RL4
+        BSET imob_bw.0AH
+        JMPR cc_UC,L_E559E
+L_E5596:                 ; 0xe5596
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+L_E559E:                 ; 0xe559e
+        MOVB imob_key_wr_done,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E55A6:                 ; 0xe55a6
+        MOVB RL4,#DATA16 0003CH
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_E55DA
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_E55DA:                 ; 0xe55da
+        BSET kwp_comms_flags.0AH
+        BSET imob_bw.0AH
+        JMPA cc_UC,L_E5A72
+L_E55E2:                 ; 0xe55e2
+        MOVB RL4,#01H
+        MOVB imob_ca2a,RL4
+        MOVB RL5,#02H
+        MOVB imob_key_wr_idx,RL5
+        MOVB RL3,#01H
+        MOVB smartra_proto_step,RL3
+        MOVB RL2,#DATA16 00078H
+        MOVB kwp_nrc,RL2
+        BSET kwp_comms_flags.0BH
+        MOV R4,kwp_msg_len
+        ADD kwp_buf_base,R4
+        BSET imob_bw.0AH
+        JMPA cc_UC,L_E5A72
+L_E560C:                 ; 0xe560c
+        MOVB RL4,[R9]
+        CMPB RL4,#02H
+        JMPR cc_NE,L_E5624
+        MOVB RL4,#DATA16 000F0H
+        MOVB [R9],RL4
+        MOV R4,#03H
+        MOV kwp_msg_len,R4
+        MOVB kwp_nrc,ZEROS
+        JMPR cc_UC,L_E562C
+L_E5624:                 ; 0xe5624
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+L_E562C:                 ; 0xe562c
+        MOVB imob_ca2a,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E5634:                 ; 0xe5634
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        MOVB imob_ca2a,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E5644:                 ; 0xe5644
+        BSET lv_fmy_imob.05H
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        MOVB imob_ca2a,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E5656:                 ; 0xe5656
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        MOVB imob_ca2a,ZEROS
+        JMPA cc_UC,L_E5A72
+
+; ======== KWP_App_SID_1E_case  (@0xe5666) ========
+KWP_App_SID_1E_case:
+        JB imob_bw.0AH,L_E566E
+        JMPA cc_UC,L_E57C2
+L_E566E:                 ; 0xe566e
+        BCLR imob_bw.0AH
+        MOV R4,kwp_msg_len
+        CMP R4,#03H
+        JMPR cc_EQ,L_E5680
+        JB kwp_comms_flags.0BH,L_E5680
+        JMPA cc_UC,L_E57B0
+L_E5680:                 ; 0xe5680
+        MOVB RL4,n_32
+        JMPA cc_NE,L_E57A0
+        MOVB RL5,imob_data_ram_state_imob
+        CMPB RL5,#01H
+        JMPA cc_NE,L_E57A0
+        MOVB RL3,imob_data_ctl_key_nr_learn_imob
+        CMPB RL3,#03H
+        JMPA cc_NE,L_E57A0
+        MOVB RL2,[R9]
+        CMPB RL2,#01H
+        JMPR cc_EQ,L_E56A6
+        JNB kwp_comms_flags.0BH,L_E5778
+L_E56A6:                 ; 0xe56a6
+        JNB kwp_comms_flags.0BH,L_E5754
+        MOVB RL4,imob_key_wr_done
+        JMPR cc_EQ,L_E5718
+        BCLR kwp_comms_flags.0BH
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_E56C4
+        CMPB RL4,#02H
+        JMPR cc_EQ,L_E56E2
+        CMPB RL4,#04H
+        JMPR cc_EQ,L_E56EC
+        CMPB RL4,#03H
+        JMPR cc_EQ,L_E56F6
+        JMPR cc_UC,L_E5708
+L_E56C4:                 ; 0xe56c4
+        MOVB RL4,#01H
+        MOVB key_state_imob,RL4
+        BCLR lv_fmy_imob.00H
+        MOVB RL5,#04H
+        MOVB imob_data_ctl_key_nr_learn_imob,RL5
+        MOVB smartra_cmd,ZEROS
+        MOV R4,#02H
+        MOV kwp_msg_len,R4
+        MOVB kwp_nrc,ZEROS
+        JMPR cc_UC,L_E5710
+L_E56E2:                 ; 0xe56e2
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_E5710
+L_E56EC:                 ; 0xe56ec
+        MOVB RL4,#DATA16 00091H
+        MOVB kwp_nrc,RL4
+        JMPR cc_UC,L_E5710
+L_E56F6:                 ; 0xe56f6
+        MOVB RL4,#DATA16 00090H
+        MOVB kwp_nrc,RL4
+        MOVB RL5,#01H
+        MOVB imob_ca2a,RL5
+        BSET imob_bw.0AH
+        JMPR cc_UC,L_E5710
+L_E5708:                 ; 0xe5708
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+L_E5710:                 ; 0xe5710
+        MOVB imob_key_wr_done,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E5718:                 ; 0xe5718
+        MOVB RL4,#DATA16 0003CH
+        MOVBZ R5,tq_mid_wr
+        MOVB [R5+#0F64EH],RL4
+        MOVB RL4,tq_mid_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_wr,RL4
+        MOVB RL4,tq_mid_wr
+        CMPB RL4,tq_mid_rd
+        JMPR cc_NE,L_E574C
+        BSET sched_flags.02H
+        MOVB RL4,tq_mid_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_mid_rd,RL4
+L_E574C:                 ; 0xe574c
+        BSET kwp_comms_flags.0AH
+        BSET imob_bw.0AH
+        JMPA cc_UC,L_E5A72
+L_E5754:                 ; 0xe5754
+        MOVB RL4,#03H
+        MOVB imob_key_wr_idx,RL4
+        MOVB RL5,#01H
+        MOVB smartra_proto_step,RL5
+        MOVB RL3,#DATA16 00078H
+        MOVB kwp_nrc,RL3
+        BSET kwp_comms_flags.0BH
+        MOV R4,kwp_msg_len
+        ADD kwp_buf_base,R4
+        BSET imob_bw.0AH
+        JMPA cc_UC,L_E5A72
+L_E5778:                 ; 0xe5778
+        MOVB RL4,[R9]
+        CMPB RL4,#02H
+        JMPR cc_NE,L_E5790
+        MOVB RL4,#DATA16 000F0H
+        MOVB [R9],RL4
+        MOV R4,#03H
+        MOV kwp_msg_len,R4
+        MOVB kwp_nrc,ZEROS
+        JMPR cc_UC,L_E5798
+L_E5790:                 ; 0xe5790
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+L_E5798:                 ; 0xe5798
+        MOVB imob_ca2a,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E57A0:                 ; 0xe57a0
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        MOVB imob_ca2a,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E57B0:                 ; 0xe57b0
+        BSET lv_fmy_imob.05H
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        MOVB imob_ca2a,ZEROS
+        JMPA cc_UC,L_E5A72
+L_E57C2:                 ; 0xe57c2
+        MOVB RL4,#DATA16 00010H
+        MOVB kwp_nrc,RL4
+        MOVB imob_ca2a,ZEROS
+        JMPA cc_UC,L_E5A72
+
+S_E51CA ENDS
+        END

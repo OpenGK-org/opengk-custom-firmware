@@ -1,0 +1,75 @@
+; asw/scc/scc_eff_2.a66
+; 0xC7612-0xC76A6  (148 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Calc_Eff_SCC_Upd, Reset_Dc33d_612
+
+S_C7612 SECTION CODE AT 0C7612H
+
+; ======== Reset_Dc33d_612  (@0xc7612) ========
+Reset_Dc33d_612:
+        MOVB g_c33d,ZEROS
+        MOVB g_c33c,ZEROS
+        MOVB g_c33b,ZEROS
+        MOVB g_c33e,ZEROS
+        RETS
+
+; ======== Calc_Eff_SCC_Upd  (@0xc7624) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by scc/acc output signals): Scavenging-combustion efficiency update: eff_scc_av.
+        ; ------------------------------------------------------------
+Calc_Eff_SCC_Upd:
+        MOVB RL4,g_c33d
+        MOVB g_c33e,RL4
+        MOVB RL5,g_c33c
+        MOVB g_c33d,RL5
+        MOVB RL3,g_c33b
+        MOVB g_c33c,RL3
+        MOVB RL2,g_c33a
+        MOVB g_c33b,RL2
+        MOVB g_c33a,ZEROS
+        MOV R12,#00H
+L_C764A:                 ; 0xc764a
+        MOV R4,#01H
+        SHL R4,R12
+        MOVBZ R5,prev_state_iv
+        AND R5,R4
+        JMPR cc_EQ,L_C765A
+        SUBB g_c33a,ONES
+L_C765A:                 ; 0xc765a
+        ADD R12,#01H
+        CMP R12,#04H
+        JMPR cc_C,L_C764A
+        MOVBZ R4,g_c33a
+        MOVBZ R5,g_c33e
+        ADD R4,R5
+        MOV R5,R4
+        ASHR R5,#0FH
+        MOV R2,R4
+        SHL R4,#0FH
+        SHL R5,#0FH
+        SHR R2,#01H
+        OR R5,R2
+        MOV R2,R5
+        SHR R4,#03H
+        SHR R5,#03H
+        SHL R2,#0DH
+        OR R4,R2
+        MOV g_cdb8,R4
+        CMP R4,#DATA16 08000H
+        JMPR cc_NC,L_C769A
+        JB lv_act_aj.0AH,L_C769A
+        MOV R5,#DATA16 08000H
+        MOV eff_scc_av,R5
+        RETS
+L_C769A:                 ; 0xc769a
+        MOV R4,g_cdb8
+        MOV eff_scc_av,R4
+        BSET lv_act_aj.0AH
+        RETS
+
+S_C7612 ENDS
+        END

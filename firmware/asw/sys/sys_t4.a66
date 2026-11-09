@@ -1,0 +1,1460 @@
+; asw/sys/sys_t4.a66
+; 0xAA49E-0xAB32C  (3726 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  CC27INT_handler, CC6INT_handler, CC7INT_Handler, CC9INT_handler, T4INT_handler
+
+S_AA49E SECTION CODE AT 0AA49EH
+
+; ======== CC6INT_handler  (@0xaa49e) ========
+CC6INT_handler:
+        SCXT CP,#DATA16 0FC26H
+        ATOMIC #01H
+        BFLDH PSW_FF10,#0F0H,#090H
+        BFLDH CCM1_FF54,#0FH,#00H
+        SCXT MDC,#DATA16 00000H
+        PUSH MDH
+        PUSH MDL
+        MOV R4,0FF1CH
+        JNB smartra_comms_status.01H,L_AA4C4
+        MOV R5,#DATA16 00023H
+        MOV R2,#02H
+        JMPR cc_UC,L_AA4CA
+L_AA4C4:                 ; 0xaa4c4
+        MOV R5,#DATA16 0005FH
+        MOV R2,#00H
+L_AA4CA:                 ; 0xaa4ca
+        MOVB RL4,[R2+#0F5A8H]
+        MOV R1,td_bas
+        MOV td_igc,R1
+        MOVB [R2+#0F5A4H],RL4
+        SHL R4,#04H
+        MOVBZ R1,ign_cmp_a
+        CMPB RL1,#DATA16 00014H
+        JMPA cc_NC,L_AAB38
+        JNB R1.00H,L_AA4F0
+        JMPA cc_UC,L_AAB38
+L_AA4F0:                 ; 0xaa4f0
+        MOV R0,[R1+#06576H]
+        JMPI cc_UC,[R0]
+        MOV R0,DSTP7_FCFE
+        MOV R1,[R0+#0FFFCH]
+        MOV R0,[R0+#0FFFEH]
+        SUB R0,R1
+        CMP R0,#DATA16 00016H
+        JMPR cc_NC,L_AA510
+        MOV R0,crank_tim_19
+        JMPR cc_UC,L_AA514
+L_AA510:                 ; 0xaa510
+        MOV crank_tim_19,R0
+L_AA514:                 ; 0xaa514
+        MOV R2,td_igc
+        CMP R2,#DATA16 0249FH
+        JMPR cc_ULE,L_AA522
+        MOV R2,#DATA16 0249FH
+L_AA522:                 ; 0xaa522
+        MOVBZ MDH_FE0C,RH2
+        SHL R2,#08H
+        MOV 0FE0EH,R2
+        DIVLU R0
+        JB PSW.02H,L_AA53C
+        MOV R6,0FE0EH
+        CMP R6,#DATA16 01E00H
+        JMPR cc_C,L_AA540
+L_AA53C:                 ; 0xaa53c
+        MOV R6,#DATA16 01E00H
+L_AA540:                 ; 0xaa540
+        MOV R1,R4
+        ADD R1,#DATA16 02000H
+        SUB R1,R6
+        JMPR cc_NC,L_AA54E
+        MOV R1,0FF1CH
+L_AA54E:                 ; 0xaa54e
+        MOV R0,CC6_FE8C
+        SUB R0,R5
+        CMP R0,#00H
+        JMPR cc_SGE,L_AA55C
+        ADD R0,#DATA16 00078H
+L_AA55C:                 ; 0xaa55c
+        SUBB RH1,RL0
+        JMPR cc_UGT,L_AA564
+        JMPA cc_UC,L_AA668
+L_AA564:                 ; 0xaa564
+        MOV R6,CC6_FE8C
+        MOV R2,CC6_FE8C
+        CMPB RH1,#DATA16 00010H
+        JMPR cc_NC,L_AA588
+        JB lv_err_com_resp_imob.0CH,L_AA57E
+        SHR R1,#08H
+        ADD R2,R1
+        MOVB RL0,#02H
+        JMPR cc_UC,L_AA590
+L_AA57E:                 ; 0xaa57e
+        MOV R1,#01H
+        ADD R2,R1
+        MOVB RL0,#DATA16 00010H
+        JMPR cc_UC,L_AA590
+L_AA588:                 ; 0xaa588
+        MOVB RL0,#00H
+        MOV R1,#DATA16 00010H
+        ADD R2,R1
+L_AA590:                 ; 0xaa590
+        MOVB ign_cmp_a,RL0
+        CMP R2,#DATA16 00078H
+        JMPR cc_ULE,L_AA59E
+        SUB R2,#DATA16 00078H
+L_AA59E:                 ; 0xaa59e
+        MOV CC6_FE8C,R2
+        BFLDH CCM1_FF54,#0FH,#06H
+        SUB R6,T0_FE50
+        NEG R6
+        CMP R6,#00H
+        JMPR cc_SGE,L_AA5B4
+        ADD R6,#DATA16 00078H
+L_AA5B4:                 ; 0xaa5b4
+        CMP R6,R1
+        JMPA cc_C,L_AAB3C
+        ATOMIC #01H
+        BFLDL 0F184H,#080H,#080H
+        JMPA cc_UC,L_AAB3C
+        MOV R0,DSTP7_FCFE
+        MOV R1,[R0+#0FFFCH]
+        MOV R0,[R0+#0FFFEH]
+        SUB R0,R1
+        CMP R0,#DATA16 00016H
+        JMPR cc_NC,L_AA5DE
+        MOV R0,crank_tim_19
+        JMPR cc_UC,L_AA5E2
+L_AA5DE:                 ; 0xaa5de
+        MOV crank_tim_19,R0
+L_AA5E2:                 ; 0xaa5e2
+        MOV R1,td_igc
+        CMP R1,#DATA16 0249FH
+        JMPR cc_ULE,L_AA5F0
+        MOV R1,#DATA16 0249FH
+L_AA5F0:                 ; 0xaa5f0
+        MOVBZ MDH_FE0C,RH1
+        SHL R1,#08H
+        MOV 0FE0EH,R1
+        DIVLU R0
+        JB PSW.02H,L_AA60A
+        MOV R2,0FE0EH
+        CMP R2,#DATA16 01E00H
+        JMPR cc_C,L_AA60E
+L_AA60A:                 ; 0xaa60a
+        MOV R2,#DATA16 01E00H
+L_AA60E:                 ; 0xaa60e
+        MOV R0,CC6_FE8C
+        SUB R0,R5
+        CMP R0,#00H
+        JMPR cc_SGE,L_AA61C
+        ADD R0,#DATA16 00078H
+L_AA61C:                 ; 0xaa61c
+        MOV R1,R4
+        ADD R1,#DATA16 02000H
+        SUB R1,R2
+        JMPR cc_NC,L_AA62A
+        MOV R1,0FF1CH
+L_AA62A:                 ; 0xaa62a
+        CMPB RH1,RL0
+        JMPR cc_UGT,L_AA630
+        JMPR cc_UC,L_AA668
+L_AA630:                 ; 0xaa630
+        MOV R6,CC6_FE8C
+        MOV R1,CC6_FE8C
+        ADD R1,#01H
+        CMP R1,#DATA16 00078H
+        JMPR cc_ULE,L_AA644
+        SUB R1,#DATA16 00078H
+L_AA644:                 ; 0xaa644
+        MOV CC6_FE8C,R1
+        BFLDH CCM1_FF54,#0FH,#06H
+        SUB R6,T0_FE50
+        NEG R6
+        CMP R6,#00H
+        JMPR cc_SGE,L_AA65A
+        ADD R6,#DATA16 00078H
+L_AA65A:                 ; 0xaa65a
+        CMP R6,#01H
+        JMPR cc_C,L_AA664
+        ATOMIC #01H
+        BFLDL 0F184H,#080H,#080H
+L_AA664:                 ; 0xaa664
+        JMPA cc_UC,L_AAB3C
+L_AA668:                 ; 0xaa668
+        MOVB RL0,#04H
+        MOVB ign_cmp_a,RL0
+L_AA66E:                 ; 0xaa66e
+        MOV CC6,T0_FE50
+        MOV R2,CC15_FE9E
+        CMP CC6,T0_FE50
+        JMPR cc_NE,L_AA66E
+        MOV R3,DSTP7_FCFE
+        MOV R0,[R3+#0FFFCH]
+        MOV R3,[R3+#0FFFEH]
+        SUB R3,R0
+        CMP R3,#DATA16 00016H
+        JMPR cc_NC,L_AA696
+        MOV R3,crank_tim_19
+        JMPR cc_UC,L_AA69A
+L_AA696:                 ; 0xaa696
+        MOV crank_tim_19,R3
+L_AA69A:                 ; 0xaa69a
+        MOV R6,td_igc
+        MOV R0,#DATA16 01E00H
+        MULU R0,R3
+        CMP MDH,#DATA16 000FFH
+        JMPR cc_ULE,L_AA6B0
+        MOV R0,0FF1EH
+        JMPR cc_UC,L_AA6B8
+L_AA6B0:                 ; 0xaa6b0
+        MOVB RL0,ign_cc_stat
+        MOVB RH0,MDH_FE0C
+L_AA6B8:                 ; 0xaa6b8
+        CMP R0,#DATA16 0249FH
+        JMPR cc_ULE,L_AA6C2
+        MOV R0,#DATA16 0249FH
+L_AA6C2:                 ; 0xaa6c2
+        CMP R0,R6
+        JMPR cc_NC,L_AA6C8
+        MOV R6,R0
+L_AA6C8:                 ; 0xaa6c8
+        MOV R0,CC6_FE8C
+        SUB R0,R5
+        CMP R0,#00H
+        JMPR cc_SGE,L_AA6D6
+        ADD R0,#DATA16 00078H
+L_AA6D6:                 ; 0xaa6d6
+        MOV R1,R4
+        ADDB RH1,#DATA16 00021H
+        SUBB RH1,RL0
+        JMPR cc_C,L_AA71C
+        MULU R1,R3
+        CMP MDH,#DATA16 000FFH
+        JMPR cc_ULE,L_AA6EE
+        MOV R1,0FF1EH
+        JMPR cc_UC,L_AA6F6
+L_AA6EE:                 ; 0xaa6ee
+        MOVB RL1,ign_cc_stat
+        MOVB RH1,MDH_FE0C
+L_AA6F6:                 ; 0xaa6f6
+        SUB R1,R6
+        ADD R1,R2
+        MOV CC6_FE8C,R1
+        MOVBZ R0,inh_igc
+        JNB R0.00H,L_AA70E
+        BFLDH CCM1_FF54,#0FH,#0EH
+        BSET smartra_comms_status.03H
+        JMPR cc_UC,L_AA712
+L_AA70E:                 ; 0xaa70e
+        BFLDH CCM1_FF54,#0FH,#0DH
+L_AA712:                 ; 0xaa712
+        CMP CC6,T1_FE52
+        JMPR cc_EQ,L_AA71C
+        JMPA cc_NN,L_AAB3C
+L_AA71C:                 ; 0xaa71c
+        BFLDH CCM1_FF54,#0FH,#00H
+        JB smartra_comms_status.03H,L_AA72E
+        ATOMIC #02H
+        MOV CC6,T1_FE52
+        BSET P2.06H
+        JMPR cc_UC,L_AA732
+L_AA72E:                 ; 0xaa72e
+        MOV CC6,T1_FE52
+L_AA732:                 ; 0xaa732
+        ATOMIC #01H
+        BFLDL 0F184H,#080H,#00H
+        MOVB RL0,#06H
+        MOVB ign_cmp_a,RL0
+        JB smartra_comms_status.03H,L_AA762
+        BSET P2.06H
+        BSET smartra_comms_status.02H
+        MOVB RL0,ign_cc_8
+        JMPR cc_NE,L_AA754
+        MOV T4,#DATA16 0002EH
+        MOV T4CON,#DATA16 000DCH
+L_AA754:                 ; 0xaa754
+        MOV R1,CC6_FE8C
+        MOV ign_cc_16,R1
+        BSET R0.00H
+        MOVB ign_cc_8,RL0
+L_AA762:                 ; 0xaa762
+        MOV R1,td_wdt_fac
+        MULU R1,R6
+        MOV R6,MDH_FE0C
+        SHL R6,#01H
+        CMP R6,#DATA16 03A98H
+        JMPR cc_ULE,L_AA778
+        MOV R6,#DATA16 03A98H
+L_AA778:                 ; 0xaa778
+        ADD R6,T8_F052
+        MOVBZ R1,ign_dwell_b
+        MOV R0,#00H
+        MOV [R1+#0FA4EH],R0
+        MOV [R1+#0FA4AH],R6
+L_AA78A:                 ; 0xaa78a
+        CMPB RL1,ign_dwell_a
+        JMPR cc_EQ,L_AA7C0
+        MOV R2,R1
+        SUB R1,#02H
+        AND R1,#03H
+        MOV R0,[R1+#0FA4AH]
+        SUB R0,R6
+        JMPR cc_N,L_AA7D6
+        MOV R0,[R1+#0FA4AH]
+        MOV [R1+#0FA4AH],R6
+        MOV [R2+#0FA4AH],R0
+        MOV R0,[R1+#0FA4EH]
+        MOV R6,[R2+#0FA4EH]
+        MOV [R1+#0FA4EH],R6
+        MOV [R2+#0FA4EH],R0
+        MOV R6,[R1+#0FA4AH]
+        JMPR cc_UC,L_AA78A
+L_AA7C0:                 ; 0xaa7c0
+        MOV CC27_FE76,R6
+        BFLDH CCM6_FF26,#0F0H,#0E0H
+        CMP CC27,T8_F052
+        JMPR cc_EQ,L_AA7D0
+        JMPR cc_NN,L_AA7D6
+L_AA7D0:                 ; 0xaa7d0
+        EXTR #01H
+        BFLDL 0F176H,#080H,#080H
+L_AA7D6:                 ; 0xaa7d6
+        MOVBZ R1,ign_dwell_b
+        ADD R1,#02H
+        AND R1,#03H
+        MOVB ign_dwell_b,RL1
+        MOV R6,td_igc
+        MOV R1,#DATA16 0CCCAH
+        MULU R6,R1
+        MOV R2,MDH_FE0C
+        MOV R3,DSTP7_FCFE
+        MOV R1,[R3+#0FFFCH]
+        MOV R3,[R3+#0FFFEH]
+        SUB R3,R1
+        CMP R3,#DATA16 00016H
+        JMPR cc_NC,L_AA80A
+        MOV R3,crank_tim_19
+        JMPR cc_UC,L_AA80E
+L_AA80A:                 ; 0xaa80a
+        MOV crank_tim_19,R3
+L_AA80E:                 ; 0xaa80e
+        MOV R0,#DATA16 01E00H
+        MULU R0,R3
+        CMP MDH,#DATA16 000FFH
+        JMPR cc_ULE,L_AA820
+        MOV R0,0FF1EH
+        JMPR cc_UC,L_AA828
+L_AA820:                 ; 0xaa820
+        MOVB RL0,ign_cc_stat
+        MOVB RH0,MDH_FE0C
+L_AA828:                 ; 0xaa828
+        CMP R0,#DATA16 0249FH
+        JMPR cc_ULE,L_AA832
+        MOV R0,#DATA16 0249FH
+L_AA832:                 ; 0xaa832
+        CMP R0,R2
+        JMPR cc_NC,L_AA838
+        MOV R2,R0
+L_AA838:                 ; 0xaa838
+        ADD CC6_FE8C,R2
+        BFLDH CCM1_FF54,#0FH,#0EH
+        CMP CC6,T1_FE52
+        JMPR cc_EQ,L_AA84A
+        JMPA cc_NN,L_AAB3C
+L_AA84A:                 ; 0xaa84a
+        ATOMIC #01H
+        BFLDL 0F184H,#080H,#080H
+        JMPA cc_UC,L_AAB3C
+        MOVB RL0,#08H
+        MOVB ign_cmp_a,RL0
+        JNB smartra_comms_status.09H,L_AA8DE
+        BCLR T2CON.06H
+        MOV R1,T1_FE52
+        JMPR cc_N,L_AA874
+        ATOMIC #02H
+        MOV R8,ign_cc_mode
+        JNB XP3IC.07H,L_AA88C
+        ADD R8,#01H
+        JMPR cc_UC,L_AA88C
+L_AA874:                 ; 0xaa874
+        MOV R8,ign_cc_mode
+        CMP ONES,T1_FE52
+        JMPR cc_NN,L_AA88C
+        ATOMIC #02H
+        JNB T1IC.07H,L_AA886
+        JMPR cc_UC,L_AA88C
+L_AA886:                 ; 0xaa886
+        MOV R8,ign_cc_mode
+        SUB R8,#01H
+L_AA88C:                 ; 0xaa88c
+        SUB R1,ign_cc_13
+        SUBC R8,ign_cc_14
+        SUB R1,T2_FE40
+        SUBC R8,ign_cc_15
+        JMPR cc_C,L_AA8A8
+        CMP R8,#00H
+        JMPR cc_UGT,L_AA8B0
+        CMP R1,#DATA16 00038H
+        JMPR cc_NC,L_AA8B0
+L_AA8A8:                 ; 0xaa8a8
+        BCLR smartra_comms_status.07H
+        MOV R1,#DATA16 08000H
+        JMPR cc_UC,L_AA8B8
+L_AA8B0:                 ; 0xaa8b0
+        BMOVN R1.0FH,smartra_comms_status.07H
+        ASHR R1,#0FH
+        BSET smartra_comms_status.07H
+L_AA8B8:                 ; 0xaa8b8
+        MOV R8,ign_cc_15
+        JMPR cc_NE,L_AA8CA
+        MOV R8,T2_FE40
+        JB R8.0FH,L_AA8CA
+        OR R1,R8
+        JMPR cc_UC,L_AA8CE
+L_AA8CA:                 ; 0xaa8ca
+        OR R1,#DATA16 07FFFH
+L_AA8CE:                 ; 0xaa8ce
+        JNB smartra_comms_status.01H,L_AA8D8
+        MOV ign_cc_10,R1
+        JMPR cc_UC,L_AA8DC
+L_AA8D8:                 ; 0xaa8d8
+        MOV ign_cc_12,R1
+L_AA8DC:                 ; 0xaa8dc
+        JMPR cc_UC,L_AA8DE
+L_AA8DE:                 ; 0xaa8de
+        MOV CC6,T0_FE50
+        MOV R3,CC15_FE9E
+        CMP CC6,T0_FE50
+        JMPR cc_NE,L_AA8DE
+        MOV R0,CC6_FE8C
+        SUB R0,R5
+        CMP R0,#00H
+        JMPR cc_SGE,L_AA8FA
+        ADD R0,#DATA16 00078H
+L_AA8FA:                 ; 0xaa8fa
+        MOV R1,R4
+        ADDB RH1,#DATA16 00021H
+        SUBB RH1,RL0
+        JMPR cc_C,L_AA956
+        MOV R2,DSTP7_FCFE
+        MOV R0,[R2+#0FFFCH]
+        MOV R2,[R2+#0FFFEH]
+        SUB R2,R0
+        CMP R2,#DATA16 00016H
+        JMPR cc_NC,L_AA91E
+        MOV R2,crank_tim_19
+        JMPR cc_UC,L_AA922
+L_AA91E:                 ; 0xaa91e
+        MOV crank_tim_19,R2
+L_AA922:                 ; 0xaa922
+        MULU R1,R2
+        CMP MDH,#DATA16 000FFH
+        JMPR cc_ULE,L_AA930
+        MOV R1,0FF1EH
+        JMPR cc_UC,L_AA938
+L_AA930:                 ; 0xaa930
+        MOVB RL1,ign_cc_stat
+        MOVB RH1,MDH_FE0C
+L_AA938:                 ; 0xaa938
+        ADD R1,R3
+        MOV CC6_FE8C,R1
+        JNB smartra_comms_status.03H,L_AA948
+        BFLDH CCM1_FF54,#0FH,#0EH
+        JMPR cc_UC,L_AA94C
+L_AA948:                 ; 0xaa948
+        BFLDH CCM1_FF54,#0FH,#0DH
+L_AA94C:                 ; 0xaa94c
+        CMP CC6,T1_FE52
+        JMPR cc_EQ,L_AA956
+        JMPA cc_NN,L_AAB3C
+L_AA956:                 ; 0xaa956
+        BFLDH CCM1_FF54,#0FH,#00H
+        ATOMIC #02H
+        MOV CC6,T1_FE52
+        BCLR EXICON.06H
+        ATOMIC #01H
+        BFLDL 0F184H,#080H,#00H
+        BCLR P2.06H
+        MOVBZ R0,ign_cc_8
+        BCLR R0.00H
+        MOVB ign_cc_8,RL0
+        JMPR cc_NE,L_AA97A
+        MOV T4CON,#DATA16 00000H
+L_AA97A:                 ; 0xaa97a
+        BCLR smartra_comms_status.08H
+        JNB smartra_comms_status.02H,L_AA9C6
+        BCLR smartra_comms_status.02H
+        MOVBZ R1,ign_dwell_a
+        MOV R0,[R1+#0FA4EH]
+        CMP R0,#00H
+        JMPR cc_EQ,L_AA9B8
+        MOV R2,R1
+L_AA990:                 ; 0xaa990
+        ADD R2,#02H
+        AND R2,#03H
+        MOV R6,[R1+#0FA4AH]
+        MOV R0,[R2+#0FA4AH]
+        MOV [R2+#0FA4AH],R6
+        MOV [R1+#0FA4AH],R0
+        MOV R6,[R1+#0FA4EH]
+        MOV R0,[R2+#0FA4EH]
+        MOV [R2+#0FA4EH],R6
+        MOV [R1+#0FA4EH],R0
+        CMP R0,#00H
+        JMPR cc_NE,L_AA990
+L_AA9B8:                 ; 0xaa9b8
+        MOV R0,T8_F052
+        MOV [R1+#0FA4AH],R0
+        EXTR #01H
+        BFLDL 0F176H,#080H,#080H
+L_AA9C6:                 ; 0xaa9c6
+        JB smartra_comms_status.03H,L_AAA1E
+        MOVB RL0,mpl_iga_act
+        JMPR cc_EQ,L_AA9DA
+        MOV R6,CC6_FE8C
+        MOVB ign_cc_6,ZEROS
+        JMPR cc_UC,L_AAA48
+L_AA9DA:                 ; 0xaa9da
+        MOV T2,0FF1CH
+        MOV ign_cc_15,ZEROS
+        BSET smartra_comms_status.08H
+        MOV R8,T1_FE52
+        JMPR cc_N,L_AA9F8
+        ATOMIC #02H
+        MOV R0,ign_cc_mode
+        JNB XP3IC.07H,L_AAA10
+        ADD R0,#01H
+        JMPR cc_UC,L_AAA10
+L_AA9F8:                 ; 0xaa9f8
+        MOV R0,ign_cc_mode
+        CMP ONES,T1_FE52
+        JMPR cc_NN,L_AAA10
+        ATOMIC #02H
+        JNB T1IC.07H,L_AAA0A
+        JMPR cc_UC,L_AAA10
+L_AAA0A:                 ; 0xaaa0a
+        MOV R0,ign_cc_mode
+        SUB R0,#01H
+L_AAA10:                 ; 0xaaa10
+        MOV ign_cc_13,R8
+        MOV ign_cc_14,R0
+        BFLDL 0FF40H,#0FFH,#054H
+        JMPR cc_UC,L_AAA1E
+L_AAA1E:                 ; 0xaaa1e
+        MOVBZ R0,dbl_igc
+        BXOR smartra_comms_status.01H,R0.00H
+        BAND smartra_comms_status.01H,R0.00H
+        BCLR smartra_comms_status.03H
+        JNB smartra_comms_status.01H,L_AAA36
+        MOV CC6,#DATA16 00023H
+        JMPR cc_UC,L_AAA3A
+L_AAA36:                 ; 0xaaa36
+        MOV CC6,#DATA16 0005FH
+L_AAA3A:                 ; 0xaaa3a
+        BFLDH CCM1_FF54,#0FH,#06H
+        MOVB RL0,#00H
+        MOVB ign_cmp_a,RL0
+        JMPA cc_UC,L_AAB3C
+L_AAA48:                 ; 0xaaa48
+        BCLR P2.06H
+        BCLR smartra_comms_status.02H
+        MOVBZ R0,ign_cc_8
+        BCLR R0.00H
+        MOVB ign_cc_8,RL0
+        JMPR cc_NE,L_AAA5C
+        MOV T4CON,#DATA16 00000H
+L_AAA5C:                 ; 0xaaa5c
+        MOVB RL0,mpl_iga_act
+        JMPR cc_EQ,L_AAA9E
+        SUBB ign_cc_6,ONES
+        MOVB RL0,ign_cc_6
+        CMPB RL0,ign_mpl_nr
+        JMPR cc_UGT,L_AAA9E
+        MOV R1,T1_FE52
+        SUB R1,R6
+        CMP R1,#DATA16 02BF2H
+        JMPR cc_NC,L_AAA9E
+        MOVB RL0,ign_mpl_crk_max
+        CMPB RL0,#05H
+        JMPR cc_ULE,L_AAA86
+        MOVB RL0,#05H
+L_AAA86:                 ; 0xaaa86
+        ADDB RL0,#DATA16 0002DH
+        MOV R1,R5
+        SUBB RL1,T0_FE50
+        NEGB RL1
+        CMPB RL1,#00H
+        JMPR cc_SGE,L_AAA9A
+        ADDB RL1,#DATA16 00078H
+L_AAA9A:                 ; 0xaaa9a
+        CMPB RL1,RL0
+        JMPR cc_C,L_AAAA0
+L_AAA9E:                 ; 0xaaa9e
+        JMPR cc_UC,L_AAA1E
+L_AAAA0:                 ; 0xaaaa0
+        MOVB RL0,#0EH
+        MOVB ign_cmp_a,RL0
+        ADD CC6,td_mpl_dly_bas
+        BFLDH CCM1_FF54,#0FH,#0EH
+        CMP CC6,T1_FE52
+        JMPR cc_EQ,L_AAAB6
+        JMPR cc_NN,L_AAB3C
+L_AAAB6:                 ; 0xaaab6
+        ATOMIC #01H
+        BFLDL 0F184H,#080H,#080H
+        JMPR cc_UC,L_AAB3C
+        MOVB RL0,mpl_iga_act
+        JMPR cc_EQ,L_AAAF2
+        MOV R1,T1_FE52
+        SUB R1,R6
+        CMP R1,#DATA16 02BF2H
+        JMPR cc_NC,L_AAAF2
+        MOVB RL0,ign_mpl_crk_max
+        CMPB RL0,#05H
+        JMPR cc_ULE,L_AAADA
+        MOVB RL0,#05H
+L_AAADA:                 ; 0xaaada
+        ADDB RL0,#DATA16 0002DH
+        MOV R1,R5
+        SUBB RL1,T0_FE50
+        NEGB RL1
+        CMPB RL1,#00H
+        JMPR cc_SGE,L_AAAEE
+        ADDB RL1,#DATA16 00078H
+L_AAAEE:                 ; 0xaaaee
+        CMPB RL1,RL0
+        JMPR cc_C,L_AAAF6
+L_AAAF2:                 ; 0xaaaf2
+        BCLR P2.06H
+        JMPR cc_UC,L_AAA1E
+L_AAAF6:                 ; 0xaaaf6
+        BSET P2.06H
+        BSET smartra_comms_status.02H
+        MOVB RL0,ign_cc_8
+        JMPR cc_NE,L_AAB08
+        MOV T4,#DATA16 0002EH
+        MOV T4CON,#DATA16 000DCH
+L_AAB08:                 ; 0xaab08
+        MOV R1,T1_FE52
+        MOV ign_cc_16,R1
+        BSET R0.00H
+        MOVB ign_cc_8,RL0
+        MOVB RL0,#0AH
+        MOVB ign_cmp_a,RL0
+        ADD CC6,td_mpl_bas
+        BFLDH CCM1_FF54,#0FH,#0DH
+        CMP CC6,T1_FE52
+        JMPR cc_EQ,L_AAB2C
+        JMPR cc_NN,L_AAB32
+L_AAB2C:                 ; 0xaab2c
+        ATOMIC #01H
+        BFLDL 0F184H,#080H,#080H
+L_AAB32:                 ; 0xaab32
+        JMPR cc_UC,L_AAB3C
+        BCLR P2.06H
+        JMPR cc_UC,L_AAB3C
+L_AAB38:                 ; 0xaab38
+        BCLR P2.06H
+        JMPR cc_UC,L_AAB3C
+L_AAB3C:                 ; 0xaab3c
+        POP MDL
+        POP MDH
+        POP MDC
+        POP CP
+        RETI
+
+; ======== CC7INT_Handler  (@0xaab46) ========
+        ; ------------------------------------------------------------
+        ; Engine output ISR (identified by HW interrupt vector + CAPCOM/channel registers): CAPCOM CC7 compare
+        ; interrupt (vector 0x5c): ignition output-event ISR (largest; dwell/spark event scheduling). Reads
+        ; smartra_comms_status (immob output gate).
+        ; ------------------------------------------------------------
+CC7INT_Handler:
+        SCXT CP,#DATA16 0FC26H
+        ATOMIC #01H
+        BFLDH PSW_FF10,#0F0H,#090H
+        BFLDH CCM1_FF54,#0F0H,#00H
+        SCXT MDC,#DATA16 00000H
+        PUSH MDH
+        PUSH MDL
+        MOV R4,0FF1CH
+        JNB smartra_comms_status.04H,L_AAB6C
+        MOV R5,#DATA16 00041H
+        MOV R2,#03H
+        JMPR cc_UC,L_AAB70
+L_AAB6C:                 ; 0xaab6c
+        MOV R5,#05H
+        MOV R2,#01H
+L_AAB70:                 ; 0xaab70
+        MOVB RL4,[R2+#0F5A8H]
+        MOV R1,td_bas
+        MOV td_igc,R1
+        MOVB [R2+#0F5A4H],RL4
+        SHL R4,#04H
+        MOVBZ R1,ign_cmp_b
+        CMPB RL1,#DATA16 00014H
+        JMPA cc_NC,L_AB1DE
+        JNB R1.00H,L_AAB96
+        JMPA cc_UC,L_AB1DE
+L_AAB96:                 ; 0xaab96
+        MOV R0,[R1+#0658CH]
+        JMPI cc_UC,[R0]
+        MOV R0,DSTP7_FCFE
+        MOV R1,[R0+#0FFFCH]
+        MOV R0,[R0+#0FFFEH]
+        SUB R0,R1
+        CMP R0,#DATA16 00016H
+        JMPR cc_NC,L_AABB6
+        MOV R0,crank_tim_19
+        JMPR cc_UC,L_AABBA
+L_AABB6:                 ; 0xaabb6
+        MOV crank_tim_19,R0
+L_AABBA:                 ; 0xaabba
+        MOV R2,td_igc
+        CMP R2,#DATA16 0249FH
+        JMPR cc_ULE,L_AABC8
+        MOV R2,#DATA16 0249FH
+L_AABC8:                 ; 0xaabc8
+        MOVBZ MDH_FE0C,RH2
+        SHL R2,#08H
+        MOV 0FE0EH,R2
+        DIVLU R0
+        JB PSW.02H,L_AABE2
+        MOV R7,0FE0EH
+        CMP R7,#DATA16 01E00H
+        JMPR cc_C,L_AABE6
+L_AABE2:                 ; 0xaabe2
+        MOV R7,#DATA16 01E00H
+L_AABE6:                 ; 0xaabe6
+        MOV R1,R4
+        ADD R1,#DATA16 02000H
+        SUB R1,R7
+        JMPR cc_NC,L_AABF4
+        MOV R1,0FF1CH
+L_AABF4:                 ; 0xaabf4
+        MOV R0,CC7_FE8E
+        SUB R0,R5
+        CMP R0,#00H
+        JMPR cc_SGE,L_AAC02
+        ADD R0,#DATA16 00078H
+L_AAC02:                 ; 0xaac02
+        SUBB RH1,RL0
+        JMPR cc_UGT,L_AAC0A
+        JMPA cc_UC,L_AAD0E
+L_AAC0A:                 ; 0xaac0a
+        MOV R7,CC7_FE8E
+        MOV R2,CC7_FE8E
+        CMPB RH1,#DATA16 00010H
+        JMPR cc_NC,L_AAC2E
+        JB lv_err_com_resp_imob.0CH,L_AAC24
+        SHR R1,#08H
+        ADD R2,R1
+        MOVB RL0,#02H
+        JMPR cc_UC,L_AAC36
+L_AAC24:                 ; 0xaac24
+        MOV R1,#01H
+        ADD R2,R1
+        MOVB RL0,#DATA16 00010H
+        JMPR cc_UC,L_AAC36
+L_AAC2E:                 ; 0xaac2e
+        MOVB RL0,#00H
+        MOV R1,#DATA16 00010H
+        ADD R2,R1
+L_AAC36:                 ; 0xaac36
+        MOVB ign_cmp_b,RL0
+        CMP R2,#DATA16 00078H
+        JMPR cc_ULE,L_AAC44
+        SUB R2,#DATA16 00078H
+L_AAC44:                 ; 0xaac44
+        MOV CC7_FE8E,R2
+        BFLDH CCM1_FF54,#0F0H,#060H
+        SUB R7,T0_FE50
+        NEG R7
+        CMP R7,#00H
+        JMPR cc_SGE,L_AAC5A
+        ADD R7,#DATA16 00078H
+L_AAC5A:                 ; 0xaac5a
+        CMP R7,R1
+        JMPA cc_C,L_AB1E2
+        ATOMIC #01H
+        BFLDL 0F186H,#080H,#080H
+        JMPA cc_UC,L_AB1E2
+        MOV R0,DSTP7_FCFE
+        MOV R1,[R0+#0FFFCH]
+        MOV R0,[R0+#0FFFEH]
+        SUB R0,R1
+        CMP R0,#DATA16 00016H
+        JMPR cc_NC,L_AAC84
+        MOV R0,crank_tim_19
+        JMPR cc_UC,L_AAC88
+L_AAC84:                 ; 0xaac84
+        MOV crank_tim_19,R0
+L_AAC88:                 ; 0xaac88
+        MOV R1,td_igc
+        CMP R1,#DATA16 0249FH
+        JMPR cc_ULE,L_AAC96
+        MOV R1,#DATA16 0249FH
+L_AAC96:                 ; 0xaac96
+        MOVBZ MDH_FE0C,RH1
+        SHL R1,#08H
+        MOV 0FE0EH,R1
+        DIVLU R0
+        JB PSW.02H,L_AACB0
+        MOV R2,0FE0EH
+        CMP R2,#DATA16 01E00H
+        JMPR cc_C,L_AACB4
+L_AACB0:                 ; 0xaacb0
+        MOV R2,#DATA16 01E00H
+L_AACB4:                 ; 0xaacb4
+        MOV R0,CC7_FE8E
+        SUB R0,R5
+        CMP R0,#00H
+        JMPR cc_SGE,L_AACC2
+        ADD R0,#DATA16 00078H
+L_AACC2:                 ; 0xaacc2
+        MOV R1,R4
+        ADD R1,#DATA16 02000H
+        SUB R1,R2
+        JMPR cc_NC,L_AACD0
+        MOV R1,0FF1CH
+L_AACD0:                 ; 0xaacd0
+        CMPB RH1,RL0
+        JMPR cc_UGT,L_AACD6
+        JMPR cc_UC,L_AAD0E
+L_AACD6:                 ; 0xaacd6
+        MOV R7,CC7_FE8E
+        MOV R1,CC7_FE8E
+        ADD R1,#01H
+        CMP R1,#DATA16 00078H
+        JMPR cc_ULE,L_AACEA
+        SUB R1,#DATA16 00078H
+L_AACEA:                 ; 0xaacea
+        MOV CC7_FE8E,R1
+        BFLDH CCM1_FF54,#0F0H,#060H
+        SUB R7,T0_FE50
+        NEG R7
+        CMP R7,#00H
+        JMPR cc_SGE,L_AAD00
+        ADD R7,#DATA16 00078H
+L_AAD00:                 ; 0xaad00
+        CMP R7,#01H
+        JMPR cc_C,L_AAD0A
+        ATOMIC #01H
+        BFLDL 0F186H,#080H,#080H
+L_AAD0A:                 ; 0xaad0a
+        JMPA cc_UC,L_AB1E2
+L_AAD0E:                 ; 0xaad0e
+        MOVB RL0,#04H
+        MOVB ign_cmp_b,RL0
+L_AAD14:                 ; 0xaad14
+        MOV CC7,T0_FE50
+        MOV R2,CC15_FE9E
+        CMP CC7,T0_FE50
+        JMPR cc_NE,L_AAD14
+        MOV R3,DSTP7_FCFE
+        MOV R0,[R3+#0FFFCH]
+        MOV R3,[R3+#0FFFEH]
+        SUB R3,R0
+        CMP R3,#DATA16 00016H
+        JMPR cc_NC,L_AAD3C
+        MOV R3,crank_tim_19
+        JMPR cc_UC,L_AAD40
+L_AAD3C:                 ; 0xaad3c
+        MOV crank_tim_19,R3
+L_AAD40:                 ; 0xaad40
+        MOV R7,td_igc
+        MOV R0,#DATA16 01E00H
+        MULU R0,R3
+        CMP MDH,#DATA16 000FFH
+        JMPR cc_ULE,L_AAD56
+        MOV R0,0FF1EH
+        JMPR cc_UC,L_AAD5E
+L_AAD56:                 ; 0xaad56
+        MOVB RL0,ign_cc_stat
+        MOVB RH0,MDH_FE0C
+L_AAD5E:                 ; 0xaad5e
+        CMP R0,#DATA16 0249FH
+        JMPR cc_ULE,L_AAD68
+        MOV R0,#DATA16 0249FH
+L_AAD68:                 ; 0xaad68
+        CMP R0,R7
+        JMPR cc_NC,L_AAD6E
+        MOV R7,R0
+L_AAD6E:                 ; 0xaad6e
+        MOV R0,CC7_FE8E
+        SUB R0,R5
+        CMP R0,#00H
+        JMPR cc_SGE,L_AAD7C
+        ADD R0,#DATA16 00078H
+L_AAD7C:                 ; 0xaad7c
+        MOV R1,R4
+        ADDB RH1,#DATA16 00021H
+        SUBB RH1,RL0
+        JMPR cc_C,L_AADC2
+        MULU R1,R3
+        CMP MDH,#DATA16 000FFH
+        JMPR cc_ULE,L_AAD94
+        MOV R1,0FF1EH
+        JMPR cc_UC,L_AAD9C
+L_AAD94:                 ; 0xaad94
+        MOVB RL1,ign_cc_stat
+        MOVB RH1,MDH_FE0C
+L_AAD9C:                 ; 0xaad9c
+        SUB R1,R7
+        ADD R1,R2
+        MOV CC7_FE8E,R1
+        MOVBZ R0,inh_igc
+        JNB R0.01H,L_AADB4
+        BFLDH CCM1_FF54,#0F0H,#0E0H
+        BSET smartra_comms_status.06H
+        JMPR cc_UC,L_AADB8
+L_AADB4:                 ; 0xaadb4
+        BFLDH CCM1_FF54,#0F0H,#0D0H
+L_AADB8:                 ; 0xaadb8
+        CMP CC7,T1_FE52
+        JMPR cc_EQ,L_AADC2
+        JMPA cc_NN,L_AB1E2
+L_AADC2:                 ; 0xaadc2
+        BFLDH CCM1_FF54,#0F0H,#00H
+        JB smartra_comms_status.06H,L_AADD4
+        ATOMIC #02H
+        MOV CC7,T1_FE52
+        BSET P2.07H
+        JMPR cc_UC,L_AADD8
+L_AADD4:                 ; 0xaadd4
+        MOV CC7,T1_FE52
+L_AADD8:                 ; 0xaadd8
+        ATOMIC #01H
+        BFLDL 0F186H,#080H,#00H
+        MOVB RL0,#06H
+        MOVB ign_cmp_b,RL0
+        JB smartra_comms_status.06H,L_AAE08
+        BSET P2.07H
+        BSET smartra_comms_status.05H
+        MOVB RL0,ign_cc_8
+        JMPR cc_NE,L_AADFA
+        MOV T4,#DATA16 0002EH
+        MOV T4CON,#DATA16 000DCH
+L_AADFA:                 ; 0xaadfa
+        MOV R1,CC7_FE8E
+        MOV ign_cc_17,R1
+        BSET R0.01H
+        MOVB ign_cc_8,RL0
+L_AAE08:                 ; 0xaae08
+        MOV R1,td_wdt_fac
+        MULU R1,R7
+        MOV R7,MDH_FE0C
+        SHL R7,#01H
+        CMP R7,#DATA16 03A98H
+        JMPR cc_ULE,L_AAE1E
+        MOV R7,#DATA16 03A98H
+L_AAE1E:                 ; 0xaae1e
+        ADD R7,T8_F052
+        MOVBZ R1,ign_dwell_b
+        MOV R0,#02H
+        MOV [R1+#0FA4EH],R0
+        MOV [R1+#0FA4AH],R7
+L_AAE30:                 ; 0xaae30
+        CMPB RL1,ign_dwell_a
+        JMPR cc_EQ,L_AAE66
+        MOV R2,R1
+        SUB R1,#02H
+        AND R1,#03H
+        MOV R0,[R1+#0FA4AH]
+        SUB R0,R7
+        JMPR cc_N,L_AAE7C
+        MOV R0,[R1+#0FA4AH]
+        MOV [R1+#0FA4AH],R7
+        MOV [R2+#0FA4AH],R0
+        MOV R0,[R1+#0FA4EH]
+        MOV R7,[R2+#0FA4EH]
+        MOV [R1+#0FA4EH],R7
+        MOV [R2+#0FA4EH],R0
+        MOV R7,[R1+#0FA4AH]
+        JMPR cc_UC,L_AAE30
+L_AAE66:                 ; 0xaae66
+        MOV CC27_FE76,R7
+        BFLDH CCM6_FF26,#0F0H,#0E0H
+        CMP CC27,T8_F052
+        JMPR cc_EQ,L_AAE76
+        JMPR cc_NN,L_AAE7C
+L_AAE76:                 ; 0xaae76
+        EXTR #01H
+        BFLDL 0F176H,#080H,#080H
+L_AAE7C:                 ; 0xaae7c
+        MOVBZ R1,ign_dwell_b
+        ADD R1,#02H
+        AND R1,#03H
+        MOVB ign_dwell_b,RL1
+        MOV R7,td_igc
+        MOV R1,#DATA16 0CCCAH
+        MULU R7,R1
+        MOV R2,MDH_FE0C
+        MOV R3,DSTP7_FCFE
+        MOV R1,[R3+#0FFFCH]
+        MOV R3,[R3+#0FFFEH]
+        SUB R3,R1
+        CMP R3,#DATA16 00016H
+        JMPR cc_NC,L_AAEB0
+        MOV R3,crank_tim_19
+        JMPR cc_UC,L_AAEB4
+L_AAEB0:                 ; 0xaaeb0
+        MOV crank_tim_19,R3
+L_AAEB4:                 ; 0xaaeb4
+        MOV R0,#DATA16 01E00H
+        MULU R0,R3
+        CMP MDH,#DATA16 000FFH
+        JMPR cc_ULE,L_AAEC6
+        MOV R0,0FF1EH
+        JMPR cc_UC,L_AAECE
+L_AAEC6:                 ; 0xaaec6
+        MOVB RL0,ign_cc_stat
+        MOVB RH0,MDH_FE0C
+L_AAECE:                 ; 0xaaece
+        CMP R0,#DATA16 0249FH
+        JMPR cc_ULE,L_AAED8
+        MOV R0,#DATA16 0249FH
+L_AAED8:                 ; 0xaaed8
+        CMP R0,R2
+        JMPR cc_NC,L_AAEDE
+        MOV R2,R0
+L_AAEDE:                 ; 0xaaede
+        ADD CC7_FE8E,R2
+        BFLDH CCM1_FF54,#0F0H,#0E0H
+        CMP CC7,T1_FE52
+        JMPR cc_EQ,L_AAEF0
+        JMPA cc_NN,L_AB1E2
+L_AAEF0:                 ; 0xaaef0
+        ATOMIC #01H
+        BFLDL 0F186H,#080H,#080H
+        JMPA cc_UC,L_AB1E2
+        MOVB RL0,#08H
+        MOVB ign_cmp_b,RL0
+        JNB smartra_comms_status.08H,L_AAF84
+        BCLR T2CON.06H
+        MOV R1,T1_FE52
+        JMPR cc_N,L_AAF1A
+        ATOMIC #02H
+        MOV R8,ign_cc_mode
+        JNB XP3IC.07H,L_AAF32
+        ADD R8,#01H
+        JMPR cc_UC,L_AAF32
+L_AAF1A:                 ; 0xaaf1a
+        MOV R8,ign_cc_mode
+        CMP ONES,T1_FE52
+        JMPR cc_NN,L_AAF32
+        ATOMIC #02H
+        JNB T1IC.07H,L_AAF2C
+        JMPR cc_UC,L_AAF32
+L_AAF2C:                 ; 0xaaf2c
+        MOV R8,ign_cc_mode
+        SUB R8,#01H
+L_AAF32:                 ; 0xaaf32
+        SUB R1,ign_cc_13
+        SUBC R8,ign_cc_14
+        SUB R1,T2_FE40
+        SUBC R8,ign_cc_15
+        JMPR cc_C,L_AAF4E
+        CMP R8,#00H
+        JMPR cc_UGT,L_AAF56
+        CMP R1,#DATA16 00038H
+        JMPR cc_NC,L_AAF56
+L_AAF4E:                 ; 0xaaf4e
+        BCLR smartra_comms_status.07H
+        MOV R1,#DATA16 08000H
+        JMPR cc_UC,L_AAF5E
+L_AAF56:                 ; 0xaaf56
+        BMOVN R1.0FH,smartra_comms_status.07H
+        ASHR R1,#0FH
+        BSET smartra_comms_status.07H
+L_AAF5E:                 ; 0xaaf5e
+        MOV R8,ign_cc_15
+        JMPR cc_NE,L_AAF70
+        MOV R8,T2_FE40
+        JB R8.0FH,L_AAF70
+        OR R1,R8
+        JMPR cc_UC,L_AAF74
+L_AAF70:                 ; 0xaaf70
+        OR R1,#DATA16 07FFFH
+L_AAF74:                 ; 0xaaf74
+        JNB smartra_comms_status.04H,L_AAF7E
+        MOV ign_cc_11,R1
+        JMPR cc_UC,L_AAF82
+L_AAF7E:                 ; 0xaaf7e
+        MOV ign_cc_9,R1
+L_AAF82:                 ; 0xaaf82
+        JMPR cc_UC,L_AAF84
+L_AAF84:                 ; 0xaaf84
+        MOV CC7,T0_FE50
+        MOV R3,CC15_FE9E
+        CMP CC7,T0_FE50
+        JMPR cc_NE,L_AAF84
+        MOV R0,CC7_FE8E
+        SUB R0,R5
+        CMP R0,#00H
+        JMPR cc_SGE,L_AAFA0
+        ADD R0,#DATA16 00078H
+L_AAFA0:                 ; 0xaafa0
+        MOV R1,R4
+        ADDB RH1,#DATA16 00021H
+        SUBB RH1,RL0
+        JMPR cc_C,L_AAFFC
+        MOV R2,DSTP7_FCFE
+        MOV R0,[R2+#0FFFCH]
+        MOV R2,[R2+#0FFFEH]
+        SUB R2,R0
+        CMP R2,#DATA16 00016H
+        JMPR cc_NC,L_AAFC4
+        MOV R2,crank_tim_19
+        JMPR cc_UC,L_AAFC8
+L_AAFC4:                 ; 0xaafc4
+        MOV crank_tim_19,R2
+L_AAFC8:                 ; 0xaafc8
+        MULU R1,R2
+        CMP MDH,#DATA16 000FFH
+        JMPR cc_ULE,L_AAFD6
+        MOV R1,0FF1EH
+        JMPR cc_UC,L_AAFDE
+L_AAFD6:                 ; 0xaafd6
+        MOVB RL1,ign_cc_stat
+        MOVB RH1,MDH_FE0C
+L_AAFDE:                 ; 0xaafde
+        ADD R1,R3
+        MOV CC7_FE8E,R1
+        JNB smartra_comms_status.06H,L_AAFEE
+        BFLDH CCM1_FF54,#0F0H,#0E0H
+        JMPR cc_UC,L_AAFF2
+L_AAFEE:                 ; 0xaafee
+        BFLDH CCM1_FF54,#0F0H,#0D0H
+L_AAFF2:                 ; 0xaaff2
+        CMP CC7,T1_FE52
+        JMPR cc_EQ,L_AAFFC
+        JMPA cc_NN,L_AB1E2
+L_AAFFC:                 ; 0xaaffc
+        BFLDH CCM1_FF54,#0F0H,#00H
+        ATOMIC #02H
+        MOV CC7,T1_FE52
+        BCLR EXICON.07H
+        ATOMIC #01H
+        BFLDL 0F186H,#080H,#00H
+        BCLR P2.07H
+        MOVBZ R0,ign_cc_8
+        BCLR R0.01H
+        MOVB ign_cc_8,RL0
+        JMPR cc_NE,L_AB020
+        MOV T4CON,#DATA16 00000H
+L_AB020:                 ; 0xab020
+        BCLR smartra_comms_status.09H
+        JNB smartra_comms_status.05H,L_AB06C
+        BCLR smartra_comms_status.05H
+        MOVBZ R1,ign_dwell_a
+        MOV R0,[R1+#0FA4EH]
+        CMP R0,#02H
+        JMPR cc_EQ,L_AB05E
+        MOV R2,R1
+L_AB036:                 ; 0xab036
+        ADD R2,#02H
+        AND R2,#03H
+        MOV R7,[R1+#0FA4AH]
+        MOV R0,[R2+#0FA4AH]
+        MOV [R2+#0FA4AH],R7
+        MOV [R1+#0FA4AH],R0
+        MOV R7,[R1+#0FA4EH]
+        MOV R0,[R2+#0FA4EH]
+        MOV [R2+#0FA4EH],R7
+        MOV [R1+#0FA4EH],R0
+        CMP R0,#02H
+        JMPR cc_NE,L_AB036
+L_AB05E:                 ; 0xab05e
+        MOV R0,T8_F052
+        MOV [R1+#0FA4AH],R0
+        EXTR #01H
+        BFLDL 0F176H,#080H,#080H
+L_AB06C:                 ; 0xab06c
+        JB smartra_comms_status.06H,L_AB0C4
+        MOVB RL0,mpl_iga_act
+        JMPR cc_EQ,L_AB080
+        MOV R7,CC7_FE8E
+        MOVB ign_cc_7,ZEROS
+        JMPR cc_UC,L_AB0EE
+L_AB080:                 ; 0xab080
+        MOV T2,0FF1CH
+        MOV ign_cc_15,ZEROS
+        BSET smartra_comms_status.09H
+        MOV R8,T1_FE52
+        JMPR cc_N,L_AB09E
+        ATOMIC #02H
+        MOV R0,ign_cc_mode
+        JNB XP3IC.07H,L_AB0B6
+        ADD R0,#01H
+        JMPR cc_UC,L_AB0B6
+L_AB09E:                 ; 0xab09e
+        MOV R0,ign_cc_mode
+        CMP ONES,T1_FE52
+        JMPR cc_NN,L_AB0B6
+        ATOMIC #02H
+        JNB T1IC.07H,L_AB0B0
+        JMPR cc_UC,L_AB0B6
+L_AB0B0:                 ; 0xab0b0
+        MOV R0,ign_cc_mode
+        SUB R0,#01H
+L_AB0B6:                 ; 0xab0b6
+        MOV ign_cc_13,R8
+        MOV ign_cc_14,R0
+        BFLDL 0FF40H,#0FFH,#054H
+        JMPR cc_UC,L_AB0C4
+L_AB0C4:                 ; 0xab0c4
+        MOVBZ R0,dbl_igc
+        BXOR smartra_comms_status.04H,R0.00H
+        BAND smartra_comms_status.04H,R0.00H
+        BCLR smartra_comms_status.06H
+        JNB smartra_comms_status.04H,L_AB0DC
+        MOV CC7,#DATA16 00041H
+        JMPR cc_UC,L_AB0E0
+L_AB0DC:                 ; 0xab0dc
+        MOV CC7,#DATA16 00005H
+L_AB0E0:                 ; 0xab0e0
+        BFLDH CCM1_FF54,#0F0H,#060H
+        MOVB RL0,#00H
+        MOVB ign_cmp_b,RL0
+        JMPA cc_UC,L_AB1E2
+L_AB0EE:                 ; 0xab0ee
+        BCLR P2.07H
+        BCLR smartra_comms_status.05H
+        MOVBZ R0,ign_cc_8
+        BCLR R0.01H
+        MOVB ign_cc_8,RL0
+        JMPR cc_NE,L_AB102
+        MOV T4CON,#DATA16 00000H
+L_AB102:                 ; 0xab102
+        MOVB RL0,mpl_iga_act
+        JMPR cc_EQ,L_AB144
+        SUBB ign_cc_7,ONES
+        MOVB RL0,ign_cc_7
+        CMPB RL0,ign_mpl_nr
+        JMPR cc_UGT,L_AB144
+        MOV R1,T1_FE52
+        SUB R1,R7
+        CMP R1,#DATA16 02BF2H
+        JMPR cc_NC,L_AB144
+        MOVB RL0,ign_mpl_crk_max
+        CMPB RL0,#05H
+        JMPR cc_ULE,L_AB12C
+        MOVB RL0,#05H
+L_AB12C:                 ; 0xab12c
+        ADDB RL0,#DATA16 0002DH
+        MOV R1,R5
+        SUBB RL1,T0_FE50
+        NEGB RL1
+        CMPB RL1,#00H
+        JMPR cc_SGE,L_AB140
+        ADDB RL1,#DATA16 00078H
+L_AB140:                 ; 0xab140
+        CMPB RL1,RL0
+        JMPR cc_C,L_AB146
+L_AB144:                 ; 0xab144
+        JMPR cc_UC,L_AB0C4
+L_AB146:                 ; 0xab146
+        MOVB RL0,#0EH
+        MOVB ign_cmp_b,RL0
+        ADD CC7,td_mpl_dly_bas
+        BFLDH CCM1_FF54,#0F0H,#0E0H
+        CMP CC7,T1_FE52
+        JMPR cc_EQ,L_AB15C
+        JMPR cc_NN,L_AB1E2
+L_AB15C:                 ; 0xab15c
+        ATOMIC #01H
+        BFLDL 0F186H,#080H,#080H
+        JMPR cc_UC,L_AB1E2
+        MOVB RL0,mpl_iga_act
+        JMPR cc_EQ,L_AB198
+        MOV R1,T1_FE52
+        SUB R1,R7
+        CMP R1,#DATA16 02BF2H
+        JMPR cc_NC,L_AB198
+        MOVB RL0,ign_mpl_crk_max
+        CMPB RL0,#05H
+        JMPR cc_ULE,L_AB180
+        MOVB RL0,#05H
+L_AB180:                 ; 0xab180
+        ADDB RL0,#DATA16 0002DH
+        MOV R1,R5
+        SUBB RL1,T0_FE50
+        NEGB RL1
+        CMPB RL1,#00H
+        JMPR cc_SGE,L_AB194
+        ADDB RL1,#DATA16 00078H
+L_AB194:                 ; 0xab194
+        CMPB RL1,RL0
+        JMPR cc_C,L_AB19C
+L_AB198:                 ; 0xab198
+        BCLR P2.07H
+        JMPR cc_UC,L_AB0C4
+L_AB19C:                 ; 0xab19c
+        BSET P2.07H
+        BSET smartra_comms_status.05H
+        MOVB RL0,ign_cc_8
+        JMPR cc_NE,L_AB1AE
+        MOV T4,#DATA16 0002EH
+        MOV T4CON,#DATA16 000DCH
+L_AB1AE:                 ; 0xab1ae
+        MOV R1,T1_FE52
+        MOV ign_cc_17,R1
+        BSET R0.01H
+        MOVB ign_cc_8,RL0
+        MOVB RL0,#0AH
+        MOVB ign_cmp_b,RL0
+        ADD CC7,td_mpl_bas
+        BFLDH CCM1_FF54,#0F0H,#0D0H
+        CMP CC7,T1_FE52
+        JMPR cc_EQ,L_AB1D2
+        JMPR cc_NN,L_AB1D8
+L_AB1D2:                 ; 0xab1d2
+        ATOMIC #01H
+        BFLDL 0F186H,#080H,#080H
+L_AB1D8:                 ; 0xab1d8
+        JMPR cc_UC,L_AB1E2
+        BCLR P2.07H
+        JMPR cc_UC,L_AB1E2
+L_AB1DE:                 ; 0xab1de
+        BCLR P2.07H
+        JMPR cc_UC,L_AB1E2
+L_AB1E2:                 ; 0xab1e2
+        POP MDL
+        POP MDH
+        POP MDC
+        POP CP
+        RETI
+
+; ======== CC9INT_handler  (@0xab1ec) ========
+CC9INT_handler:
+        SCXT CP,#DATA16 0FC26H
+        ATOMIC #01H
+        BFLDH PSW_FF10,#0F0H,#090H
+        NOP
+        MOVBZ R0,imob_f5b5
+        MOVB RL1,#00H
+        SHL R0,#01H
+        MOV R0,[R0+#065A2H]
+        JMPI cc_UC,[R0]
+        CMPB RL1,ign_cmp_a
+        JMPR cc_EQ,L_AB20E
+        BSET CC6IC.07H
+L_AB20E:                 ; 0xab20e
+        JMPR cc_UC,L_AB21A
+        CMPB RL1,ign_cmp_b
+        JMPR cc_EQ,L_AB218
+        BSET CC7IC.07H
+L_AB218:                 ; 0xab218
+        JMPR cc_UC,L_AB21A
+L_AB21A:                 ; 0xab21a
+        POP CP
+        RETI
+
+; ======== CC27INT_handler  (@0xab21e) ========
+CC27INT_handler:
+        SCXT CP,#DATA16 0FC26H
+        ATOMIC #01H
+        BFLDH PSW_FF10,#0F0H,#090H
+        NOP
+        BFLDH CCM6_FF26,#0F0H,#00H
+        MOVBZ R0,ign_dwell_a
+        MOV R0,[R0+#0FA4EH]
+        MOV R0,[R0+#065AAH]
+        JMPI cc_UC,[R0]
+        JNB smartra_comms_status.02H,L_AB25A
+        BFLDH CCM1_FF54,#0FH,#00H
+        ATOMIC #02H
+        MOV CC6,T1_FE52
+        BCLR EXICON.06H
+        BCLR smartra_comms_status.02H
+        MOVB RL0,#08H
+        MOVB ign_cmp_a,RL0
+        ATOMIC #01H
+        BFLDL 0F184H,#080H,#080H
+L_AB25A:                 ; 0xab25a
+        JMPR cc_UC,L_AB27A
+        JNB smartra_comms_status.05H,L_AB27A
+        BFLDH CCM1_FF54,#0F0H,#00H
+        ATOMIC #02H
+        MOV CC7,T1_FE52
+        BCLR EXICON.07H
+        BCLR smartra_comms_status.05H
+        MOVB RL0,#08H
+        MOVB ign_cmp_b,RL0
+        ATOMIC #01H
+        BFLDL 0F186H,#080H,#080H
+L_AB27A:                 ; 0xab27a
+        EXTR #01H
+        BFLDL 0F176H,#080H,#00H
+        MOVBZ R0,ign_dwell_a
+        ADD R0,#02H
+        AND R0,#03H
+        MOVB ign_dwell_a,RL0
+        CMPB RL0,ign_dwell_b
+        JMPR cc_EQ,L_AB2AC
+        MOV R0,[R0+#0FA4AH]
+        MOV CC27_FE76,R0
+        BFLDH CCM6_FF26,#0F0H,#0E0H
+        CMP CC27,T8_F052
+        JMPR cc_EQ,L_AB2A6
+        JMPR cc_NN,L_AB2AC
+L_AB2A6:                 ; 0xab2a6
+        EXTR #01H
+        BFLDL 0F176H,#080H,#080H
+L_AB2AC:                 ; 0xab2ac
+        POP CP
+        RETI
+
+; ======== T4INT_handler  (@0xab2b0) ========
+T4INT_handler:
+        SCXT CP,#DATA16 0FC38H
+        ATOMIC #01H
+        BFLDH PSW_FF10,#0F0H,#090H
+        NOP
+        MOV T4CON,#DATA16 00000H
+        JNB smartra_comms_status.02H,L_AB2F4
+        MOV R0,T1_FE52
+        SUB R0,ign_cc_16
+        CMP R0,#DATA16 00177H
+        JMPR cc_UGT,L_AB2F4
+        BFLDH CCM1_FF54,#0FH,#00H
+        MOVB RL0,#08H
+        MOVB ign_cmp_a,RL0
+        BSET smartra_comms_status.03H
+        ATOMIC #02H
+        MOV CC6,T1_FE52
+        BCLR EXICON.06H
+        ATOMIC #01H
+        BFLDL 0F184H,#080H,#080H
+        MOV R0,#00H
+        BSET R0.00H
+        ORB td_igc_cut,RL0
+L_AB2F4:                 ; 0xab2f4
+        JNB smartra_comms_status.05H,L_AB328
+        MOV R0,T1_FE52
+        SUB R0,ign_cc_17
+        CMP R0,#DATA16 00177H
+        JMPR cc_UGT,L_AB328
+        BFLDH CCM1_FF54,#0F0H,#00H
+        MOVB RL0,#08H
+        MOVB ign_cmp_b,RL0
+        BSET smartra_comms_status.06H
+        ATOMIC #02H
+        MOV CC7,T1_FE52
+        BCLR EXICON.07H
+        ATOMIC #01H
+        BFLDL 0F186H,#080H,#080H
+        MOV R0,#00H
+        BSET R0.01H
+        ORB td_igc_cut,RL0
+L_AB328:                 ; 0xab328
+        POP CP
+        RETI
+
+S_AA49E ENDS
+        END

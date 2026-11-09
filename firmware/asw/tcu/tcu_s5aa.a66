@@ -1,0 +1,266 @@
+; asw/tcu/tcu_s5aa.a66
+; 0xD74AA-0xD76B4  (522 bytes, 7 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  NVM_Restore_s5aa, NVM_Restore_s5ae, NVM_Save_s5aa, NVM_Save_s5ae, Reset_CAN_AsrAbs, Reset_lv_conf_mis_59c
+PUBLIC  Reset_lv_conf_mis_69a
+EXTERN  Elevated_Write_Routine_prg_zone_wrapper:NEAR, xor_routine:NEAR
+
+S_D74AA SECTION CODE AT 0D74AAH
+
+; ======== NVM_Restore_s5aa  (@0xd74aa) ========
+        ; ------------------------------------------------------------
+        ; NVM adaptation I/O: restores <- validated NVM block (DAT_00f890 base) section; xor_routine checksum.
+        ; Section offset in name.
+        ; ------------------------------------------------------------
+NVM_Restore_s5aa:
+        JB can_fd58.02H,L_D7504
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 005AAH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#02H
+        CALLS 00DH,xor_routine
+        MOV R10,diag_f890
+        MOV R11,diag_f892
+        EXTP R11, #02H
+        MOV R5,[R10+#05ACH]
+        NOP
+        CMP R5,R4
+        JMPR cc_NE,L_D7504
+        EXTP R11, #02H
+        MOVB RL4,[R10+#05AAH]
+        NOP
+        CMPB RL4,#DATA16 00040H
+        JMPR cc_NE,L_D7504
+        BSET lv_conf_mis.03H
+        RETS
+L_D7504:                 ; 0xd7504
+        BCLR lv_conf_mis.03H
+        RETS
+
+; ======== NVM_Save_s5aa  (@0xd7508) ========
+        ; ------------------------------------------------------------
+        ; NVM adaptation I/O: saves RAM-> validated NVM block (DAT_00f890 base) section; xor_routine checksum.
+        ; Section offset in name.
+        ; ------------------------------------------------------------
+NVM_Save_s5aa:
+        SUB R0,#04H
+        JNB lv_conf_mis.03H,L_D7516
+        MOVB RL4,#DATA16 00040H
+        MOVB [R0],RL4
+        JMPR cc_UC,L_D751A
+L_D7516:                 ; 0xd7516
+        MOVB RL4,#02H
+        MOVB [R0],RL4
+L_D751A:                 ; 0xd751a
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 005AAH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,R0
+        MOV R15,#01H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 005AAH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#02H
+        CALLS 00DH,xor_routine
+        MOV [R0+#02H],R4
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 005ACH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#02H
+        ADD R14,R0
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        ADD R0,#04H
+        RETS
+
+; ======== Reset_lv_conf_mis_59c  (@0xd759c) ========
+Reset_lv_conf_mis_59c:
+        BCLR lv_conf_mis.03H
+        BSET abs_def.0EH
+        BCLR abs_def.0FH
+        RETS
+
+; ======== NVM_Restore_s5ae  (@0xd75a4) ========
+        ; ------------------------------------------------------------
+        ; NVM adaptation I/O: restores <- validated NVM block (DAT_00f890 base) section; xor_routine checksum.
+        ; Section offset in name.
+        ; ------------------------------------------------------------
+NVM_Restore_s5ae:
+        JB can_fd58.02H,L_D7600
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 005AEH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#02H
+        CALLS 00DH,xor_routine
+        MOV R10,diag_f890
+        MOV R11,diag_f892
+        EXTP R11, #02H
+        MOV R5,[R10+#05B0H]
+        NOP
+        CMP R5,R4
+        JMPR cc_NE,L_D7600
+        EXTP R11, #02H
+        MOVB RL4,[R10+#05AEH]
+        NOP
+        CMPB RL4,#DATA16 00010H
+        JMPR cc_NE,L_D7600
+        BSET lv_conf_mis.0AH
+        BSET abs_def.04H
+        RETS
+L_D7600:                 ; 0xd7600
+        BCLR lv_conf_mis.0AH
+        BCLR abs_def.04H
+        RETS
+
+; ======== NVM_Save_s5ae  (@0xd7606) ========
+        ; ------------------------------------------------------------
+        ; NVM adaptation I/O: saves RAM-> validated NVM block (DAT_00f890 base) section; xor_routine checksum.
+        ; Section offset in name.
+        ; ------------------------------------------------------------
+NVM_Save_s5ae:
+        SUB R0,#04H
+        JNB abs_def.04H,L_D7614
+        MOVB RL4,#DATA16 00010H
+        MOVB [R0],RL4
+        JMPR cc_UC,L_D7618
+L_D7614:                 ; 0xd7614
+        MOVB RL4,#08H
+        MOVB [R0],RL4
+L_D7618:                 ; 0xd7618
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 005AEH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,R0
+        MOV R15,#01H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 005AEH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#02H
+        CALLS 00DH,xor_routine
+        MOV [R0+#02H],R4
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 005B0H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#02H
+        ADD R14,R0
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        ADD R0,#04H
+        RETS
+
+; ======== Reset_lv_conf_mis_69a  (@0xd769a) ========
+Reset_lv_conf_mis_69a:
+        BCLR lv_conf_mis.0AH
+        BCLR abs_def.04H
+        BSET abs_def.0EH
+        BCLR abs_def.0FH
+        RETS
+
+; ======== Reset_CAN_AsrAbs  (@0xd76a4) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): CAN interface (abs_def/lv_asr_req reset on timeout)
+        ; ------------------------------------------------------------
+Reset_CAN_AsrAbs:
+        BCLR abs_def.00H
+        BCLR lv_asr_req.0BH
+        BCLR lv_asr_req.0AH
+        MOVB ctr_can_busoff,ZEROS
+        MOVB ctr_can_tcu_to,ZEROS
+        RETS
+
+S_D74AA ENDS
+        END

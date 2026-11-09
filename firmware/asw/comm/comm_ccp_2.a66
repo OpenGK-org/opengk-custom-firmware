@@ -1,0 +1,432 @@
+; asw/comm/comm_ccp_2.a66
+; 0xA5B7C-0xA5F16  (922 bytes, 7 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  CCP_DAQ_Security, CCP_Daq_Prepare_0x0a, CCP_Daq_SetPtr_0x0b, CCP_Daq_StartStop_0x0c, CCP_Lookup_DaqObject_Idx, CCP_Prog_State
+PUBLIC  CCP_Svc_Conn_Security
+EXTERN  CAN_wipe_recurring_msg_obj_from_buffer_:NEAR, CCP_Connect_ArmCanObjects:NEAR, CCP_GetCalPageStatus_0x1c:NEAR, CCP_GetSeed_0x12:NEAR
+EXTERN  CCP_Rebuild_CanDaqObjects:NEAR, CCP_Resp_Dispatch:NEAR, CCP_Svc_Prog_DAQ:NEAR, CCP_Unlock_0x13:NEAR
+EXTERN  Move_xFF_items__from_PTR_R12_to_PTR_R13:NEAR
+
+S_A5B7C SECTION CODE AT 0A5B7CH
+
+; ======== CCP_Lookup_DaqObject_Idx  (@0xa5b7c) ========
+CCP_Lookup_DaqObject_Idx:
+        MOV [-R0],R6
+        MOV R5,[R12]
+        PRIOR R4,R5
+        MOVB RL6,RL4
+        EXTR #01H
+        BCLR XP1IC.06H
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R5,[R4+#06358H]
+        MOV R4,[R12]
+        AND R4,R5
+        MOV [R12],R4
+        EXTR #01H
+        BSET CC11IC.06H
+        MOVB RL4,RL6
+        MOV R6,[R0+]
+        RETS
+
+; ======== CCP_Daq_SetPtr_0x0b  (@0xa5ba0) ========
+CCP_Daq_SetPtr_0x0b:
+        MOV [-R0],R9
+        MOV [-R0],R6
+        MOV R9,R12
+        MOVB RL4,#DATA16 00010H
+        MOVB ccp_e156,RL4
+        MOV R12,R9
+        ADD R12,#04H
+        CALLS 00AH,CCP_Lookup_DaqObject_Idx
+        MOVB RL6,RL4
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R5,[R4+#0E18AH]
+        MOV ccp_e158,R5
+        MOVB RL4,#03H
+        MOVB ccp_e15a,RL4
+        MOV R12,#DATA16 0E156H
+        CALLS 00AH,CCP_Svc_Prog_DAQ
+        EXTR #01H
+        BCLR XP1IC.06H
+        MOV R4,[R9+#04H]
+        JMPR cc_NE,L_A5BE8
+        MOV R4,R9
+        ADD R4,#02H
+        MOVB RL5,[R4]
+        ANDB RL5,#DATA16 000FEH
+        MOVB [R4],RL5
+L_A5BE8:                 ; 0xa5be8
+        EXTR #01H
+        BSET CC11IC.06H
+        MOVB RL4,#00H
+        MOV R6,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== CCP_Daq_Prepare_0x0a  (@0xa5bf4) ========
+CCP_Daq_Prepare_0x0a:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R7,R12
+        JB sched_flags2.02H,L_A5C12
+        BSET sched_flags2.02H
+        MOVB RL4,#0EH
+        MOVB ccp_e164,RL4
+        MOV R12,#DATA16 0E164H
+        CALLS 00AH,CCP_Resp_Dispatch
+L_A5C12:                 ; 0xa5c12
+        MOV R12,R7
+        ADD R12,#06H
+        CALLS 00AH,CCP_Lookup_DaqObject_Idx
+        MOVB RL6,RL4
+        MOVB RL4,#0FH
+        MOVB ccp_e156,RL4
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R8,[R4+#0E18AH]
+        MOV R9,[R8+#04H]
+        MOV ccp_e158,R8
+        MOVB RL4,[R9+#06H]
+        MOVBZ R4,RL4
+        SHR R4,#04H
+        MOVB ccp_e15a,RL4
+        MOV R12,#DATA16 0E15BH
+        MOV R13,R9
+        ADD R13,#07H
+        MOV R14,#08H
+        CALLS 00AH,Move_xFF_items__from_PTR_R12_to_PTR_R13
+        CMPB RL6,#DATA16 0000EH
+        JMPR cc_NE,L_A5C70
+        MOV R4,[R9+#02H]
+        MOV ccp_fafc,R4
+        MOV R12,#DATA16 0E156H
+        CALLS 00AH,CCP_Svc_Prog_DAQ
+        MOV R4,#DATA16 055DFH
+        MOV [R9],R4
+        MOV R4,#DATA16 0FFFDH
+        MOV [R9],R4
+        JMPR cc_UC,L_A5C78
+L_A5C70:                 ; 0xa5c70
+        MOV R12,#DATA16 0E156H
+        CALLS 00AH,CCP_Svc_Prog_DAQ
+L_A5C78:                 ; 0xa5c78
+        EXTR #01H
+        BCLR XP1IC.06H
+        MOV R4,[R7+#06H]
+        JMPR cc_NE,L_A5C8E
+        MOV R4,R7
+        ADD R4,#02H
+        MOVB RL5,[R4]
+        ANDB RL5,#DATA16 000FDH
+        MOVB [R4],RL5
+L_A5C8E:                 ; 0xa5c8e
+        EXTR #01H
+        BSET CC11IC.06H
+        MOVB RL4,#00H
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== CCP_Daq_StartStop_0x0c  (@0xa5c9e) ========
+CCP_Daq_StartStop_0x0c:
+        MOV [-R0],R9
+        MOV R9,R12
+        MOVB RL4,#DATA16 00011H
+        MOVB ccp_e164,RL4
+        EXTR #01H
+        BCLR XP1IC.06H
+        MOVB RL5,[R9+#02H]
+        MOVBZ R4,RL5
+        AND R4,#04H
+        JMPR cc_EQ,L_A5CCC
+        MOVB RL4,#03H
+        MOVB ccp_daq_enable_flag,RL4
+        MOV R4,R9
+        ADD R4,#02H
+        MOVB RL5,[R4]
+        ANDB RL5,#DATA16 000FBH
+        MOVB [R4],RL5
+        JMPR cc_UC,L_A5CEE
+L_A5CCC:                 ; 0xa5ccc
+        MOVB RL4,[R9+#02H]
+        MOVBZ R4,RL4
+        AND R4,#DATA16 00008H
+        JMPR cc_EQ,L_A5CEA
+        MOVB ccp_daq_enable_flag,ZEROS
+        MOV R4,R9
+        ADD R4,#02H
+        MOVB RL5,[R4]
+        ANDB RL5,#DATA16 000F7H
+        MOVB [R4],RL5
+        JMPR cc_UC,L_A5CEE
+L_A5CEA:                 ; 0xa5cea
+        SUBB ccp_security_err_cnt,ONES
+L_A5CEE:                 ; 0xa5cee
+        EXTR #01H
+        BSET CC11IC.06H
+        MOV R12,#DATA16 0E164H
+        CALLS 00AH,CCP_Resp_Dispatch
+        MOVB RL4,#00H
+        MOV R9,[R0+]
+        RETS
+
+; ======== CCP_Svc_Conn_Security  (@0xa5d00) ========
+        ; CCP_Svc_Conn_Security(opBufPtr): CCP service handler keyed by internal op, gated by
+        ; ccp_security_state (0->expects 0x1a CONNECT to arm; 0x20=connected; 0x30=seed/key). Ops:
+        ; 0x1b=DISCONNECT (wipes recurring CAN obj), 0x12=GET_SEED(0a5822), 0x13=UNLOCK(0a5852), 0x1c=GET/SET
+        ; cal page(0a58dc), 0x19=MOVE, 0x0a..0x0d=SET/GET session status variants, uses CC11IC CAN-obj
+        ; interrupt. Errors -> DAT_00c510++.
+CCP_Svc_Conn_Security:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R9,R12
+        MOVB RL4,[R9]
+        MOV R8,R4
+        MOVB RL7,RL4
+        MOV R4,R8
+        CMPB RL4,#00H
+        JMPR cc_NE,L_A5D48
+        MOVB RL4,[R9+#02H]
+        MOVBZ R4,RL4
+        AND R4,#04H
+        JMPR cc_EQ,L_A5D22
+        MOVB RL7,#0CH
+L_A5D22:                 ; 0xa5d22
+        MOVB RL4,[R9+#02H]
+        MOVBZ R4,RL4
+        AND R4,#02H
+        JMPR cc_EQ,L_A5D2E
+        MOVB RL7,#0AH
+L_A5D2E:                 ; 0xa5d2e
+        MOVB RL4,[R9+#02H]
+        MOVBZ R4,RL4
+        AND R4,#01H
+        JMPR cc_EQ,L_A5D3A
+        MOVB RL7,#0BH
+L_A5D3A:                 ; 0xa5d3a
+        MOVB RL4,[R9+#02H]
+        MOVBZ R4,RL4
+        AND R4,#DATA16 00008H
+        JMPR cc_EQ,L_A5D48
+        MOVB RL7,#0DH
+L_A5D48:                 ; 0xa5d48
+        MOV R4,ccp_security_state
+        JMPR cc_EQ,L_A5D5E
+        CMP R4,#DATA16 00020H
+        JMPR cc_EQ,L_A5D7C
+        CMP R4,#DATA16 00030H
+        JMPR cc_EQ,L_A5E1C
+        JMPA cc_UC,L_A5E86
+L_A5D5E:                 ; 0xa5d5e
+        CMPB RL7,#DATA16 0001AH
+        JMPR cc_NE,L_A5D74
+        MOV R4,#DATA16 00020H
+        MOV ccp_security_state,R4
+        CALLS 00AH,CCP_Connect_ArmCanObjects
+        JMPA cc_UC,L_A5E8A
+L_A5D74:                 ; 0xa5d74
+        SUBB ccp_security_err_cnt,ONES
+        JMPA cc_UC,L_A5E8A
+L_A5D7C:                 ; 0xa5d7c
+        CMPB RL7,#DATA16 0001BH
+        JMPR cc_EQ,L_A5DAE
+        CMPB RL7,#DATA16 00012H
+        JMPR cc_EQ,L_A5DBC
+        CMPB RL7,#DATA16 00013H
+        JMPR cc_EQ,L_A5DC6
+        CMPB RL7,#DATA16 0001CH
+        JMPR cc_EQ,L_A5DD0
+        CMPB RL7,#DATA16 0000BH
+        JMPR cc_EQ,L_A5DDA
+        CMPB RL7,#DATA16 0000AH
+        JMPR cc_EQ,L_A5DE4
+        CMPB RL7,#DATA16 0000CH
+        JMPR cc_EQ,L_A5DEE
+        CMPB RL7,#DATA16 0000DH
+        JMPR cc_EQ,L_A5E00
+        JMPR cc_UC,L_A5E16
+L_A5DAE:                 ; 0xa5dae
+        MOV ccp_security_state,ZEROS
+        MOV R12,R9
+        CALLS 00AH,CAN_wipe_recurring_msg_obj_from_buffer_
+        JMPA cc_UC,L_A5E8A
+L_A5DBC:                 ; 0xa5dbc
+        MOV R12,R9
+        CALLS 00AH,CCP_GetSeed_0x12
+        MOVB RL6,RL4
+        JMPR cc_UC,L_A5E8A
+L_A5DC6:                 ; 0xa5dc6
+        MOV R12,R9
+        CALLS 00AH,CCP_Unlock_0x13
+        MOVB RL6,RL4
+        JMPR cc_UC,L_A5E8A
+L_A5DD0:                 ; 0xa5dd0
+        MOV R12,R9
+        CALLS 00AH,CCP_GetCalPageStatus_0x1c
+        MOVB RL6,RL4
+        JMPR cc_UC,L_A5E8A
+L_A5DDA:                 ; 0xa5dda
+        MOV R12,R9
+        CALLS 00AH,CCP_Daq_SetPtr_0x0b
+        MOVB RL6,RL4
+        JMPR cc_UC,L_A5E8A
+L_A5DE4:                 ; 0xa5de4
+        MOV R12,R9
+        CALLS 00AH,CCP_Daq_Prepare_0x0a
+        MOVB RL6,RL4
+        JMPR cc_UC,L_A5E8A
+L_A5DEE:                 ; 0xa5dee
+        MOV R4,#DATA16 00030H
+        MOV ccp_security_state,R4
+        MOV R12,R9
+        CALLS 00AH,CCP_Daq_StartStop_0x0c
+        MOVB RL6,RL4
+        JMPR cc_UC,L_A5E8A
+L_A5E00:                 ; 0xa5e00
+        EXTR #01H
+        BCLR XP1IC.06H
+        MOV R4,R9
+        ADD R4,#02H
+        MOVB RL5,[R4]
+        ANDB RL5,#DATA16 000F7H
+        MOVB [R4],RL5
+        EXTR #01H
+        BSET CC11IC.06H
+        JMPR cc_UC,L_A5E8A
+L_A5E16:                 ; 0xa5e16
+        SUBB ccp_security_err_cnt,ONES
+        JMPR cc_UC,L_A5E8A
+L_A5E1C:                 ; 0xa5e1c
+        CMPB RL7,#DATA16 0001BH
+        JMPR cc_EQ,L_A5E3C
+        CMPB RL7,#DATA16 00019H
+        JMPR cc_EQ,L_A5E48
+        CMPB RL7,#DATA16 0001CH
+        JMPR cc_EQ,L_A5E4E
+        CMPB RL7,#DATA16 0000DH
+        JMPR cc_EQ,L_A5E58
+        CMPB RL7,#DATA16 0000CH
+        JMPR cc_EQ,L_A5E6A
+        JMPR cc_UC,L_A5E80
+L_A5E3C:                 ; 0xa5e3c
+        MOV ccp_security_state,ZEROS
+        MOV R12,R9
+        CALLS 00AH,CAN_wipe_recurring_msg_obj_from_buffer_
+        JMPR cc_UC,L_A5E8A
+L_A5E48:                 ; 0xa5e48
+        CALLS 00AH,CCP_Rebuild_CanDaqObjects
+        JMPR cc_UC,L_A5E8A
+L_A5E4E:                 ; 0xa5e4e
+        MOV R12,R9
+        CALLS 00AH,CCP_GetCalPageStatus_0x1c
+        MOVB RL6,RL4
+        JMPR cc_UC,L_A5E8A
+L_A5E58:                 ; 0xa5e58
+        MOV R4,#DATA16 00020H
+        MOV ccp_security_state,R4
+        MOV R12,R9
+        CALLS 00AH,CCP_Daq_StartStop_0x0c
+        MOVB RL6,RL4
+        JMPR cc_UC,L_A5E8A
+L_A5E6A:                 ; 0xa5e6a
+        EXTR #01H
+        BCLR XP1IC.06H
+        MOV R4,R9
+        ADD R4,#02H
+        MOVB RL5,[R4]
+        ANDB RL5,#DATA16 000FBH
+        MOVB [R4],RL5
+        EXTR #01H
+        BSET CC11IC.06H
+        JMPR cc_UC,L_A5E8A
+L_A5E80:                 ; 0xa5e80
+        SUBB ccp_security_err_cnt,ONES
+        JMPR cc_UC,L_A5E8A
+L_A5E86:                 ; 0xa5e86
+        SUBB ccp_security_err_cnt,ONES
+L_A5E8A:                 ; 0xa5e8a
+        MOV R4,R8
+        CMPB RL4,#00H
+        JMPR cc_NE,L_A5E9E
+        MOVB RL4,[R9+#02H]
+        JMPR cc_EQ,L_A5E9E
+        BOR can_sched_flags1.0CH,can_sched_flags0.0CH
+        BMOV can_sched_flags0.0CH,can_sched_flags2.0CH
+L_A5E9E:                 ; 0xa5e9e
+        MOVB RL4,RL6
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== CCP_DAQ_Security  (@0xa5eaa) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by ccp_/bl_/cpu output signals): CCP data-acquisition + security: ccp_daq_active_mask
+        ; / ccp_security_state.
+        ; ------------------------------------------------------------
+CCP_DAQ_Security:
+        MOV R12,#00H
+L_A5EAC:                 ; 0xa5eac
+        MOV R4,#00H
+        MOV R5,R12
+        SHL R5,#01H
+        MOV [R5+#0E16CH],R4
+        ADD R12,#01H
+        CMP R12,#DATA16 0000FH
+        JMPR cc_C,L_A5EAC
+        MOV R14,#DATA16 06378H
+        MOV R15,#00H
+        MOV R12,#00H
+L_A5EC6:                 ; 0xa5ec6
+        MOV R13,[R14+#04H]
+        MOV R2,#DATA16 0EE10H
+        SUB R13,R2
+        AND R13,#DATA16 000F0H
+        SHR R13,#04H
+        MOV R4,R13
+        SHL R4,#01H
+        MOV [R4+#0E18AH],R14
+        ADD R14,#DATA16 0000AH
+        MOV R4,#01H
+        SHL R4,R13
+        OR R15,R4
+        ADD R12,#01H
+        CMP R12,#DATA16 00008H
+        JMPR cc_C,L_A5EC6
+        MOV ccp_daq_active_mask,R15
+        MOV ccp_security_state,ZEROS
+        RETS
+
+; ======== CCP_Prog_State  (@0xa5efa) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by ccp_/bl_/cpu output signals): CCP programming state machine ccp_prog_state.
+        ; ------------------------------------------------------------
+CCP_Prog_State:
+        MOV [-R0],R6
+        MOVB RL6,#00H
+L_A5EFE:                 ; 0xa5efe
+        MOVB RL4,#00H
+        MOVBZ R5,RL6
+        MOVB [R5+#0C512H],RL4
+        ADDB RL6,#01H
+        CMPB RL6,#DATA16 00008H
+        JMPR cc_C,L_A5EFE
+        MOV ccp_prog_state_D798,ZEROS
+        MOV R6,[R0+]
+        RETS
+
+S_A5B7C ENDS
+        END

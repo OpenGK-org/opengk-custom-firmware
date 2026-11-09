@@ -1,0 +1,226 @@
+; asw/comm/comm_kline.a66
+; 0xDEE52-0xDF052  (512 bytes, 6 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  App_SecAccess_GrantFromFlashFlags, BL_KLine_ProtoInit, KWP_P3_Timeout_Check, KWP_Session_Setup, KWP_Set_CommsFlags, Tail_rt_callfar_via_r5r4_f0e
+EXTERN  KWP_Set_Buffer:NEAR, Reset_kwp_req_ptr_c98:NEAR, Reset_kwp_req_ptr_e34:NEAR
+
+S_DEE52 SECTION CODE AT 0DEE52H
+
+; ======== BL_KLine_ProtoInit  (@0xdee52) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by bl_/kwp_ output signals): Bootloader K-line protocol init: bl_prog_comm_flags /
+        ; bl_kline_proto_state / bl_kline_baud_reload.
+        ; ------------------------------------------------------------
+BL_KLine_ProtoInit:
+        MOV bl_prog_comm_flags,ZEROS
+        MOVB bl_kline_proto_state,ZEROS
+        JNB bl_mode_status_flags.05H,L_DEE74
+        JNB bl_mode_status_flags.05H,L_DEE66
+        MOV R12,#00H
+        JMPR cc_UC,L_DEE68
+L_DEE66:                 ; 0xdee66
+        MOV R12,#00H
+L_DEE68:                 ; 0xdee68
+        MOV R13,#DATA16 000F0H
+        MOV R14,#00H
+        CALLS 008H,lam_bank_1_lam_up_t_lam_dly_neg
+        JMPR cc_UC,L_DEE94
+L_DEE74:                 ; 0xdee74
+        JNB bl_mode_status_flags.05H,L_DEE7C
+        MOV R12,#00H
+        JMPR cc_UC,L_DEE7E
+L_DEE7C:                 ; 0xdee7c
+        MOV R12,#00H
+L_DEE7E:                 ; 0xdee7e
+        MOV R13,#DATA16 000F0H
+        MOV R14,#00H
+        EXTP #00H, #02H
+        MOV R4,kwp_24a
+        MOV R5,kwp_24c
+        CALLS 000H,rt_callfar_via_r5r4
+L_DEE94:                 ; 0xdee94
+        MOV bl_kline_baud_reload_lo,R4
+        MOV bl_kline_baud_reload_hi,R5
+        JNB bl_mode_status_flags.05H,L_DEEB8
+        JNB bl_mode_status_flags.05H,L_DEEA8
+        MOV R12,#00H
+        JMPR cc_UC,L_DEEAA
+L_DEEA8:                 ; 0xdeea8
+        MOV R12,#00H
+L_DEEAA:                 ; 0xdeeaa
+        MOV R13,bl_kline_baud_reload_lo
+        MOV R14,bl_kline_baud_reload_hi
+        CALLS 008H,BL_Kline_SetBaudrate_Wrapper
+        JMPR cc_UC,L_DEEDA
+L_DEEB8:                 ; 0xdeeb8
+        JNB bl_mode_status_flags.05H,L_DEEC0
+        MOV R12,#00H
+        JMPR cc_UC,L_DEEC2
+L_DEEC0:                 ; 0xdeec0
+        MOV R12,#00H
+L_DEEC2:                 ; 0xdeec2
+        MOV R13,bl_kline_baud_reload_lo
+        MOV R14,bl_kline_baud_reload_hi
+        EXTP #00H, #02H
+        MOV R4,kwp_24e
+        MOV R5,kwp_250
+        CALLS 000H,rt_callfar_via_r5r4
+L_DEEDA:                 ; 0xdeeda
+        JNB bl_mode_status_flags.05H,L_DEEF0
+        JNB bl_mode_status_flags.05H,L_DEEE6
+        MOV R12,#00H
+        JMPR cc_UC,L_DEEE8
+L_DEEE6:                 ; 0xdeee6
+        MOV R12,#00H
+L_DEEE8:                 ; 0xdeee8
+        MOV R13,#06H
+        CALLS 008H,BL_Kline_SetRxErrIrqEnables
+        JMPR cc_UC,L_DEF0C
+L_DEEF0:                 ; 0xdeef0
+        JNB bl_mode_status_flags.05H,L_DEEF8
+        MOV R12,#00H
+        JMPR cc_UC,L_DEEFA
+L_DEEF8:                 ; 0xdeef8
+        MOV R12,#00H
+L_DEEFA:                 ; 0xdeefa
+        MOV R13,#06H
+        EXTP #00H, #02H
+        MOV R4,kwp_252
+        MOV R5,kwp_254
+        CALLS 000H,rt_callfar_via_r5r4
+L_DEF0C:                 ; 0xdef0c
+        RETS
+
+; ======== Tail_rt_callfar_via_r5r4_f0e  (@0xdef0e) ========
+Tail_rt_callfar_via_r5r4_f0e:
+        MOV R12,#DATA16 02A56H
+        MOV R13,#DATA16 00028H
+        EXTP #00H, #02H
+        MOV R4,g_232
+        MOV R5,g_234
+        CALLS 000H,rt_callfar_via_r5r4
+        RETS
+
+; ======== KWP_P3_Timeout_Check  (@0xdef28) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+KWP_P3_Timeout_Check:
+        JNB kwp_comms_flags.08H,L_DEF62
+        JB bl_mode_status_flags.05H,L_DEF3C
+        MOV R4,DPP1:0A0420H
+        MOV R5,DPP1:0A0422H
+        CALLS 000H,rt_callfar_via_r5r4
+L_DEF3C:                 ; 0xdef3c
+        MOV R4,kwp_timing_counter
+        CMP R4,kwp_session_p3_timeout
+        JMPR cc_C,L_DEF52
+        CALLS 00DH,KWP_Session_Setup
+        MOV R4,#DATA16 0FFEEH
+        MOV c_p3_max_kwp,R4
+L_DEF52:                 ; 0xdef52
+        JB bl_mode_status_flags.05H,L_DEF62
+        MOV R4,DPP1:0A0424H
+        MOV R5,DPP1:0A0426H
+        CALLS 000H,rt_callfar_via_r5r4
+L_DEF62:                 ; 0xdef62
+        RETS
+
+; ======== KWP_Session_Setup  (@0xdef64) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by bl_/kwp_ output signals): KWP diagnostic session setup: kwp_session_state /
+        ; kwp_comms_flags / kwp_timing_counter.
+        ; ------------------------------------------------------------
+KWP_Session_Setup:
+        BSET kwp_comms_flags.09H
+        MOV kwp_timing_counter,ZEROS
+        MOVB RL4,#01H
+        MOVB kwp_session_state,RL4
+        MOV kwp_comms_flags,ZEROS
+        CALLS 00DH,App_SecAccess_GrantFromFlashFlags
+        MOVB kwp_session_type_idx,ZEROS
+        MOVB kwp_e765,ZEROS
+        MOVB RL4,#DATA16 00019H
+        MOVB kwp_timing_thr_a,RL4
+        MOVB RL4,#DATA16 00037H
+        MOVB kwp_timing_thr_b,RL4
+        MOV R4,#DATA16 01388H
+        MOV kwp_session_p3_timeout,R4
+        MOV R4,#DATA16 0E559H
+        MOV kwp_req_ptr,R4
+        MOV R5,#DATA16 0E559H
+        MOV kwp_buf_base,R5
+        MOV R2,#DATA16 000FFH
+        MOV kwp_buf_limit,R2
+        MOV kwp_dyndef_len,ZEROS
+        MOV R2,#DATA16 0E65DH
+        EXTP #03H, #01H
+        MOV DPP0:kwp_e7d4,R2
+        MOV R3,#DATA16 0E661H
+        EXTP #03H, #01H
+        MOV DPP0:kwp_e7d6,R3
+        MOVB RL4,#03H
+        EXTP #03H, #01H
+        MOVB DPP0:bl_addr_size,RL4
+        EXTP #00H, #02H
+        MOV R4,kwp_21a
+        MOV R5,kwp_21c
+        CALLS 000H,rt_callfar_via_r5r4
+        CALLS 00DH,BL_KLine_ProtoInit
+        CALLS 00DH,KWP_Set_Buffer
+        BCLR kwp_comms_flags.08H
+        MOVB kwp_session_state,ZEROS
+        RETS
+
+; ======== KWP_Set_CommsFlags  (@0xdeff6) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by bl_/kwp_ output signals): Set KWP comms flags kwp_comms_flags.
+        ; ------------------------------------------------------------
+KWP_Set_CommsFlags:
+        BSET kwp_comms_flags.09H
+        BSET kwp_comms_flags.08H
+        MOVB RL4,kwp_session_state
+        JMPR cc_NE,L_DF006
+        CALLS 00DH,Reset_kwp_req_ptr_c98
+        RETS
+L_DF006:                 ; 0xdf006
+        MOVBZ R4,kwp_session_state
+        AND R4,#04H
+        JMPR cc_EQ,L_DF012
+        CALLS 00DH,Reset_kwp_req_ptr_e34
+L_DF012:                 ; 0xdf012
+        MOVBZ R4,kwp_session_state
+        AND R4,#02H
+        JMPR cc_EQ,L_DF01E
+        CALLS 00DH,Reset_kwp_req_ptr_c98
+L_DF01E:                 ; 0xdf01e
+        RETS
+
+; ======== App_SecAccess_GrantFromFlashFlags  (@0xdf020) ========
+App_SecAccess_GrantFromFlashFlags:
+        EXTP #00H, #01H
+        MOVB RL4,secacc_siemens_autogrant_fuse
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NE,L_DF036
+        MOVB RL5,#03H
+        MOVB secacc_unlocked_bits,RL5
+        JMPR cc_UC,L_DF03C
+L_DF036:                 ; 0xdf036
+        MOVB RL4,#01H
+        MOVB secacc_unlocked_bits,RL4
+L_DF03C:                 ; 0xdf03c
+        EXTP #00H, #01H
+        MOVB RL4,secacc_hyundai_autogrant_fuse
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NE,L_DF050
+        MOVB RL5,#04H
+        ORB secacc_unlocked_bits,RL5
+L_DF050:                 ; 0xdf050
+        RETS
+
+S_DEE52 ENDS
+        END

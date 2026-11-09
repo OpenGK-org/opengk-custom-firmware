@@ -1,0 +1,108 @@
+; asw/cp/cp_crc16.a66
+; 0xCC9A4-0xCCA56  (178 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Calc_CRC16_Flash, CanPurge_SetAct_2
+
+S_CC9A4 SECTION CODE AT 0CC9A4H
+
+; ======== CanPurge_SetAct_2  (@0xcc9a4) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by cp/cat_diag/isa output signals): Set purge-active flag lv_cp_act (variant).
+        ; ------------------------------------------------------------
+CanPurge_SetAct_2:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R6
+        CMP R15,#00H
+        JMPR cc_NE,L_CC9B6
+        MOV R8,#06H
+        MOV R9,#DATA16 04D1AH
+        JMPR cc_UC,L_CC9BC
+L_CC9B6:                 ; 0xcc9b6
+        MOV R8,#04H
+        MOV R9,#DATA16 04CF2H
+L_CC9BC:                 ; 0xcc9bc
+        MOVB RL6,#00H
+        JMPR cc_UC,L_CCA18
+L_CC9C0:                 ; 0xcc9c0
+        MOV R4,[R9]
+        MOV R5,[R9+#02H]
+        MOV R10,R12
+        MOV R11,R13
+        SUB R10,R4
+        SUBC R11,R5
+        JMPR cc_C,L_CCA12
+        MOV R4,[R9+#04H]
+        MOV R5,[R9+#06H]
+        MOV R10,R12
+        MOV R11,R13
+        SUB R10,R4
+        SUBC R11,R5
+        JMPR cc_UGT,L_CCA12
+        MOV R4,[R9+#04H]
+        MOV R5,[R9+#06H]
+        MOV R10,R14
+        MOV R11,#00H
+        MOV R2,R12
+        MOV R3,R13
+        ADD R2,R10
+        ADDC R3,R11
+        SUB R2,#01H
+        SUBC R3,#00H
+        SUB R2,R4
+        SUBC R3,R5
+        JMPR cc_UGT,L_CCA12
+        MOVB RL6,[R9+#08H]
+        MOVB RL4,[R9+#09H]
+        BMOVN PSW.06H,PSW.03H
+        BMOV lv_cp_act.02H,PSW.06H
+        JMPR cc_UC,L_CCA1C
+L_CCA12:                 ; 0xcca12
+        ADD R9,#DATA16 0000AH
+        SUB R8,#01H
+L_CCA18:                 ; 0xcca18
+        CMP R8,#00H
+        JMPR cc_NE,L_CC9C0
+L_CCA1C:                 ; 0xcca1c
+        MOVB RL4,RL6
+        MOV R6,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_CRC16_Flash  (@0xcca26) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Calc_CRC16_Flash:
+        MOV [-R0],R6
+        MOV R15,0FF1EH
+        JMPR cc_UC,L_CCA4C
+L_CCA2E:                 ; 0xcca2e
+        MOV R4,R15
+        SHR R4,#08H
+        MOVB RL6,RL4
+        EXTS R13, #01H
+        MOVB RL4,[R12]
+        XORB RL6,RL4
+        SHL R15,#08H
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R5,[R4+#04D56H]
+        XOR R15,R5
+        ADD R12,#01H
+        ADDC R13,#00H
+        SUB R14,#01H
+L_CCA4C:                 ; 0xcca4c
+        CMP R14,#00H
+        JMPR cc_NE,L_CCA2E
+        MOV R4,R15
+        MOV R6,[R0+]
+        RETS
+
+S_CC9A4 ENDS
+        END

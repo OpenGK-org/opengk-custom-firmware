@@ -1,0 +1,175 @@
+; asw/ivvt/ivvt_raw.a66
+; 0xC16E6-0xC186A  (388 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_cam_ini_ex                         EQU  09012DH
+c_cam_op_ex                          EQU  09012FH
+c_cam_op_in                          EQU  090130H
+c_crlc_maf_ivvt                      EQU  090166H
+c_cam_ref_cor_ivvt_in_1              EQU  0904CAH
+ldp_n_32_ip_cam_cor                    EQU  098076H
+ldpm_n_1_1                        EQU  09816DH
+ldpm_tps_ip_maf_ivvt              EQU  098182H
+ldp_isapwm_ip_maf_add_isapwm    EQU  098380H
+ip_cam_cor_n_32                      EQU  09852EH
+ip_maf_add_isapwm__n_32__isapwm      EQU  099380H
+ip_maf_ivvt_1__n_32__tps             EQU  0993C6H
+ip_maf_ivvt_2__n_32                  EQU  099406H
+ip_maf_tps_fac__n_32__tps            EQU  09948EH
+
+PUBLIC  Acq_Cam_Raw, Calc_fac_vvt_1, Snapshot_MAF_IVVT
+EXTERN  Add_r12_r13_Return_r4:NEAR, Div_Frac_U16_Q16:NEAR, Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_2D_Table_DWord_YWord:NEAR
+EXTERN  Get_IP_Byte_3D_Table:NEAR, Get_IP_Byte_X_Axis:NEAR, Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_2D_Table:NEAR
+EXTERN  Get_IP_Word_X_Axis:NEAR, Interp_U16:NEAR, Ret_Const_fe0f:NEAR, Sat_Add_S16_v2:NEAR
+EXTERN  Sat_HiByte_ff:NEAR, sub_r12_r13_rets_r4:NEAR
+
+S_C16E6 SECTION CODE AT 0C16E6H
+
+; ======== Acq_Cam_Raw  (@0xc16e6) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by ivvt/cam output signals + DTC): Raw cam-position capture: cam_raw /
+        ; cam_psn_cap_save / lv_cam_level from the CAPCOM timing capture.
+        ; ------------------------------------------------------------
+Acq_Cam_Raw:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV R12,#DATA16 POF ldp_n_32_ip_cam_cor
+        MOV R13,#DATA16 PAG ldp_n_32_ip_cam_cor
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_cam_cor_n_32
+        MOV R13,#DATA16 PAG ip_cam_cor_n_32
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV R9,R4
+        ADD R9,#DATA16 08000H
+        MOVB RL4,cam_1_level
+        BMOVN PSW.06H,PSW.03H
+        MOVB RL4,#00H
+        BMOV R4.00H,PSW.06H
+        MOVB ivvt_in_1_struct_raw_ivvt_lv_cam_level_save_ivvt,RL4
+        MOV R4,crank_tim_14
+        MOV R5,crank_tim_15
+        MOV ivvt_in_1_struct_raw_ivvt_cam_psn_cap_save_ivvt,R4
+        MOV lv_ivvt_cae0,R5
+        MOV R8,cam_1_psn_av
+        CMP R8,#DATA16 003C0H
+        JMPR cc_ULE,L_C173C
+        SUB R8,#DATA16 003C0H
+L_C173C:                 ; 0xc173c
+        MOV R12,R8
+        MOV R13,DPP0:c_cam_ref_cor_ivvt_in_1
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV R12,R4
+        MOV R13,R9
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV R12,R4
+        MOV R13,#DATA16 0809FH
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV R12,R4
+        CALLS 00FH,Sat_HiByte_ff
+        MOVB ivvt_in_1_struct_raw_ivvt_cam_raw,RL4
+        BMOV lv_diag_trip_avl_ivvt.0FH,lv_cam_err.06H
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Snapshot_MAF_IVVT  (@0xc176c) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by ivvt/cam output signals + DTC): Snapshot maf_ivvt / maf_sub_ivvt for the IVVT
+        ; cam-adaptation operating point.
+        ; ------------------------------------------------------------
+Snapshot_MAF_IVVT:
+        MOV [-R0],R6
+        MOV R12,#DATA16 POF ldpm_n_1_1
+        MOV R13,#DATA16 PAG ldpm_n_1_1
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_isapwm_ip_maf_add_isapwm
+        MOV R13,#DATA16 PAG ldp_isapwm_ip_maf_add_isapwm
+        MOV R14,opg_av_isa
+        CALLS 00FH,Get_IP_Word_X_Axis
+        MOV R12,#DATA16 POF ip_maf_add_isapwm__n_32__isapwm
+        MOV R13,#DATA16 PAG ip_maf_add_isapwm__n_32__isapwm
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB RL6,RL4
+        MOV R12,#DATA16 POF ldpm_tps_ip_maf_ivvt
+        MOV R13,#DATA16 PAG ldpm_tps_ip_maf_ivvt
+        MOVBZ R14,tps
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_maf_tps_fac__n_32__tps
+        MOV R13,#DATA16 PAG ip_maf_tps_fac__n_32__tps
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R13,RL4
+        MOVBZ R12,RL6
+        CALLS 00FH,Ret_Const_fe0f
+        MOVB maf_add_isa,RL4
+        JB lv_cam_err.00H,L_C17DC
+        JB lv_cam_err.01H,L_C17DC
+        MOV R12,#DATA16 POF ip_maf_ivvt_1__n_32__tps
+        MOV R13,#DATA16 PAG ip_maf_ivvt_1__n_32__tps
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB RL6,RL4
+        JMPR cc_UC,L_C17EA
+L_C17DC:                 ; 0xc17dc
+        MOV R12,#DATA16 POF ip_maf_ivvt_2__n_32
+        MOV R13,#DATA16 PAG ip_maf_ivvt_2__n_32
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB RL6,RL4
+L_C17EA:                 ; 0xc17ea
+        MOVBZ R12,RL6
+        MOVBZ R13,maf_add_isa
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV R12,R4
+        SHL R12,#07H
+        MOVBZ R13,lv_cyl_f393
+        SHL R13,#08H
+        CALLS 00FH,Div_Frac_U16_Q16
+        MOV maf_sub_ivvt,R4
+        MOV R12,maf_ivvt
+        MOV R13,maf_sub_ivvt
+        MOVBZ R14,DPP0:c_crlc_maf_ivvt
+        SHL R14,#08H
+        CALLS 00FH,Interp_U16
+        MOV maf_ivvt,R4
+        MOV R6,[R0+]
+        RETS
+
+; ======== Calc_fac_vvt_1  (@0xc1820) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Calc_fac_vvt_1:
+        MOV [-R0],R9
+        MOVBZ R9,DPP0:c_cam_op_in
+        MOVBZ R4,DPP0:c_cam_op_ex
+        ADD R9,R4
+        ASHR R9,#01H
+        ADD R9,#DATA16 000C8H
+        MOVBZ R4,ivvt_in_1_struct_pos_ivvt_cam
+        SUB R9,R4
+        MOVBZ R4,DPP0:c_cam_ini_ex
+        SUB R9,R4
+        CMP R9,#00H
+        JMPR cc_SGE,L_C1846
+        MOV R4,#00H
+        JMPR cc_UC,L_C1848
+L_C1846:                 ; 0xc1846
+        MOV R4,R9
+L_C1848:                 ; 0xc1848
+        MOV vo_1,R4
+        MOV R12,#DATA16 04A0AH
+        MOV R13,R4
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YWord
+        MOVB fac_vvt_1,RL4
+        MOV R4,vo_1
+        MOV vo,R4
+        MOV vo_iga,R4
+        MOV R9,[R0+]
+        RETS
+
+S_C16E6 ENDS
+        END

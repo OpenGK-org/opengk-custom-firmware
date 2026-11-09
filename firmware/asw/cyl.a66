@@ -1,0 +1,455 @@
+; asw/cyl.a66
+; 0xB38F2-0xB3DF4  (1282 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_nr_sel_cyl_1                       EQU  0902D5H
+c_nr_sel_cyl_2                       EQU  0902D6H
+c_nr_sel_cyl_3                       EQU  0902D7H
+c_tps_grd_max_sel_rpl                EQU  0903E1H
+lc_ena_fcut_aj                       EQU  09045FH
+lc_inh_dt_pu                         EQU  09046CH
+c_maf_max_sel_rpl                    EQU  0905FAH
+c_n_dif_max_sel_ris                  EQU  0908DCH
+c_n_grd_min_sel_ris                  EQU  090973H
+ldp_case_sel_cyl__pat_sel_cyl     EQU  090A6AH
+ldp_nr_sel_cyl__pat_sel_cyl       EQU  090A6EH
+ldp_gr_mt__t_osc_dt                       EQU  090A94H
+id_pat_sel_cyl                       EQU  0954B9H
+id_t_osc_dt                          EQU  0954EFH
+
+PUBLIC  Calc_Cyl_Select_Case, Calc_Cyl_Select_Seq, SeqFuelCut_CylSel
+EXTERN  Calc_Inj_Pattern:NEAR, Get_Byte_X_Axis:NEAR, Get_Byte_Y_Axis:NEAR, Get_IP_Byte_Y_Axis:NEAR
+EXTERN  Read_Byte_Far:NEAR, Read_Byte_Far_Scaled:NEAR
+
+S_B38F2 SECTION CODE AT 0B38F2H
+
+; ======== Calc_Cyl_Select_Seq  (@0xb38f2) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Calc_Cyl_Select_Seq:
+        MOVB RL4,lv_cyl_c230
+        CMPB RL4,#04H
+        JMPR cc_NE,L_B3906
+        MOVB RL5,#01H
+        MOVB lv_cyl_c230,RL5
+        SUBB nr_sel_cyl,ONES
+        JMPR cc_UC,L_B390A
+L_B3906:                 ; 0xb3906
+        SUBB lv_cyl_c230,ONES
+L_B390A:                 ; 0xb390a
+        MOVB RL4,nr_sel_cyl
+        CMPB RL4,#DATA16 00008H
+        JMPR cc_UGT,L_B3948
+        BSET lv_dc_rbm.03H
+        MOV R12,#DATA16 POF ldp_case_sel_cyl__pat_sel_cyl
+        MOV R13,#DATA16 PAG ldp_case_sel_cyl__pat_sel_cyl
+        MOVBZ R14,case_sel_cyl
+        CALLS 00FH,Get_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_nr_sel_cyl__pat_sel_cyl
+        MOV R13,#DATA16 PAG ldp_nr_sel_cyl__pat_sel_cyl
+        MOVBZ R14,nr_sel_cyl
+        CALLS 00FH,Get_Byte_X_Axis
+        MOV R12,#DATA16 POF id_pat_sel_cyl
+        MOV R13,#DATA16 PAG id_pat_sel_cyl
+        CALLS 00FH,Read_Byte_Far_Scaled
+        MOVB nr_pat_sel_cyl,RL4
+        RETS
+L_B3948:                 ; 0xb3948
+        BCLR lv_dc_rbm.03H
+        MOVB RL4,#01H
+        MOVB nr_sel_cyl,RL4
+        MOVB lv_cyl_c230,ZEROS
+        RETS
+
+; ======== Calc_Cyl_Select_Case  (@0xb3956) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Calc_Cyl_Select_Case:
+        MOVB RL4,case_sel_cyl
+        JMPR cc_EQ,L_B39BC
+        MOVB lv_cyl_c230,ZEROS
+        MOVB RL5,t_fcut_aj
+        JMPR cc_EQ,L_B396C
+        SUBB RL5,#01H
+        MOVB t_fcut_aj,RL5
+L_B396C:                 ; 0xb396c
+        MOVB RL4,t_fcut_aj
+        JMPR cc_EQ,L_B397A
+        MOV R4,#01H
+        MOV g_f946,R4
+        RETS
+L_B397A:                 ; 0xb397a
+        MOVB RL4,#08H
+        MOVB nr_sel_cyl,RL4
+        MOV R12,#DATA16 POF ldp_case_sel_cyl__pat_sel_cyl
+        MOV R13,#DATA16 PAG ldp_case_sel_cyl__pat_sel_cyl
+        MOVBZ R14,case_sel_cyl
+        CALLS 00FH,Get_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_nr_sel_cyl__pat_sel_cyl
+        MOV R13,#DATA16 PAG ldp_nr_sel_cyl__pat_sel_cyl
+        MOVBZ R14,nr_sel_cyl
+        CALLS 00FH,Get_Byte_X_Axis
+        MOV R12,#DATA16 POF id_pat_sel_cyl
+        MOV R13,#DATA16 PAG id_pat_sel_cyl
+        CALLS 00FH,Read_Byte_Far_Scaled
+        MOVB nr_pat_sel_cyl,RL4
+        MOV g_f946,ZEROS
+        BCLR lv_dc_rbm.04H
+        BCLR lv_dc_rbm.03H
+        MOVB case_sel_cyl,ZEROS
+L_B39BC:                 ; 0xb39bc
+        RETS
+
+; ======== SeqFuelCut_CylSel  (@0xb39be) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (ThetaII, verified): sequential fuel cutoff cylinder selection (case_sel_cyl, nr_sel_cyl,
+        ; t_fcut_aj)
+        ; (was FUN_0b39be)
+        ; ------------------------------------------------------------
+SeqFuelCut_CylSel:
+        MOVB RL4,case_sel_cyl
+        JMPR cc_NE,L_B3A32
+        BCLR lv_dc_rbm.03H
+        MOVB RL5,#01H
+        MOVB nr_sel_cyl,RL5
+        MOVB lv_cyl_c230,ZEROS
+        JB abs_def.04H,L_B39F6
+        MOV R12,#DATA16 POF ldp_gr_mt__t_osc_dt
+        MOV R13,#DATA16 PAG ldp_gr_mt__t_osc_dt
+        MOVBZ R14,gr_mt
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF id_t_osc_dt
+        MOV R13,#DATA16 PAG id_t_osc_dt
+        CALLS 00FH,Read_Byte_Far
+        MOVB t_osc_dt,RL4
+        JMPR cc_UC,L_B39FA
+L_B39F6:                 ; 0xb39f6
+        MOVB t_osc_dt,ZEROS
+L_B39FA:                 ; 0xb39fa
+        MOVBZ R4,t_osc_dt
+        SHR R4,#01H
+        MOVB t_fcut_aj,RL4
+        MOV g_f946,ZEROS
+        BCLR lv_dc_rbm.04H
+        BCMP lv_dc_rbm.05H,lv_pl.02H
+        JMPR cc_NC,L_B3A16
+        MOVB RL5,#01H
+        MOVB case_sel_cyl,RL5
+L_B3A16:                 ; 0xb3a16
+        BCMP lv_cdn_diag_maf_dif_ch_int.0EH,lv_pl.01H
+        BCMP lv_dc_rbm.06H,PSW.02H
+        JMPR cc_NC,L_B3A26
+        MOVB RL4,#02H
+        MOVB case_sel_cyl,RL4
+L_B3A26:                 ; 0xb3a26
+        BCMP lv_dc_rbm.06H,lv_pl.00H
+        JMPR cc_NC,L_B3A32
+        MOVB RL4,#03H
+        MOVB case_sel_cyl,RL4
+L_B3A32:                 ; 0xb3a32
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_B3A3A
+        JMPA cc_UC,L_B3DD4
+L_B3A3A:                 ; 0xb3a3a
+        JNB lv_pl.04H,L_B3A42
+        JMPA cc_UC,L_B3DD4
+L_B3A42:                 ; 0xb3a42
+        JB can_fd58.09H,L_B3A4A
+        JMPA cc_UC,L_B3DD4
+L_B3A4A:                 ; 0xb3a4a
+        MOVB RL4,case_sel_cyl
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_B3A62
+        CMPB RL4,#02H
+        JMPA cc_EQ,L_B3BA6
+        CMPB RL4,#03H
+        JMPA cc_EQ,L_B3CC8
+        JMPA cc_UC,L_B3DDC
+L_B3A62:                 ; 0xb3a62
+        BCMP lv_pl.00H,lv_cdn_diag_maf_dif_ch_int.0EH
+        BCMP PSW.02H,lv_pl.01H
+        JMPR cc_NV,L_B3A78
+        MOVB nr_pat_sel_cyl,ZEROS
+        MOVB case_sel_cyl,ZEROS
+        JMPA cc_UC,L_B3DDC
+L_B3A78:                 ; 0xb3a78
+        JNB lv_pl.06H,L_B3A80
+        JMPA cc_UC,L_B3B68
+L_B3A80:                 ; 0xb3a80
+        MOVB RL4,DPP0:lc_ena_fcut_aj
+        JMPR cc_EQ,L_B3A8A
+        JNB abs_def.04H,L_B3A9E
+L_B3A8A:                 ; 0xb3a8a
+        CALLS 00BH,Calc_Cyl_Select_Seq
+        JNB lv_dc_rbm.03H,L_B3A96
+        JMPA cc_UC,L_B3DDC
+L_B3A96:                 ; 0xb3a96
+        MOVB case_sel_cyl,ZEROS
+        JMPA cc_UC,L_B3DDC
+L_B3A9E:                 ; 0xb3a9e
+        JB lv_ch.06H,L_B3AE6
+        MOVB RL4,DPP0:lc_inh_dt_pu
+        JMPR cc_NE,L_B3AE6
+        MOVB RL5,#08H
+        MOVB nr_sel_cyl,RL5
+        MOV R12,#DATA16 POF ldp_case_sel_cyl__pat_sel_cyl
+        MOV R13,#DATA16 PAG ldp_case_sel_cyl__pat_sel_cyl
+        MOVBZ R14,case_sel_cyl
+        CALLS 00FH,Get_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_nr_sel_cyl__pat_sel_cyl
+        MOV R13,#DATA16 PAG ldp_nr_sel_cyl__pat_sel_cyl
+        MOVBZ R14,nr_sel_cyl
+        CALLS 00FH,Get_Byte_X_Axis
+        MOV R12,#DATA16 POF id_pat_sel_cyl
+        MOV R13,#DATA16 PAG id_pat_sel_cyl
+        CALLS 00FH,Read_Byte_Far_Scaled
+        MOVB nr_pat_sel_cyl,RL4
+        MOVB case_sel_cyl,ZEROS
+        JMPA cc_UC,L_B3DDC
+L_B3AE6:                 ; 0xb3ae6
+        MOVB RL4,DPP0:c_nr_sel_cyl_1
+        MOVB nr_sel_cyl,RL4
+        MOV R12,#DATA16 POF ldp_case_sel_cyl__pat_sel_cyl
+        MOV R13,#DATA16 PAG ldp_case_sel_cyl__pat_sel_cyl
+        MOVBZ R14,case_sel_cyl
+        CALLS 00FH,Get_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_nr_sel_cyl__pat_sel_cyl
+        MOV R13,#DATA16 PAG ldp_nr_sel_cyl__pat_sel_cyl
+        MOVBZ R14,nr_sel_cyl
+        CALLS 00FH,Get_Byte_X_Axis
+        MOV R12,#DATA16 POF id_pat_sel_cyl
+        MOV R13,#DATA16 PAG id_pat_sel_cyl
+        CALLS 00FH,Read_Byte_Far_Scaled
+        MOVB nr_pat_sel_cyl,RL4
+        BSET lv_dc_rbm.03H
+        JNB lv_dc_rbm.04H,L_B3B28
+        JMPA cc_UC,L_B3DDC
+L_B3B28:                 ; 0xb3b28
+        BSET lv_dc_rbm.04H
+        JB abs_def.04H,L_B3B50
+        MOV R12,#DATA16 POF ldp_gr_mt__t_osc_dt
+        MOV R13,#DATA16 PAG ldp_gr_mt__t_osc_dt
+        MOVBZ R14,gr_mt
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF id_t_osc_dt
+        MOV R13,#DATA16 PAG id_t_osc_dt
+        CALLS 00FH,Read_Byte_Far
+        MOVB t_osc_dt,RL4
+        JMPR cc_UC,L_B3B54
+L_B3B50:                 ; 0xb3b50
+        MOVB t_osc_dt,ZEROS
+L_B3B54:                 ; 0xb3b54
+        MOVBZ R4,t_osc_dt
+        SHR R4,#01H
+        MOVB t_fcut_aj,RL4
+        MOV R4,#01H
+        MOV g_f946,R4
+        JMPA cc_UC,L_B3DDC
+L_B3B68:                 ; 0xb3b68
+        MOVB RL4,#08H
+        MOVB nr_sel_cyl,RL4
+        MOV R12,#DATA16 POF ldp_case_sel_cyl__pat_sel_cyl
+        MOV R13,#DATA16 PAG ldp_case_sel_cyl__pat_sel_cyl
+        MOVBZ R14,case_sel_cyl
+        CALLS 00FH,Get_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_nr_sel_cyl__pat_sel_cyl
+        MOV R13,#DATA16 PAG ldp_nr_sel_cyl__pat_sel_cyl
+        MOVBZ R14,nr_sel_cyl
+        CALLS 00FH,Get_Byte_X_Axis
+        MOV R12,#DATA16 POF id_pat_sel_cyl
+        MOV R13,#DATA16 PAG id_pat_sel_cyl
+        CALLS 00FH,Read_Byte_Far_Scaled
+        MOVB nr_pat_sel_cyl,RL4
+        MOVB case_sel_cyl,ZEROS
+        JMPA cc_UC,L_B3DDC
+L_B3BA6:                 ; 0xb3ba6
+        MOVB RL4,n_grd
+        CMPB RL4,DPP0:c_n_grd_min_sel_ris
+        JMPA cc_SLE,L_B3CBC
+        MOV R4,n_dif_cor
+        CMP R4,DPP0:c_n_dif_max_sel_ris
+        JMPA cc_SGE,L_B3CBC
+        JNB lv_cdn_diag_maf_dif_ch_int.0DH,L_B3BC6
+        JMPA cc_UC,L_B3CBC
+L_B3BC6:                 ; 0xb3bc6
+        MOVB RL4,DPP0:lc_ena_fcut_aj
+        JMPR cc_EQ,L_B3BD0
+        JNB abs_def.04H,L_B3BF2
+L_B3BD0:                 ; 0xb3bd0
+        CALLS 00BH,Calc_Cyl_Select_Seq
+        JNB lv_dc_rbm.03H,L_B3BDC
+        JMPA cc_UC,L_B3DDC
+L_B3BDC:                 ; 0xb3bdc
+        JNB lv_pl.02H,L_B3BEA
+        MOVB RL4,#01H
+        MOVB case_sel_cyl,RL4
+        JMPA cc_UC,L_B3DDC
+L_B3BEA:                 ; 0xb3bea
+        MOVB case_sel_cyl,ZEROS
+        JMPA cc_UC,L_B3DDC
+L_B3BF2:                 ; 0xb3bf2
+        JB lv_ch.06H,L_B3C3A
+        MOVB RL4,DPP0:lc_inh_dt_pu
+        JMPR cc_NE,L_B3C3A
+        MOVB RL5,#08H
+        MOVB nr_sel_cyl,RL5
+        MOV R12,#DATA16 POF ldp_case_sel_cyl__pat_sel_cyl
+        MOV R13,#DATA16 PAG ldp_case_sel_cyl__pat_sel_cyl
+        MOVBZ R14,case_sel_cyl
+        CALLS 00FH,Get_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_nr_sel_cyl__pat_sel_cyl
+        MOV R13,#DATA16 PAG ldp_nr_sel_cyl__pat_sel_cyl
+        MOVBZ R14,nr_sel_cyl
+        CALLS 00FH,Get_Byte_X_Axis
+        MOV R12,#DATA16 POF id_pat_sel_cyl
+        MOV R13,#DATA16 PAG id_pat_sel_cyl
+        CALLS 00FH,Read_Byte_Far_Scaled
+        MOVB nr_pat_sel_cyl,RL4
+        MOVB case_sel_cyl,ZEROS
+        JMPA cc_UC,L_B3DDC
+L_B3C3A:                 ; 0xb3c3a
+        MOVB RL4,DPP0:c_nr_sel_cyl_2
+        MOVB nr_sel_cyl,RL4
+        MOV R12,#DATA16 POF ldp_case_sel_cyl__pat_sel_cyl
+        MOV R13,#DATA16 PAG ldp_case_sel_cyl__pat_sel_cyl
+        MOVBZ R14,case_sel_cyl
+        CALLS 00FH,Get_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_nr_sel_cyl__pat_sel_cyl
+        MOV R13,#DATA16 PAG ldp_nr_sel_cyl__pat_sel_cyl
+        MOVBZ R14,nr_sel_cyl
+        CALLS 00FH,Get_Byte_X_Axis
+        MOV R12,#DATA16 POF id_pat_sel_cyl
+        MOV R13,#DATA16 PAG id_pat_sel_cyl
+        CALLS 00FH,Read_Byte_Far_Scaled
+        MOVB nr_pat_sel_cyl,RL4
+        BSET lv_dc_rbm.03H
+        JNB lv_dc_rbm.04H,L_B3C7C
+        JMPA cc_UC,L_B3DDC
+L_B3C7C:                 ; 0xb3c7c
+        BSET lv_dc_rbm.04H
+        JB abs_def.04H,L_B3CA4
+        MOV R12,#DATA16 POF ldp_gr_mt__t_osc_dt
+        MOV R13,#DATA16 PAG ldp_gr_mt__t_osc_dt
+        MOVBZ R14,gr_mt
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF id_t_osc_dt
+        MOV R13,#DATA16 PAG id_t_osc_dt
+        CALLS 00FH,Read_Byte_Far
+        MOVB t_osc_dt,RL4
+        JMPR cc_UC,L_B3CA8
+L_B3CA4:                 ; 0xb3ca4
+        MOVB t_osc_dt,ZEROS
+L_B3CA8:                 ; 0xb3ca8
+        MOVBZ R4,t_osc_dt
+        SHR R4,#01H
+        MOVB t_fcut_aj,RL4
+        MOV R4,#01H
+        MOV g_f946,R4
+        JMPA cc_UC,L_B3DDC
+L_B3CBC:                 ; 0xb3cbc
+        MOVB nr_pat_sel_cyl,ZEROS
+        MOVB case_sel_cyl,ZEROS
+        JMPA cc_UC,L_B3DDC
+L_B3CC8:                 ; 0xb3cc8
+        MOVB RL4,lv_tps_f4b6
+        CMPB RL4,DPP0:c_tps_grd_max_sel_rpl
+        JMPA cc_NC,L_B3DCA
+        MOV R4,maf_word
+        CMP R4,DPP0:c_maf_max_sel_rpl
+        JMPA cc_NC,L_B3DCA
+        MOVB RL4,DPP0:lc_ena_fcut_aj
+        JMPR cc_EQ,L_B3CEA
+        JNB abs_def.04H,L_B3D08
+L_B3CEA:                 ; 0xb3cea
+        CALLS 00BH,Calc_Cyl_Select_Seq
+        JNB lv_dc_rbm.03H,L_B3CF6
+        JMPA cc_UC,L_B3DDC
+L_B3CF6:                 ; 0xb3cf6
+        JNB lv_pl.02H,L_B3D02
+        MOVB RL4,#01H
+        MOVB case_sel_cyl,RL4
+        JMPR cc_UC,L_B3DDC
+L_B3D02:                 ; 0xb3d02
+        MOVB case_sel_cyl,ZEROS
+        JMPR cc_UC,L_B3DDC
+L_B3D08:                 ; 0xb3d08
+        JB lv_ch.06H,L_B3D4E
+        MOVB RL4,DPP0:lc_inh_dt_pu
+        JMPR cc_NE,L_B3D4E
+        MOVB RL5,#08H
+        MOVB nr_sel_cyl,RL5
+        MOV R12,#DATA16 POF ldp_case_sel_cyl__pat_sel_cyl
+        MOV R13,#DATA16 PAG ldp_case_sel_cyl__pat_sel_cyl
+        MOVBZ R14,case_sel_cyl
+        CALLS 00FH,Get_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_nr_sel_cyl__pat_sel_cyl
+        MOV R13,#DATA16 PAG ldp_nr_sel_cyl__pat_sel_cyl
+        MOVBZ R14,nr_sel_cyl
+        CALLS 00FH,Get_Byte_X_Axis
+        MOV R12,#DATA16 POF id_pat_sel_cyl
+        MOV R13,#DATA16 PAG id_pat_sel_cyl
+        CALLS 00FH,Read_Byte_Far_Scaled
+        MOVB nr_pat_sel_cyl,RL4
+        MOVB case_sel_cyl,ZEROS
+        JMPR cc_UC,L_B3DDC
+L_B3D4E:                 ; 0xb3d4e
+        MOVB RL4,DPP0:c_nr_sel_cyl_3
+        MOVB nr_sel_cyl,RL4
+        MOV R12,#DATA16 POF ldp_case_sel_cyl__pat_sel_cyl
+        MOV R13,#DATA16 PAG ldp_case_sel_cyl__pat_sel_cyl
+        MOVBZ R14,case_sel_cyl
+        CALLS 00FH,Get_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_nr_sel_cyl__pat_sel_cyl
+        MOV R13,#DATA16 PAG ldp_nr_sel_cyl__pat_sel_cyl
+        MOVBZ R14,nr_sel_cyl
+        CALLS 00FH,Get_Byte_X_Axis
+        MOV R12,#DATA16 POF id_pat_sel_cyl
+        MOV R13,#DATA16 PAG id_pat_sel_cyl
+        CALLS 00FH,Read_Byte_Far_Scaled
+        MOVB nr_pat_sel_cyl,RL4
+        BSET lv_dc_rbm.03H
+        JB lv_dc_rbm.04H,L_B3DDC
+        BSET lv_dc_rbm.04H
+        JB abs_def.04H,L_B3DB4
+        MOV R12,#DATA16 POF ldp_gr_mt__t_osc_dt
+        MOV R13,#DATA16 PAG ldp_gr_mt__t_osc_dt
+        MOVBZ R14,gr_mt
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF id_t_osc_dt
+        MOV R13,#DATA16 PAG id_t_osc_dt
+        CALLS 00FH,Read_Byte_Far
+        MOVB t_osc_dt,RL4
+        JMPR cc_UC,L_B3DB8
+L_B3DB4:                 ; 0xb3db4
+        MOVB t_osc_dt,ZEROS
+L_B3DB8:                 ; 0xb3db8
+        MOVBZ R4,t_osc_dt
+        SHR R4,#01H
+        MOVB t_fcut_aj,RL4
+        MOV R4,#01H
+        MOV g_f946,R4
+        JMPR cc_UC,L_B3DDC
+L_B3DCA:                 ; 0xb3dca
+        MOVB nr_pat_sel_cyl,ZEROS
+        MOVB case_sel_cyl,ZEROS
+        JMPR cc_UC,L_B3DDC
+L_B3DD4:                 ; 0xb3dd4
+        MOVB nr_pat_sel_cyl,ZEROS
+        MOVB case_sel_cyl,ZEROS
+L_B3DDC:                 ; 0xb3ddc
+        MOVB RL4,nr_pat
+        CMPB RL4,nr_pat_sel_cyl
+        JMPR cc_EQ,L_B3DEA
+        CALLS 00CH,Calc_Inj_Pattern
+L_B3DEA:                 ; 0xb3dea
+        BMOV lv_dc_rbm.05H,lv_pl.01H
+        BMOV lv_dc_rbm.06H,lv_pl.02H
+        RETS
+
+S_B38F2 ENDS
+        END

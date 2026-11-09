@@ -1,0 +1,287 @@
+; asw/th/th_thermostat.a66
+; 0xB943A-0xB9702  (712 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_puc_perc_max_th_diag               EQU  0902D8H
+c_tco_de_max_th_diag                 EQU  09036DH
+c_tco_st_max_th_diag                 EQU  090397H
+c_tco_st_min_th_diag                 EQU  09039BH
+c_tco_th_open                        EQU  0903A2H
+c_tco_wup_min_th_diag                EQU  0903A7H
+c_tia_de_max_th_diag                 EQU  0903B4H
+c_tia_st_min_th_diag                 EQU  0903C0H
+c_vs_max_perc_max_th_diag            EQU  09042FH
+c_vs_max_th_diag                     EQU  090433H
+c_vs_min_perc_max_th_diag            EQU  09043FH
+c_vs_min_th_diag                     EQU  090442H
+c_load_min_th_diag                   EQU  0905A4H
+c_n_max_th_diag                      EQU  090642H
+c_t_tco_de_th_diag                   EQU  090736H
+
+PUBLIC  Calc_Thermostat_Diag_State, Diag_Thermostat
+EXTERN  Diag_Lam_Lim_d1cc:NEAR, Div_Ratio_U8_Sat:NEAR, Get_IP_Byte_2D_Table_DWord_YByte:NEAR, Sat_HiByte_ff:NEAR
+EXTERN  sub_r12_r13_rets_r4:NEAR
+
+S_B943A SECTION CODE AT 0B943AH
+
+; ======== Diag_Thermostat  (@0xb943a) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (MS42, verified): thermostat/coolant-warmup rationality monitor (_th_diag timers,
+        ; tco_de_th_diag)
+        ; (was FUN_0b943a)
+        ; ------------------------------------------------------------
+Diag_Thermostat:
+        JB lv_err_pres_mwss.08H,L_B9490
+        MOVB RL4,tco_st
+        CMPB RL4,DPP0:c_tco_st_min_th_diag
+        JMPR cc_ULE,L_B945C
+        CMPB RL4,DPP0:c_tco_st_max_th_diag
+        JMPR cc_NC,L_B945C
+        MOVB RL5,tia_st
+        CMPB RL5,DPP0:c_tia_st_min_th_diag
+        JMPR cc_ULE,L_B945C
+        BSET lv_err_pres_mwss.04H
+        JMPR cc_UC,L_B945E
+L_B945C:                 ; 0xb945c
+        BSET lv_err_pres_mwss.07H
+L_B945E:                 ; 0xb945e
+        BSET lv_err_pres_mwss.08H
+        MOV t_act_th_diag,ZEROS
+        MOV t_puc_th_diag,ZEROS
+        MOV t_load_min_th_diag,ZEROS
+        MOVB RL4,tia_st
+        MOVB tia_min_th_diag,RL4
+        MOV t_vs_max_th_diag,ZEROS
+        MOV t_vs_min_th_diag,ZEROS
+        MOV t_tco_de_th_diag,ZEROS
+        MOVB RL5,#DATA16 00040H
+        MOVB tco_de_th_diag,RL5
+        MOVB RL3,#DATA16 00040H
+        MOVB tco_de_ini_th_diag,RL3
+L_B9490:                 ; 0xb9490
+        JB lv_err_pres_mwss.06H,L_B949C
+        JB lv_er_carb_b4.0EH,L_B949C
+        JNB lv_err_pres_mwss.07H,L_B94A2
+L_B949C:                 ; 0xb949c
+        BCLR lv_err_pres_mwss.04H
+        MOV diag_f97e,ZEROS
+L_B94A2:                 ; 0xb94a2
+        JB lv_err_pres_mwss.04H,L_B94AA
+        JMPA cc_UC,L_B96C0
+L_B94AA:                 ; 0xb94aa
+        MOVB RL4,tco_mes
+        CMPB RL4,DPP0:c_tco_th_open
+        JMPA cc_UGT,L_B9698
+        MOVB RL5,tco_sub_byte_1_
+        CMPB RL5,DPP0:c_tco_th_open
+        JMPA cc_UGT,L_B95B2
+        MOV R4,t_act_th_diag
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_NC,L_B94D2
+        ADD R4,#01H
+        MOV t_act_th_diag,R4
+L_B94D2:                 ; 0xb94d2
+        JNB lv_pl.02H,L_B94E6
+        MOV R4,t_puc_th_diag
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_NC,L_B94E6
+        ADD R4,#01H
+        MOV t_puc_th_diag,R4
+L_B94E6:                 ; 0xb94e6
+        MOV R4,maf_kgh
+        CMP R4,DPP0:c_load_min_th_diag
+        JMPR cc_UGT,L_B9500
+        MOV R5,t_load_min_th_diag
+        CMP R5,#DATA16 0FFFFH
+        JMPR cc_NC,L_B9500
+        ADD R5,#01H
+        MOV t_load_min_th_diag,R5
+L_B9500:                 ; 0xb9500
+        MOVB RL4,vs
+        CMPB RL4,DPP0:c_vs_min_th_diag
+        JMPR cc_UGT,L_B951A
+        MOV R4,t_vs_min_th_diag
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_NC,L_B951A
+        ADD R4,#01H
+        MOV t_vs_min_th_diag,R4
+L_B951A:                 ; 0xb951a
+        MOVB RL4,vs
+        CMPB RL4,DPP0:c_vs_max_th_diag
+        JMPR cc_ULE,L_B9534
+        MOV R4,t_vs_max_th_diag
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_NC,L_B9534
+        ADD R4,#01H
+        MOV t_vs_max_th_diag,R4
+L_B9534:                 ; 0xb9534
+        MOVB RL4,tia
+        CMPB RL4,tia_min_th_diag
+        JMPR cc_NC,L_B9542
+        MOVB tia_min_th_diag,RL4
+L_B9542:                 ; 0xb9542
+        MOV R4,n_C93C
+        CMP R4,DPP0:c_n_max_th_diag
+        JMPR cc_ULE,L_B957C
+        MOV R5,t_tco_de_th_diag
+        JMPR cc_NE,L_B957C
+        MOV R2,DPP0:c_t_tco_de_th_diag
+        MOV t_tco_de_th_diag,R2
+        MOVB RL4,tco_mes
+        MOVB tco_de_ini_th_diag,RL4
+        MOVBZ R12,tco_mes
+        ADD R12,#DATA16 00040H
+        MOVBZ R13,RL4
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV R12,R4
+        CALLS 00FH,Sat_HiByte_ff
+        MOVB tco_de_th_diag,RL4
+        JMPR cc_UC,L_B95A0
+L_B957C:                 ; 0xb957c
+        MOV R4,t_tco_de_th_diag
+        JMPR cc_EQ,L_B95A0
+        MOVBZ R12,tco_mes
+        ADD R12,#DATA16 00040H
+        MOVBZ R13,tco_de_ini_th_diag
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV R12,R4
+        CALLS 00FH,Sat_HiByte_ff
+        MOVB tco_de_th_diag,RL4
+        ADD t_tco_de_th_diag,ONES
+L_B95A0:                 ; 0xb95a0
+        MOVB RL4,tco_de_th_diag
+        CMPB RL4,DPP0:c_tco_de_max_th_diag
+        JMPA cc_NC,L_B96C0
+        BSET lv_err_pres_mwss.09H
+        JMPA cc_UC,L_B96C0
+L_B95B2:                 ; 0xb95b2
+        MOV R12,t_puc_th_diag
+        MOV R13,t_act_th_diag
+        CALLS 00FH,Div_Ratio_U8_Sat
+        MOVB puc_perc_th_diag,RL4
+        MOV R12,t_load_min_th_diag
+        MOV R13,t_act_th_diag
+        CALLS 00FH,Div_Ratio_U8_Sat
+        MOVB load_min_perc_th_diag,RL4
+        MOV R12,t_vs_min_th_diag
+        MOV R13,t_act_th_diag
+        CALLS 00FH,Div_Ratio_U8_Sat
+        MOVB vs_min_perc_th_diag,RL4
+        MOV R12,t_vs_max_th_diag
+        MOV R13,t_act_th_diag
+        CALLS 00FH,Div_Ratio_U8_Sat
+        MOVB vs_max_perc_th_diag,RL4
+        MOVBZ R12,tia_min_th_diag
+        ADD R12,#DATA16 00040H
+        MOVBZ R13,tia_st
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV R12,R4
+        CALLS 00FH,Sat_HiByte_ff
+        MOVB tia_de_th_diag,RL4
+        MOVB RL5,tco_mes
+        CMPB RL5,DPP0:c_tco_wup_min_th_diag
+        JMPR cc_C,L_B9634
+        MOVB RL3,vs_min_perc_th_diag
+        CMPB RL3,DPP0:c_vs_min_perc_max_th_diag
+        JMPR cc_ULE,L_B9624
+        BSET lv_err_pres_mwss.07H
+        JMPR cc_UC,L_B96C0
+L_B9624:                 ; 0xb9624
+        BCLR lv_err_pres_mwss.05H
+        BCLR lv_err_pres_mwss.07H
+        BSET lv_err_pres_mwss.06H
+        MOVB RL4,tco_mes
+        MOVB tco_th_diag,RL4
+        JMPR cc_UC,L_B96C0
+L_B9634:                 ; 0xb9634
+        MOVB RL4,puc_perc_th_diag
+        CMPB RL4,DPP0:c_puc_perc_max_th_diag
+        JMPR cc_UGT,L_B9684
+        MOV R12,#DATA16 047FCH
+        MOVBZ R13,tia_min_th_diag
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        CMPB RL4,load_min_perc_th_diag
+        JMPR cc_C,L_B9684
+        MOVB RL4,vs_max_perc_th_diag
+        CMPB RL4,DPP0:c_vs_max_perc_max_th_diag
+        JMPR cc_UGT,L_B9684
+        MOV R12,#DATA16 047F4H
+        MOVBZ R13,tia_min_th_diag
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        CMPB RL4,vs_min_perc_th_diag
+        JMPR cc_C,L_B9684
+        MOVB RL4,tia_de_th_diag
+        CMPB RL4,DPP0:c_tia_de_max_th_diag
+        JMPR cc_C,L_B9684
+        MOVB RL5,tia_min_th_diag
+        CMPB RL5,DPP0:c_tia_st_min_th_diag
+        JMPR cc_C,L_B9684
+        JNB lv_err_pres_mwss.09H,L_B9688
+L_B9684:                 ; 0xb9684
+        BSET lv_err_pres_mwss.07H
+        JMPR cc_UC,L_B96C0
+L_B9688:                 ; 0xb9688
+        BSET lv_err_pres_mwss.05H
+        BCLR lv_err_pres_mwss.07H
+        BSET lv_err_pres_mwss.06H
+        MOVB RL4,tco_mes
+        MOVB tco_th_diag,RL4
+        JMPR cc_UC,L_B96C0
+L_B9698:                 ; 0xb9698
+        MOV R12,t_vs_min_th_diag
+        MOV R13,t_act_th_diag
+        CALLS 00FH,Div_Ratio_U8_Sat
+        MOVB vs_min_perc_th_diag,RL4
+        CMPB RL4,DPP0:c_vs_min_perc_max_th_diag
+        JMPR cc_ULE,L_B96B2
+        BSET lv_err_pres_mwss.07H
+        JMPR cc_UC,L_B96C0
+L_B96B2:                 ; 0xb96b2
+        BCLR lv_err_pres_mwss.05H
+        BCLR lv_err_pres_mwss.07H
+        BSET lv_err_pres_mwss.06H
+        MOVB RL4,tco_mes
+        MOVB tco_th_diag,RL4
+L_B96C0:                 ; 0xb96c0
+        JNB lv_er_carb_b4.0EH,L_B96CC
+        MOV R4,#02H
+        MOV state_th_diag,R4
+        JMPR cc_UC,L_B96E8
+L_B96CC:                 ; 0xb96cc
+        JNB lv_err_pres_mwss.07H,L_B96D8
+        MOV R4,#03H
+        MOV state_th_diag,R4
+        JMPR cc_UC,L_B96E8
+L_B96D8:                 ; 0xb96d8
+        JNB lv_err_pres_mwss.06H,L_B96E4
+        MOV R4,#01H
+        MOV state_th_diag,R4
+        JMPR cc_UC,L_B96E8
+L_B96E4:                 ; 0xb96e4
+        MOV state_th_diag,ZEROS
+L_B96E8:                 ; 0xb96e8
+        CALLS 00BH,Diag_Lam_Lim_d1cc
+        RETS
+
+; ======== Calc_Thermostat_Diag_State  (@0xb96ee) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tam/toil/teg/th output signals): Thermostat diagnosis state machine:
+        ; state_th_diag + lv_err_pres_mwss.
+        ; ------------------------------------------------------------
+Calc_Thermostat_Diag_State:
+        JB obd_sf.0DH,L_B9700
+        BCLR lv_err_pres_mwss.07H
+        BCLR lv_er_carb_b4.0EH
+        BCLR lv_err_pres_mwss.06H
+        BCLR lv_err_pres_mwss.08H
+        MOV state_th_diag,ZEROS
+        BCLR lv_err_pres_mwss.09H
+L_B9700:                 ; 0xb9700
+        RETS
+
+S_B943A ENDS
+        END

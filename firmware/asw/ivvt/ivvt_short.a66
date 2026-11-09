@@ -1,0 +1,191 @@
+; asw/ivvt/ivvt_short.a66
+; 0xC14C2-0xC1650  (398 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_cam_hys_ad_ivvt                    EQU  090124H
+c_cam_ini_in                         EQU  09012EH
+c_ctr_max_cam_sp_chg                 EQU  09017AH
+c_n_max_trip_ivvt                    EQU  0902B4H
+c_n_min_trip_ivvt                    EQU  0902C4H
+c_toil_max_diag_cam_dif_ivvt         EQU  0903C9H
+c_toil_max_trip_ivvt                 EQU  0903CBH
+c_toil_min_diag_cam_dif_ivvt         EQU  0903D1H
+c_toil_min_trip_ivvt                 EQU  0903D3H
+lc_diag_trip_ext_req_st_ivvt         EQU  090458H
+ldpm_toil_3_ivvt                  EQU  0980A5H
+ip_n_max_diag_cam_dif_ivvt           EQU  0994CEH
+ip_n_min_diag_cam_dif_ivvt           EQU  0994DBH
+
+PUBLIC  Diag_IVVT_ShortTrip, Set_IVVT_Trip_Avl
+EXTERN  Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_Y_Axis:NEAR, sub_r12_13_ret_r4:NEAR
+
+S_C14C2 SECTION CODE AT 0C14C2H
+
+; ======== Set_IVVT_Trip_Avl  (@0xc14c2) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signals): Set IVVT diagnosis trip-available flag
+        ; lv_diag_trip_avl_ivvt.
+        ; ------------------------------------------------------------
+Set_IVVT_Trip_Avl:
+        MOV R4,R12
+        CMPB RL4,#00H
+        JMPR cc_EQ,L_C14D8
+        MOV R4,R12
+        MOVBZ R4,RL4
+        AND R4,#DATA16 0000FH
+        JMPR cc_NE,L_C14D6
+        BCLR lv_diag_trip_avl_ivvt.0AH
+        JMPR cc_UC,L_C14D8
+L_C14D6:                 ; 0xc14d6
+        BSET lv_diag_trip_avl_ivvt.0AH
+L_C14D8:                 ; 0xc14d8
+        BMOV PSW.06H,lv_diag_trip_avl_ivvt.0AH
+        RETS
+
+; ======== Diag_IVVT_ShortTrip  (@0xc14de) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): IVVT Short Trip forced diagnosis (lv_diag_trip_avl_ivvt)
+        ; ------------------------------------------------------------
+Diag_IVVT_ShortTrip:
+        MOV R12,#DATA16 POF ldpm_toil_3_ivvt
+        MOV R13,#DATA16 PAG ldpm_toil_3_ivvt
+        MOVBZ R14,toil
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_n_min_diag_cam_dif_ivvt
+        MOV R13,#DATA16 PAG ip_n_min_diag_cam_dif_ivvt
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB lv_ivvt_c2ed,RL4
+        MOV R12,#DATA16 POF ip_n_max_diag_cam_dif_ivvt
+        MOV R13,#DATA16 PAG ip_n_max_diag_cam_dif_ivvt
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB lv_ivvt_c2ee,RL4
+        MOVB RL5,ctr_cam_sp_chg
+        CMPB RL5,DPP0:c_ctr_max_cam_sp_chg
+        JMPR cc_NC,L_C153A
+        MOVBZ R12,DPP0:c_cam_ini_in
+        MOVBZ R13,DPP0:c_cam_hys_ad_ivvt
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL4,ivvt_in_struct_sp_ivvt_cam_sp_ivvt
+        JMPR cc_ULE,L_C152E
+        BSET lv_diag_trip_avl_ivvt.0CH
+        JMPR cc_UC,L_C153C
+L_C152E:                 ; 0xc152e
+        JNB lv_diag_trip_avl_ivvt.0CH,L_C153C
+        SUBB ctr_cam_sp_chg,ONES
+        BCLR lv_diag_trip_avl_ivvt.0CH
+        JMPR cc_UC,L_C153C
+L_C153A:                 ; 0xc153a
+        BSET lv_diag_trip_avl_ivvt.0BH
+L_C153C:                 ; 0xc153c
+        JB lv_can_bus_off_err.09H,L_C1556
+        JB lv_can_bus_off_err.0AH,L_C1556
+        JB lv_can_bus_off_err.0CH,L_C1556
+        JB lv_can_bus_off_err.0BH,L_C1556
+        JB lv_diag_trip_avl_ivvt.01H,L_C1556
+        MOVB ivvt_in_1_struct_diag_mec_inci_ivvt_lv_inh_rbm_cam_dif_ivvt,ZEROS
+        JMPR cc_UC,L_C155C
+L_C1556:                 ; 0xc1556
+        MOVB RL4,#01H
+        MOVB ivvt_in_1_struct_diag_mec_inci_ivvt_lv_inh_rbm_cam_dif_ivvt,RL4
+L_C155C:                 ; 0xc155c
+        MOVB RL4,lv_ivvt_c2ed
+        CMPB RL4,n_32
+        JMPR cc_UGT,L_C15A8
+        MOVB RL5,lv_ivvt_c2ee
+        CMPB RL5,n_32
+        JMPR cc_C,L_C15A8
+        MOVB RL3,DPP0:c_toil_min_diag_cam_dif_ivvt
+        CMPB RL3,toil
+        JMPR cc_UGT,L_C15A8
+        MOVB RL2,DPP0:c_toil_max_diag_cam_dif_ivvt
+        CMPB RL2,toil
+        JMPR cc_C,L_C15A8
+        JNB lv_diag_trip_avl_ivvt.0BH,L_C15A8
+        MOVB RL1,ivvt_in_1_struct_diag_mec_inci_ivvt_lv_inh_rbm_cam_dif_ivvt
+        JMPR cc_NE,L_C15A0
+        MOVB RL4,ivvt_in_1_struct_diag_mec_ivvt_lv_end_psn_act_diag_ivvt
+        JMPR cc_NE,L_C15A0
+        MOVB RL4,ivvt_in_1_struct_hpwm_de_ad_ivvt_lv_adh_end_ivvt
+        JMPR cc_EQ,L_C15A0
+        MOVB ivvt_in_1_struct_diag_mec_inci_ivvt_lv_inh_diag_cam_dif_ivvt,ZEROS
+        JMPR cc_UC,L_C15AE
+L_C15A0:                 ; 0xc15a0
+        MOVB RL4,#01H
+        MOVB ivvt_in_1_struct_diag_mec_inci_ivvt_lv_inh_diag_cam_dif_ivvt,RL4
+        JMPR cc_UC,L_C15AE
+L_C15A8:                 ; 0xc15a8
+        MOVB RL4,#01H
+        MOVB ivvt_in_1_struct_diag_mec_inci_ivvt_lv_inh_diag_cam_dif_ivvt,RL4
+L_C15AE:                 ; 0xc15ae
+        MOV R4,state_ivvt
+        CMP R4,#02H
+        JMPR cc_NE,L_C15EE
+        MOVB RL4,n_32
+        CMPB RL4,DPP0:c_n_min_trip_ivvt
+        JMPR cc_C,L_C15EE
+        CMPB RL4,DPP0:c_n_max_trip_ivvt
+        JMPR cc_UGT,L_C15EE
+        MOVB RL5,toil
+        CMPB RL5,DPP0:c_toil_min_trip_ivvt
+        JMPR cc_C,L_C15EE
+        CMPB RL5,DPP0:c_toil_max_trip_ivvt
+        JMPR cc_UGT,L_C15EE
+        JB lv_dur_igc_0_err.00H,L_C15EE
+        JB lv_dur_igc_0_err.01H,L_C15EE
+        JB lv_dur_igc_0_err.02H,L_C15EE
+        JB lv_dur_igc_0_err.03H,L_C15EE
+        JB lv_can_bus_off_err.09H,L_C15EE
+        BCLR lv_diag_trip_avl_ivvt.06H
+        JMPR cc_UC,L_C15F0
+L_C15EE:                 ; 0xc15ee
+        BSET lv_diag_trip_avl_ivvt.06H
+L_C15F0:                 ; 0xc15f0
+        JB lv_diag_trip_avl_ivvt.06H,L_C1616
+        JB lv_diag_trip_avl_ivvt.0DH,L_C15FC
+        JB lv_diag_trip_avl_ivvt.09H,L_C1602
+L_C15FC:                 ; 0xc15fc
+        MOVB RL4,DPP0:lc_diag_trip_ext_req_st_ivvt
+        JMPR cc_EQ,L_C1618
+L_C1602:                 ; 0xc1602
+        MOV R4,ivvt_in_1_struct_diag_mec_ivvt_state_trip_ivvt
+        JMPR cc_EQ,L_C160C
+        CMP R4,#05H
+        JMPR cc_NE,L_C1618
+L_C160C:                 ; 0xc160c
+        MOV ivvt_in_1_struct_diag_mec_ivvt_state_trip_ivvt,ZEROS
+        BSET lv_diag_trip_avl_ivvt.07H
+        BCLR lv_cam_ad_di_ivvt.05H
+        JMPR cc_UC,L_C1618
+L_C1616:                 ; 0xc1616
+        BCLR lv_diag_trip_avl_ivvt.07H
+L_C1618:                 ; 0xc1618
+        BMOV lv_diag_trip_avl_ivvt.0DH,lv_diag_trip_avl_ivvt.09H
+        JNB lv_diag_trip_avl_ivvt.09H,L_C1626
+        JNB lv_cam_ad_di_ivvt.05H,L_C1626
+        BCLR lv_diag_trip_avl_ivvt.09H
+L_C1626:                 ; 0xc1626
+        MOVB RL4,diag_c340
+        JMPR cc_NE,L_C164C
+        MOVB RL5,crank_tim_0
+        JMPR cc_NE,L_C164C
+        MOVB RL3,lv_ivvt_d62d
+        JMPR cc_NE,L_C1648
+        MOVB RL2,lv_ivvt_d5f5
+        JMPR cc_NE,L_C1648
+        MOVB RL1,lv_ivvt_d61f
+        JMPR cc_NE,L_C1648
+        BCLR lv_diag_trip_avl_ivvt.08H
+        RETS
+L_C1648:                 ; 0xc1648
+        BSET lv_diag_trip_avl_ivvt.08H
+        RETS
+L_C164C:                 ; 0xc164c
+        BSET lv_diag_trip_avl_ivvt.08H
+        RETS
+
+S_C14C2 ENDS
+        END

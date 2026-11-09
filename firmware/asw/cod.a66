@@ -1,0 +1,253 @@
+; asw/cod.a66
+; 0xDB24E-0xDB4DA  (652 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_sum_dc_ready                       EQU  09030DH
+
+PUBLIC  Calc_Ready_DC_Ctr, Diag_Coding_MAF_TPS_Plaus, Init_Fault_Table_1, Init_Fault_Table_2
+EXTERN  Get_Diag_Status_Bits:NEAR, OBD_Build_DTC_List:NEAR
+
+S_DB24E SECTION CODE AT 0DB24EH
+
+; ======== Init_Fault_Table_1  (@0xdb24e) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Init_Fault_Table_1:
+        MOV [-R0],R6
+        JNB lv_conf_mis.00H,L_DB29A
+        JNB lv_conf_mis.01H,L_DB29A
+        MOVB RL6,#00H
+L_DB25A:                 ; 0xdb25a
+        MOVBZ R4,RL6
+        AND R4,#DATA16 0000FH
+        MOV R5,#01H
+        SHL R5,R4
+        MOV R4,#DATA16 0F862H
+        MOVBZ R2,RL6
+        SHR R2,#04H
+        SHL R2,#01H
+        ADD R4,R2
+        MOV R2,[R4]
+        OR R2,R5
+        MOV [R4],R2
+        MOVBZ R4,RL6
+        AND R4,#DATA16 0000FH
+        MOV R5,#01H
+        SHL R5,R4
+        MOV R4,#DATA16 0F870H
+        MOVBZ R2,RL6
+        SHR R2,#04H
+        SHL R2,#01H
+        ADD R4,R2
+        MOV R2,[R4]
+        OR R2,R5
+        MOV [R4],R2
+        ADDB RL6,#01H
+        CMPB RL6,#DATA16 00066H
+        JMPR cc_C,L_DB25A
+L_DB29A:                 ; 0xdb29a
+        MOV R6,[R0+]
+        RETS
+
+; ======== Calc_Ready_DC_Ctr  (@0xdb29e) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by trt/ecu_diag/dtc output signals): OBD readiness drive-cycle counter ready_dc_ctr.
+        ; ------------------------------------------------------------
+Calc_Ready_DC_Ctr:
+        MOV [-R0],R6
+        JNB lv_conf_mis.00H,L_DB2D2
+        JNB lv_conf_mis.01H,L_DB2D2
+        MOVB RL6,#00H
+L_DB2AA:                 ; 0xdb2aa
+        MOVBZ R4,RL6
+        AND R4,#DATA16 0000FH
+        MOV R5,#01H
+        SHL R5,R4
+        MOV R4,#DATA16 0F854H
+        MOVBZ R2,RL6
+        SHR R2,#04H
+        SHL R2,#01H
+        ADD R4,R2
+        MOV R2,[R4]
+        OR R2,R5
+        MOV [R4],R2
+        ADDB RL6,#01H
+        CMPB RL6,#DATA16 00066H
+        JMPR cc_C,L_DB2AA
+        MOVB ready_dc_ctr,ZEROS
+L_DB2D2:                 ; 0xdb2d2
+        JNB lv_pl.0FH,L_DB2DA
+        MOV obd_rdy_cont,ONES
+L_DB2DA:                 ; 0xdb2da
+        MOV R6,[R0+]
+        RETS
+
+; ======== Init_Fault_Table_2  (@0xdb2de) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Init_Fault_Table_2:
+        MOV [-R0],R6
+        JNB lv_conf_mis.00H,L_DB30E
+        JNB lv_conf_mis.01H,L_DB30E
+        MOVB RL6,#00H
+L_DB2EA:                 ; 0xdb2ea
+        MOVBZ R4,RL6
+        AND R4,#DATA16 0000FH
+        MOV R5,#01H
+        SHL R5,R4
+        MOV R4,#DATA16 0D70AH
+        MOVBZ R2,RL6
+        SHR R2,#04H
+        SHL R2,#01H
+        ADD R4,R2
+        MOV R2,[R4]
+        OR R2,R5
+        MOV [R4],R2
+        ADDB RL6,#01H
+        CMPB RL6,#DATA16 00066H
+        JMPR cc_C,L_DB2EA
+L_DB30E:                 ; 0xdb30e
+        MOV R6,[R0+]
+        RETS
+
+; ======== Diag_Coding_MAF_TPS_Plaus  (@0xdb312) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by maf/tps output signals + DTC): Variant-coding plausibility:
+        ; carb_cod_maf_plaus / carb_cod_tps_plaus.
+        ; ------------------------------------------------------------
+Diag_Coding_MAF_TPS_Plaus:
+        MOV [-R0],R6
+        MOVB RL4,ready_dc_ctr
+        CMPB RL4,DPP0:c_sum_dc_ready
+        JMPR cc_C,L_DB336
+        MOVB RL6,#00H
+L_DB320:                 ; 0xdb320
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R5,[R4+#0F854H]
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV [R4+#0D70AH],R5
+        ADDB RL6,#01H
+        CMPB RL6,#07H
+        JMPR cc_C,L_DB320
+L_DB336:                 ; 0xdb336
+        MOV R12,#DATA16 00038H
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_knk_1,RL4
+        MOV R12,#07H
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_vs,RL4
+        MOV R12,#0AH
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_tia,RL4
+        MOV R12,#0CH
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_tco,RL4
+        MOV R12,#DATA16 00013H
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_vls_up_1,RL4
+        MOV R12,#DATA16 00015H
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_vls_up_1_puc,RL4
+        MOV R12,#DATA16 00016H
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_vls_up_1_stk,RL4
+        MOV R12,#DATA16 00014H
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_vls_up_1_plaus,RL4
+        MOV R12,#DATA16 00020H
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB lv_maf_c4b4,RL4
+        MOV R12,#DATA16 00021H
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_vls_frq_1,RL4
+        MOV R12,#DATA16 00018H
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_vls_down_1,RL4
+        MOV R12,#DATA16 00019H
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_vls_down_1_puc,RL4
+        MOV R12,#DATA16 0001CH
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_lsh_down_1,RL4
+        MOV R12,#DATA16 0001EH
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_lsh_down_obd2_1,RL4
+        MOV R12,#DATA16 00023H
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_vls_down_plaus_pue_1,RL4
+        MOV R12,#DATA16 0001AH
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_vls_down_plaus_1,RL4
+        MOV R12,#DATA16 00022H
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_ls_down_swt_1,RL4
+        MOV R12,#03H
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_maf_plaus,RL4
+        MOV R12,#DATA16 00017H
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_lam_lim_1,RL4
+        MOV R12,#01H
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_tps_plaus,RL4
+        MOV R12,#DATA16 00028H
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_dtp_con,RL4
+        MOV R12,#DATA16 00029H
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_dtp_noise,RL4
+        MOV R12,#DATA16 00026H
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_cps_mecha,RL4
+        MOV R12,#DATA16 0002DH
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_tc,RL4
+        MOV R12,#DATA16 0002CH
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_leak_large,RL4
+        MOV R12,#DATA16 0002BH
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_leak_small_1mm,RL4
+        MOV R12,#DATA16 0002AH
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_leak_small_05mm,RL4
+        MOV R12,#DATA16 00040H
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_isapwm_h,RL4
+        MOV R12,#DATA16 0003FH
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_isapwm_l,RL4
+        MOV R12,#DATA16 00011H
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_tco_plaus,RL4
+        MOV R12,#DATA16 0001BH
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_lsh_up_1,RL4
+        MOV R12,#DATA16 00012H
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_th,RL4
+        MOV R12,#DATA16 0001FH
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_cat_diag_1,RL4
+        MOV R12,#DATA16 0001DH
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_lsh_up_obd2_1,RL4
+        MOV R12,#0DH
+        CALLS 00DH,Get_Diag_Status_Bits
+        MOVB carb_cod_tco_stuck,RL4
+        JNB lv_pl.0FH,L_DB4D6
+        CALLS 00EH,OBD_Build_DTC_List
+L_DB4D6:                 ; 0xdb4d6
+        MOV R6,[R0+]
+        RETS
+
+S_DB24E ENDS
+        END

@@ -1,0 +1,99 @@
+; asw/vin.a66
+; 0xC7EB0-0xC7F72  (194 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_abc_max_cam                        EQU  0900D5H
+c_conf_vin_diag                      EQU  090156H
+
+PUBLIC  Reset_Dcdc2_eb0, Reset_lv_crk_tooth_err_ece, Set_Conf_VIN_Diag, Set_Dc341_ec8
+EXTERN  DTC_Update_Immediate:NEAR, Find_DTC_By_Status:NEAR, Find_Fmy_Slot:NEAR
+
+S_C7EB0 SECTION CODE AT 0C7EB0H
+
+; ======== Reset_Dcdc2_eb0  (@0xc7eb0) ========
+Reset_Dcdc2_eb0:
+        MOV R4,cam_1_edge_ctr
+        MOV diag_cdc2,R4
+        BCLR lv_crk_tooth_err.0AH
+        MOVBZ R5,DPP0:c_abc_max_cam
+        SHR R5,#01H
+        ADDB RL5,#01H
+        MOVB diag_c340,RL5
+        RETS
+
+; ======== Set_Dc341_ec8  (@0xc7ec8) ========
+Set_Dc341_ec8:
+        MOVB crank_tim_0,ZEROS
+        RETS
+
+; ======== Reset_lv_crk_tooth_err_ece  (@0xc7ece) ========
+Reset_lv_crk_tooth_err_ece:
+        BCLR lv_crk_tooth_err.09H
+        MOVB nr_pat_eng_rev,ZEROS
+        RETS
+
+; ======== Set_Conf_VIN_Diag  (@0xc7ed6) ========
+Set_Conf_VIN_Diag:
+        MOV [-R0],R6
+        MOVB RL4,DPP0:c_conf_vin_diag
+        MOVB conf_vin_diag,RL4
+        JNB can_fd58.09H,L_C7F6E
+        JB lv_crk_tooth_err.0BH,L_C7F6E
+        MOVB RL5,conf_mil_fmy_sam
+        CMPB RL5,#03H
+        JMPR cc_NE,L_C7F6E
+        CMPB RL4,#00H
+        JMPR cc_EQ,L_C7F6E
+        MOVB RL6,#00H
+L_C7EF6:                 ; 0xc7ef6
+        MOVBZ R4,RL6
+        EXTP #00H, #02H
+        MOVB RL5,[R4+#03E1DH]
+        NOP
+        CMPB RL5,#DATA16 000FFH
+        JMPR cc_EQ,L_C7F10
+        BSET lv_crk_tooth_err.0BH
+        MOVB RL6,#DATA16 00011H
+        JMPR cc_UC,L_C7F12
+L_C7F10:                 ; 0xc7f10
+        BCLR lv_crk_tooth_err.0BH
+L_C7F12:                 ; 0xc7f12
+        ADDB RL6,#01H
+        CMPB RL6,#DATA16 00011H
+        JMPR cc_C,L_C7EF6
+        JB lv_crk_tooth_err.0BH,L_C7F4E
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        MOVB RL5,#03H
+        MOVB diag_d494,RL5
+        MOVB RL3,#DATA16 0002CH
+        MOVB diag_d492,RL3
+        MOV R12,#DATA16 0D488H
+        MOV R13,#DATA16 05806H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_ecu_err.04H,dtc_status_work.06H
+        MOVBZ R4,diag_d492
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C7F6E
+        JMPR cc_UC,L_C7F66
+L_C7F4E:                 ; 0xc7f4e
+        JNB lv_ecu_err.04H,L_C7F6E
+        BCLR lv_ecu_err.04H
+        MOV R12,#DATA16 00044H
+        CALLS 00DH,Find_Fmy_Slot
+        MOV R12,#DATA16 00044H
+        CALLS 00CH,Find_DTC_By_Status
+        JMPR cc_UC,L_C7F6E
+L_C7F66:                 ; 0xc7f66
+        MOV R4,#DATA16 0FFEFH
+        AND dtc_st_grp_ecu,R4
+L_C7F6E:                 ; 0xc7f6e
+        MOV R6,[R0+]
+        RETS
+
+S_C7EB0 ENDS
+        END

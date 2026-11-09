@@ -1,0 +1,281 @@
+; asw/comm/comm_flash.a66
+; 0xCB850-0xCBB06  (694 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  KWP_Flash_Cmd02_SetDownloadAddr, KWP_Flash_Cmd03_arm, KWP_Flash_Cmd04_arm, KWP_Flash_Cmd05_arm
+EXTERN  CanPurge_SetAct_2:NEAR, Interp_Scale_Buffer:NEAR, L_CC708:NEAR, Nop_ccac2:NEAR
+
+S_CB850 SECTION CODE AT 0CB850H
+
+; ======== KWP_Flash_Cmd02_SetDownloadAddr  (@0xcb850) ========
+        ; ------------------------------------------------------------
+        ; KWP flash-service dispatcher arm, command id 0x02 (kwp_cmd_id@d780) via
+        ; KWP_Flash_Svc_jmptab@0xa0fa8.
+        ; ------------------------------------------------------------
+KWP_Flash_Cmd02_SetDownloadAddr:
+        MOVB RL4,kwp_sec_level
+        CMPB RL4,#DATA16 00008H
+        JMPR cc_C,L_CB8C2
+        MOVB RL5,kwp_dl_buf
+        CMPB RL5,#01H
+        JMPR cc_UGT,L_CB8B6
+        MOVB RL3,kwp_dl_data1
+        JMPR cc_NE,L_CB8B6
+        MOVB RL2,kwp_dl_data5
+        MOVB [R0+#03H],RL2
+        MOVB RL1,kwp_dl_data4
+        MOVB [R0+#02H],RL1
+        MOVB RL4,kwp_dl_data3
+        MOVB [R0+#01H],RL4
+        MOVB [R0],kwp_dl_data2
+        CMPB RL5,#00H
+        JMPR cc_EQ,L_CB88E
+        CMPB RL5,#01H
+        JMPR cc_EQ,L_CB89E
+        JMPR cc_UC,L_CB8AC
+L_CB88E:                 ; 0xcb88e
+        MOV R4,[R0]
+        MOV R5,[R0+#02H]
+        MOV kwp_dl_addr,R4
+        MOV kwp_dl_count,R5
+        JMPR cc_UC,L_CB8AC
+L_CB89E:                 ; 0xcb89e
+        MOV R4,[R0]
+        MOV R5,[R0+#02H]
+        MOV kwp_dl_len,R4
+        MOV kwp_cf08,R5
+L_CB8AC:                 ; 0xcb8ac
+        MOVB RL4,#03H
+        MOVB kwp_resp_status,RL4
+        JMPA cc_UC,L_CC708
+L_CB8B6:                 ; 0xcb8b6
+        MOVB RL4,#DATA16 00032H
+        MOVB kwp_nrc_D78B,RL4
+        JMPA cc_UC,L_CC708
+L_CB8C2:                 ; 0xcb8c2
+        MOVB RL4,#DATA16 00031H
+        MOVB kwp_nrc_D78B,RL4
+        JMPA cc_UC,L_CC708
+
+; ======== KWP_Flash_Cmd03_arm  (@0xcb8ce) ========
+        ; ------------------------------------------------------------
+        ; KWP flash-service dispatcher arm, command id 0x03 (kwp_cmd_id@d780) via
+        ; KWP_Flash_Svc_jmptab@0xa0fa8.
+        ; ------------------------------------------------------------
+KWP_Flash_Cmd03_arm:
+        MOVBZ R4,kwp_sec_level
+        MOVBZ R5,kwp_dl_buf
+        ADD R5,#02H
+        CMP R4,R5
+        JMPA cc_SLT,L_CBA50
+        MOVBZ R9,kwp_dl_buf
+        JMPR cc_EQ,L_CB8FC
+        MOV R12,kwp_dl_addr
+        MOV R13,kwp_dl_count
+        MOV R14,R9
+        MOV R15,#01H
+        CALLS 00CH,CanPurge_SetAct_2
+        ANDB RL4,kwp_dl_mask
+        JMPA cc_EQ,L_CBA44
+L_CB8FC:                 ; 0xcb8fc
+        CMP R9,#00H
+        JMPA cc_EQ,L_CBA0E
+        JB lv_cp_act.03H,L_CB9E0
+        MOV R4,kwp_dl_addr
+        MOV R5,kwp_dl_count
+        AND R4,#01H
+        AND R5,#00H
+        MOV R2,R4
+        OR R2,R5
+        JMPR cc_NE,L_CB91E
+        MOV R4,#01H
+        AND R4,R9
+        JMPR cc_EQ,L_CB942
+L_CB91E:                 ; 0xcb91e
+        MOV R8,#01H
+        JMPR cc_UC,L_CB93C
+L_CB922:                 ; 0xcb922
+        MOVB RL4,[R8+#0D782H]
+        MOV R10,kwp_dl_addr
+        MOV R11,kwp_dl_count
+        SUB kwp_dl_addr,ONES
+        SUBC kwp_dl_count,ONES
+        EXTS R11, #01H
+        MOVB [R10],RL4
+        ADD R8,#01H
+L_CB93C:                 ; 0xcb93c
+        CMP R8,R9
+        JMPR cc_ULE,L_CB922
+        JMPR cc_UC,L_CB9BE
+L_CB942:                 ; 0xcb942
+        CMP R9,#04H
+        JMPR cc_NE,L_CB988
+        MOVB RL4,kwp_dl_data4
+        MOVB [R0+#07H],RL4
+        MOVB RL5,kwp_dl_data3
+        MOVB [R0+#06H],RL5
+        MOVB RL3,kwp_dl_data2
+        MOVB [R0+#05H],RL3
+        MOVB RL2,kwp_dl_data1
+        MOVB [R0+#04H],RL2
+        MOV R12,kwp_dl_addr
+        MOV R13,kwp_dl_count
+        MOV R14,[R0+#04H]
+        MOV R15,[R0+#06H]
+        CALLS 00CH,Nop_ccac2
+        MOV R4,#04H
+        MOV R5,#00H
+        ADD kwp_dl_addr,R4
+        ADDC kwp_dl_count,R5
+        JMPR cc_UC,L_CB9BE
+L_CB988:                 ; 0xcb988
+        MOV R8,#01H
+        JMPR cc_UC,L_CB9BA
+L_CB98C:                 ; 0xcb98c
+        MOVB RL4,[R8+#0D782H]
+        MOVB [R0+#04H],RL4
+        MOVB RL5,[R8+#0D783H]
+        MOVB [R0+#05H],RL5
+        MOV R4,[R0+#04H]
+        MOV R10,kwp_dl_addr
+        MOV R11,kwp_dl_count
+        EXTS R11, #01H
+        MOV [R10],R4
+        MOV R4,#02H
+        MOV R5,#00H
+        ADD kwp_dl_addr,R4
+        ADDC kwp_dl_count,R5
+        ADD R8,#02H
+L_CB9BA:                 ; 0xcb9ba
+        CMP R8,R9
+        JMPR cc_ULE,L_CB98C
+L_CB9BE:                 ; 0xcb9be
+        MOVB RL4,kwp_dl_crc0
+        MOVB kwp_dl_crc_snap0,RL4
+        MOVB RL5,kwp_dl_crc1
+        MOVB kwp_dl_crc_snap1,RL5
+        MOVB RL3,kwp_dl_crc2
+        MOVB kwp_dl_crc_snap2,RL3
+        MOVB RL2,kwp_dl_crc3
+        MOVB kwp_dl_crc_snap3,RL2
+        JMPR cc_UC,L_CBA0E
+L_CB9E0:                 ; 0xcb9e0
+        MOV R12,kwp_dl_addr
+        MOV R13,kwp_dl_count
+        MOV R14,#DATA16 0D783H
+        MOV R15,R9
+        CALLS 00DH,Interp_Scale_Buffer
+        CMPB RL4,#00H
+        JMPR cc_NE,L_CBA04
+        MOV R4,R9
+        MOV R5,#00H
+        ADD kwp_dl_addr,R4
+        ADDC kwp_dl_count,R5
+        JMPR cc_UC,L_CBA0E
+L_CBA04:                 ; 0xcba04
+        BCLR lv_cp_act.03H
+        MOVB RL4,#DATA16 00032H
+        MOVB kwp_nrc_D78B,RL4
+L_CBA0E:                 ; 0xcba0e
+        MOVB RL4,kwp_nrc_D78B
+        JMPA cc_NE,L_CC708
+        MOVB kwp_resp_status2,ZEROS
+        MOVB RL5,kwp_cf05
+        MOVB kwp_resp_cnt_hi,RL5
+        MOVB RL3,kwp_dl_count
+        MOVB kwp_resp_cnt_lo,RL3
+        MOVB RL2,kwp_cf03
+        MOVB kwp_resp_addr_hi,RL2
+        MOVB RL1,kwp_dl_addr
+        MOVB kwp_resp_addr_lo,RL1
+        MOVB RL4,#08H
+        MOVB kwp_resp_status,RL4
+        JMPA cc_UC,L_CC708
+L_CBA44:                 ; 0xcba44
+        MOVB RL4,#DATA16 00033H
+        MOVB kwp_nrc_D78B,RL4
+        JMPA cc_UC,L_CC708
+L_CBA50:                 ; 0xcba50
+        MOVB RL4,#DATA16 00031H
+        MOVB kwp_nrc_D78B,RL4
+        JMPA cc_UC,L_CC708
+
+; ======== KWP_Flash_Cmd04_arm  (@0xcba5c) ========
+        ; ------------------------------------------------------------
+        ; KWP flash-service dispatcher arm, command id 0x04 (kwp_cmd_id@d780) via
+        ; KWP_Flash_Svc_jmptab@0xa0fa8.
+        ; ------------------------------------------------------------
+KWP_Flash_Cmd04_arm:
+        MOVB RL4,kwp_sec_level
+        CMPB RL4,#03H
+        JMPR cc_C,L_CBAD4
+        MOV R12,kwp_dl_addr
+        MOV R13,kwp_dl_count
+        MOVBZ R14,kwp_dl_buf
+        MOV R15,#00H
+        CALLS 00CH,CanPurge_SetAct_2
+        MOVBZ R9,RL4
+        JMPR cc_EQ,L_CBA82
+        MOVBZ R4,kwp_dl_mask
+        AND R4,R9
+        JMPR cc_EQ,L_CBAC8
+L_CBA82:                 ; 0xcba82
+        MOVBZ R9,kwp_dl_buf
+        JMPR cc_EQ,L_CBABC
+        CMP R9,#05H
+        JMPR cc_UGT,L_CBABC
+        MOV R8,#00H
+        JMPR cc_UC,L_CBAAA
+L_CBA90:                 ; 0xcba90
+        MOV R4,kwp_dl_addr
+        MOV R5,kwp_dl_count
+        EXTS R5, #01H
+        MOVB RL3,[R4]
+        MOVB [R8+#0D78DH],RL3
+        SUB kwp_dl_addr,ONES
+        SUBC kwp_dl_count,ONES
+        ADD R8,#01H
+L_CBAAA:                 ; 0xcbaaa
+        CMP R8,R9
+        JMPR cc_C,L_CBA90
+        MOVB RL4,kwp_dl_buf
+        ADDB RL4,#03H
+        MOVB kwp_resp_status,RL4
+        JMPA cc_UC,L_CC708
+L_CBABC:                 ; 0xcbabc
+        MOVB RL4,#DATA16 00032H
+        MOVB kwp_nrc_D78B,RL4
+        JMPA cc_UC,L_CC708
+L_CBAC8:                 ; 0xcbac8
+        MOVB RL4,#DATA16 00033H
+        MOVB kwp_nrc_D78B,RL4
+        JMPA cc_UC,L_CC708
+L_CBAD4:                 ; 0xcbad4
+        MOVB RL4,#DATA16 00031H
+        MOVB kwp_nrc_D78B,RL4
+        JMPA cc_UC,L_CC708
+
+; ======== KWP_Flash_Cmd05_arm  (@0xcbae0) ========
+        ; ------------------------------------------------------------
+        ; KWP flash-service dispatcher arm, command id 0x05 (kwp_cmd_id@d780) via
+        ; KWP_Flash_Svc_jmptab@0xa0fa8.
+        ; ------------------------------------------------------------
+KWP_Flash_Cmd05_arm:
+        MOVB RL4,kwp_sec_level
+        CMPB RL4,#04H
+        JMPA cc_C,L_CC708
+        MOVBZ R4,kwp_dl_data1
+        SHL R4,#08H
+        MOVBZ R5,kwp_dl_buf
+        OR R4,R5
+        CMP R4,#01H
+        JMPA cc_NE,L_CC708
+        MOVB RL4,#03H
+        MOVB kwp_resp_status,RL4
+        JMPA cc_UC,L_CC708
+
+S_CB850 ENDS
+        END

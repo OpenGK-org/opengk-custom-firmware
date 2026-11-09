@@ -1,0 +1,285 @@
+; asw/lsh/lsh_dur.a66
+; 0xB6880-0xB6A9A  (538 bytes, 8 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_dec_v_efc                          EQU  090184H
+c_inc_v_efc                          EQU  0901E6H
+c_t_lsh_rise                         EQU  090340H
+c_t_lsh_temp_thd                     EQU  090341H
+c_t_lsh_up_lim                       EQU  090342H
+c_t_lsh_up_tol                       EQU  090343H
+c_v_efc_lsh_up_lim                   EQU  0903F8H
+c_v_efc_lsh_up_max                   EQU  0903F9H
+c_v_efc_lsh_up_prot                  EQU  0903FAH
+c_v_efc_lsh_up_tol                   EQU  0903FBH
+c_v_efc_red                          EQU  0903FCH
+c_vb_prot_max                        EQU  09041BH
+ldp_n_v_efc_lsh_ctl    EQU  090FE8H
+ldp_teg_dyn_v_efc_lsh_ctl    EQU  091A04H
+ip_v_efc_lsh_up_ctl__n__teg_dyn      EQU  096B52H
+
+PUBLIC  Calc_LSH_Up_Loop, IGC_Dur_Arm_0, IGC_Dur_Arm_1, IGC_Dur_Arm_2, IGC_Dur_Arm_3, IGC_Dur_Arm_4
+PUBLIC  IGC_Dur_Arm_5, IGC_Dur_Arm_6
+EXTERN  Get_IP_Byte_3D_Table:NEAR, Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_X_Axis:NEAR, Sat_Add_U8:NEAR
+EXTERN  Set_LSH_Up_PWM:NEAR, sub_r12_13_ret_r4:NEAR
+
+S_B6880 SECTION CODE AT 0B6880H
+
+; ======== Calc_LSH_Up_Loop  (@0xb6880) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Calc_LSH_Up_Loop:
+        MOV [-R0],R9
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOVB RL6,#00H
+        JMPA cc_UC,L_B6A86
+L_B688C:                 ; 0xb688c
+        MOV R9,#DATA16 0C916H
+        MOVB RL4,[R9+#03H]
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NC,L_B68A4
+        MOV R4,R9
+        ADD R4,#03H
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+L_B68A4:                 ; 0xb68a4
+        MOVB RL4,vb
+        CMPB RL4,DPP0:c_vb_prot_max
+        JMPR cc_ULE,L_B68B4
+        MOV R4,#05H
+        MOV [R9],R4
+        JMPR cc_UC,L_B6956
+L_B68B4:                 ; 0xb68b4
+        MOV R4,[R9]
+        SUB R4,#01H
+        CMP R4,#04H
+        JMPR cc_UGT,L_B6952
+        SHL R4,#01H
+        ADD R4,#DATA16 047C8H
+        MOV R4,[R4]
+        JMPI cc_UC,[R4]
+
+; ======== IGC_Dur_Arm_0  (@0xb68c6) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IGC_Dur_Arm_0:
+        MOVB RL4,vb
+        CMPB RL4,DPP0:c_vb_prot_max
+        JMPR cc_UGT,L_B68E2
+        MOVB RL5,#00H
+        MOVB [R9+#03H],RL5
+        MOVB RL4,lv_iga_c246
+        MOVB [R9+#04H],RL4
+        MOV R4,#01H
+        MOV [R9],R4
+L_B68E2:                 ; 0xb68e2
+        MOVB RL4,[R9+#03H]
+        CMPB RL4,DPP0:c_t_lsh_rise
+        JMPR cc_ULE,L_B68F2
+        MOV R4,#03H
+        MOV [R9],R4
+        JMPR cc_UC,L_B6956
+L_B68F2:                 ; 0xb68f2
+        MOVB RL4,[R9+#03H]
+        CMPB RL4,DPP0:c_t_lsh_temp_thd
+        JMPR cc_ULE,L_B6956
+        JB lv_maf_puls.0DH,L_B6956
+        MOV R4,#02H
+        MOV [R9],R4
+        JMPR cc_UC,L_B6956
+
+; ======== IGC_Dur_Arm_1  (@0xb6906) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IGC_Dur_Arm_1:
+        JNB lv_maf_puls.0DH,L_B6956
+        MOV R4,#01H
+        MOV [R9],R4
+        MOVB RL4,#00H
+        MOVB [R9+#03H],RL4
+        JMPR cc_UC,L_B6956
+
+; ======== IGC_Dur_Arm_2  (@0xb6916) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IGC_Dur_Arm_2:
+        MOV R12,#DATA16 POF ldp_n_v_efc_lsh_ctl
+        MOV R13,#DATA16 PAG ldp_n_v_efc_lsh_ctl
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_teg_dyn_v_efc_lsh_ctl
+        MOV R13,#DATA16 PAG ldp_teg_dyn_v_efc_lsh_ctl
+        MOV R14,teg_dyn
+        CALLS 00FH,Get_IP_Word_X_Axis
+        MOV R12,#DATA16 POF ip_v_efc_lsh_up_ctl__n__teg_dyn
+        MOV R13,#DATA16 PAG ip_v_efc_lsh_up_ctl__n__teg_dyn
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB RL7,RL4
+        MOVB RL4,[R9+#04H]
+        CMPB RL4,RL7
+        JMPR cc_NC,L_B6956
+        MOV R4,#04H
+        MOV [R9],R4
+        JMPR cc_UC,L_B6956
+L_B6952:                 ; 0xb6952
+        MOV R4,#02H
+        MOV [R9],R4
+L_B6956:                 ; 0xb6956
+        MOV R4,[R9]
+        SUB R4,#01H
+        CMP R4,#04H
+        JMPR cc_UGT,L_B6A04
+        SHL R4,#01H
+        ADD R4,#DATA16 047D2H
+        MOV R4,[R4]
+        JMPI cc_UC,[R4]
+
+; ======== IGC_Dur_Arm_3  (@0xb6968) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IGC_Dur_Arm_3:
+        MOVB RL4,#00H
+        MOVB [R9+#03H],RL4
+        MOVB RL4,DPP0:c_v_efc_lsh_up_prot
+        MOVB [R9+#04H],RL4
+        JMPR cc_UC,L_B6A08
+
+; ======== IGC_Dur_Arm_4  (@0xb6978) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IGC_Dur_Arm_4:
+        MOVB RL4,[R9+#04H]
+        MOVBZ R12,RL4
+        MOVBZ R13,DPP0:c_inc_v_efc
+        CALLS 00FH,Sat_Add_U8
+        MOVB [R9+#04H],RL4
+        MOVB RL4,DPP0:c_v_efc_lsh_up_max
+        CMPB RL4,vb
+        JMPR cc_NC,L_B699A
+        MOVB RL7,DPP0:c_v_efc_lsh_up_max
+        JMPR cc_UC,L_B699E
+L_B699A:                 ; 0xb699a
+        MOVB RL7,vb
+L_B699E:                 ; 0xb699e
+        MOVB RL4,[R9+#04H]
+        CMPB RL4,RL7
+        JMPR cc_ULE,L_B6A08
+        MOVB [R9+#04H],RL7
+        JMPR cc_UC,L_B6A08
+        MOVB RL4,DPP0:c_v_efc_red
+        MOVB [R9+#04H],RL4
+        JMPR cc_UC,L_B6A08
+
+; ======== IGC_Dur_Arm_5  (@0xb69b6) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IGC_Dur_Arm_5:
+        MOVB RL4,[R9+#04H]
+        MOVBZ R12,RL4
+        MOVBZ R13,DPP0:c_dec_v_efc
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB [R9+#04H],RL4
+        JMPR cc_UC,L_B6A08
+
+; ======== IGC_Dur_Arm_6  (@0xb69ca) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+IGC_Dur_Arm_6:
+        MOV R12,#DATA16 POF ldp_n_v_efc_lsh_ctl
+        MOV R13,#DATA16 PAG ldp_n_v_efc_lsh_ctl
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_teg_dyn_v_efc_lsh_ctl
+        MOV R13,#DATA16 PAG ldp_teg_dyn_v_efc_lsh_ctl
+        MOV R14,teg_dyn
+        CALLS 00FH,Get_IP_Word_X_Axis
+        MOV R12,#DATA16 POF ip_v_efc_lsh_up_ctl__n__teg_dyn
+        MOV R13,#DATA16 PAG ip_v_efc_lsh_up_ctl__n__teg_dyn
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB RL7,RL4
+        MOVB [R9+#04H],RL7
+        MOVB RL4,#00H
+        MOVB [R9+#03H],RL4
+        JMPR cc_UC,L_B6A08
+L_B6A04:                 ; 0xb6a04
+        MOV R4,#02H
+        MOV [R9],R4
+L_B6A08:                 ; 0xb6a08
+        MOVB RL4,[R9+#06H]
+        JMPR cc_EQ,L_B6A44
+        MOVB RL4,[R9+#06H]
+        CMPB RL4,DPP0:c_t_lsh_up_lim
+        JMPR cc_NC,L_B6A3C
+        MOV R4,R9
+        ADD R4,#06H
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+        MOVB RL4,[R9+#04H]
+        CMPB RL4,DPP0:c_v_efc_lsh_up_lim
+        JMPR cc_NC,L_B6A32
+        MOVB RL4,[R9+#04H]
+        JMPR cc_UC,L_B6A36
+L_B6A32:                 ; 0xb6a32
+        MOVB RL4,DPP0:c_v_efc_lsh_up_lim
+L_B6A36:                 ; 0xb6a36
+        MOVB [R9+#04H],RL4
+        JMPR cc_UC,L_B6A84
+L_B6A3C:                 ; 0xb6a3c
+        MOVB RL4,#00H
+        MOVB [R9+#06H],RL4
+        JMPR cc_UC,L_B6A84
+L_B6A44:                 ; 0xb6a44
+        MOVB RL4,[R9+#04H]
+        CMPB RL4,DPP0:c_v_efc_lsh_up_tol
+        JMPR cc_ULE,L_B6A7E
+        MOVB RL4,[R9+#05H]
+        CMPB RL4,DPP0:c_t_lsh_up_tol
+        JMPR cc_NC,L_B6A64
+        MOV R4,R9
+        ADD R4,#05H
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+        JMPR cc_UC,L_B6A84
+L_B6A64:                 ; 0xb6a64
+        MOV R4,R9
+        ADD R4,#06H
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+        MOVB RL4,#00H
+        MOVB [R9+#05H],RL4
+        MOVB RL4,DPP0:c_v_efc_lsh_up_lim
+        MOVB [R9+#04H],RL4
+        JMPR cc_UC,L_B6A84
+L_B6A7E:                 ; 0xb6a7e
+        MOVB RL4,#00H
+        MOVB [R9+#05H],RL4
+L_B6A84:                 ; 0xb6a84
+        ADDB RL6,#01H
+L_B6A86:                 ; 0xb6a86
+        CMPB RL6,conf_lam
+        JMPA cc_C,L_B688C
+        CALLA cc_UC,Set_LSH_Up_PWM
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+S_B6880 ENDS
+        END

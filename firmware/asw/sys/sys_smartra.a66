@@ -1,0 +1,160 @@
+; asw/sys/sys_smartra.a66
+; 0xA3554-0xA3660  (268 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  SMARTRA_clear_comms_timeout_flags, SMARTRA_comms_timeout_monitor, SMARTRA_flush_RX_buffers, SMARTRA_tx_begin
+EXTERN  Push_To_System_Stack:NEAR
+
+S_A3554 SECTION CODE AT 0A3554H
+
+; ======== SMARTRA_flush_RX_buffers  (@0xa3554) ========
+        ; SMARTRA ASC0 (re)init / RX flush. Reconfigures S0 for SMARTRA: S0BG=0x9b, S0CON=0x8019 (this
+        ; baud/pin setup is what distinguishes the SMARTRA line from the KWP2000 K-line on the shared ASC0).
+        ; Resets smartra_comms_phase=0, toggles the immo line pins (P3.10, P8.6), re-arms S0RIC, sets
+        ; lv_err_com_resp_imob state=2. If a transfer is already active (bit3) it just flags an overrun
+        ; (bit2).
+SMARTRA_flush_RX_buffers:
+        BCLR smartra_comms_status.0CH
+        JNB lv_err_com_resp_imob.03H,L_A355E
+        BSET lv_err_com_resp_imob.02H
+        RETS
+L_A355E:                 ; 0xa355e
+        BFLDL 0FF6EH,#0FFH,#00H
+        MOVB smartra_comms_phase,ZEROS
+        MOVB smartra_io_subphase,ZEROS
+        BCLR lv_err_com_resp_imob.02H
+        BCLR smartra_comms_status.0DH
+        BCLR smartra_comms_status.0EH
+        BCLR smartra_comms_status.0FH
+        BCLR lv_err_com_resp_imob.00H
+        EXTR #01H
+        BCLR ODP3.0AH
+        BSET DP3.0AH
+        BSET P3.0AH
+        BCLR imob_fda0.06H
+        BSET P8.06H
+        MOV S0BG,#DATA16 0009BH
+        MOV S0CON,#DATA16 08019H
+        BSET lv_err_com_resp_imob.01H
+        BFLDL 0FF6EH,#0FFH,#0D6H
+        RETS
+
+; ======== SMARTRA_tx_begin  (@0xa3590) ========
+        ; SMARTRA ASC0 TX start. Arms S0 receive int (S0RIC), sets smartra_comms_phase=3, marks comms busy
+        ; (lv_err_com_resp_imob bit3), drives the K/immo line pin (P8.6 via DAT_00fda0), queues the frame
+        ; (Push_To_System_Stack 0x344) and sets smartra_comms_status bit12 (0x1000 = request issued / awaiting
+        ; response). This is the SMARTRA side of ASC0, distinct from the KWP2000 K-line stack.
+SMARTRA_tx_begin:
+        BFLDL 0FF6EH,#0FFH,#00H
+        BCLR lv_err_com_resp_imob.01H
+        MOVB RL4,#03H
+        MOVB smartra_comms_phase,RL4
+        BCLR lv_err_com_resp_imob.02H
+        BSET lv_err_com_resp_imob.03H
+        BSET imob_fda0.06H
+        BCLR P8.06H
+        MOV R12,#DATA16 00344H
+        MOV R13,#DATA16 00000H
+        EXTP #00H, #02H
+        MOV R4,imob_23e
+        MOV R5,imob_240
+        CALLS 00CH,Push_To_System_Stack
+        BSET smartra_comms_status.0CH
+        RETS
+
+; ======== SMARTRA_comms_timeout_monitor  (@0xa35c0) ========
+        ; SMARTRA ASC0 comms-timeout monitor. Gated on DAT_00fd58 bit9 (immo comms active).
+        ; switch(smartra_comms_phase 1..6) via table @0x0A2158; each phase compares elapsed timer DAT_00fa5c
+        ; to a per-phase limit (0x14,1,4,0x25b,4) and on timeout either re-issues via SMARTRA_tx_begin(0a3590)
+        ; or sets a timeout bit in smartra_comms_status (0x8000/0x4000/0x2000). Pure SMARTRA; shares ASC0 with
+        ; KWP2000 but uses the SMARTRA baud set by SMARTRA_flush_RX_buffers.
+SMARTRA_comms_timeout_monitor:
+        JNB can_fd58.09H,L_A3646
+        MOVB RL4,smartra_comms_phase
+        SUBB RL4,#01H
+        CMPB RL4,#05H
+        JMPR cc_UGT,L_A3654
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        ADD R4,#DATA16 06158H
+        MOV R4,[R4]
+        JMPI cc_UC,[R4]
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa35da [dpp]  W:{-}  R:{-}
+        ; ------------------------------------------------------------
+        MOV R4,smartra_byte_timer
+        CMP R4,#DATA16 00014H
+        JMPR cc_ULE,L_A3654
+        BCLR lv_err_com_resp_imob.03H
+        JNB lv_err_com_resp_imob.02H,L_A35F0
+        CALLS 00AH,SMARTRA_flush_RX_buffers
+        RETS
+L_A35F0:                 ; 0xa35f0
+        MOVB smartra_comms_phase,ZEROS
+        RETS
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa35f6 [dpp]  W:{-}  R:{-}
+        ; ------------------------------------------------------------
+        CALLS 00AH,SMARTRA_tx_begin
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa35fa [dpp]  W:{-}  R:{-}
+        ; ------------------------------------------------------------
+        MOV R4,smartra_byte_timer
+        CMP R4,#01H
+        JMPR cc_ULE,L_A3654
+        BCLR lv_err_com_resp_imob.03H
+        JNB lv_err_com_resp_imob.02H,L_A360E
+        CALLS 00AH,SMARTRA_flush_RX_buffers
+        RETS
+L_A360E:                 ; 0xa360e
+        MOVB smartra_comms_phase,ZEROS
+        RETS
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa3614 [dpp]  W:{-}  R:{-}
+        ; ------------------------------------------------------------
+        MOV R4,smartra_byte_timer
+        CMP R4,#04H
+        JMPR cc_ULE,L_A3654
+        CALLS 00AH,SMARTRA_tx_begin
+        BSET smartra_comms_status.0FH
+        RETS
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa3624 [dpp]  W:{-}  R:{-}
+        ; ------------------------------------------------------------
+        MOV R4,smartra_byte_timer
+        CMP R4,#DATA16 0025BH
+        JMPR cc_ULE,L_A3654
+        CALLS 00AH,SMARTRA_tx_begin
+        BSET smartra_comms_status.0EH
+        RETS
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xa3636 [dpp]  W:{-}  R:{-}
+        ; ------------------------------------------------------------
+        MOV R4,smartra_byte_timer
+        CMP R4,#04H
+        JMPR cc_ULE,L_A3654
+        CALLS 00AH,SMARTRA_tx_begin
+        BSET smartra_comms_status.0DH
+        RETS
+L_A3646:                 ; 0xa3646
+        MOVB RL4,#00H
+        BMOV R4.00H,lv_err_com_resp_imob.01H
+        CMPB RL4,#01H
+        JMPR cc_NE,L_A3654
+        CALLS 00AH,SMARTRA_tx_begin
+L_A3654:                 ; 0xa3654
+        RETS
+
+; ======== SMARTRA_clear_comms_timeout_flags  (@0xa3656) ========
+SMARTRA_clear_comms_timeout_flags:
+        BCLR smartra_comms_status.0DH
+        BCLR smartra_comms_status.0EH
+        BCLR smartra_comms_status.0FH
+        BCLR lv_err_com_resp_imob.00H
+        RETS
+
+S_A3554 ENDS
+        END

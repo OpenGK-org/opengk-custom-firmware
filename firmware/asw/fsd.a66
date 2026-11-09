@@ -1,0 +1,340 @@
+; asw/fsd.a66
+; 0xB84D0-0xB87E0  (784 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_maf_min_ti_ad_fsd                  EQU  090233H
+c_n_min_ti_ad_fsd                    EQU  0902C2H
+c_stop_max_fsd                       EQU  09030BH
+c_cl_mmv_max_fsd                     EQU  0904DEH
+c_t_sum_max_max_fsd                  EQU  09072EH
+c_t_sum_min_max_fsd                  EQU  090730H
+c_t_sum_rst_max_fsd                  EQU  090732H
+c_ti_ad_fac_max_fsd                  EQU  090784H
+c_ti_ad_fac_min_fsd                  EQU  090786H
+c_lam_max_fsd                        EQU  0908BCH
+c_lam_min_fsd                        EQU  0908C6H
+ldp_toil_max__stop_dec_fsd                    EQU  090A7CH
+sst_tkw_st                      EQU  090A81H
+id_stop_dec_fsd__toil_max            EQU  0954D5H
+id_stop_inc_fsd__tco_st              EQU  0954D9H
+
+PUBLIC  Calc_Ctr_Stop_FSD, Calc_Ctr_Stop_FSD_2, Calc_FSD_OBD2_Ratio, Calc_Inh_FSD_CP
+EXTERN  Add_r12_r13_Return_r4:NEAR, Check_N_Window:NEAR, DTC_Update_Immediate:NEAR, Diag_DTC_dd2c8:NEAR
+EXTERN  Eval_DTC_Status:NEAR, Get_Byte_Y_Axis:NEAR, Read_Byte_Far:NEAR, Sat_Add_S16:NEAR
+EXTERN  Sat_Add_U8:NEAR, sub_r12_13_ret_r4:NEAR
+
+S_B84D0 SECTION CODE AT 0B84D0H
+
+; ======== Calc_Inh_FSD_CP  (@0xb84d0) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS2000, verified): Fuel system diagnosis inhibition (lv_inh_fsd_cp)
+        ; ------------------------------------------------------------
+Calc_Inh_FSD_CP:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV R7,p_lam_bank1
+        JB lv_inh_fsd_cp.01H,L_B84E2
+        JMPA cc_UC,L_B8740
+L_B84E2:                 ; 0xb84e2
+        JB obd_sf.0DH,L_B84EA
+        JMPA cc_UC,L_B8732
+L_B84EA:                 ; 0xb84ea
+        MOVB RL4,g_c253
+        CMPB RL4,#DATA16 00032H
+        JMPR cc_C,L_B8526
+        MOV R12,#DATA16 POF ldp_toil_max__stop_dec_fsd
+        MOV R13,#DATA16 PAG ldp_toil_max__stop_dec_fsd
+        MOVBZ R14,toil_max
+        CALLS 00FH,Get_Byte_Y_Axis
+        MOV R12,#DATA16 POF id_stop_dec_fsd__toil_max
+        MOV R13,#DATA16 PAG id_stop_dec_fsd__toil_max
+        CALLS 00FH,Read_Byte_Far
+        MOVBZ R13,RL4
+        MOVBZ R12,ctr_stop_fsd
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB ctr_stop_fsd_new,RL4
+        MOVB RL5,#01H
+        MOVB g_c253,RL5
+        JMPR cc_UC,L_B852A
+L_B8526:                 ; 0xb8526
+        SUBB g_c253,ONES
+L_B852A:                 ; 0xb852a
+        MOV R4,cp_state
+        CMP R4,#04H
+        JMPR cc_NE,L_B853C
+        MOV R5,cl_mmv
+        CMP R5,DPP0:c_cl_mmv_max_fsd
+        JMPR cc_ULE,L_B8546
+L_B853C:                 ; 0xb853c
+        MOV R4,cp_state
+        JMPR cc_EQ,L_B8546
+        CMP R4,#01H
+        JMPR cc_NE,L_B854A
+L_B8546:                 ; 0xb8546
+        BCLR lv_inh_fsd_cp.06H
+        JMPR cc_UC,L_B854C
+L_B854A:                 ; 0xb854a
+        BSET lv_inh_fsd_cp.06H
+L_B854C:                 ; 0xb854c
+        JNB lv_inh_fsd_cp.06H,L_B8554
+        JMPA cc_UC,L_B872A
+L_B8554:                 ; 0xb8554
+        JB state_lam_ctl.00H,L_B855C
+        JMPA cc_UC,L_B872A
+L_B855C:                 ; 0xb855c
+        JNB lv_cat_diag_inh_1.01H,L_B8564
+        JMPA cc_UC,L_B872A
+L_B8564:                 ; 0xb8564
+        BSET state_cat_diag.09H
+        MOV R12,[R7+#0AH]
+        MOV R13,[R7+#01AH]
+        CALLS 00FH,Sat_Add_S16
+        MOV R8,R4
+        ASHR R8,#01H
+        MOVB RL4,n_32
+        CMPB RL4,DPP0:c_n_min_ti_ad_fsd
+        JMPR cc_ULE,L_B8596
+        MOVB RL5,lv_iga_cc2b
+        CMPB RL5,DPP0:c_maf_min_ti_ad_fsd
+        JMPR cc_ULE,L_B8596
+        MOV R12,R8
+        MOV R13,[R7+#01EH]
+        CALLS 00FH,Sat_Add_S16
+        MOV R8,R4
+L_B8596:                 ; 0xb8596
+        CMP R8,DPP0:c_lam_max_fsd
+        JMPR cc_SLT,L_B85EE
+        BSET state_cat_diag.0AH
+        BCLR state_cat_diag.0BH
+        MOV R4,R7
+        ADD R4,#DATA16 001BEH
+        MOV R5,[R4]
+        ADD R5,#01H
+        MOV [R4],R5
+        JB lv_inh_fsd_cp.07H,L_B85B8
+        MOV R12,#DATA16 0C952H
+        CALLS 00CH,Check_N_Window
+L_B85B8:                 ; 0xb85b8
+        MOV R4,[R7+#01BEH]
+        CMP R4,DPP0:c_t_sum_max_max_fsd
+        JMPA cc_ULE,L_B86C0
+        MOV R4,[R7+#01AH]
+        MOV R5,DPP0:c_ti_ad_fac_max_fsd
+        SUB R5,#DATA16 08000H
+        CMP R4,R5
+        JMPA cc_SLE,L_B86C0
+        BSET lv_inh_fsd_cp.07H
+        BSET lv_inh_fsd_cp.05H
+        BCLR lv_inh_fsd_cp.04H
+        JB lv_cam_ad_di_ivvt.09H,L_B85E8
+        MOV R12,#DATA16 00024H
+        CALLS 00DH,Eval_DTC_Status
+L_B85E8:                 ; 0xb85e8
+        CALLS 00CH,Diag_DTC_dd2c8
+        JMPR cc_UC,L_B86C0
+L_B85EE:                 ; 0xb85ee
+        MOVB RL4,ctr_stop_fsd_new
+        CMPB RL4,DPP0:c_stop_max_fsd
+        JMPR cc_NC,L_B86C0
+        CMP R8,DPP0:c_lam_min_fsd
+        JMPR cc_SGT,L_B864C
+        BCLR state_cat_diag.0AH
+        BSET state_cat_diag.0BH
+        MOV R4,R7
+        ADD R4,#DATA16 001C0H
+        MOV R5,[R4]
+        ADD R5,#01H
+        MOV [R4],R5
+        JB lv_inh_fsd_cp.07H,L_B861A
+        MOV R12,#DATA16 0C952H
+        CALLS 00CH,Check_N_Window
+L_B861A:                 ; 0xb861a
+        MOV R4,[R7+#01C0H]
+        CMP R4,DPP0:c_t_sum_min_max_fsd
+        JMPR cc_ULE,L_B86C0
+        MOV R4,[R7+#01AH]
+        MOV R5,DPP0:c_ti_ad_fac_min_fsd
+        SUB R5,#DATA16 08000H
+        CMP R4,R5
+        JMPR cc_SGE,L_B86C0
+        BSET lv_inh_fsd_cp.07H
+        BSET lv_inh_fsd_cp.04H
+        BCLR lv_inh_fsd_cp.05H
+        JB lv_cam_ad_di_ivvt.09H,L_B8646
+        MOV R12,#DATA16 00024H
+        CALLS 00DH,Eval_DTC_Status
+L_B8646:                 ; 0xb8646
+        CALLS 00CH,Diag_DTC_dd2c8
+        JMPR cc_UC,L_B86C0
+L_B864C:                 ; 0xb864c
+        JB lv_cps_err.04H,L_B86C0
+        BCLR state_cat_diag.0AH
+        BCLR state_cat_diag.0BH
+        MOV R4,DPP0:c_t_sum_max_max_fsd
+        CMP R4,DPP0:c_t_sum_min_max_fsd
+        JMPR cc_ULE,L_B8664
+        MOV R9,DPP0:c_t_sum_max_max_fsd
+        JMPR cc_UC,L_B8668
+L_B8664:                 ; 0xb8664
+        MOV R9,DPP0:c_t_sum_min_max_fsd
+L_B8668:                 ; 0xb8668
+        MOV R12,R9
+        MOV R13,#DATA16 009C4H
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV R5,[R7+#01C6H]
+        CMP R5,R4
+        JMPR cc_C,L_B86B4
+        BCLR lv_inh_fsd_cp.04H
+        BCLR lv_inh_fsd_cp.05H
+        JB lv_cam_ad_di_ivvt.09H,L_B868A
+        MOV R12,#DATA16 00024H
+        CALLS 00DH,Eval_DTC_Status
+L_B868A:                 ; 0xb868a
+        MOVB RL4,#01H
+        MOVB lv_cps_d2c9,RL4
+        MOV R12,#DATA16 0D2C8H
+        MOV R13,#DATA16 05546H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cps_err.04H,dtc_status_work.06H
+        MOVBZ R4,diag_d2d2
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_B86C0
+        MOV R4,#DATA16 0FFEFH
+        AND dtc_st_grp_cp,R4
+        JMPR cc_UC,L_B86C0
+L_B86B4:                 ; 0xb86b4
+        MOV R4,R7
+        ADD R4,#DATA16 001C6H
+        MOV R5,[R4]
+        ADD R5,#01H
+        MOV [R4],R5
+L_B86C0:                 ; 0xb86c0
+        JNB lv_cps_err.04H,L_B86CA
+        MOV R4,#00H
+        MOV [R7+#01C6H],R4
+L_B86CA:                 ; 0xb86ca
+        JB state_cat_diag.0CH,L_B86E8
+        BCMP state_cat_diag.0BH,state_cat_diag.0AH
+        JMPR cc_NV,L_B8740
+        BSET state_cat_diag.0CH
+        MOV R4,DPP0:c_t_sum_rst_max_fsd
+        MOV [R7+#01C2H],R4
+        MOVB RL4,#DATA16 00032H
+        MOVB [R7+#01C4H],RL4
+        JMPR cc_UC,L_B8740
+L_B86E8:                 ; 0xb86e8
+        MOVB RL4,[R7+#01C4H]
+        JMPR cc_EQ,L_B86FC
+        MOV R4,R7
+        ADD R4,#DATA16 001C4H
+        MOVB RL5,[R4]
+        SUBB RL5,#01H
+        MOVB [R4],RL5
+        JMPR cc_UC,L_B8740
+L_B86FC:                 ; 0xb86fc
+        MOVB RL4,#DATA16 00032H
+        MOVB [R7+#01C4H],RL4
+        MOV R4,R7
+        ADD R4,#DATA16 001C2H
+        MOV R5,[R4]
+        SUB R5,#01H
+        MOV [R4],R5
+        MOV R4,[R7+#01C2H]
+        JMPR cc_NE,L_B8740
+        MOV R4,#00H
+        MOV [R7+#01C0H],R4
+        MOV [R7+#01BEH],R4
+        MOV R4,DPP0:c_t_sum_rst_max_fsd
+        MOV [R7+#01C2H],R4
+        JMPR cc_UC,L_B8740
+L_B872A:                 ; 0xb872a
+        BCLR state_cat_diag.09H
+        BCLR state_cat_diag.0AH
+        BCLR state_cat_diag.0BH
+        JMPR cc_UC,L_B8740
+L_B8732:                 ; 0xb8732
+        BCLR lv_inh_fsd_cp.04H
+        BCLR lv_inh_fsd_cp.05H
+        MOV R4,#00H
+        MOV [R7+#01C6H],R4
+        MOVB g_c253,ZEROS
+L_B8740:                 ; 0xb8740
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_Ctr_Stop_FSD  (@0xb8748) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by fsd/rbm/obd2 output signals): Fuel-system-diagnosis engine-stop counter
+        ; ctr_stop_fsd.
+        ; ------------------------------------------------------------
+Calc_Ctr_Stop_FSD:
+        MOVB RL4,conf_cat_eff
+        CMPB RL4,#01H
+        JMPR cc_NE,L_B877E
+        JB lv_cps_err.04H,L_B877E
+        MOV R12,#DATA16 POF sst_tkw_st
+        MOV R13,#DATA16 PAG sst_tkw_st
+        MOVBZ R14,tco_st
+        CALLS 00FH,Get_Byte_Y_Axis
+        MOV R12,#DATA16 POF id_stop_inc_fsd__tco_st
+        MOV R13,#DATA16 PAG id_stop_inc_fsd__tco_st
+        CALLS 00FH,Read_Byte_Far
+        MOVBZ R13,RL4
+        MOVBZ R12,ctr_stop_fsd
+        CALLS 00FH,Sat_Add_U8
+        MOVB ctr_stop_fsd,RL4
+L_B877E:                 ; 0xb877e
+        RETS
+
+; ======== Calc_FSD_OBD2_Ratio  (@0xb8780) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by fsd/rbm/obd2 output signals): Fuel-system-diag OBD2 completion ratio:
+        ; fsd_obd2_carrier / t_sum_rst/max_fsd + lv_inh_fsd_cp.
+        ; ------------------------------------------------------------
+Calc_FSD_OBD2_Ratio:
+        MOVB RL4,conf_cat_eff
+        CMPB RL4,#01H
+        JMPR cc_NE,L_B87A6
+        BCLR lv_inh_fsd_cp.07H
+        MOV lam_bank_1_fsd_obd2_struct_fsd_obd2_carrier,ZEROS
+        MOV R4,state_cat_diag
+        AND R4,#DATA16 0E1FFH
+        MOV state_cat_diag,R4
+        MOV lam_bank_1_fsd_obd2_struct_t_sum_rst_fsd,ZEROS
+        MOV lam_bank_1_fsd_obd2_struct_t_sum_max_fsd,ZEROS
+        MOV lam_bank_1_fsd_obd2_struct_t_sum_min_fsd,ZEROS
+L_B87A6:                 ; 0xb87a6
+        RETS
+
+; ======== Calc_Ctr_Stop_FSD_2  (@0xb87a8) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by fsd/rbm/obd2 output signals): Fuel-system-diag stop counter (variant).
+        ; ------------------------------------------------------------
+Calc_Ctr_Stop_FSD_2:
+        MOVB RL4,conf_cat_eff
+        CMPB RL4,#01H
+        JMPR cc_NE,L_B87DE
+        JB lv_cps_err.04H,L_B87DE
+        MOV R12,#DATA16 POF ldp_toil_max__stop_dec_fsd
+        MOV R13,#DATA16 PAG ldp_toil_max__stop_dec_fsd
+        MOVBZ R14,toil_max
+        CALLS 00FH,Get_Byte_Y_Axis
+        MOV R12,#DATA16 POF id_stop_dec_fsd__toil_max
+        MOV R13,#DATA16 PAG id_stop_dec_fsd__toil_max
+        CALLS 00FH,Read_Byte_Far
+        MOVBZ R13,RL4
+        MOVBZ R12,ctr_stop_fsd
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB ctr_stop_fsd,RL4
+L_B87DE:                 ; 0xb87de
+        RETS
+
+S_B84D0 ENDS
+        END

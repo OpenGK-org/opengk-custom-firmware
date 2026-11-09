@@ -1,0 +1,293 @@
+; asw/ti/ti_vo.a66
+; 0xBB95A-0xBBC52  (760 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_fil_wf_neg_vo                      EQU  0901C3H
+c_fil_wf_pos_vo                      EQU  0901C4H
+c_tco_vo_cor_thd                     EQU  0903A5H
+lc_tib_int_fdout_ena                 EQU  09048BH
+lc_wf_vo_cor_ena_global              EQU  09049CH
+c_ti_dif_wf_vo_thd                   EQU  09078CH
+c_ti_wf_vo_thd                       EQU  0907A4H
+c_vo_chg_hys                         EQU  090830H
+
+PUBLIC  Calc_FAC_WF_VO_Fdout, Calc_Fac_WF_VO, Calc_Fac_WF_VO_Fdout_B95A, WallFilm_VO_Comp
+EXTERN  Abs_S16_Simple:NEAR, Get_IP_Byte_3D_Table_DWord_XByte_YWord:NEAR, Get_IP_Byte_3D_Table_DWord_XWord_YByte:NEAR, Get_IP_Word_2D_Table_DWord_YByte:NEAR
+EXTERN  Get_IP_Word_2D_Table_DWord_YWord:NEAR, Get_IP_Word_3D_Table_DWord_XByte_YWord:NEAR, MulDiv_S16_PSW:NEAR, MulDiv_S16_Sat:NEAR
+EXTERN  Mul_Q15_Sat_Signed:NEAR, Mul_S16_Q9_Sat:NEAR, Mul_S16_S32:NEAR, Sat_Add_S32:NEAR
+EXTERN  Sat_Add_U32:NEAR, Sat_Sub_S16:NEAR
+
+S_BB95A SECTION CODE AT 0BB95AH
+
+; ======== Calc_Fac_WF_VO_Fdout  (@0xbb95a) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signals): Wall-film VO fade-out factor fac_wf_vo_fdout.
+        ; ------------------------------------------------------------
+Calc_Fac_WF_VO_Fdout_B95A:
+        MOVB RL4,#DATA16 00080H
+        MOVB fac_wf_vo_fdout,RL4
+        BCLR lv_carb_err.06H
+        MOV vo_fast_wf_z0,ZEROS
+        MOV vo_fast_wf_z1,ZEROS
+        MOV vo_fast_wf_z2,ZEROS
+        MOV vo_fast_wf_z3,ZEROS
+        MOV vo_slow_wf_z0,ZEROS
+        MOV vo_slow_wf_z1,ZEROS
+        MOV vo_slow_wf_z2,ZEROS
+        MOV vo_slow_wf_z3,ZEROS
+        RETS
+
+; ======== Calc_Fac_WF_VO  (@0xbb986) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): Compensation of VO influence on wall film
+        ; (fac_tco_st_cor_wf_vo)
+        ; ------------------------------------------------------------
+Calc_Fac_WF_VO:
+        MOV R12,#DATA16 04880H
+        MOVBZ R13,tco_st
+        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        MOV fac_tco_st_cor_wf_pos_vo,R4
+        MOV R12,#DATA16 04888H
+        MOVBZ R13,tco_st
+        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        MOV fac_tco_st_cor_wf_neg_vo,R4
+        RETS
+
+; ======== WallFilm_VO_Comp  (@0xbb9a8) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (ThetaII, verified): wall-film fuel-volatility (VO) compensation (c_vo_chg_hys,
+        ; ti_dif_wf_vo, lv_carb_err)
+        ; (was FUN_0bb9a8)
+        ; ------------------------------------------------------------
+WallFilm_VO_Comp:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOVB RL4,tco
+        CMPB RL4,DPP0:c_tco_vo_cor_thd
+        JMPA cc_UGT,L_BBC16
+        MOVB RL5,fac_wf_vo_fdout
+        JMPA cc_EQ,L_BBC16
+        JB lv_pl.09H,L_BB9EE
+        BCLR lv_carb_err.06H
+        MOV vo_fast_wf_z0,ZEROS
+        MOV vo_fast_wf_z1,ZEROS
+        MOV vo_fast_wf_z2,ZEROS
+        MOV vo_fast_wf_z3,ZEROS
+        MOV vo_slow_wf_z0,ZEROS
+        MOV vo_slow_wf_z1,ZEROS
+        MOV vo_slow_wf_z2,ZEROS
+        MOV vo_slow_wf_z3,ZEROS
+        JMPA cc_UC,L_BBC16
+L_BB9EE:                 ; 0xbb9ee
+        MOVB RL4,DPP0:lc_wf_vo_cor_ena_global
+        JMPR cc_NE,L_BB9FC
+        JB lv_cdn_diag_maf_dif_ch_int.0EH,L_BB9FC
+        JMPA cc_UC,L_BBC16
+L_BB9FC:                 ; 0xbb9fc
+        MOV R4,vo
+        CMP R4,vo_prev_wf
+        JMPR cc_ULE,L_BBA14
+        SUB R4,vo_prev_wf
+        CMP R4,DPP0:c_vo_chg_hys
+        JMPR cc_ULE,L_BBA24
+        BSET lv_carb_err.05H
+        JMPR cc_UC,L_BBA24
+L_BBA14:                 ; 0xbba14
+        MOV R4,vo_prev_wf
+        SUB R4,vo
+        CMP R4,DPP0:c_vo_chg_hys
+        JMPR cc_C,L_BBA24
+        BCLR lv_carb_err.05H
+L_BBA24:                 ; 0xbba24
+        MOV R4,vo
+        MOV vo_prev_wf,R4
+        JB lv_carb_err.06H,L_BBA7A
+        BSET lv_carb_err.06H
+        MOV R12,#DATA16 048A8H
+        MOV R13,vo_1
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YWord
+        ADD R4,#DATA16 08000H
+        MOV vo_fast_wf_z3,R4
+        MOV vo_fast_wf_z2,R4
+        MOV vo_fast_wf_z1,R4
+        MOV vo_fast_wf_z0,R4
+        MOV R12,#DATA16 048B4H
+        MOV R13,vo_1
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YWord
+        ADD R4,#DATA16 08000H
+        MOV vo_slow_wf_z3,R4
+        MOV vo_slow_wf_z2,R4
+        MOV vo_slow_wf_z1,R4
+        MOV vo_slow_wf_z0,R4
+L_BBA7A:                 ; 0xbba7a
+        MOV R12,#DATA16 048B4H
+        MOV R13,vo_1
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YWord
+        MOV R7,R4
+        ADD R7,#DATA16 08000H
+        MOV R12,#DATA16 048A8H
+        MOV R13,vo_1
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YWord
+        MOV R6,R4
+        ADD R6,#DATA16 08000H
+        JB lv_carb_err.05H,L_BBABC
+        MOV R12,vo_slow_wf_z3
+        MOV R13,R7
+        CALLS 00FH,Sat_Sub_S16
+        ASHR R4,#02H
+        MOV ti_dif_vo_wf,R4
+        JMPR cc_UC,L_BBACC
+L_BBABC:                 ; 0xbbabc
+        MOV R12,vo_fast_wf_z3
+        MOV R13,R6
+        CALLS 00FH,Sat_Sub_S16
+        ASHR R4,#02H
+        MOV ti_dif_vo_wf,R4
+L_BBACC:                 ; 0xbbacc
+        MOV R4,vo_slow_wf_z2
+        MOV vo_slow_wf_z3,R4
+        MOV R5,vo_slow_wf_z1
+        MOV vo_slow_wf_z2,R5
+        MOV R2,vo_slow_wf_z0
+        MOV vo_slow_wf_z1,R2
+        MOV vo_slow_wf_z0,R7
+        MOV R3,vo_fast_wf_z2
+        MOV vo_fast_wf_z3,R3
+        MOV R1,vo_fast_wf_z1
+        MOV vo_fast_wf_z2,R1
+        MOV R2,vo_fast_wf_z0
+        MOV vo_fast_wf_z1,R2
+        MOV vo_fast_wf_z0,R6
+        MOV R12,ti_dif_vo_wf
+        CALLS 00DH,Abs_S16_Simple
+        CMP R4,DPP0:c_ti_dif_wf_vo_thd
+        JMPR cc_NC,L_BBB18
+        MOV ti_dif_wf_vo_post_thd,ZEROS
+        JMPR cc_UC,L_BBB20
+L_BBB18:                 ; 0xbbb18
+        MOV R4,ti_dif_vo_wf
+        MOV ti_dif_wf_vo_post_thd,R4
+L_BBB20:                 ; 0xbbb20
+        JB lv_pl.02H,L_BBB3E
+        MOV R12,tib_int_vo_lo
+        MOV R13,tib_int_vo_hi
+        MOV R14,tib
+        MOV R15,#00H
+        CALLS 00FH,Sat_Add_U32
+        MOV tib_int_vo_lo,R4
+        MOV tib_int_vo_hi,R5
+L_BBB3E:                 ; 0xbbb3e
+        MOV R4,tib_int_vo_lo
+        MOV R5,tib_int_vo_hi
+        MOV R2,R5
+        SHR R4,#09H
+        SHR R5,#09H
+        SHL R2,#07H
+        OR R4,R2
+        MOV tib_int,R4
+        MOV R12,#DATA16 048C0H
+        MOV R13,tib
+        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YWord
+        MOV fac_tib_cor,R4
+        JB lv_carb_err.05H,L_BBB72
+        MOV R8,fac_tco_st_cor_wf_neg_vo
+        MOVBZ R9,DPP0:c_fil_wf_neg_vo
+        JMPR cc_UC,L_BBB7A
+L_BBB72:                 ; 0xbbb72
+        MOV R8,fac_tco_st_cor_wf_pos_vo
+        MOVBZ R9,DPP0:c_fil_wf_pos_vo
+L_BBB7A:                 ; 0xbbb7a
+        MOV R12,ti_dif_wf_vo_post_thd
+        MOV R13,R8
+        MOV R14,#DATA16 00200H
+        CALLS 00FH,MulDiv_S16_Sat
+        MOV R12,R4
+        MOVBZ R13,fac_wf_vo_fdout
+        CALLS 00FH,Mul_S16_Q9_Sat
+        MOV R12,R4
+        MOV R13,fac_tib_cor
+        CALLS 00FH,Mul_Q15_Sat_Signed
+        MOV ti_dif_wf_vo_cor,R4
+        MOV R12,ti_vo_fb_lo
+        MOV R13,ti_vo_fb_hi
+        MOV R5,R13
+        SHR R12,#08H
+        ASHR R13,#08H
+        SHL R5,#08H
+        OR R12,R5
+        MOV R14,#DATA16 00100H
+        SUB R14,R9
+        CALLS 00FH,MulDiv_S16_PSW
+        MOV [-R0],R4
+        MOV [-R0],R5
+        MOV R12,ti_dif_wf_vo_cor
+        MOV R13,R9
+        SHL R13,#08H
+        CALLS 00FH,Mul_S16_S32
+        MOV R12,R4
+        MOV R13,R5
+        MOV R15,[R0+]
+        MOV R14,[R0+]
+        CALLS 00FH,Sat_Add_S32
+        MOV ti_vo_acc_lo,R4
+        MOV ti_vo_acc_hi,R5
+        MOV ti_vo_fb_lo,R4
+        MOV ti_vo_fb_hi,R5
+        MOV R4,ti_vo_acc_lo
+        MOV R5,ti_vo_acc_hi
+        MOV R4,R5
+        ASHR R5,#0FH
+        MOV R12,R4
+        CALLS 00DH,Abs_S16_Simple
+        CMP R4,DPP0:c_ti_wf_vo_thd
+        JMPR cc_NC,L_BBC06
+        MOV ti_add_wf_vo,ZEROS
+        JMPR cc_UC,L_BBC16
+L_BBC06:                 ; 0xbbc06
+        MOV R4,ti_vo_acc_lo
+        MOV R5,ti_vo_acc_hi
+        MOV R4,R5
+        ASHR R5,#0FH
+        MOV ti_add_wf_vo,R4
+L_BBC16:                 ; 0xbbc16
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_FAC_WF_VO_Fdout  (@0xbbc20) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (ThetaII, verified): wall-film VO fade-out factor fac_wf_vo_fdout = IP(tco,tib) /
+        ; IP(tib_int,tco_st)
+        ; (was FUN_0bbc20)
+        ; ------------------------------------------------------------
+Calc_FAC_WF_VO_Fdout:
+        MOVB RL4,DPP0:lc_tib_int_fdout_ena
+        JMPR cc_NE,L_BBC3C
+        MOV R12,#DATA16 0489CH
+        MOVBZ R13,tco
+        MOV R14,tib
+        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YByte
+        MOVB fac_wf_vo_fdout,RL4
+        RETS
+L_BBC3C:                 ; 0xbbc3c
+        MOV R12,#DATA16 04890H
+        MOV R13,tib_int
+        MOVBZ R14,tco_st
+        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XByte_YWord
+        MOVB fac_wf_vo_fdout,RL4
+        RETS
+
+S_BB95A ENDS
+        END

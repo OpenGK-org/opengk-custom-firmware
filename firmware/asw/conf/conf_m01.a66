@@ -1,0 +1,143 @@
+; asw/conf/conf_m01.a66
+; 0xE04D6-0xE05AC  (214 bytes, 6 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  OBD_M01_PID1C_OBDStandard, OBD_M01_PID1F_RunTimeSinceStart, OBD_M01_PID20_SupportedPID_21_40, OBD_M01_PID21_DistWithMILOn, OBD_M01_PID2E_CommandedPurge, OBD_M01_PID2F_FuelLevel_diagcpVol
+EXTERN  L_E0940:NEAR
+
+S_E04D6 SECTION CODE AT 0E04D6H
+
+; ======== OBD_M01_PID1C_OBDStandard  (@0xe04d6) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x1C handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID1C_OBDStandard:
+        JNB lv_conf_mis.05H,L_E04E0
+        MOVB RL4,#06H
+        MOVB [R9],RL4
+        JMPR cc_UC,L_E04FE
+L_E04E0:                 ; 0xe04e0
+        JNB lv_conf_mis.04H,L_E04F0
+        MOVB RL4,conf_diagcp
+        JMPR cc_EQ,L_E04F0
+        MOVB RL5,#01H
+        MOVB [R9],RL5
+        JMPR cc_UC,L_E04FE
+L_E04F0:                 ; 0xe04f0
+        JNB lv_conf_mis.04H,L_E04FA
+        MOVB RL4,#04H
+        MOVB [R9],RL4
+        JMPR cc_UC,L_E04FE
+L_E04FA:                 ; 0xe04fa
+        MOVB RL4,#05H
+        MOVB [R9],RL4
+L_E04FE:                 ; 0xe04fe
+        MOVB RL7,#01H
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID1F_RunTimeSinceStart  (@0xe0504) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x1F handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID1F_RunTimeSinceStart:
+        MOV R4,t_ast_obd
+        SHR R4,#08H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB RL4,t_ast_obd
+        MOVB [R9],RL4
+        MOVB RL7,#02H
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID20_SupportedPID_21_40  (@0xe051c) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x20 handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID20_SupportedPID_21_40:
+        MOVB RL6,#DATA16 00080H
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],RL6
+        MOVB RL6,#01H
+        MOVB RL4,conf_cp
+        JMPR cc_EQ,L_E0530
+        MOVB RL6,#05H
+L_E0530:                 ; 0xe0530
+        MOVB RL4,conf_diagcp
+        JMPR cc_EQ,L_E0538
+        ORB RL6,#02H
+L_E0538:                 ; 0xe0538
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],RL6
+        MOVB RL6,#DATA16 000A0H
+        MOVB RL4,conf_diagcp
+        JMPR cc_EQ,L_E054C
+        MOVB RL6,#DATA16 000E0H
+L_E054C:                 ; 0xe054c
+        MOV R4,R9
+        ADD R9,#01H
+        MOVB [R4],RL6
+        MOVB RL6,#DATA16 00015H
+        MOVB [R9],RL6
+        MOVB RL7,#04H
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID21_DistWithMILOn  (@0xe055e) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x21 handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID21_DistWithMILOn:
+        MOV R4,ctr_km_mil_on
+        SHR R4,#08H
+        MOV R5,R9
+        ADD R9,#01H
+        MOVB [R5],RL4
+        MOVB RL4,ctr_km_mil_on
+        MOVB [R9],RL4
+        MOVB RL7,#02H
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID2E_CommandedPurge  (@0xe0576) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x2E handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID2E_CommandedPurge:
+        MOVB RL4,conf_cp
+        JMPR cc_EQ,L_E058A
+        MOV R4,cppwm
+        SHR R4,#07H
+        MOVB [R9],RL4
+        MOVB RL7,#01H
+        JMPA cc_UC,L_E0940
+L_E058A:                 ; 0xe058a
+        MOVB RL7,#DATA16 000FEH
+        JMPA cc_UC,L_E0940
+
+; ======== OBD_M01_PID2F_FuelLevel_diagcpVol  (@0xe0592) ========
+        ; ------------------------------------------------------------
+        ; OBD-II Mode 01 PID 0x2F handler arm. Dispatched from KWP_OBD_Svc01_ReadPID(0xe0000) via PID
+        ; jump-table @0xa1afe (index=PID, bound<=0x4e). Named from OBD-II std + verified decompile.
+        ; ------------------------------------------------------------
+OBD_M01_PID2F_FuelLevel_diagcpVol:
+        MOVB RL4,conf_diagcp
+        JMPR cc_EQ,L_E05A4
+        MOVB RL5,diagcp_vol
+        MOVB [R9],RL5
+        MOVB RL7,#01H
+        JMPA cc_UC,L_E0940
+L_E05A4:                 ; 0xe05a4
+        MOVB RL7,#DATA16 000FEH
+        JMPA cc_UC,L_E0940
+
+S_E04D6 ENDS
+        END

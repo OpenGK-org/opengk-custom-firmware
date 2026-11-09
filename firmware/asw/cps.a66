@@ -1,0 +1,590 @@
+; asw/cps.a66
+; 0xB2874-0xB2E68  (1524 bytes, 7 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_cppwm_as                           EQU  090092H
+lc_cps_ad_ena                        EQU  090454H
+c_cl_ad_max_cps                      EQU  0904CCH
+c_cl_ad_max_hys_cps                  EQU  0904CEH
+c_cl_ad_min_cps                      EQU  0904D0H
+c_cl_st_cp                           EQU  0904E6H
+c_cppwm_ad                           EQU  0904EAH
+c_cppwm_ad_max                       EQU  0904ECH
+c_flow_ad_max_cps                    EQU  090558H
+c_maf_cps_dly_crlc                   EQU  0905A8H
+c_t_ad_max_cps                       EQU  0906BEH
+c_prs_ad_max_cps                     EQU  0908EAH
+ldp_vb_ip_cppwm_vb_add                EQU  090ADFH
+ldp_tia_ip_fac_tia_cp                 EQU  090B98H
+ldp_n_32_ip_t_dly_cppwm                        EQU  090DE8H
+ldp_flow_cor_cps_ip_cppwm    EQU  0911C6H
+ldpm_prs_cps_ip_cppwm                             EQU  0911E0H
+ldp_amp_ip_fac_amp_cp                 EQU  0912D6H
+ldpm_maf_cyl_ip_rel_flow_inc_cp                     EQU  0914B4H
+ip_cppwm__flow_cor_cps__prs_cps      EQU  092262H
+ip_cppwm_vb_add__vb                  EQU  0923E2H
+ip_maf_cps__prs_cps                  EQU  092DE4H
+ip_rel_flow_cps_dly_crlc__n_32       EQU  0936C6H
+ip_t_dly_cp__maf_cyl                 EQU  09380AH
+ip_t_dly_cppwm__n_32                 EQU  093816H
+ip_fac_amp_cp__amp                   EQU  0955CFH
+ip_fac_tia_cp__tia                   EQU  095761H
+
+PUBLIC  CPS_CPPWM_Control, CanPurgeSol_Adapt, CanPurge_Calc_PWM, CanPurge_Calc_PWM_Prs, CanPurge_Reset, Init_CPS_CPPWM
+PUBLIC  Tail_f0b28ec_99e
+EXTERN  Add_r12_r13_Return_r4:NEAR, Div_Frac_U16_Q16:NEAR, Div_Q16_Round:NEAR, Get_IP_Byte_2D_Table:NEAR
+EXTERN  Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_2D_Table:NEAR, Get_IP_Word_3D_Table:NEAR, Get_IP_Word_X_Axis:NEAR
+EXTERN  Get_IP_Word_Y_Axis:NEAR, Interp_U16:NEAR, Mul_Frac_Sat_x2:NEAR, Mul_Q14_Sat_S16:NEAR
+EXTERN  Mul_S16_Hi:NEAR, Mul_S16_Q7_Sat:NEAR, Mul_Shift_U16_Sat32:NEAR, Mul_U16_Hi:NEAR
+EXTERN  Sat_Add_S16:NEAR, Sat_Add_S16_v2:NEAR, Sat_Sub_S16_v2:NEAR, multipied_r12_r13_UGT_r14_rets_r4:NEAR
+EXTERN  sub_r12_r13_rets_r4:NEAR
+
+S_B2874 SECTION CODE AT 0B2874H
+
+; ======== CanPurge_Reset  (@0xb2874) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen signals, verified): Evaporative Emission Control: canister purge reset
+        ; ------------------------------------------------------------
+CanPurge_Reset:
+        CALLS 00BH,Init_CPS_CPPWM
+        MOV fuel_flow_cp,ZEROS
+        MOV rel_flow_cps,ZEROS
+        MOV rel_flow_cps_old,ZEROS
+        MOV rel_flow_cps_old_min,ZEROS
+        MOV maf_cyl_dly,ZEROS
+        MOV maf_dly_mmv,ZEROS
+        MOV R4,DPP0:c_cl_st_cp
+        MOV cl,R4
+        MOV R5,DPP0:c_cl_st_cp
+        MOV cl_mmv,R5
+        MOV cl_mmv_old,ZEROS
+        MOV cl_mmv_di,ZEROS
+        BCLR lv_fcut_fast.07H
+        BCLR lv_fcut_fast.09H
+        BCLR lv_fcut_fast.08H
+        BCLR lv_fcut_fast.0BH
+        BCLR lv_fcut_fast.0AH
+        MOV R2,maf_cyl
+        MOV maf_cyl_old,R2
+        MOV R3,maf_cyl
+        MOV maf_cyl_old2,R3
+        MOV R1,maf_cyl
+        MOV maf_cyl_dly_old,R1
+        MOV ti_lam_cp_1,ZEROS
+        BCLR lv_fcut_fast.06H
+        BCLR lv_fcut_fast.0CH
+        MOVB lam_p_sum_cp,ZEROS
+        MOV t_di_max_cp,ZEROS
+        MOV t_di_ramp_open_cp,ZEROS
+        MOV t_wait_ramp_open,ZEROS
+        MOV cp_norm_deac_state,ZEROS
+        MOV state_cp_ctl,ZEROS
+        RET
+
+; ======== CanPurge_Calc_PWM_Prs  (@0xb28ec) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by cp/evap/dtp/diagcp output signals + DTC): Purge-valve PWM duty cppwm_cps +
+        ; line pressure prs_cps.
+        ; ------------------------------------------------------------
+CanPurge_Calc_PWM_Prs:
+        MOV [-R0],R9
+        MOVB RL4,conf_cp
+        JMPR cc_EQ,L_B299A
+        BXOR lv_fcut_fast.0EH,ONES.00H
+        JMPR cc_NN,L_B299A
+        MOV R12,amp
+        MOV R13,map
+        CALLS 00FH,Sat_Sub_S16_v2
+        MOV prs_cps,R4
+        JNB lv_cp_act.05H,L_B293A
+        JB lv_act_diagcps.03H,L_B291A
+        MOV R5,rel_flow_cps
+        CMP R5,#00H
+        JMPR cc_ULE,L_B2924
+L_B291A:                 ; 0xb291a
+        CALLA cc_UC,CanPurge_Calc_PWM
+        CALLA cc_UC,CPS_CPPWM_Control
+        JMPR cc_UC,L_B2928
+L_B2924:                 ; 0xb2924
+        CALLS 00BH,Init_CPS_CPPWM
+L_B2928:                 ; 0xb2928
+        MOV R12,cppwm
+        MOV R13,DPP0:c_cppwm_as
+        ASHR R13,#01H
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV R9,R4
+        JMPR cc_UC,L_B2942
+L_B293A:                 ; 0xb293a
+        CALLS 00BH,Init_CPS_CPPWM
+        MOV R9,#DATA16 0024DH
+L_B2942:                 ; 0xb2942
+        JNB state_out_act.0BH,L_B294C
+        MOVBZ R9,lv_cp_f561
+        SHL R9,#07H
+L_B294C:                 ; 0xb294c
+        CMP R9,#DATA16 07DB2H
+        JMPR cc_ULE,L_B295C
+        MOV R4,#DATA16 07DB2H
+        MOV cppwm_cps,R4
+        JMPR cc_UC,L_B2970
+L_B295C:                 ; 0xb295c
+        CMP R9,#DATA16 0024DH
+        JMPR cc_NC,L_B296C
+        MOV R4,#DATA16 0024DH
+        MOV cppwm_cps,R4
+        JMPR cc_UC,L_B2970
+L_B296C:                 ; 0xb296c
+        MOV cppwm_cps,R9
+L_B2970:                 ; 0xb2970
+        JB state_out_req.08H,L_B298E
+        MOV R4,cps_pwm_base
+        MOV R2,cppwm_cps
+        SHL R2,#01H
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV cps_pwm_cmp,R4
+L_B298E:                 ; 0xb298e
+        MOV R4,cppwm
+        JMPR cc_NE,L_B2998
+        BCLR lv_fcut_fast.0DH
+        JMPR cc_UC,L_B299A
+L_B2998:                 ; 0xb2998
+        BSET lv_fcut_fast.0DH
+L_B299A:                 ; 0xb299a
+        MOV R9,[R0+]
+        RETS
+
+; ======== Tail_f0b28ec_99e  (@0xb299e) ========
+Tail_f0b28ec_99e:
+        CALLS 00BH,CanPurge_Calc_PWM_Prs
+        RETS
+
+; ======== Init_CPS_CPPWM  (@0xb29a4) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): CPS control CPPWM (reset)
+        ; ------------------------------------------------------------
+Init_CPS_CPPWM:
+        MOV cppwm,ZEROS
+        MOV flow_sp_cps,ZEROS
+        MOV flow_cor_cps,ZEROS
+        MOV maf_cps,ZEROS
+        MOV maf_cps_dly,ZEROS
+        MOV lv_cp_c6de,ZEROS
+        MOV maf_cps_dly_2,ZEROS
+        MOV lv_cp_c6e2,ZEROS
+        MOV maf_cps_dly_2_mmv,ZEROS
+        MOV rel_flow_cps_av,ZEROS
+        MOV lv_cp_c6ec,ZEROS
+        MOV lv_cp_c6e4,ZEROS
+        MOV rel_flow_cps_dly,ZEROS
+        MOV lv_cp_c6e8,ZEROS
+        MOV rel_flow_cps_dly_mmv,ZEROS
+        RETS
+
+; ======== CanPurge_Calc_PWM  (@0xb29e2) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): CPS control CPPWM: purge flow setpoint + PWM duty
+        ; (flow_sp_cps/cppwm)
+        ; ------------------------------------------------------------
+CanPurge_Calc_PWM:
+        MOV [-R0],R9
+        MOV [-R0],R6
+        JNB lv_act_diagcps.03H,L_B29F4
+        MOV R4,flow_sp_cps_ext
+        MOV flow_sp_cps,R4
+        JMPR cc_UC,L_B2A18
+L_B29F4:                 ; 0xb29f4
+        MOV R4,cp_flow_lim
+        CMP R4,rel_flow_cps
+        JMPR cc_NC,L_B2A04
+        MOV R9,cp_flow_lim
+        JMPR cc_UC,L_B2A08
+L_B2A04:                 ; 0xb2a04
+        MOV R9,rel_flow_cps
+L_B2A08:                 ; 0xb2a08
+        MOV R12,R9
+        MOV R13,maf_cyl
+        MOV R14,#08H
+        CALLS 00FH,Mul_Shift_U16_Sat32
+        MOV flow_sp_cps,R4
+L_B2A18:                 ; 0xb2a18
+        MOV R12,#DATA16 POF ldp_amp_ip_fac_amp_cp
+        MOV R13,#DATA16 PAG ldp_amp_ip_fac_amp_cp
+        MOV R14,amp
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_fac_amp_cp__amp
+        MOV R13,#DATA16 PAG ip_fac_amp_cp__amp
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB RL6,RL4
+        MOV R12,#DATA16 POF ldp_tia_ip_fac_tia_cp
+        MOV R13,#DATA16 PAG ldp_tia_ip_fac_tia_cp
+        MOVBZ R14,tia
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_fac_tia_cp__tia
+        MOV R13,#DATA16 PAG ip_fac_tia_cp__tia
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVBZ R13,RL4
+        MOVBZ R12,RL6
+        CALLS 00FH,Mul_S16_Q7_Sat
+        MOVB RL6,RL4
+        MOV R12,flow_sp_cps
+        MOVBZ R13,RL6
+        CALLS 00FH,Mul_Frac_Sat_x2
+        MOV flow_cor_cps,R4
+        MOV R12,#DATA16 POF ldp_flow_cor_cps_ip_cppwm
+        MOV R13,#DATA16 PAG ldp_flow_cor_cps_ip_cppwm
+        MOV R14,R4
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ldpm_prs_cps_ip_cppwm
+        MOV R13,#DATA16 PAG ldpm_prs_cps_ip_cppwm
+        MOV R14,prs_cps
+        ADD R14,#DATA16 08000H
+        CALLS 00FH,Get_IP_Word_X_Axis
+        MOV R12,#DATA16 POF ip_cppwm__flow_cor_cps__prs_cps
+        MOV R13,#DATA16 PAG ip_cppwm__flow_cor_cps__prs_cps
+        CALLS 00FH,Get_IP_Word_3D_Table
+        MOV R9,R4
+        CMP R9,#DATA16 07FFFH
+        JMPR cc_ULE,L_B2AA4
+        MOV R9,#DATA16 07FFFH
+L_B2AA4:                 ; 0xb2aa4
+        MOV R12,R9                              ; test comment
+        MOV R13,cppwm_add_ad
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV cppwm_sp,R4
+        MOV R12,#DATA16 POF ldpm_prs_cps_ip_cppwm
+        MOV R13,#DATA16 PAG ldpm_prs_cps_ip_cppwm
+        MOV R14,prs_cps
+        ADD R14,#DATA16 08000H
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_maf_cps__prs_cps
+        MOV R13,#DATA16 PAG ip_maf_cps__prs_cps
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV R12,R4
+        SHR R12,#01H
+        MOVBZ R13,RL6
+        SHL R13,#08H
+        CALLS 00FH,Div_Frac_U16_Q16
+        MOV R9,R4
+        CMP R9,flow_sp_cps
+        JMPR cc_NC,L_B2AEA
+        MOV R4,R9
+        JMPR cc_UC,L_B2AEE
+L_B2AEA:                 ; 0xb2aea
+        MOV R4,flow_sp_cps                      ; second test comment
+L_B2AEE:                 ; 0xb2aee
+        MOV maf_cps,R4
+        MOV R5,lv_cp_c6ec
+        MOV lv_cp_c6e4,R5
+        MOV R2,rel_flow_cps_av
+        MOV lv_cp_c6ec,R2
+        MOV R12,R4
+        MOV R13,#DATA16 00100H
+        MOV R14,maf_cyl
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV rel_flow_cps_av,R4
+        MOV R12,#DATA16 POF ldp_vb_ip_cppwm_vb_add
+        MOV R13,#DATA16 PAG ldp_vb_ip_cppwm_vb_add
+        MOVBZ R14,vb
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_cppwm_vb_add__vb
+        MOV R13,#DATA16 PAG ip_cppwm_vb_add__vb
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV R13,R4
+        SUB R13,#DATA16 04000H
+        MOV R12,cppwm_sp
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV cppwm,R4
+        MOV R6,[R0+]
+        MOV R9,[R0+]
+        RET
+
+; ======== CPS_CPPWM_Control  (@0xb2b48) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (ThetaII, verified): canister purge solenoid PWM flow dynamics: rel_flow_cps_dly
+        ; (ip_t_dly_cppwm, ip_rel_flow_cps_dly_crlc)
+        ; (was FUN_0b2b48)
+        ; ------------------------------------------------------------
+CPS_CPPWM_Control:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV R12,#DATA16 POF ldp_n_32_ip_t_dly_cppwm
+        MOV R13,#DATA16 PAG ldp_n_32_ip_t_dly_cppwm
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_t_dly_cppwm__n_32
+        MOV R13,#DATA16 PAG ip_t_dly_cppwm__n_32
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV lv_cp_c6ee,R4
+        MOV R12,R4
+        SHR R12,#01H
+        MOV R13,R4
+        SHR R13,#01H
+        MOV R14,#DATA16 04CCCH
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV lv_cp_c6f0,R4
+        MOV R12,lv_cp_c6ee
+        SHR R12,#07H
+        ADD R12,#01H
+        MOV R13,R4
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV lv_cp_c6f2,R4
+        MOV R12,#01H
+        MOV R13,lv_cp_c6ee
+        SHR R13,#07H
+        CALLS 00FH,Sat_Sub_S16_v2
+        MOV R13,R4
+        MOV R12,lv_cp_c6f0
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV R12,R4
+        MOV R13,lv_cp_c6f2
+        CALLS 00FH,Div_Frac_U16_Q16
+        MOV [-R0],R4
+        MOV R12,rel_flow_cps_av
+        MOV R13,lv_cp_c6e8
+        CALLS 00FH,Sat_Sub_S16_v2
+        MOV R12,R4
+        MOV R13,[R0+]
+        CALLS 00FH,Mul_S16_Hi
+        MOV R8,R4
+        MOV R12,#01H
+        MOV R13,lv_cp_c6f0
+        CALLS 00FH,Sat_Sub_S16_v2
+        MOV R12,R4
+        MOV R13,lv_cp_c6f2
+        SHL R13,#01H
+        CALLS 00FH,Div_Q16_Round
+        MOV [-R0],R4
+        MOV R12,lv_cp_c6ec
+        MOV R13,rel_flow_cps_dly
+        CALLS 00FH,Sat_Sub_S16_v2
+        MOV R12,R4
+        MOV R13,[R0+]
+        CALLS 00FH,Mul_Q14_Sat_S16
+        MOV R9,R4
+        MOV R4,rel_flow_cps_dly
+        MOV lv_cp_c6e8,R4
+        MOV R12,R8
+        MOV R13,R9
+        CALLS 00FH,Sat_Add_S16
+        MOV R13,R4
+        MOV R12,lv_cp_c6e4
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV rel_flow_cps_dly,R4
+        MOV R12,#DATA16 POF ip_rel_flow_cps_dly_crlc__n_32
+        MOV R13,#DATA16 PAG ip_rel_flow_cps_dly_crlc__n_32
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV R14,R4
+        MOV R12,rel_flow_cps_dly_mmv
+        MOV R13,rel_flow_cps_dly
+        CALLS 00FH,Interp_U16
+        MOV rel_flow_cps_dly_mmv,R4
+        MOV R5,lv_cp_c6de
+        MOV lv_cp_c6dc,R5
+        MOV R2,maf_cps_dly
+        MOV lv_cp_c6de,R2
+        MOV R12,R4
+        MOV R13,maf_cyl
+        MOV R14,#08H
+        CALLS 00FH,Mul_Shift_U16_Sat32
+        MOV R8,R4
+        CMP R4,maf_cps
+        JMPR cc_NC,L_B2C5C
+        MOV R4,R8
+        JMPR cc_UC,L_B2C60
+L_B2C5C:                 ; 0xb2c5c
+        MOV R4,maf_cps
+L_B2C60:                 ; 0xb2c60
+        MOV maf_cps_dly,R4
+        MOV R12,#DATA16 POF ldpm_maf_cyl_ip_rel_flow_inc_cp
+        MOV R13,#DATA16 PAG ldpm_maf_cyl_ip_rel_flow_inc_cp
+        MOV R14,maf_cyl
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_t_dly_cp__maf_cyl
+        MOV R13,#DATA16 PAG ip_t_dly_cp__maf_cyl
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV lv_cp_c6ee,R4
+        MOV R12,R4
+        SHR R12,#01H
+        MOV R13,R4
+        SHR R13,#01H
+        MOV R14,#DATA16 04CCCH
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV lv_cp_c6f0,R4
+        MOV R12,lv_cp_c6ee
+        SHR R12,#07H
+        ADD R12,#01H
+        MOV R13,R4
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV lv_cp_c6f2,R4
+        MOV R12,#01H
+        MOV R13,lv_cp_c6ee
+        SHR R13,#07H
+        CALLS 00FH,Sat_Sub_S16_v2
+        MOV R13,R4
+        MOV R12,lv_cp_c6f0
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV R12,R4
+        MOV R13,lv_cp_c6f2
+        CALLS 00FH,Div_Frac_U16_Q16
+        MOV [-R0],R4
+        MOV R12,maf_cps_dly
+        MOV R13,lv_cp_c6e2
+        CALLS 00FH,Sat_Sub_S16_v2
+        MOV R12,R4
+        MOV R13,[R0+]
+        CALLS 00FH,Mul_S16_Hi
+        MOV R8,R4
+        MOV R12,#01H
+        MOV R13,lv_cp_c6f0
+        CALLS 00FH,Sat_Sub_S16_v2
+        MOV R12,R4
+        MOV R13,lv_cp_c6f2
+        SHL R13,#01H
+        CALLS 00FH,Div_Q16_Round
+        MOV [-R0],R4
+        MOV R12,lv_cp_c6de
+        MOV R13,maf_cps_dly_2
+        CALLS 00FH,Sat_Sub_S16_v2
+        MOV R12,R4
+        MOV R13,[R0+]
+        CALLS 00FH,Mul_Q14_Sat_S16
+        MOV R9,R4
+        MOV R4,maf_cps_dly_2
+        MOV lv_cp_c6e2,R4
+        MOV R12,R8
+        MOV R13,R9
+        CALLS 00FH,Sat_Add_S16
+        MOV R13,R4
+        MOV R12,lv_cp_c6dc
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV maf_cps_dly_2,R4
+        MOV R12,maf_cps_dly_2_mmv
+        MOV R13,R4
+        MOV R14,DPP0:c_maf_cps_dly_crlc
+        CALLS 00FH,Interp_U16
+        MOV maf_cps_dly_2_mmv,R4
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RET
+
+; ======== CanPurgeSol_Adapt  (@0xb2d46) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (ThetaII, verified): canister purge solenoid adaptation state machine (cps_ad_step_ctr,
+        ; cppwm_add_ad)
+        ; (was FUN_0b2d46)
+        ; ------------------------------------------------------------
+CanPurgeSol_Adapt:
+        MOV [-R0],R9
+        MOVB RL4,conf_cp
+        JMPA cc_EQ,L_B2E64
+        MOVB RL5,DPP0:lc_cps_ad_ena
+        JMPA cc_EQ,L_B2E64
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_B2E10
+        MOV R4,cp_state
+        CMP R4,#04H
+        JMPR cc_NE,L_B2E10
+        MOV R5,prs_cps
+        CMP R5,DPP0:c_prs_ad_max_cps
+        JMPR cc_SLE,L_B2E10
+        MOV R2,flow_cor_cps
+        CMP R2,DPP0:c_flow_ad_max_cps
+        JMPR cc_NC,L_B2E10
+        MOVB RL4,cps_ad_step_ctr
+        JMPR cc_EQ,L_B2D88
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_B2DA6
+        CMPB RL4,#02H
+        JMPR cc_EQ,L_B2DD4
+        JMPR cc_UC,L_B2E18
+L_B2D88:                 ; 0xb2d88
+        MOV R4,cl_mmv
+        CMP R4,DPP0:c_cl_ad_max_cps
+        JMPR cc_C,L_B2E18
+        MOV R5,flow_cor_cps
+        MOV flow_cor_cps_old,R5
+        MOV R9,cppwm_add_ad
+        MOVB RL4,#01H
+        MOVB cps_ad_step_ctr,RL4
+        JMPR cc_UC,L_B2E18
+L_B2DA6:                 ; 0xb2da6
+        MOV R4,cl_mmv
+        CMP R4,DPP0:c_cl_ad_max_hys_cps
+        JMPR cc_C,L_B2DC8
+        MOV R5,cppwm_add_ad
+        CMP R5,DPP0:c_cppwm_ad_max
+        JMPR cc_NC,L_B2DC2
+        MOV R9,R5
+        ADD R9,DPP0:c_cppwm_ad
+        JMPR cc_UC,L_B2E18
+L_B2DC2:                 ; 0xb2dc2
+        MOV R9,DPP0:c_cppwm_ad_max
+        JMPR cc_UC,L_B2E18
+L_B2DC8:                 ; 0xb2dc8
+        MOV R9,cppwm_add_ad
+        MOVB RL4,#02H
+        MOVB cps_ad_step_ctr,RL4
+        JMPR cc_UC,L_B2E18
+L_B2DD4:                 ; 0xb2dd4
+        MOV R4,t_cps_ad
+        CMP R4,DPP0:c_t_ad_max_cps
+        JMPR cc_NC,L_B2DF4
+        MOV R5,cl_mmv
+        CMP R5,DPP0:c_cl_ad_min_cps
+        JMPR cc_C,L_B2DF4
+        ADD R4,#01H
+        MOV t_cps_ad,R4
+        MOV R9,cppwm_add_ad
+        JMPR cc_UC,L_B2E18
+L_B2DF4:                 ; 0xb2df4
+        MOV t_cps_ad,ZEROS
+        MOVB cps_ad_step_ctr,ZEROS
+        MOV R4,cl_mmv
+        CMP R4,DPP0:c_cl_ad_min_cps
+        JMPR cc_C,L_B2E18
+        MOV R5,cppwm_add_ad
+        MOV cppwm_ad_mem,R5
+        JMPR cc_UC,L_B2E18
+L_B2E10:                 ; 0xb2e10
+        MOV t_cps_ad,ZEROS
+        MOVB cps_ad_step_ctr,ZEROS
+L_B2E18:                 ; 0xb2e18
+        MOVB RL4,cps_ad_step_ctr
+        JMPR cc_NE,L_B2E60
+        MOV R4,cppwm_ad_mem
+        JMPR cc_EQ,L_B2E60
+        MOV R5,flow_cor_cps
+        CMP R5,flow_cor_cps_old
+        JMPR cc_UGT,L_B2E32
+        MOV R9,R4
+        JMPR cc_UC,L_B2E60
+L_B2E32:                 ; 0xb2e32
+        MOV R4,flow_cor_cps
+        CMP R4,DPP0:c_flow_ad_max_cps
+        JMPR cc_NC,L_B2E5E
+        MOV R12,DPP0:c_flow_ad_max_cps
+        SUB R12,flow_cor_cps
+        MOV R13,DPP0:c_flow_ad_max_cps
+        SUB R13,flow_cor_cps_old
+        CALLS 00FH,Div_Frac_U16_Q16
+        MOV R13,R4
+        MOV R12,cppwm_ad_mem
+        CALLS 00FH,Mul_U16_Hi
+        MOV R9,R4
+        JMPR cc_UC,L_B2E60
+L_B2E5E:                 ; 0xb2e5e
+        MOV R9,#00H
+L_B2E60:                 ; 0xb2e60
+        MOV cppwm_add_ad,R9
+L_B2E64:                 ; 0xb2e64
+        MOV R9,[R0+]
+        RETS
+
+S_B2874 ENDS
+        END

@@ -1,0 +1,209 @@
+; asw/tqfr.a66
+; 0xB1642-0xB1810  (462 bytes, 6 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_crlc_tq_add_cp                     EQU  09016DH
+c_crlc_tq_loss_req_clu               EQU  09016FH
+lc_tq_add_cp_ena                     EQU  09048DH
+c_maf_cyl_stk_ref                    EQU  0905BEH
+ldp_cl_mmv               EQU  091914H
+ldpm_n_100                            EQU  091980H
+ldp_maf_cyl__tqfr                            EQU  0919A2H
+ip_tq_add_cp__cl_mmv                 EQU  0948F8H
+ip_tqfr                              EQU  094B28H
+
+PUBLIC  Calc_TQ_ADD_CP, Calc_TQ_FR_St, Calc_TQ_Loss, Calc_TQ_Loss_Sum, Reset_sVar1_694, Reset_sVar1_7f6
+EXTERN  Calc_TQ_Loss_Trans:NEAR, Get_IP_Word_2D_Table:NEAR, Get_IP_Word_2D_Table_DWord_YByte:NEAR, Get_IP_Word_3D_Table:NEAR
+EXTERN  Get_IP_Word_3D_Table_DWord_XByte_YByte:NEAR, Get_IP_Word_3D_Table_DWord_XByte_YWord:NEAR, Get_IP_Word_X_Axis:NEAR, Get_IP_Word_Y_Axis:NEAR
+EXTERN  Interp_S16:NEAR, Sat_Add_S16:NEAR
+
+S_B1642 SECTION CODE AT 0B1642H
+
+; ======== Calc_TQ_ADD_CP  (@0xb1642) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (ThetaII, verified): torque reserve for canister purge:
+        ; tq_add_cp=Interp(IP(cl_mmv),c_crlc_tq_add_cp), cp_state==4
+        ; (was FUN_0b1642)
+        ; ------------------------------------------------------------
+Calc_TQ_ADD_CP:
+        MOV [-R0],R9
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_B167A
+        MOV R4,cp_state
+        CMP R4,#04H
+        JMPR cc_NE,L_B167A
+        MOVB RL4,DPP0:lc_tq_add_cp_ena
+        JMPR cc_EQ,L_B167A
+        MOV R12,#DATA16 POF ldp_cl_mmv
+        MOV R13,#DATA16 PAG ldp_cl_mmv
+        MOV R14,cl_mmv
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_tq_add_cp__cl_mmv
+        MOV R13,#DATA16 PAG ip_tq_add_cp__cl_mmv
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV R9,R4
+        SUB R9,#DATA16 08000H
+        JMPR cc_UC,L_B167C
+L_B167A:                 ; 0xb167a
+        MOV R9,#00H
+L_B167C:                 ; 0xb167c
+        MOV R12,tq_add_cp
+        MOV R13,R9
+        MOVBZ R14,DPP0:c_crlc_tq_add_cp
+        SHL R14,#08H
+        CALLS 00FH,Interp_S16
+        MOV tq_add_cp,R4
+        MOV R9,[R0+]
+        RETS
+
+; ======== Reset_sVar1_694  (@0xb1694) ========
+Reset_sVar1_694:
+        MOV R12,#DATA16 0466AH
+        MOVBZ R13,tco_st
+        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        ADD R4,#DATA16 08000H
+        MOV tqfr_st,R4
+        RETS
+
+; ======== Calc_TQ_Loss_Sum  (@0xb16aa) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tq/tqi output signals): Torque-loss summation: tq_loss / tq_loss_1 (total
+        ; parasitic + accessory losses fed to the net-torque calc).
+        ; ------------------------------------------------------------
+Calc_TQ_Loss_Sum:
+        CALLS 00CH,Calc_TQ_Loss_Trans
+        MOV R12,tqfr_bas
+        MOV R13,tq_loss_add
+        CALLS 00FH,Sat_Add_S16
+        MOV tq_loss_1,R4
+        MOV R5,lv_tq_c672
+        CMP R5,tq_loss_1
+        JMPR cc_SLE,L_B16CE
+        MOV R4,lv_tq_c672
+        JMPR cc_UC,L_B16D2
+L_B16CE:                 ; 0xb16ce
+        MOV R4,tq_loss_1
+L_B16D2:                 ; 0xb16d2
+        MOV tq_loss,R4
+        RETS
+
+; ======== Calc_TQ_Loss  (@0xb16d8) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS2000, verified): Torque losses
+        ; ------------------------------------------------------------
+Calc_TQ_Loss:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV R12,#DATA16 POF ldpm_n_100
+        MOV R13,#DATA16 PAG ldpm_n_100
+        MOV R14,n_C93C
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ldp_maf_cyl__tqfr
+        MOV R13,#DATA16 PAG ldp_maf_cyl__tqfr
+        MOV R14,maf_cyl_stk
+        CALLS 00FH,Get_IP_Word_X_Axis
+        MOV R12,#DATA16 POF ip_tqfr
+        MOV R13,#DATA16 PAG ip_tqfr
+        CALLS 00FH,Get_IP_Word_3D_Table
+        ADD R4,#DATA16 08000H
+        MOV tqfr,R4
+        MOV R12,tqfr_add
+        MOV R13,tqfr_st
+        CALLS 00FH,Sat_Add_S16
+        MOV R12,R4
+        MOV R13,tq_dif_is_ad
+        CALLS 00FH,Sat_Add_S16
+        MOV R8,R4
+        MOV R12,tqfr
+        MOV R13,R8
+        CALLS 00FH,Sat_Add_S16
+        MOV tqfr_bas,R4
+        MOV R5,DPP0:c_maf_cyl_stk_ref
+        JMPR cc_NE,L_B174A
+        MOV R12,R4
+        MOV R13,tq_loss_add
+        CALLS 00FH,Sat_Add_S16
+        MOV R9,R4
+        JMPR cc_UC,L_B1782
+L_B174A:                 ; 0xb174a
+        MOV R12,#DATA16 POF ldp_maf_cyl__tqfr
+        MOV R13,#DATA16 PAG ldp_maf_cyl__tqfr
+        MOV R14,DPP0:c_maf_cyl_stk_ref
+        CALLS 00FH,Get_IP_Word_X_Axis
+        MOV R12,#DATA16 POF ip_tqfr
+        MOV R13,#DATA16 PAG ip_tqfr
+        CALLS 00FH,Get_IP_Word_3D_Table
+        ADD R4,#DATA16 08000H
+        MOV tqfr_mec,R4
+        MOV R12,R4
+        MOV R13,R8
+        CALLS 00FH,Sat_Add_S16
+        MOV R12,R4
+        MOV R13,tq_loss_add
+        CALLS 00FH,Sat_Add_S16
+        MOV R9,R4
+L_B1782:                 ; 0xb1782
+        MOV R12,tq_loss_req_clu
+        MOV R13,R9
+        MOVBZ R14,DPP0:c_crlc_tq_loss_req_clu
+        SHL R14,#08H
+        CALLS 00FH,Interp_S16
+        MOV tq_loss_req_clu,R4
+        MOV R12,#DATA16 0467AH
+        MOV R13,n_C93C
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YWord
+        ADD R4,#DATA16 08000H
+        MOV lv_tq_c672,R4
+        MOV R5,tq_loss_1
+        CMP R5,lv_tq_c672
+        JMPR cc_SGE,L_B17BC
+        BSET lv_act_cle_slv_ivvt.0FH
+        JMPR cc_UC,L_B17BE
+L_B17BC:                 ; 0xb17bc
+        BCLR lv_act_cle_slv_ivvt.0FH
+L_B17BE:                 ; 0xb17be
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_TQ_FR_St  (@0xb17c4) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tq/tqi output signals): Start friction torque tqfr_st: decays via a tco_st 2D
+        ; map while cranking (lv_pl.0x200).
+        ; ------------------------------------------------------------
+Calc_TQ_FR_St:
+        MOV [-R0],R9
+        MOV R4,tqfr_st
+        JMPR cc_EQ,L_B17F2
+        JNB lv_pl.09H,L_B17F2
+        MOV R12,#DATA16 04672H
+        MOVBZ R13,tco_st
+        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        MOV R9,R4
+        ADD R9,#DATA16 08000H
+        CMP R9,tqfr_st
+        JMPR cc_SGE,L_B17EE
+        MOV tqfr_st,ZEROS
+        JMPR cc_UC,L_B17F2
+L_B17EE:                 ; 0xb17ee
+        SUB tqfr_st,R9
+L_B17F2:                 ; 0xb17f2
+        MOV R9,[R0+]
+        RETS
+
+; ======== Reset_sVar1_7f6  (@0xb17f6) ========
+Reset_sVar1_7f6:
+        MOV R12,#DATA16 0465EH
+        MOVBZ R13,tco
+        MOVBZ R14,toil
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YByte
+        ADD R4,#DATA16 08000H
+        MOV tqfr_add,R4
+        RETS
+
+S_B1642 ENDS
+        END

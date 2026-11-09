@@ -1,0 +1,172 @@
+; asw/diagcp/diagcp_nok.a66
+; 0xD1110-0xD124E  (318 bytes, 7 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_conf_diagcp                        EQU  09014CH
+g_9014d                              EQU  09014DH
+c_nr_dtp_con_diag_sample             EQU  0902D3H
+c_t_1_pl_diagcp                      EQU  0906B6H
+
+PUBLIC  ClrBits_lv_diagcp_cdn_nok_116, DiagCP_Collect_Reset, DiagCP_Collect_Samples, DiagCP_Precond, DiagCP_Set_Config, Reset_lv_diagcp_cdn_nok_1f8
+PUBLIC  Reset_lv_err_maf_tps_ratio_2_110
+EXTERN  Acq_DiagCP_Pressure:NEAR, Delay_Dc397:NEAR, DiagCP_Acq_Dtp:NEAR, Log_Event_f94a:NEAR
+EXTERN  Log_Event_f97a:NEAR
+
+S_D1110 SECTION CODE AT 0D1110H
+
+; ======== Reset_lv_err_maf_tps_ratio_2_110  (@0xd1110) ========
+Reset_lv_err_maf_tps_ratio_2_110:
+        BSET lv_err_maf_tps_ratio_2.09H
+        BSET lv_diagcp_cdn_nok.0AH
+        RETS
+
+; ======== ClrBits_lv_diagcp_cdn_nok_116  (@0xd1116) ========
+ClrBits_lv_diagcp_cdn_nok_116:
+        BCLR lv_diagcp_cdn_nok.01H
+        RETS
+
+; ======== DiagCP_Set_Config  (@0xd111a) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by cp/evap/dtp/diagcp output signals + DTC): Set EVAP leak-diagnosis
+        ; configuration flag conf_diagcp.
+        ; ------------------------------------------------------------
+DiagCP_Set_Config:
+        MOVB RL4,DPP0:g_9014d
+        MOVB g_c396,RL4
+        MOVB RL5,DPP0:c_conf_diagcp
+        JMPR cc_EQ,L_D1132
+        CMPB RL5,#01H
+        JMPR cc_EQ,L_D1138
+        CMPB RL5,#02H
+        JMPR cc_EQ,L_D115A
+        JMPR cc_UC,L_D117C
+L_D1132:                 ; 0xd1132
+        MOVB conf_diagcp,ZEROS
+        RETS
+L_D1138:                 ; 0xd1138
+        MOVB RL4,conf_cp
+        JMPR cc_EQ,L_D1142
+        CMPB RL4,#01H
+        JMPR cc_NE,L_D1148
+L_D1142:                 ; 0xd1142
+        MOVB conf_diagcp,ZEROS
+        RETS
+L_D1148:                 ; 0xd1148
+        MOVB RL4,#01H
+        MOVB conf_diagcp,RL4
+        CALLA cc_UC,Acq_DiagCP_Pressure
+        MOV R12,#00H
+        CALLA cc_UC,Delay_Dc397
+        RETS
+L_D115A:                 ; 0xd115a
+        MOVB RL4,conf_cp
+        JMPR cc_EQ,L_D1164
+        CMPB RL4,#01H
+        JMPR cc_NE,L_D116A
+L_D1164:                 ; 0xd1164
+        MOVB conf_diagcp,ZEROS
+        RETS
+L_D116A:                 ; 0xd116a
+        MOVB RL4,#02H
+        MOVB conf_diagcp,RL4
+        CALLA cc_UC,Acq_DiagCP_Pressure
+        MOV R12,#00H
+        CALLA cc_UC,Delay_Dc397
+        RETS
+L_D117C:                 ; 0xd117c
+        MOVB conf_diagcp,ZEROS
+        RETS
+
+; ======== DiagCP_Precond  (@0xd1182) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by cp/evap/dtp/diagcp output signals + DTC): EVAP leak-diag
+        ; preconditions/timing: state_diagcp, t_pl_diagcp, t_diagcp, lv_diagcp_cdn_nok, lv_act_diagcps.
+        ; ------------------------------------------------------------
+DiagCP_Precond:
+        MOVB RL4,conf_diagcp
+        JMPR cc_EQ,L_D11F0
+        JB state_out_req.09H,L_D11A4
+        MOV R4,maf_pwm_base
+        MOV R2,#DATA16 0020CH
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV lv_maf_f9da,R4
+L_D11A4:                 ; 0xd11a4
+        BCLR lv_err_maf_tps_ratio_2.05H
+        MOVB RL4,#0DH
+        MOVB state_diagcp,RL4
+        MOV t_diagcp,ZEROS
+        MOV t_pl_diagcp,ZEROS
+        MOV state_diagcp_F978,ZEROS
+        BCLR lv_err_maf_tps_ratio_2.06H
+        BCLR lv_err_maf_tps_ratio_2.07H
+        BCLR lv_err_maf_tps_ratio_2.08H
+        BCLR lv_err_maf_tps_ratio_2.09H
+        BCLR lv_act_diagcps.03H
+        BCLR lv_err_maf_tps_ratio_2.0AH
+        MOV intr_state_diagcp,ZEROS
+        CALLS 00DH,Log_Event_f94a
+        CALLS 00DH,Log_Event_f97a
+        MOV dtp_ofs,ZEROS
+        MOVB state_diagcp,ZEROS
+        MOVB eol_state_diagcp,ZEROS
+        MOV R4,DPP0:c_t_1_pl_diagcp
+        MOV t_pl_diagcp,R4
+        BCLR lv_diagcp_cdn_nok.00H
+        MOV g_cff4,ZEROS
+        MOV dtp_mv_per_sword,ZEROS
+        BCLR lv_diagcp_cdn_nok.02H
+L_D11F0:                 ; 0xd11f0
+        BCLR lv_diagcp_cdn_nok.01H
+        MOV g_f992,ZEROS
+        RETS
+
+; ======== Reset_lv_diagcp_cdn_nok_1f8  (@0xd11f8) ========
+Reset_lv_diagcp_cdn_nok_1f8:
+        BSET lv_diagcp_cdn_nok.04H
+        MOV diag_f976,ZEROS
+        RETS
+
+; ======== DiagCP_Collect_Samples  (@0xd1200) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by cp/evap/dtp/diagcp output signals + DTC): Tank-pressure diagnosis sample
+        ; collection: v_dtp min/max/dif_diag, nr_dtp_con_diag_sample, maf_cps_max_diag.
+        ; ------------------------------------------------------------
+DiagCP_Collect_Samples:
+        MOVB RL4,conf_diagcp
+        JMPR cc_EQ,L_D1242
+        MOVB RL5,DPP0:c_nr_dtp_con_diag_sample
+        MOVB nr_dtp_con_diag_sample,RL5
+        MOV R4,v_dtp
+        MOV v_dtp_max_diag,R4
+        MOV R5,v_dtp
+        MOV v_dtp_min_diag,R5
+        MOV v_dtp_dif_diag,ZEROS
+        MOV R2,maf_cps
+        MOV maf_cps_max_diag,R2
+        MOV R3,maf_cps
+        MOV maf_cps_min_diag,R3
+        MOV maf_cps_dif_diag,ZEROS
+        MOVB vs_dtp_max_diag,ZEROS
+        MOVB cdn_dtp_noise_state_diag,ZEROS
+        CALLS 00DH,DiagCP_Acq_Dtp
+L_D1242:                 ; 0xd1242
+        RETS
+
+; ======== DiagCP_Collect_Reset  (@0xd1244) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+DiagCP_Collect_Reset:
+        CALLS 00DH,DiagCP_Collect_Samples
+        MOVB diag_c39f,ZEROS
+        RETS
+
+S_D1110 ENDS
+        END

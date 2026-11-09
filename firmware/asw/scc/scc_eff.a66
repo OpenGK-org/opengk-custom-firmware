@@ -1,0 +1,253 @@
+; asw/scc/scc_eff.a66
+; 0xC73D8-0xC7612  (570 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+lc_eff_scc_sp_man                    EQU  09045AH
+lc_ena_eff_scc_bas_man               EQU  09045EH
+lc_ena_fcut_tot_asr                  EQU  090460H
+lc_ena_fcut_tot_fast                 EQU  090461H
+lc_ena_fcut_tot_gs                   EQU  090462H
+lc_ena_fcut_tot_n_max                EQU  090463H
+lc_ena_fcut_tot_tra                  EQU  090464H
+lc_inh_fcut_asr                      EQU  09046EH
+lc_inh_fcut_fast                     EQU  09046FH
+lc_inh_fcut_gs                       EQU  090470H
+lc_inh_fcut_gs_iga                   EQU  090471H
+lc_inh_fcut_n_max                    EQU  090472H
+lc_inh_fcut_tra                      EQU  090473H
+lc_tq_scc_ena_man                    EQU  090497H
+lc_tq_scc_inh_man                    EQU  090498H
+c_eff_scc_bas_man                    EQU  090532H
+c_eff_scc_sp_hys                     EQU  090534H
+c_eff_scc_sp_man                     EQU  090536H
+c_fac_iga_min_teg_iga_bas            EQU  09053CH
+c_hys_eff_iga_min_teg                EQU  090562H
+c_min_dec_eff_iga_min_teg_1          EQU  090614H
+c_min_dec_eff_iga_min_teg_2          EQU  090616H
+
+PUBLIC  Calc_Eff_SCC_Av, Calc_Eff_SCC_Pattern, Reset_Eff_SCC
+EXTERN  Add_r12_r13_Return_r4:NEAR, Calc_Fcut_Fast:NEAR, Calc_Inj_Pattern:NEAR, Div_Frac_U16_Q16:NEAR
+EXTERN  Get_Byte_2D_Table_DWord_YWord:NEAR, Mul_Q15_Sat:NEAR, Mul_Q15_Sat_Signed:NEAR, Ramp_Down_U16:NEAR
+EXTERN  sub_r12_r13_rets_r4:NEAR
+
+S_C73D8 SECTION CODE AT 0C73D8H
+
+; ======== Reset_Eff_SCC  (@0xc73d8) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): Torque based Pattern Calculation (eff_scc_* reset)
+        ; ------------------------------------------------------------
+Reset_Eff_SCC:
+        MOV R4,#DATA16 08000H
+        MOV eff_scc_bas,R4
+        MOV R5,#DATA16 08000H
+        MOV eff_scc_sp,R5
+        MOV R2,#DATA16 08000H
+        MOV eff_scc_sp_hys,R2
+        RETS
+
+; ======== Calc_Eff_SCC_Av  (@0xc73f2) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by scc/acc output signals): Scavenging/secondary-combustion efficiency average:
+        ; eff_scc_av / nr_pat_scc.
+        ; ------------------------------------------------------------
+Calc_Eff_SCC_Av:
+        MOV eff_scc_av,ZEROS
+        MOVB nr_pat_scc,ZEROS
+        BCLR lv_act_aj.0AH
+        CALLS 00CH,Calc_Inj_Pattern
+        RETS
+
+; ======== Calc_Eff_SCC_Pattern  (@0xc7402) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS31, verified): Torque based Pattern Calculation (eff_scc_bas)
+        ; ------------------------------------------------------------
+Calc_Eff_SCC_Pattern:
+        MOV [-R0],R9
+        CALLS 00BH,Calc_Fcut_Fast
+        MOVB RL4,DPP0:lc_ena_eff_scc_bas_man
+        JMPR cc_EQ,L_C7418
+        MOV R4,DPP0:c_eff_scc_bas_man
+        MOV eff_scc_bas,R4
+        JMPR cc_UC,L_C742E
+L_C7418:                 ; 0xc7418
+        JNB lv_lam_fd2c.0EH,L_C7426
+        MOV R4,lv_lam_f758
+        MOV eff_scc_bas,R4
+        JMPR cc_UC,L_C742E
+L_C7426:                 ; 0xc7426
+        MOV R4,#DATA16 08000H
+        MOV eff_scc_bas,R4
+L_C742E:                 ; 0xc742e
+        MOV R4,eff_scc_bas
+        CMP R4,#DATA16 08000H
+        JMPR cc_C,L_C746E
+        JNB lv_asr_req.05H,L_C7446
+        MOVB RL4,DPP0:lc_ena_fcut_tot_gs
+        JMPR cc_EQ,L_C7446
+        JB lv_lam_fd2c.0DH,L_C746E
+L_C7446:                 ; 0xc7446
+        JNB lv_asr_act.07H,L_C7450
+        MOVB RL4,DPP0:lc_ena_fcut_tot_asr
+        JMPR cc_NE,L_C746E
+L_C7450:                 ; 0xc7450
+        JNB lv_fcut_fast.00H,L_C745A
+        MOVB RL4,DPP0:lc_ena_fcut_tot_fast
+        JMPR cc_NE,L_C746E
+L_C745A:                 ; 0xc745a
+        JNB lv_fcut_fast.01H,L_C7464
+        MOVB RL4,DPP0:lc_ena_fcut_tot_tra
+        JMPR cc_NE,L_C746E
+L_C7464:                 ; 0xc7464
+        JNB lv_act_cle_slv_ivvt.02H,L_C7478
+        MOVB RL4,DPP0:lc_ena_fcut_tot_n_max
+        JMPR cc_EQ,L_C7478
+L_C746E:                 ; 0xc746e
+        MOV R4,#DATA16 08000H
+        MOV fac_iga_min_teg_iga_bas,R4
+        JMPR cc_UC,L_C7480
+L_C7478:                 ; 0xc7478
+        MOV R4,DPP0:c_fac_iga_min_teg_iga_bas
+        MOV fac_iga_min_teg_iga_bas,R4
+L_C7480:                 ; 0xc7480
+        MOVB RL4,DPP0:lc_tq_scc_ena_man
+        JMPR cc_NE,L_C74D4
+        JB lv_ast.07H,L_C74D4
+        JB lv_ast.08H,L_C7498
+        MOVB RL5,DPP0:lc_tq_scc_inh_man
+        JMPR cc_NE,L_C7498
+        JB lv_ast.09H,L_C74D4
+L_C7498:                 ; 0xc7498
+        JNB lv_asr_act.07H,L_C74A2
+        MOVB RL4,DPP0:lc_inh_fcut_asr
+        JMPR cc_EQ,L_C74D4
+L_C74A2:                 ; 0xc74a2
+        JNB lv_act_cle_slv_ivvt.02H,L_C74AC
+        MOVB RL4,DPP0:lc_inh_fcut_n_max
+        JMPR cc_EQ,L_C74D4
+L_C74AC:                 ; 0xc74ac
+        JNB lv_fcut_fast.00H,L_C74B6
+        MOVB RL4,DPP0:lc_inh_fcut_fast
+        JMPR cc_EQ,L_C74D4
+L_C74B6:                 ; 0xc74b6
+        JNB lv_fcut_fast.01H,L_C74C0
+        MOVB RL4,DPP0:lc_inh_fcut_tra
+        JMPR cc_EQ,L_C74D4
+L_C74C0:                 ; 0xc74c0
+        JNB lv_asr_req.05H,L_C74D8
+        MOVB RL4,DPP0:lc_inh_fcut_gs
+        JMPR cc_NE,L_C74D8
+        JNB lv_lam_fd2c.09H,L_C74D4
+        MOVB RL5,DPP0:lc_inh_fcut_gs_iga
+        JMPR cc_EQ,L_C74D8
+L_C74D4:                 ; 0xc74d4
+        BSET lv_act_aj.09H
+        JMPR cc_UC,L_C74DA
+L_C74D8:                 ; 0xc74d8
+        BCLR lv_act_aj.09H
+L_C74DA:                 ; 0xc74da
+        MOV R4,g_cdb0
+        CMP R4,eff_iga_min_teg
+        JMPR cc_NC,L_C74EA
+        MOV R9,eff_iga_min_teg
+        JMPR cc_UC,L_C7518
+L_C74EA:                 ; 0xc74ea
+        MOV R12,eff_iga_min_teg
+        MOV R13,g_cdb4
+        MOV R14,DPP0:c_min_dec_eff_iga_min_teg_1
+        CALLS 00FH,Ramp_Down_U16
+        MOV g_cdb4,R4
+        MOV R12,R4
+        MOV R13,eff_iga_min_teg
+        CALLS 00FH,sub_r12_r13_rets_r4
+        CMP R4,DPP0:c_hys_eff_iga_min_teg
+        JMPR cc_C,L_C7514
+        MOV R9,eff_iga_min_teg
+        JMPR cc_UC,L_C7518
+L_C7514:                 ; 0xc7514
+        MOV R9,g_cdb4
+L_C7518:                 ; 0xc7518
+        MOV R12,R9
+        MOV R13,g_cdb2
+        MOV R14,DPP0:c_min_dec_eff_iga_min_teg_2
+        CALLS 00FH,Ramp_Down_U16
+        MOV g_cdb2,R4
+        MOV R5,eff_iga_min_teg
+        MOV g_cdb0,R5
+        MOV R12,#DATA16 08000H
+        MOV R13,fac_iga_min_teg_iga_bas
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV R12,R4
+        MOV R13,g_cdb2
+        CALLS 00FH,Mul_Q15_Sat
+        MOV R9,R4
+        MOV R12,eff_iga_bas_cor
+        MOV R13,fac_iga_min_teg_iga_bas
+        CALLS 00FH,Mul_Q15_Sat
+        MOV R12,R4
+        MOV R13,R9
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV eff_iga_min_scc,R4
+        MOV R12,eff_egr_hom
+        MOV R13,R4
+        CALLS 00FH,Mul_Q15_Sat
+        MOV R13,R4
+        MOV R12,eff_lamb_bas_cor
+        CALLS 00FH,Mul_Q15_Sat
+        MOV R13,R4
+        MOV R12,tqi_ref
+        CALLS 00FH,Mul_Q15_Sat_Signed
+        MOV tqi_ref_iga_min_scc,R4
+        MOVB RL4,DPP0:lc_eff_scc_sp_man
+        JMPR cc_EQ,L_C7594
+        MOV R4,DPP0:c_eff_scc_sp_man
+        MOV eff_scc_sp,R4
+        JMPR cc_UC,L_C75C8
+L_C7594:                 ; 0xc7594
+        JNB lv_act_aj.09H,L_C75C0
+        MOV R4,tqi_ref_iga_min_scc
+        CMP R4,tqi_req_fast
+        JMPR cc_SGT,L_C75AC
+        MOV R5,#DATA16 08000H
+        MOV eff_scc_sp,R5
+        JMPR cc_UC,L_C75C8
+L_C75AC:                 ; 0xc75ac
+        MOV R12,tqi_req_fast
+        MOV R13,tqi_ref_iga_min_scc
+        CALLS 00FH,Div_Frac_U16_Q16
+        SHR R4,#01H
+        MOV eff_scc_sp,R4
+        JMPR cc_UC,L_C75C8
+L_C75C0:                 ; 0xc75c0
+        MOV R4,#DATA16 08000H
+        MOV eff_scc_sp,R4
+L_C75C8:                 ; 0xc75c8
+        MOV R12,eff_scc_sp
+        MOV R13,eff_scc_sp_hys
+        CALLS 00FH,sub_r12_r13_rets_r4
+        CMP R4,DPP0:c_eff_scc_sp_hys
+        JMPR cc_UGT,L_C75F2
+        MOV R4,#DATA16 08000H
+        SUB R4,DPP0:c_eff_scc_sp_hys
+        CMP R4,eff_scc_sp
+        JMPR cc_ULE,L_C75F2
+        MOV R4,eff_scc_sp
+        CMP R4,eff_scc_sp_hys
+        JMPR cc_NC,L_C75FA
+L_C75F2:                 ; 0xc75f2
+        MOV R4,eff_scc_sp
+        MOV eff_scc_sp_hys,R4
+L_C75FA:                 ; 0xc75fa
+        MOV R12,#DATA16 04C36H
+        MOV R13,eff_scc_sp_hys
+        CALLS 00FH,Get_Byte_2D_Table_DWord_YWord
+        MOVB nr_pat_scc,RL4
+        CALLS 00CH,Calc_Inj_Pattern
+        MOV R9,[R0+]
+        RETS
+
+S_C73D8 ENDS
+        END

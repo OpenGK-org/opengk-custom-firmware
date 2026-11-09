@@ -1,0 +1,280 @@
+; asw/knks.a66
+; 0xC30F0-0xC3330  (576 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_abc_inc_nl_knk                     EQU  0900B7H
+c_abc_max_nl_knk                     EQU  0900ECH
+c_cycnr_knks_diag                    EQU  09017FH
+c_n_min_knks_diag                    EQU  0902BCH
+c_nl_max_diag                        EQU  0902D0H
+c_nl_min_diag                        EQU  0902D2H
+c_dyw_min_knks_diag                  EQU  09052AH
+c_maf_min_knks_diag                  EQU  090604H
+c_v_int_knks_diag                    EQU  0907D4H
+
+PUBLIC  Diag_Knks_Cond, Diag_Knks_Dyw, Diag_Knks_SetDTC, Set_Knks_Err_Dyw
+EXTERN  Abs_Diff_U16:NEAR, DTC_Update_Debounced:NEAR
+
+S_C30F0 SECTION CODE AT 0C30F0H
+
+; ======== Diag_Knks_Cond  (@0xc30f0) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS31, verified): Knock sensor diagnosis enable conditions
+        ; ------------------------------------------------------------
+Diag_Knks_Cond:
+        JNB lv_cam_ad_avl_nvmy_ivvt.05H,L_C3140
+        MOV R4,maf_word
+        CMP R4,DPP0:c_maf_min_knks_diag
+        JMPR cc_ULE,L_C3140
+        MOVB RL4,n_32
+        CMPB RL4,DPP0:c_n_min_knks_diag
+        JMPR cc_ULE,L_C3140
+        JB lv_pl.02H,L_C3140
+        JB lv_pl.01H,L_C3140
+        MOVB RL5,crank_tim_6
+        BMOVN PSW.06H,PSW.03H
+        JB PSW.06H,L_C3132
+        MOVB RL5,cam_err_lih
+        BMOVN PSW.06H,PSW.03H
+        JB PSW.06H,L_C3132
+        MOVB RL5,lv_knk_c2fa
+        JMPR cc_NE,L_C3132
+        BSET lv_knks_1_err_dyw.0EH
+        JMPR cc_UC,L_C3144
+L_C3132:                 ; 0xc3132
+        BCLR lv_knks_1_err_dyw.0EH
+        BSET lv_knks_1_err_dyw.0BH
+        MOV R4,#DATA16 0FEFFH
+        AND g_f876,R4
+        JMPR cc_UC,L_C3144
+L_C3140:                 ; 0xc3140
+        BCLR lv_knks_1_err_dyw.0EH
+        BSET lv_knks_1_err_dyw.0BH
+L_C3144:                 ; 0xc3144
+        JNB lv_knks_1_err_dyw.0EH,L_C3166
+        MOVBZ R4,cyl_id_knk
+        MOV R5,#01H
+        SHL R5,R4
+        AND R5,#DATA16 0000AH
+        JMPR cc_EQ,L_C315C
+        MOV R12,#00H
+        CALLS 00CH,Diag_Knks_Dyw
+L_C315C:                 ; 0xc315c
+        MOV R12,#00H
+        CALLS 00CH,Set_Knks_Err_Dyw
+        CALLS 00CH,Diag_Knks_SetDTC
+L_C3166:                 ; 0xc3166
+        RETS
+
+; ======== Diag_Knks_Dyw  (@0xc3168) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS31, verified): Knock sensor dynamic-value diagnosis per cylinder
+        ; ------------------------------------------------------------
+Diag_Knks_Dyw:
+        MOV [-R0],R6
+        MOV R6,R12
+        MOVBZ R4,cyl_id_knk
+        SHL R4,#01H
+        MOV R12,[R4+#0CBF2H]
+        MOVBZ R4,cyl_id_knk
+        SHL R4,#01H
+        MOV R13,[R4+#0FBB4H]
+        CALLS 00FH,Abs_Diff_U16
+        SHR R4,#06H
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        MOV [R5+#0CC1CH],R4
+        JNB lv_knks_1_err_dyw.0BH,L_C3196
+        JMPA cc_UC,L_C32A6
+L_C3196:                 ; 0xc3196
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R5,[R4+#0CC1CH]
+        MOV R4,#DATA16 0CC1EH
+        MOVBZ R2,RL6
+        SHL R2,#01H
+        ADD R4,R2
+        MOV R2,[R4]
+        ADD R2,R5
+        MOV [R4],R2
+        MOV R4,#DATA16 0C31CH
+        MOVBZ R5,RL6
+        ADD R4,R5
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R5,[R4+#0CC1EH]
+        CMP R5,DPP0:c_v_int_knks_diag
+        JMPR cc_C,L_C31EC
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#0C31CH]
+        CMPB RL5,DPP0:c_cycnr_knks_diag
+        JMPR cc_NC,L_C31D8
+        BCLR lv_knks_1_err_dyw.06H
+L_C31D8:                 ; 0xc31d8
+        MOVB RL4,#00H
+        MOVBZ R5,RL6
+        MOVB [R5+#0C31CH],RL4
+        MOV R4,#00H
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        MOV [R5+#0CC1EH],R4
+        JMPR cc_UC,L_C320C
+L_C31EC:                 ; 0xc31ec
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#0C31CH]
+        CMPB RL5,DPP0:c_cycnr_knks_diag
+        JMPR cc_C,L_C320C
+        BSET lv_knks_1_err_dyw.06H
+        MOVB RL4,#00H
+        MOVBZ R5,RL6
+        MOVB [R5+#0C31CH],RL4
+        MOV R4,#00H
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        MOV [R5+#0CC1EH],R4
+L_C320C:                 ; 0xc320c
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R5,[R4+#0CC1CH]
+        CMP R5,DPP0:c_dyw_min_knks_diag
+        JMPR cc_UGT,L_C3226
+        MOVBZ R4,RL6
+        MOV R5,#01H
+        SHL R5,R4
+        AND R5,lv_knks_1_err_dyw
+        JMPR cc_EQ,L_C3250
+L_C3226:                 ; 0xc3226
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#0C31DH]
+        CMPB RL5,#05H
+        JMPR cc_ULE,L_C3244
+        JNB lv_dur_igc_0_err.08H,L_C3244
+        MOV R4,#DATA16 0C31DH
+        MOVBZ R5,RL6
+        ADD R4,R5
+        MOVB RL5,[R4]
+        SUBB RL5,#05H
+        MOVB [R4],RL5
+        JMPR cc_UC,L_C327E
+L_C3244:                 ; 0xc3244
+        MOVB RL4,#00H
+        MOVBZ R5,RL6
+        MOVB [R5+#0C31DH],RL4
+        BCLR lv_knks_1_err_dyw.02H
+        JMPR cc_UC,L_C327E
+L_C3250:                 ; 0xc3250
+        MOVBZ R4,RL6
+        MOVB RL5,[R4+#0C31DH]
+        CMPB RL5,DPP0:c_cycnr_knks_diag
+        JMPR cc_C,L_C3270
+        CMPB RL6,#00H
+        JMPR cc_EQ,L_C3268
+        JNB lv_knks_1_err_dyw.07H,L_C327E
+        BSET lv_knks_1_err_dyw.03H
+        JMPR cc_UC,L_C327E
+L_C3268:                 ; 0xc3268
+        JNB lv_knks_1_err_dyw.06H,L_C327E
+        BSET lv_knks_1_err_dyw.02H
+        JMPR cc_UC,L_C327E
+L_C3270:                 ; 0xc3270
+        MOV R4,#DATA16 0C31DH
+        MOVBZ R5,RL6
+        ADD R4,R5
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+L_C327E:                 ; 0xc327e
+        MOVBZ R4,RL6
+        SHL R4,#01H
+        MOV R5,[R4+#0CC1CH]
+        CMP R5,DPP0:c_dyw_min_knks_diag
+        JMPR cc_ULE,L_C3298
+        MOVBZ R4,RL6
+        MOV R5,#01H
+        SHL R5,R4
+        OR lv_knks_1_err_dyw,R5
+        JMPR cc_UC,L_C32C6
+L_C3298:                 ; 0xc3298
+        MOVBZ R4,RL6
+        MOV R5,#01H
+        SHL R5,R4
+        CPL R5
+        AND lv_knks_1_err_dyw,R5
+        JMPR cc_UC,L_C32C6
+L_C32A6:                 ; 0xc32a6
+        MOVB RL4,#00H
+        MOVBZ R5,RL6
+        MOVB [R5+#0C31CH],RL4
+        MOV R4,#00H
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        MOV [R5+#0CC1EH],R4
+        BCLR lv_knks_1_err_dyw.0BH
+        JB lv_dur_igc_0_err.08H,L_C32C6
+        MOVB RL4,#00H
+        MOVBZ R5,RL6
+        MOVB [R5+#0C31DH],RL4
+L_C32C6:                 ; 0xc32c6
+        MOV R6,[R0+]
+        RETS
+
+; ======== Set_Knks_Err_Dyw  (@0xc32ca) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by knock output signals/NVM/DTC): Knock-sensor dynamic-watch: sets/clears
+        ; lv_knks_1_err_dyw plausibility bits.
+        ; ------------------------------------------------------------
+Set_Knks_Err_Dyw:
+        MOVBZ R4,cyl_id_knk
+        SHL R4,#01H
+        MOVB RL5,[R4+#0CBF3H]
+        CMPB RL5,DPP0:c_nl_min_diag
+        JMPR cc_C,L_C32EA
+        MOVBZ R4,cyl_id_knk
+        SHL R4,#01H
+        MOVB RL5,[R4+#0CBF3H]
+        CMPB RL5,DPP0:c_nl_max_diag
+        JMPR cc_ULE,L_C32EC
+L_C32EA:                 ; 0xc32ea
+        BSET lv_knks_1_err_dyw.04H
+L_C32EC:                 ; 0xc32ec
+        RETS
+
+; ======== Diag_Knks_SetDTC  (@0xc32ee) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by knock output signals/NVM/DTC): Knock-sensor diagnostic DTC update (P-code
+        ; 0xd3e0): sets lv_dur_igc_0_err + lv_knks_1_err_dyw.
+        ; ------------------------------------------------------------
+Diag_Knks_SetDTC:
+        MOVB RL4,cyl_id_knk
+        JMPR cc_NE,L_C332E
+        JB lv_knks_1_err_dyw.04H,L_C32FC
+        JNB lv_knks_1_err_dyw.02H,L_C3302
+L_C32FC:                 ; 0xc32fc
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+L_C3302:                 ; 0xc3302
+        MOV R12,#DATA16 0D3E0H
+        MOV R13,#DATA16 056FEH
+        MOVBZ R14,DPP0:c_abc_inc_nl_knk
+        MOVBZ R15,DPP0:c_abc_max_nl_knk
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_dur_igc_0_err.08H,dtc_status_work.06H
+        MOVBZ R4,lv_knk_d3ea
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C332C
+        MOV R4,#DATA16 0FEFFH
+        AND dtc_st_grp_igc,R4
+L_C332C:                 ; 0xc332c
+        BCLR lv_knks_1_err_dyw.04H
+L_C332E:                 ; 0xc332e
+        RETS
+
+S_C30F0 ENDS
+        END

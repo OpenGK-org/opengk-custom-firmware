@@ -1,0 +1,592 @@
+; asw/comm/comm_pwm3.a66
+; 0xABBF2-0xAC168  (1398 bytes, 14 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  CAN_push_message_into_buffer, CC11INT_handler, CC12INT_handler, CC13INT_handler, CC19INT_handler, CC21INT_handler
+PUBLIC  CC29INT_handler, CC30INT_handler, CC4INT_handler, CC5INT_handler, Ctl_PWM3_Output, Inc_Dfbb0_bf2
+PUBLIC  Inc_Dfbb2_bf8, Reset_CC28IC_f26
+
+S_ABBF2 SECTION CODE AT 0ABBF2H
+
+; ======== Inc_Dfbb0_bf2  (@0xabbf2) ========
+Inc_Dfbb0_bf2:
+        SUB ign_cc_mode,ONES
+        RETI
+
+; ======== Inc_Dfbb2_bf8  (@0xabbf8) ========
+Inc_Dfbb2_bf8:
+        SUB g_fbb2,ONES
+        RETI
+
+; ======== CC12INT_handler  (@0xabbfe) ========
+CC12INT_handler:
+        SCXT CP,#DATA16 0FC56H
+        NOP
+        JNB P2.0CH,L_ABC1C
+        MOV R0,CC12_FE98
+        ADD R0,#DATA16 0000FH
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_ABC2E
+        SUB R0,#DATA16 00078H
+        JMPR cc_UC,L_ABC2E
+L_ABC1C:                 ; 0xabc1c
+        MOV R0,CC12_FE98
+        ADD R0,#DATA16 0000FH
+        CMP R0,#DATA16 00078H
+        JMPR cc_ULE,L_ABC2E
+        SUB R0,#DATA16 00078H
+L_ABC2E:                 ; 0xabc2e
+        MOV CC12_FE98,R0
+        POP CP
+        RETI
+
+; ======== CC29INT_handler  (@0xabc36) ========
+CC29INT_handler:
+        SCXT CP,#DATA16 0FC58H
+        NOP
+        JB P7.05H,L_ABC5A
+        MOV R0,CC29_FE7A
+        ADD CC29,#DATA16 0005DH
+        CMP CC29,T8_F052
+        JMPR cc_EQ,L_ABC50
+        JMPR cc_NN,L_ABC58
+L_ABC50:                 ; 0xabc50
+        BSET P7.05H
+        EXTR #01H
+        BFLDL 0F184H,#080H,#080H
+L_ABC58:                 ; 0xabc58
+        JMPR cc_UC,L_ABC84
+L_ABC5A:                 ; 0xabc5a
+        ADDB capcom_5,ONES
+        JMPR cc_EQ,L_ABC7A
+        ADD R0,#DATA16 00177H
+        MOV CC29_FE7A,R0
+        CMP CC29,T8_F052
+        JMPR cc_EQ,L_ABC70
+        JMPR cc_NN,L_ABC78
+L_ABC70:                 ; 0xabc70
+        BCLR P7.05H
+        EXTR #01H
+        BFLDL 0F184H,#080H,#080H
+L_ABC78:                 ; 0xabc78
+        JMPR cc_UC,L_ABC84
+L_ABC7A:                 ; 0xabc7a
+        BFLDL 0FF28H,#0F0H,#00H
+        EXTR #01H
+        BFLDL 0F184H,#040H,#00H
+L_ABC84:                 ; 0xabc84
+        POP CP
+        RETI
+
+; ======== CC30INT_handler  (@0xabc88) ========
+CC30INT_handler:
+        ADDB g_f5ea,ONES
+        JMPR cc_NE,L_ABCFC
+        SCXT CP,#DATA16 0FC5AH
+        NOP
+        MOVBZ R0,g_f5eb
+        MOVB g_f5ea,RL0
+        ADD g_fb06,R0
+        MOVBZ R0,capcom_9
+        SHL R0,#02H
+        MOV R2,CC30_FE7C
+        JMPR cc_N,L_ABCBA
+        EXTR #02H
+        MOV R3,g_fbb2
+        JNB T8IC.07H,L_ABCD2
+        ADD R3,#01H
+        JMPR cc_UC,L_ABCD2
+L_ABCBA:                 ; 0xabcba
+        MOV R3,g_fbb2
+        CMP ONES,T8_F052
+        JMPR cc_NN,L_ABCD2
+        EXTR #02H
+        JNB T8IC.07H,L_ABCCC
+        JMPR cc_UC,L_ABCD2
+L_ABCCC:                 ; 0xabccc
+        MOV R3,g_fbb2
+        SUB R3,#01H
+L_ABCD2:                 ; 0xabcd2
+        MOV R1,R2
+        SUB R1,g_fb48
+        MOV g_fb48,R2
+        MOV [R0+#0FB08H],R1
+        MOV R1,R3
+        SUBC R1,g_fb4a
+        MOV g_fb4a,R3
+        MOV [R0+#0FB0AH],R1
+        SHR R0,#02H
+        ADD R0,#01H
+        AND R0,#DATA16 0000FH
+        MOVB capcom_9,RL0
+        POP CP
+L_ABCFC:                 ; 0xabcfc
+        EXTR #01H
+        BFLDL 0F18CH,#080H,#00H
+        RETI
+
+; ======== CC13INT_handler  (@0xabd04) ========
+CC13INT_handler:
+        ADDB g_f5ee,ONES
+        JMPR cc_NE,L_ABD78
+        SCXT CP,#DATA16 0FC62H
+        NOP
+        MOVBZ R0,g_f5ef
+        MOVB g_f5ee,RL0
+        ADD g_fb4c,R0
+        MOVBZ R0,capcom_10
+        SHL R0,#02H
+        MOV R2,CC13_FE9A
+        JMPR cc_N,L_ABD36
+        ATOMIC #02H
+        MOV R3,ign_cc_mode
+        JNB XP3IC.07H,L_ABD4E
+        ADD R3,#01H
+        JMPR cc_UC,L_ABD4E
+L_ABD36:                 ; 0xabd36
+        MOV R3,ign_cc_mode
+        CMP ONES,T1_FE52
+        JMPR cc_NN,L_ABD4E
+        ATOMIC #02H
+        JNB T1IC.07H,L_ABD48
+        JMPR cc_UC,L_ABD4E
+L_ABD48:                 ; 0xabd48
+        MOV R3,ign_cc_mode
+        SUB R3,#01H
+L_ABD4E:                 ; 0xabd4e
+        MOV R1,R2
+        SUB R1,g_fb8e
+        MOV g_fb8e,R2
+        MOV [R0+#0FB4EH],R1
+        MOV R1,R3
+        SUBC R1,g_fb90
+        MOV g_fb90,R3
+        MOV [R0+#0FB50H],R1
+        SHR R0,#02H
+        ADD R0,#01H
+        AND R0,#DATA16 0000FH
+        MOVB capcom_10,RL0
+        POP CP
+L_ABD78:                 ; 0xabd78
+        ATOMIC #01H
+        BFLDL 0F192H,#080H,#00H
+        RETI
+
+; ======== CC5INT_handler  (@0xabd80) ========
+CC5INT_handler:
+        SCXT CP,#DATA16 0FC6AH
+        JB P2.05H,L_ABDFA
+        MOVBZ R0,inj_cc_6
+        MOVB RL0,[R0+#065EFH]
+        MOVB inj_cc_6,RL0
+        BFLDL 0FF54H,#0F0H,#00H
+        MOVB RL1,[R0+#0F60CH]
+        MOVB RH1,#00H
+        CMP R1,#DATA16 00078H
+        JMPR cc_ULE,L_ABDA8
+        SUB R1,#DATA16 00078H
+L_ABDA8:                 ; 0xabda8
+        MOV CC5_FE8A,R1
+        BFLDL 0FF54H,#0F0H,#050H
+        MOVB RL1,#DATA16 00050H
+        MOVB capcom_0,RL1
+        MOVB RL1,[R0+#0F614H]
+        MOVB capcom_1,RL1
+        MOVB RL1,[R0+#0F620H]
+        MOVB capcom_2,RL1
+        MOVB RL1,[R0+#0F61CH]
+        MOVB capcom_3,RL1
+        MOVB RL1,[R0+#0F618H]
+        MOVB capcom_4,RL1
+        BMOV sched_flags2.08H,capcom_12.0FH
+        BSET capcom_12.0FH
+        EXTR #01H
+        BFLDL 0F196H,#080H,#080H
+        MOV R0,#DATA16 04000H
+        ATOMIC #02H
+        OR capcom_11,R0
+        BSET lv_err_com_resp_imob.0AH
+        ATOMIC #02H
+        JNB lv_err_com_resp_imob.09H,L_ABDF8
+        BSET ADCIC.07H
+L_ABDF8:                 ; 0xabdf8
+        JMPR cc_UC,L_ABE32
+L_ABDFA:                 ; 0xabdfa
+        MOV R1,g_fa88
+        AND R1,#DATA16 003FFH
+        MOVBZ R0,inj_cc_6
+        MOVB RL0,[R0+#065EDH]
+        SHL R0,#01H
+        SHL R1,#06H
+        MOV [R0+#0FBB4H],R1
+        MOVBZ R0,inj_cc_6
+        BFLDL 0FF54H,#0F0H,#00H
+        MOVB RL1,[R0+#0F610H]
+        MOVB RH1,#00H
+        CMP R1,#DATA16 00078H
+        JMPR cc_ULE,L_ABE2A
+        SUB R1,#DATA16 00078H
+L_ABE2A:                 ; 0xabe2a
+        MOV CC5_FE8A,R1
+        BFLDL 0FF54H,#0F0H,#050H
+L_ABE32:                 ; 0xabe32
+        POP CP
+        RETI
+
+; ======== CC19INT_handler  (@0xabe36) ========
+CC19INT_handler:
+        SCXT CP,#DATA16 0FC6EH
+        NOP
+        BFLDH CCM4_FF22,#070H,#00H
+        MOV R1,[R0+#065E4H]
+        JMPI cc_UC,[R1]
+        MOV R4,CC19_FE66
+        MOV R2,lv_ivvt_f9c8
+        MOV R3,#DATA16 0493EH
+        SUB R3,g_f9c6
+        CMP R2,R3
+        JMPR cc_UGT,L_ABE5E
+        BCLR state_mtv.02H
+        JMPR cc_UC,L_ABE66
+L_ABE5E:                 ; 0xabe5e
+        MOV R1,R3
+        MOV R3,R2
+        MOV R2,R1
+        BSET state_mtv.02H
+L_ABE66:                 ; 0xabe66
+        MOV R1,CC19_FE66
+        ADD CC19_FE66,R2
+        BFLDH CCM4_FF22,#070H,#060H
+        NEG R1
+        ADD R1,T8_F052
+        CMP R1,R2
+        JMPR cc_C,L_ABE9E
+        EXTR #01H
+        BFLDL 0F166H,#080H,#080H
+        JB state_mtv.02H,L_ABE96
+        BSET P8.01H
+        MOV R1,R3
+        SHR R1,#03H
+        JMPR cc_EQ,L_ABE92
+        BSET P8.00H
+        JMPR cc_UC,L_ABEA4
+L_ABE92:                 ; 0xabe92
+        BCLR P8.00H
+        JMPR cc_UC,L_ABEA4
+L_ABE96:                 ; 0xabe96
+        BCLR P8.01H
+        NOP
+        BCLR P8.00H
+        JMPR cc_UC,L_ABEA4
+L_ABE9E:                 ; 0xabe9e
+        BCLR P8.01H
+        NOP
+        BSET P8.00H
+L_ABEA4:                 ; 0xabea4
+        MOV R0,#02H
+        JMPR cc_UC,L_ABF22
+        MOV CC19_FE66,R4
+        ADD CC19_FE66,R3
+        BFLDH CCM4_FF22,#070H,#060H
+        NEG R4
+        ADD R4,T8_F052
+        CMP R4,R3
+        JMPR cc_C,L_ABED4
+        EXTR #01H
+        BFLDL 0F166H,#080H,#080H
+        MOV R1,R2
+        SHR R1,#01H
+        JMPR cc_EQ,L_ABEDE
+        MOV R1,#DATA16 0493EH
+        SUB R1,R2
+        SHR R1,#01H
+        JMPR cc_EQ,L_ABEDE
+L_ABED4:                 ; 0xabed4
+        JB state_mtv.02H,L_ABEDC
+        BSET P8.01H
+        JMPR cc_UC,L_ABEDE
+L_ABEDC:                 ; 0xabedc
+        BCLR P8.00H
+L_ABEDE:                 ; 0xabede
+        MOV R0,#04H
+        JMPR cc_UC,L_ABF22
+        NEG R3
+        ADD R3,#DATA16 0493EH
+        MOV R1,CC19_FE66
+        ADD CC19_FE66,R3
+        BFLDH CCM4_FF22,#070H,#060H
+        NEG R1
+        ADD R1,T8_F052
+        CMP R1,R3
+        JMPR cc_C,L_ABF14
+        EXTR #01H
+        BFLDL 0F166H,#080H,#080H
+        MOV R1,R3
+        SHR R1,#01H
+        JMPR cc_EQ,L_ABF1E
+        MOV R1,#DATA16 0493EH
+        SUB R1,R3
+        SHR R1,#01H
+        JMPR cc_EQ,L_ABF1E
+L_ABF14:                 ; 0xabf14
+        JB state_mtv.02H,L_ABF1C
+        BCLR P8.00H
+        JMPR cc_UC,L_ABF1E
+L_ABF1C:                 ; 0xabf1c
+        BSET P8.01H
+L_ABF1E:                 ; 0xabf1e
+        MOV R0,#00H
+        JMPR cc_UC,L_ABF22
+L_ABF22:                 ; 0xabf22
+        POP CP
+        RETI
+
+; ======== Reset_CC28IC_f26  (@0xabf26) ========
+Reset_CC28IC_f26:
+        EXTR #01H
+        BFLDL 0F178H,#080H,#00H
+        BFLDL 0FF28H,#07H,#00H
+        BSET capcom_12.0DH
+        EXTR #01H
+        BFLDL 0F196H,#0C0H,#0C0H
+        RETI
+
+; ======== CC11INT_handler  (@0xabf3a) ========
+CC11INT_handler:
+        SCXT CP,#DATA16 0FC78H
+        JB P2.0BH,L_ABF62
+        MOV R1,cps_pwm_cmp
+        MOV R0,CC11_FE96
+        ADD CC11_FE96,R1
+        NEG R0
+        ADD R0,T1_FE52
+        CMP R0,R1
+        JMPR cc_C,L_ABF82
+        BSET P2.0BH
+        ATOMIC #01H
+        BFLDL 0F18EH,#080H,#080H
+        JMPR cc_UC,L_ABF82
+L_ABF62:                 ; 0xabf62
+        NEG R1
+        ADD R1,cps_pwm_base
+        MOV R0,CC11_FE96
+        ADD CC11_FE96,R1
+        NEG R0
+        ADD R0,T1_FE52
+        CMP R0,R1
+        JMPR cc_C,L_ABF82
+        BCLR P2.0BH
+        ATOMIC #01H
+        BFLDL 0F18EH,#080H,#080H
+L_ABF82:                 ; 0xabf82
+        POP CP
+        RETI
+
+; ======== CC21INT_handler  (@0xabf86) ========
+CC21INT_handler:
+        SCXT CP,#DATA16 0FC7EH
+        NOP
+        JB P8.05H,L_ABFB0
+        MOV R1,lv_maf_f9da
+        MOV R0,CC21_FE6A
+        ADD CC21_FE6A,R1
+        NEG R0
+        ADD R0,T8_F052
+        CMP R0,R1
+        JMPR cc_C,L_ABFD0
+        BSET P8.05H
+        EXTR #01H
+        BFLDL 0F16AH,#080H,#080H
+        JMPR cc_UC,L_ABFD0
+L_ABFB0:                 ; 0xabfb0
+        NEG R1
+        ADD R1,maf_pwm_base
+        MOV R0,CC21_FE6A
+        ADD CC21_FE6A,R1
+        NEG R0
+        ADD R0,T8_F052
+        CMP R0,R1
+        JMPR cc_C,L_ABFD0
+        BCLR P8.05H
+        EXTR #01H
+        BFLDL 0F16AH,#080H,#080H
+L_ABFD0:                 ; 0xabfd0
+        POP CP
+        RETI
+
+; ======== CC4INT_handler  (@0xabfd4) ========
+CC4INT_handler:
+        SCXT CP,#DATA16 0FC82H
+        NOP
+        BFLDL 0FF54H,#07H,#00H
+        JBC R2.00H,L_AC00A
+        BSET R2.00H
+        MOV R1,imob_f9de
+        MOV R0,CC4_FE88
+        ADD CC4_FE88,R1
+        BFLDL 0FF54H,#07H,#06H
+        NEG R0
+        ADD R0,T1_FE52
+        CMP R0,R1
+        JMPR cc_C,L_AC006
+        ATOMIC #01H
+        BFLDL 0F180H,#080H,#080H
+        JMPR cc_UC,L_AC030
+L_AC006:                 ; 0xac006
+        BCLR P2.04H
+        JMPR cc_UC,L_AC030
+L_AC00A:                 ; 0xac00a
+        NEG R1
+        ADD R1,imob_pwm_base
+        MOV R0,CC4_FE88
+        ADD CC4_FE88,R1
+        BFLDL 0FF54H,#07H,#06H
+        NEG R0
+        ADD R0,T1_FE52
+        CMP R0,R1
+        JMPR cc_C,L_AC02E
+        ATOMIC #01H
+        BFLDL 0F180H,#080H,#080H
+        JMPR cc_UC,L_AC030
+L_AC02E:                 ; 0xac02e
+        BSET P2.04H
+L_AC030:                 ; 0xac030
+        POP CP
+        RETI
+
+; ======== Ctl_PWM3_Output  (@0xac034) ========
+        ; ------------------------------------------------------------
+        ; Seg-A ISR helper (verified by SFR/CCP usage): PWM channel-3 output control (PWMCON0/PT3/PP3/PW3)
+        ; gated by DAT_00f5f2.
+        ; ------------------------------------------------------------
+Ctl_PWM3_Output:
+        SCXT CP,#DATA16 0FC88H
+        NOP
+        JNB PWMCON0.0FH,L_AC064
+        BCLR PWMCON0.0FH
+        MOVBZ R0,ivvt_hpwm_rdy
+        JMPR cc_EQ,L_AC064
+        BCLR PWMCON0.03H
+        MOVBZ R0,ivvt_hpwm_rng
+        BMOV PWMCON0.07H,R0.00H
+        EXTR #02H
+        MOV PW3,0FF1CH
+        MOV SFR_FE3E,ivvt_hpwm_div
+        MOV PW3,ivvt_hpwm_cmp_hold
+        MOVB ivvt_hpwm_rdy,ZEROS
+        BSET PWMCON0.03H
+L_AC064:                 ; 0xac064
+        POP CP
+        RETI
+
+; ======== CAN_push_message_into_buffer  (@0xac068) ========
+CAN_push_message_into_buffer:
+        SCXT CP,#DATA16 0FC8AH
+        ; this is possibly triggered by some interrupt?
+        NOP
+        BCLR R6.01H
+L_AC070:                 ; 0xac070
+        MOVBZ R2,can_tx_obj_idx
+        JMPR cc_EQ,L_AC158
+        CMP R2,#01H
+        JMPR cc_NE,L_AC0A2
+        MOV R0,can_tx_ctrl
+        BCMP R6.00H,PSW.00H
+        JMPR cc_NN,L_AC070
+        BSET R6.01H
+        MOVB RL1,#00H
+        MOVB can_tx_retry,RL1
+        BMOV R6.00H,R0.0FH
+        JMPR cc_NN,L_AC09A
+        MOVB RL1,#04H
+        ORB can_tx_status,RL1
+        JMPR cc_UC,L_AC070
+L_AC09A:                 ; 0xac09a
+        MOVB RL1,#08H
+        ORB can_tx_status,RL1
+        JMPR cc_UC,L_AC070
+L_AC0A2:                 ; 0xac0a2
+        MOVB RL0,#00H
+        MOVB can_tx_retry,RL0
+        SUB R2,#03H
+        JMPR cc_NN,L_AC0AE
+        MOV R2,#0EH
+L_AC0AE:                 ; 0xac0ae
+        MOV R4,#DATA16 08000H
+        SHR R4,R2
+        MOV R3,R2
+        SHL R3,#04H
+        ADD R3,#DATA16 0EE10H
+        MOV R0,#DATA16 0FFFDH
+        MOV [R3],R0
+        MOVB RL0,[R3+#06H]
+        JNB R0.03H,L_AC14A
+        MOV R0,R2
+        SHL R0,#01H
+        MOV R5,[R0+#0E16CH]
+        JMPR cc_EQ,L_AC13C
+        MOVB RL1,#03H
+        MOVB [R5+#0BH],RL1
+        MOVB RL1,[R5+#02H]
+        JNB R1.07H,L_AC0EE
+        MOVB RL1,#01H
+        ORB can_tx_status,RL1
+        OR can_tx_full_msk,R4
+        BSET R6.01H
+L_AC0EE:                 ; 0xac0ee
+        MOV R5,[R5]
+        MOV [R0+#0E16CH],R5
+        JMPR cc_EQ,L_AC148
+        MOV R1,#DATA16 0FAFFH
+        MOV [R3],R1
+        MOVB RL1,#04H
+        MOVB [R5+#0BH],RL1
+        MOV R1,R3
+        ADD R1,#07H
+        MOV R0,R5
+        ADD R0,#03H
+        MOVB [R1],[R0+]
+        ADD R1,#01H
+        MOV [R1],[R0+]
+        ADD R1,#02H
+        MOV [R1],[R0+]
+        ADD R1,#02H
+        MOV [R1],[R0+]
+        ADD R1,#02H
+        MOVB [R1],[R0+]
+        MOVB RL1,[R5+#02H]
+        JNB R1.00H,L_AC134
+        MOV R1,[R0+#01H]
+        MOV [R3+#02H],R1
+        MOV R1,[R0+#03H]
+        MOV [R3+#04H],R1
+L_AC134:                 ; 0xac134
+        MOV R1,#DATA16 0E7FFH
+        MOV [R3],R1
+        JMPR cc_UC,L_AC148
+L_AC13C:                 ; 0xac13c
+        MOVB RL1,#01H
+        ORB can_tx_status,RL1
+        OR can_tx_full_msk,R4
+        BSET R6.01H
+L_AC148:                 ; 0xac148
+        JMPR cc_UC,L_AC070
+L_AC14A:                 ; 0xac14a
+        MOVB RL1,#02H
+        ORB can_tx_status,RL1
+        OR can_tx_ovf_msk,R4
+        BSET R6.01H
+        JMPR cc_UC,L_AC070
+L_AC158:                 ; 0xac158
+        JNB R6.01H,L_AC164
+        BOR can_sched_flags1.0CH,can_sched_flags0.0CH
+        BMOV can_sched_flags0.0CH,can_sched_flags2.0CH
+L_AC164:                 ; 0xac164
+        POP CP
+        RETI
+
+S_ABBF2 ENDS
+        END

@@ -1,0 +1,385 @@
+; asw/bank/bank_s1b4.a66
+; 0xCFA1E-0xCFDC8  (938 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_conf_cat_eff                       EQU  090149H
+c_ti_ad_add_max                      EQU  0908F8H
+c_ti_ad_add_min                      EQU  0908FAH
+c_ti_ad_fac_max                      EQU  0908FCH
+c_ti_ad_fac_min                      EQU  0908FEH
+
+PUBLIC  Calc_Conf_CatEff, LamAdapt_TI_NVM_Restore, Lam_Adapt_Init_NVM, NVM_Save_s1b4, Reset_ctr_cold_st_b96
+EXTERN  Calc_Ctr_Stop_FSD_2:NEAR, Elevated_Write_Routine_prg_zone_wrapper:NEAR, Filt_Lam_Dly_I_Ad:NEAR, xor_routine:NEAR
+
+S_CFA1E SECTION CODE AT 0CFA1EH
+
+; ======== LamAdapt_TI_NVM_Restore  (@0xcfa1e) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS2000, verified): Lambda Adaptation (TI_AD_ADD_MMV) NVM restore
+        ; ------------------------------------------------------------
+LamAdapt_TI_NVM_Restore:
+        JNB can_fd58.02H,L_CFA26
+        JMPA cc_UC,L_CFB90
+L_CFA26:                 ; 0xcfa26
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 001B4H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#0CH
+        CALLS 00DH,xor_routine
+        MOV R10,diag_f890
+        MOV R11,diag_f892
+        EXTP R11, #02H
+        MOV R5,[R10+#01C0H]
+        NOP
+        CMP R5,R4
+        JMPA cc_NE,L_CFB90
+        JNB lv_pl.0CH,L_CFA78
+        MOVB RL4,conf_ad_rst
+        JMPA cc_NE,L_CFB7C
+L_CFA78:                 ; 0xcfa78
+        MOV R4,diag_f890
+        MOV R5,diag_f892
+        EXTP R5, #02H
+        MOVB RL3,[R4+#01BEH]
+        NOP
+        MOVB ctr_cold_st,RL3
+        MOVB RL4,conf_lam
+        JMPR cc_EQ,L_CFB5A
+        MOV R4,diag_f890
+        MOV R5,diag_f892
+        EXTP R5, #02H
+        MOV R2,[R4+#01B4H]
+        NOP
+        CMP R2,DPP0:c_ti_ad_add_min
+        JMPR cc_SLT,L_CFAC4
+        EXTP R5, #02H
+        MOV R2,[R4+#01B4H]
+        NOP
+        CMP R2,DPP0:c_ti_ad_add_max
+        JMPR cc_SGT,L_CFAC4
+        EXTP R5, #02H
+        MOV R2,[R4+#01B4H]
+        NOP
+        MOV lam_bank_1_lam_up_ti_ad_add_mmv,R2
+        JMPR cc_UC,L_CFAC8
+L_CFAC4:                 ; 0xcfac4
+        MOV lam_bank_1_lam_up_ti_ad_add_mmv,ZEROS
+L_CFAC8:                 ; 0xcfac8
+        MOV R4,diag_f890
+        MOV R5,diag_f892
+        EXTP R5, #02H
+        MOV R2,[R4+#01B6H]
+        NOP
+        CMP R2,DPP0:c_ti_ad_fac_min
+        JMPR cc_SLT,L_CFAFA
+        EXTP R5, #02H
+        MOV R2,[R4+#01B6H]
+        NOP
+        CMP R2,DPP0:c_ti_ad_fac_max
+        JMPR cc_SGT,L_CFAFA
+        EXTP R5, #02H
+        MOV R2,[R4+#01B6H]
+        NOP
+        MOV lam_bank_1_lam_up_ti_ad_fac_mmv,R2
+        JMPR cc_UC,L_CFAFE
+L_CFAFA:                 ; 0xcfafa
+        MOV lam_bank_1_lam_up_ti_ad_fac_mmv,ZEROS
+L_CFAFE:                 ; 0xcfafe
+        MOVB RL4,conf_cat_eff
+        CMPB RL4,#01H
+        JMPR cc_NE,L_CFB44
+        MOV R4,diag_f890
+        MOV R5,diag_f892
+        EXTP R5, #02H
+        MOVB RL3,[R4+#01BCH]
+        NOP
+        MOVB ctr_stop_fsd,RL3
+        EXTP R5, #02H
+        MOVB RL2,[R4+#01BDH]
+        NOP
+        MOVB ctr_stop_fsd_new,RL2
+        EXTP R5, #02H
+        MOV R2,[R4+#01B8H]
+        NOP
+        MOVB lam_bank_1_cat_eff_struct_cat_diag,RL2
+        EXTP R5, #02H
+        MOV R2,[R4+#01BAH]
+        NOP
+        MOV lam_bank_1_lam_dly_t_dly_i_sword_1_,R2
+        MOV lam_bank_1_lam_dly_t_dly_i_ad,R2
+        RETS
+L_CFB44:                 ; 0xcfb44
+        MOVB ctr_stop_fsd_new,ZEROS
+        MOVB ctr_stop_fsd,ZEROS
+        MOVB lam_bank_1_cat_eff_struct_cat_diag,ZEROS
+        MOV lam_bank_1_lam_dly_t_dly_i_sword_1_,ZEROS
+        MOV lam_bank_1_lam_dly_t_dly_i_ad,ZEROS
+        RETS
+L_CFB5A:                 ; 0xcfb5a
+        MOVB ctr_stop_fsd_new,ZEROS
+        MOVB ctr_stop_fsd,ZEROS
+        MOV lam_bank_1_lam_up_ti_ad_add_mmv,ZEROS
+        MOV lam_bank_1_lam_up_ti_ad_fac_mmv,ZEROS
+        MOVB lam_bank_1_cat_eff_struct_cat_diag,ZEROS
+        MOV lam_bank_1_lam_dly_t_dly_i_ad,ZEROS
+        MOV g_c79e,ZEROS
+        MOV lam_bank_1_lam_dly_t_dly_i_sword_1_,ZEROS
+        RETS
+L_CFB7C:                 ; 0xcfb7c
+        MOVB RL4,conf_ad_rst
+        CMPB RL4,#02H
+        JMPR cc_NE,L_CFB8A
+        CALLS 00CH,Lam_Adapt_Init_NVM
+        RETS
+L_CFB8A:                 ; 0xcfb8a
+        CALLS 00CH,Reset_ctr_cold_st_b96
+        RETS
+L_CFB90:                 ; 0xcfb90
+        CALLS 00CH,Reset_ctr_cold_st_b96
+        RETS
+
+; ======== Reset_ctr_cold_st_b96  (@0xcfb96) ========
+Reset_ctr_cold_st_b96:
+        MOVB ctr_cold_st,ZEROS
+        MOVB ctr_stop_fsd_new,ZEROS
+        MOVB ctr_stop_fsd,ZEROS
+        MOV lam_bank_1_lam_up_ti_ad_add_mmv,ZEROS
+        MOV lam_bank_1_lam_up_ti_ad_fac_mmv,ZEROS
+        MOVB lam_bank_1_cat_eff_struct_cat_diag,ZEROS
+        MOV lam_bank_1_lam_dly_t_dly_i_ad,ZEROS
+        MOV g_c79e,ZEROS
+        MOV lam_bank_1_lam_dly_t_dly_i_sword_1_,ZEROS
+        RETS
+
+; ======== Lam_Adapt_Init_NVM  (@0xcfbbc) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signal): Lambda adaptation init/restore from NVM block (DAT_00f890):
+        ; clears ti_ad_add/fac_mmv, cat_diag, lam_dly; restores cold-start/cat counters per
+        ; conf_lam/conf_cat_eff.
+        ; ------------------------------------------------------------
+Lam_Adapt_Init_NVM:
+        MOVB ctr_stop_fsd_new,ZEROS
+        MOVB ctr_stop_fsd,ZEROS
+        MOV lam_bank_1_lam_up_ti_ad_add_mmv,ZEROS
+        MOV lam_bank_1_lam_up_ti_ad_fac_mmv,ZEROS
+        MOV R4,diag_f890
+        MOV R5,diag_f892
+        EXTP R5, #02H
+        MOVB RL3,[R4+#01BEH]
+        NOP
+        MOVB ctr_cold_st,RL3
+        MOVB RL4,conf_lam
+        JMPR cc_EQ,L_CFC22
+        MOVB RL5,conf_cat_eff
+        CMPB RL5,#01H
+        JMPR cc_NE,L_CFC14
+        MOV R4,diag_f890
+        MOV R5,diag_f892
+        EXTP R5, #02H
+        MOV R2,[R4+#01B8H]
+        NOP
+        MOVB lam_bank_1_cat_eff_struct_cat_diag,RL2
+        EXTP R5, #02H
+        MOV R2,[R4+#01BAH]
+        NOP
+        MOV lam_bank_1_lam_dly_t_dly_i_sword_1_,R2
+        MOV lam_bank_1_lam_dly_t_dly_i_ad,R2
+        RETS
+L_CFC14:                 ; 0xcfc14
+        MOVB lam_bank_1_cat_eff_struct_cat_diag,ZEROS
+        MOV lam_bank_1_lam_dly_t_dly_i_sword_1_,ZEROS
+        MOV lam_bank_1_lam_dly_t_dly_i_ad,ZEROS
+        RETS
+L_CFC22:                 ; 0xcfc22
+        MOVB lam_bank_1_cat_eff_struct_cat_diag,ZEROS
+        MOV lam_bank_1_lam_dly_t_dly_i_ad,ZEROS
+        MOV g_c79e,ZEROS
+        MOV lam_bank_1_lam_dly_t_dly_i_sword_1_,ZEROS
+        RETS
+
+; ======== NVM_Save_s1b4  (@0xcfc34) ========
+        ; ------------------------------------------------------------
+        ; NVM adaptation I/O: saves RAM-> validated NVM block (DAT_00f890 base) section; xor_routine checksum.
+        ; Section offset in name.
+        ; ------------------------------------------------------------
+NVM_Save_s1b4:
+        SUB R0,#02H
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 001BEH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0F48DH
+        MOV R15,#01H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOVB RL4,conf_lam
+        JMPR cc_EQ,L_CFD56
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 001B4H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0C764H
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 001B6H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0C762H
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOVB RL4,conf_cat_eff
+        CMPB RL4,#01H
+        JMPR cc_NE,L_CFD56
+        CALLS 00BH,Calc_Ctr_Stop_FSD_2
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 001BCH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0F37CH
+        MOV R15,#01H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 001BDH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0F37DH
+        MOV R15,#01H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS 00BH,Filt_Lam_Dly_I_Ad
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 001B8H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0C872H
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 001BAH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0C796H
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+L_CFD56:                 ; 0xcfd56
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 001B4H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#0CH
+        CALLS 00DH,xor_routine
+        MOV [R0],R4
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 001C0H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,R0
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        ADD R0,#02H
+        RETS
+
+; ======== Calc_Conf_CatEff  (@0xcfdb0) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): Variant and Version Coding (conf_cat_eff)
+        ; ------------------------------------------------------------
+Calc_Conf_CatEff:
+        MOVB RL4,conf_lam
+        JMPR cc_EQ,L_CFDC6
+        MOVB RL5,DPP0:c_conf_cat_eff
+        CMPB RL5,#01H
+        JMPR cc_NE,L_CFDC6
+        BSET lv_conf_mis.01H
+        MOVB RL3,#01H
+        MOVB conf_cat_eff,RL3
+L_CFDC6:                 ; 0xcfdc6
+        RETS
+
+S_CFA1E ENDS
+        END

@@ -1,0 +1,231 @@
+; asw/dtc/dtc_adaptive.a66
+; 0xDA226-0xDA41C  (502 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Count_DTC_By_Status_2, DTC_Status_Tick, Read_FreezeFrame_1, Reset_Adaptive_LearnedValues
+EXTERN  Calc_LS_Down_OBD2_Mod6:NEAR, ClrBits_state_rbm_cam_dif_ivvt_in_65e:NEAR, ClrBits_state_rbm_cps_mecha_352:NEAR, ClrBits_state_rbm_dtp_noise_2c8:NEAR
+EXTERN  ClrBits_state_rbm_leak_large_474:NEAR, ClrBits_state_rbm_leak_small_3d6:NEAR, ClrBits_state_rbm_ls_down_swt_efa:NEAR, ClrBits_state_rbm_lsh_down_obd2_0b6:NEAR
+EXTERN  ClrBits_state_rbm_lsh_up_obd2_86e:NEAR, ClrBits_state_rbm_maf_dif_ch_20a:NEAR, ClrBits_state_rbm_tco_plaus_874:NEAR, ClrBits_state_rbm_tco_stuck_054:NEAR
+EXTERN  ClrBits_state_rbm_tco_stuck_rng_0ec:NEAR, ClrBits_state_rbm_th_det_750:NEAR, ClrBits_state_rbm_tia_plaus_178:NEAR, ClrBits_state_rbm_toil_stuck_37e:NEAR
+EXTERN  ClrBits_state_rbm_vls_down_plaus_f94:NEAR, ClrBits_state_rbm_vls_up_frq_5c6:NEAR, ClrBits_state_rbm_vls_up_plaus_5b2:NEAR, Push_To_System_Stack:NEAR
+EXTERN  Reset_OBD_Readiness_Group:NEAR, Reset_OBD_Stat:NEAR, Reset__ctr_km_mil_on_166:NEAR, Set_RBM_Cat_Diag_State_2:NEAR
+
+S_DA226 SECTION CODE AT 0DA226H
+
+; ======== Reset_Adaptive_LearnedValues  (@0xda226) ========
+Reset_Adaptive_LearnedValues:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R6
+        MOVB RL6,#00H
+        MOV R8,#DATA16 0D0CEH
+        JMPR cc_UC,L_DA23A
+L_DA234:                 ; 0xda234
+        MOVB RL4,#00H
+        MOVB [R8],RL4
+        ADD R8,#01H
+L_DA23A:                 ; 0xda23a
+        CMP R8,#DATA16 0D668H
+        JMPR cc_C,L_DA234
+        MOV R9,#DATA16 00065H
+        JMPR cc_UC,L_DA26A
+L_DA246:                 ; 0xda246
+        MOV R4,#DATA16 00016H
+        MULU R4,R9
+        MOV R4,0FE0EH
+        MOV R10,R4
+        MOV R4,[R10+#0523EH]
+        MOV R5,[R10+#05240H]
+        CALLS 00CH,Push_To_System_Stack
+        MOVB RL4,#00H
+        MOVB [R9+#0C3DBH],RL4
+        MOVB [R9+#0C441H],RL4
+        SUB R9,#01H
+L_DA26A:                 ; 0xda26a
+        CMP R9,#00H
+        JMPR cc_NE,L_DA246
+        MOV R9,#00H
+L_DA270:                 ; 0xda270
+        MOV R4,#00H
+        MOV R5,R9
+        SHL R5,#01H
+        MOV [R5+#0FD7AH],R4
+        ADD R9,#01H
+        CMP R9,#07H
+        JMPR cc_C,L_DA270
+        MOV R4,trt_word
+        MOV kwp_d664,R4
+        CALLS 00DH,Reset_OBD_Readiness_Group
+        CALLS 00EH,Calc_LS_Down_OBD2_Mod6
+        CALLS 00EH,Reset_OBD_Stat
+        CALLS 00BH,Set_RBM_Cat_Diag_State_2
+        CALLS 00DH,ClrBits_state_rbm_dtp_noise_2c8
+        CALLS 00DH,ClrBits_state_rbm_cps_mecha_352
+        CALLS 00DH,ClrBits_state_rbm_leak_small_3d6
+        CALLS 00DH,ClrBits_state_rbm_leak_large_474
+        CALLS 00DH,ClrBits_state_rbm_lsh_up_obd2_86e
+        CALLS 00BH,ClrBits_state_rbm_lsh_down_obd2_0b6
+        CALLS 00CH,ClrBits_state_rbm_cam_dif_ivvt_in_65e
+        CALLS 00CH,ClrBits_state_rbm_tco_stuck_054
+        CALLS 00CH,ClrBits_state_rbm_tco_stuck_rng_0ec
+        CALLS 00BH,ClrBits_state_rbm_tco_plaus_874
+        CALLS 00BH,ClrBits_state_rbm_th_det_750
+        CALLS 00DH,ClrBits_state_rbm_vls_up_plaus_5b2
+        CALLS 00DH,ClrBits_state_rbm_vls_up_frq_5c6
+        CALLS 00BH,ClrBits_state_rbm_ls_down_swt_efa
+        CALLS 00BH,ClrBits_state_rbm_vls_down_plaus_f94
+        CALLS 00BH,ClrBits_state_rbm_toil_stuck_37e
+        CALLS 00DH,ClrBits_state_rbm_maf_dif_ch_20a
+        CALLS 00CH,ClrBits_state_rbm_tia_plaus_178
+        CALLS 00BH,Reset__ctr_km_mil_on_166
+        MOV dtc_act_shadow,ZEROS
+        MOV dtc_act,ZEROS
+        MOVB RL4,RL6
+        MOV R6,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== DTC_Status_Tick  (@0xda2f6) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by dtc/obd_sf signals): Periodic DTC status word maintenance (dtc_status_work).
+        ; ------------------------------------------------------------
+DTC_Status_Tick:
+        MOVB RL4,[R12]
+        MOVBZ R4,RL4
+        MOV dtc_status_work,R4
+        JNB dtc_status_work.05H,L_DA312
+        MOVB RL4,#00H
+        MOVB [R12+#01H],RL4
+        BSET dtc_status_work.07H
+        BCLR dtc_status_work.06H
+        MOVB RL4,dtc_status_work
+        MOVB [R12],RL4
+L_DA312:                 ; 0xda312
+        RETS
+
+; ======== Count_DTC_By_Status_2  (@0xda314) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Count_DTC_By_Status_2:
+        MOV [-R0],R6
+        MOVB RL6,#00H
+        JMPR cc_UC,L_DA31C
+L_DA31A:                 ; 0xda31a
+        ADDB RL6,#01H
+L_DA31C:                 ; 0xda31c
+        MOVBZ R4,RL6
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05232H]
+        CMP R5,R12
+        JMPR cc_EQ,L_DA35C
+        MOVBZ R5,RL6
+        MOV R2,#DATA16 00016H
+        MULU R5,R2
+        MOV R5,0FE0EH
+        MOV R4,[R5+#05230H]
+        CMP R4,R12
+        JMPR cc_EQ,L_DA35C
+        MOVBZ R4,RL6
+        MULU R4,R2
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05234H]
+        CMP R5,R12
+        JMPR cc_EQ,L_DA35C
+        MOVBZ R5,RL6
+        CMP R5,#DATA16 00065H
+        JMPR cc_SLT,L_DA31A
+L_DA35C:                 ; 0xda35c
+        MOVBZ R4,RL6
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05232H]
+        CMP R5,R12
+        JMPR cc_EQ,L_DA394
+        MOVBZ R5,RL6
+        MOV R2,#DATA16 00016H
+        MULU R5,R2
+        MOV R5,0FE0EH
+        MOV R4,[R5+#05230H]
+        CMP R4,R12
+        JMPR cc_EQ,L_DA394
+        MOVBZ R4,RL6
+        MULU R4,R2
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05234H]
+        CMP R5,R12
+        JMPR cc_NE,L_DA398
+L_DA394:                 ; 0xda394
+        MOVB RL4,RL6
+        JMPR cc_UC,L_DA39C
+L_DA398:                 ; 0xda398
+        MOVB RL4,#DATA16 000FFH
+L_DA39C:                 ; 0xda39c
+        MOV R6,[R0+]
+        RETS
+
+; ======== Read_FreezeFrame_1  (@0xda3a0) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Read_FreezeFrame_1:
+        MOV [-R0],R6
+        MOV R4,R12
+        MOVBZ R4,RL4
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL6,[R5+#0D0D0H]
+        ANDB RL6,#DATA16 0000FH
+        CMPB RL6,#01H
+        JMPR cc_EQ,L_DA3C6
+        CMPB RL6,#DATA16 00008H
+        JMPR cc_NE,L_DA3E0
+L_DA3C6:                 ; 0xda3c6
+        MOV R4,R12
+        MOVBZ R4,RL4
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R13,[R4+#05230H]
+        JMPR cc_UC,L_DA416
+L_DA3E0:                 ; 0xda3e0
+        CMPB RL6,#02H
+        JMPR cc_NE,L_DA3FE
+        MOV R4,R12
+        MOVBZ R4,RL4
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R13,[R4+#05232H]
+        JMPR cc_UC,L_DA416
+L_DA3FE:                 ; 0xda3fe
+        MOV R4,R12
+        MOVBZ R4,RL4
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R13,[R4+#05234H]
+L_DA416:                 ; 0xda416
+        MOV R4,R13
+        MOV R6,[R0+]
+        RETS
+
+S_DA226 ENDS
+        END

@@ -1,0 +1,104 @@
+; asw/tpspwm.a66
+; 0xC5EC6-0xC5F96  (208 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_tps_is_out                         EQU  0903E6H
+c_tps_wot_tpspwm                     EQU  0903F3H
+
+PUBLIC  Calc_TPS_PWM, Calc_TQ_Loss_Trans, Tail_f0c5ec6_f48
+EXTERN  Div_Frac_U16_Q16:NEAR, Get_IP_Word_3D_Table_DWord_XByte_YByte:NEAR, Mul_U16_Hi:NEAR, Sat_Add_S16:NEAR
+EXTERN  sub_r12_13_ret_r4:NEAR
+
+S_C5EC6 SECTION CODE AT 0C5EC6H
+
+; ======== Calc_TPS_PWM  (@0xc5ec6) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tq/tqi output signals): Electronic-throttle actuator PWM output tpspwm
+        ; (drives the throttle H-bridge from the torque->airflow setpoint).
+        ; ------------------------------------------------------------
+Calc_TPS_PWM:
+        JB lv_cam_err.00H,L_C5F28
+        JB lv_cam_err.01H,L_C5F28
+        MOVB RL4,tps
+        CMPB RL4,DPP0:c_tps_wot_tpspwm
+        JMPR cc_UGT,L_C5F1E
+        JB lv_ct.00H,L_C5F14
+        MOVBZ R12,DPP0:c_tps_wot_tpspwm
+        MOVBZ R13,DPP0:c_tps_is_out
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVBZ R4,RL4
+        MOV [-R0],R4
+        MOVBZ R12,tps
+        MOVBZ R13,DPP0:c_tps_is_out
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVBZ R12,RL4
+        MOV R13,[R0+]
+        CALLS 00FH,Div_Frac_U16_Q16
+        MOV R12,R4
+        MOV R13,#DATA16 0DC29H
+        CALLS 00FH,Mul_U16_Hi
+        ADD R4,#DATA16 00CCCH
+        MOV tpspwm,R4
+        JMPR cc_UC,L_C5F2C
+L_C5F14:                 ; 0xc5f14
+        MOV R4,#DATA16 00CCCH
+        MOV tpspwm,R4
+        JMPR cc_UC,L_C5F2C
+L_C5F1E:                 ; 0xc5f1e
+        MOV R4,#DATA16 0E8F5H
+        MOV tpspwm,R4
+        JMPR cc_UC,L_C5F2C
+L_C5F28:                 ; 0xc5f28
+        MOV tpspwm,ZEROS
+L_C5F2C:                 ; 0xc5f2c
+        MOV R4,PP2_F03C
+        ADD R4,#01H
+        MOV R2,tpspwm
+        MULU R4,R2
+        MOV R5,MDH_FE0C
+        MOV R4,R5
+        MOV R5,0FF1CH
+        MOV PW2_FE34,R4
+        RETS
+
+; ======== Tail_f0c5ec6_f48  (@0xc5f48) ========
+Tail_f0c5ec6_f48:
+        CALLS 00CH,Calc_TPS_PWM
+        RETS
+
+; ======== Calc_TQ_Loss_Trans  (@0xc5f4e) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tq/tqi output signals): Transient torque loss: tq_loss_trans / tq_loss_add
+        ; (dynamic load-change compensation).
+        ; ------------------------------------------------------------
+Calc_TQ_Loss_Trans:
+        MOV [-R0],R9
+        JNB abs_def.04H,L_C5F72
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_C5F72
+        MOV R12,#DATA16 04B62H
+        MOVBZ R13,toil_gb_inter
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YByte
+        ADD R4,#DATA16 08000H
+        MOV tq_loss_trans,R4
+        JMPR cc_UC,L_C5F76
+L_C5F72:                 ; 0xc5f72
+        MOV tq_loss_trans,ZEROS
+L_C5F76:                 ; 0xc5f76
+        MOV R12,tq_loss_acc
+        MOV R13,tq_loss_ecf
+        CALLS 00FH,Sat_Add_S16
+        MOV R9,R4
+        MOV R12,R9
+        MOV R13,tq_loss_trans
+        CALLS 00FH,Sat_Add_S16
+        MOV tq_loss_add,R4
+        MOV R9,[R0+]
+        RETS
+
+S_C5EC6 ENDS
+        END

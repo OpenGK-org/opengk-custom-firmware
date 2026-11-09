@@ -1,0 +1,207 @@
+; asw/int.a66
+; 0xE44E8-0xE4644  (348 bytes, 12 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  KWP_Reset_Adapt_LamGate, KWP_Reset_Adapt_MafGate, KWP_Reset_Adapt_PlGate, KWP_Reset_CPPWM_AdMem, KWP_Reset_Cam_Edges, KWP_Reset_ER_Adapt
+PUBLIC  KWP_Reset_IGA_ER_Mem, KWP_Reset_TPS_AdMmv, KWP_io_adaptive_values_adjustment, Reset_Adapt_Group, Reset_Adapt_Group_2, return_error_code_0x31_out_of_range
+EXTERN  Calc_Cam_Ref_Edges:NEAR, Calc_ER_Thd_Adapt:NEAR, Calc_TPS_AD_MMV_IS:NEAR, Init_IGA_Knk_Adapt:NEAR
+EXTERN  Reset_TQ_Dif_IS_Ad:NEAR, Reset_cppwm_ad_mem_ee0:NEAR, Reset_ctr_cold_st_b96:NEAR, Reset_iga_er_ad_mem_142:NEAR
+EXTERN  Set_maf_fac_alti_mmv_7a6:NEAR, Set_ratio_tqi_bas_max_stnd_2_750:NEAR, Tail_f0c400c_918:NEAR
+
+S_E44E8 SECTION CODE AT 0E44E8H
+
+; ======== KWP_io_adaptive_values_adjustment  (@0xe44e8) ========
+KWP_io_adaptive_values_adjustment:
+        MOV [-R0],R12
+        MOV [-R0],R6
+        MOVB RL6,#00H
+        MOV R4,R12
+        SUBB RL4,#DATA16 00050H
+        CMPB RL4,#DATA16 0000CH
+        JMPA cc_UGT,return_error_code_0x31_out_of_range
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        ADD R4,#DATA16 0610CH
+        MOV R4,[R4]
+        JMPI cc_UC,[R4]
+
+; ======== Reset_Adapt_Group  (@0xe4508) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by output/adapt signals): Adaptation reset group: clears
+        ; IGA-knock/MAF-alti/TQI-ratio/TPS adaptation (gated by maf_dif cond); returns NRC 0x22 if not ready.
+        ; ------------------------------------------------------------
+Reset_Adapt_Group:
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E454A
+        JNB can_fd58.09H,L_E454A
+        CALLS 00DH,Tail_f0c400c_918
+        CALLS 00CH,Set_maf_fac_alti_mmv_7a6
+        CALLS 00CH,Init_IGA_Knk_Adapt
+        CALLS 00CH,Set_ratio_tqi_bas_max_stnd_2_750
+        CALLS 00CH,Calc_TPS_AD_MMV_IS
+        MOVB RL4,conf_lam
+        JMPR cc_EQ,L_E452E
+        CALLS 00CH,Reset_ctr_cold_st_b96
+L_E452E:                 ; 0xe452e
+        CALLS 00BH,Reset_cppwm_ad_mem_ee0
+        CALLS 00AH,Reset_TQ_Dif_IS_Ad
+        JNB lv_conf_mis.02H,L_E453E
+        CALLS 00DH,Calc_ER_Thd_Adapt
+L_E453E:                 ; 0xe453e
+        CALLS 00BH,Reset_iga_er_ad_mem_142
+        CALLS 00CH,Calc_Cam_Ref_Edges
+        JMPA cc_UC,L_E463C
+L_E454A:                 ; 0xe454a
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E463C
+
+; ======== Reset_Adapt_Group_2  (@0xe4552) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by output/adapt signals): Adaptation reset group (subset: MAF-alti + base).
+        ; ------------------------------------------------------------
+Reset_Adapt_Group_2:
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E4566
+        JNB can_fd58.09H,L_E4566
+        CALLS 00DH,Tail_f0c400c_918
+        CALLS 00CH,Set_maf_fac_alti_mmv_7a6
+        JMPA cc_UC,L_E463C
+L_E4566:                 ; 0xe4566
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E463C
+
+; ======== KWP_Reset_Adapt_MafGate  (@0xe456e) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified): KWP IO-control adaptation reset (gated on maf_dif 0x800+0x4000); NRC 0x22 if not
+        ; ready.
+        ; ------------------------------------------------------------
+KWP_Reset_Adapt_MafGate:
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_E4576
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_E4586
+L_E4576:                 ; 0xe4576
+        JNB can_fd58.09H,L_E4586
+        CALLS 00CH,Init_IGA_Knk_Adapt
+        CALLS 00CH,Set_ratio_tqi_bas_max_stnd_2_750
+        JMPA cc_UC,L_E463C
+L_E4586:                 ; 0xe4586
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E463C
+
+; ======== KWP_Reset_TPS_AdMmv  (@0xe458e) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified): KWP IO-control adaptation reset: Calc_TPS_AD_MMV_IS (throttle-adaptive MMV); NRC
+        ; 0x22 if conditions not met.
+        ; ------------------------------------------------------------
+KWP_Reset_TPS_AdMmv:
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E459E
+        JNB can_fd58.09H,L_E459E
+        CALLS 00CH,Calc_TPS_AD_MMV_IS
+        JMPA cc_UC,L_E463C
+L_E459E:                 ; 0xe459e
+        MOVB RL6,#DATA16 00022H
+        JMPR cc_UC,L_E463C
+
+; ======== KWP_Reset_Adapt_LamGate  (@0xe45a4) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified): KWP IO-control adaptation reset (gated on conf_lam + maf_dif); NRC 0x22 if not
+        ; ready.
+        ; ------------------------------------------------------------
+KWP_Reset_Adapt_LamGate:
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_E45AC
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_E45BC
+L_E45AC:                 ; 0xe45ac
+        JNB can_fd58.09H,L_E45BC
+        MOVB RL4,conf_lam
+        JMPR cc_EQ,L_E45BC
+        CALLS 00CH,Reset_ctr_cold_st_b96
+        JMPR cc_UC,L_E463C
+L_E45BC:                 ; 0xe45bc
+        MOVB RL6,#DATA16 00022H
+        JMPR cc_UC,L_E463C
+
+; ======== KWP_Reset_ER_Adapt  (@0xe45c2) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified): KWP IO-control reset: roughness-threshold adaptation (Calc_ER_Thd_Adapt); NRC 0x31
+        ; if misfire-config off, else 0x22.
+        ; ------------------------------------------------------------
+KWP_Reset_ER_Adapt:
+        JNB lv_conf_mis.02H,L_E45DA
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E45D4
+        JNB can_fd58.09H,L_E45D4
+        CALLS 00DH,Calc_ER_Thd_Adapt
+        JMPR cc_UC,L_E463C
+L_E45D4:                 ; 0xe45d4
+        MOVB RL6,#DATA16 00022H
+        JMPR cc_UC,L_E463C
+L_E45DA:                 ; 0xe45da
+        MOVB RL6,#DATA16 00031H
+        JMPR cc_UC,L_E463C
+
+; ======== KWP_Reset_IGA_ER_Mem  (@0xe45e0) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified): KWP IO-control reset: ignition roughness-adaptation memory (Reset_iga_er_ad_mem).
+        ; ------------------------------------------------------------
+KWP_Reset_IGA_ER_Mem:
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E45EE
+        JNB can_fd58.09H,L_E45EE
+        CALLS 00BH,Reset_iga_er_ad_mem_142
+        JMPR cc_UC,L_E463C
+L_E45EE:                 ; 0xe45ee
+        MOVB RL6,#DATA16 00022H
+        JMPR cc_UC,L_E463C
+
+; ======== KWP_Reset_CPPWM_AdMem  (@0xe45f4) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified): KWP IO-control reset: canister-purge PWM adaptation memory (Reset_cppwm_ad_mem).
+        ; ------------------------------------------------------------
+KWP_Reset_CPPWM_AdMem:
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E4602
+        JNB can_fd58.09H,L_E4602
+        CALLS 00BH,Reset_cppwm_ad_mem_ee0
+        JMPR cc_UC,L_E463C
+L_E4602:                 ; 0xe4602
+        MOVB RL6,#DATA16 00022H
+        JMPR cc_UC,L_E463C
+
+; ======== KWP_Reset_Adapt_PlGate  (@0xe4608) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified): KWP IO-control adaptation reset (gated on part-load lv_pl + maf_dif); NRC 0x22 if
+        ; not ready.
+        ; ------------------------------------------------------------
+KWP_Reset_Adapt_PlGate:
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_E4614
+        JB lv_cdn_diag_maf_dif_ch_int.0EH,L_E4614
+        JNB lv_pl.00H,L_E461E
+L_E4614:                 ; 0xe4614
+        JNB can_fd58.09H,L_E461E
+        CALLS 00AH,Reset_TQ_Dif_IS_Ad
+        JMPR cc_UC,L_E463C
+L_E461E:                 ; 0xe461e
+        MOVB RL6,#DATA16 00022H
+        JMPR cc_UC,L_E463C
+
+; ======== KWP_Reset_Cam_Edges  (@0xe4624) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified): KWP IO-control reset: IVVT cam reference edges (Calc_Cam_Ref_Edges).
+        ; ------------------------------------------------------------
+KWP_Reset_Cam_Edges:
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E4632
+        JNB can_fd58.09H,L_E4632
+        CALLS 00CH,Calc_Cam_Ref_Edges
+        JMPR cc_UC,L_E463C
+L_E4632:                 ; 0xe4632
+        MOVB RL6,#DATA16 00022H
+        JMPR cc_UC,L_E463C
+
+; ======== return_error_code_0x31_out_of_range  (@0xe4638) ========
+return_error_code_0x31_out_of_range:
+        MOVB RL6,#DATA16 00031H
+L_E463C:                 ; 0xe463c
+        MOVB RL4,RL6
+        MOV R6,[R0+]
+        ADD R0,#02H
+        RETS
+
+S_E44E8 ENDS
+        END

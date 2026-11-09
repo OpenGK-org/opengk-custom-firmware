@@ -1,0 +1,500 @@
+; asw/osc.a66
+; 0xBBC52-0xBC0C4  (1138 bytes, 7 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_crk_n_max_osc                      EQU  090159H
+c_crk_seg_act_osc                    EQU  09015AH
+c_crk_vs_n_ratio_osc                 EQU  09015CH
+c_crk_mis_seg_max_osc                EQU  0904F0H
+ldp_n_32_crk_seg_min_frq_osc       EQU  090AE8H
+ldp_n_32_drv0_er_thd_osc      EQU  090AF9H
+ldp_maf_drv0_er_thd_osc      EQU  09123AH
+ip_drv0_er_thd_osc__n_32__maf        EQU  092416H
+ip_crk_seg_min_frq_osc__n_32         EQU  095523H
+
+PUBLIC  Calc_Drv0_Er_Osc, Calc_ER_Adapt_Mem, Calc_ER_Adapt_State, ClrBits_lv_carb_err_0ba, Log_Event_f62d_b, Log_Event_f96c
+PUBLIC  OBD_Set_SysFlags
+EXTERN  Add_r12_r13_Return_r4:NEAR, Calc_ER_Adapt_Precond:NEAR, Check_ER_Adapt_State:NEAR, Get_IP_Byte_2D_Table:NEAR
+EXTERN  Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_3D_Table:NEAR, Get_IP_Word_X_Axis:NEAR, Sel_Ovf_U16:NEAR
+
+S_BBC52 SECTION CODE AT 0BBC52H
+
+; ======== OBD_Set_SysFlags  (@0xbbc52) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by dtc/obd_sf signals): Set OBD system/readiness flags obd_sf + dtc_status_work.
+        ; ------------------------------------------------------------
+OBD_Set_SysFlags:
+        MOV [-R0],R6
+        BCLR lv_carb_err.07H
+        BCLR lv_carb_err.08H
+        MOVB RL6,#00H
+        BSET obd_sf.0BH
+        MOVBZ R12,fmy_f_anz
+        SUB R12,#01H
+        JMPR cc_UC,L_BBCDC
+L_BBC64:                 ; 0xbbc64
+        MOVB RL4,[R12+#0C3DBH]
+        MOVBZ R4,RL4
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0D0H]
+        MOVBZ R4,RL4
+        MOV dtc_status_work,R4
+        JNB dtc_status_work.06H,L_BBC8A
+        JB dtc_status_work.04H,L_BBC88
+        BSET lv_carb_err.08H
+        JMPR cc_UC,L_BBC8A
+L_BBC88:                 ; 0xbbc88
+        BSET lv_carb_err.07H
+L_BBC8A:                 ; 0xbbc8a
+        MOVB RL4,[R12+#0C3DBH]
+        MOVBZ R4,RL4
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R5,[R4+#05242H]
+        MOVB RL4,[R5]
+        JMPR cc_NE,L_BBCDA
+        JNB lv_conf_mis.04H,L_BBCBC
+        MOVB RL4,[R12+#0C3DBH]
+        MOVBZ R4,RL4
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL4,[R5+#0D0DAH]
+        ORB RL6,RL4
+        JMPR cc_UC,L_BBCC2
+L_BBCBC:                 ; 0xbbcbc
+        JNB dtc_status_work.06H,L_BBCC2
+        MOVB RL6,#01H
+L_BBCC2:                 ; 0xbbcc2
+        MOVB RL4,[R12+#0C3DBH]
+        MOVBZ R4,RL4
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOVB RL5,[R4+#0522EH]
+        JMPR cc_EQ,L_BBCDA
+        BCLR obd_sf.0BH
+L_BBCDA:                 ; 0xbbcda
+        SUB R12,#01H
+L_BBCDC:                 ; 0xbbcdc
+        MOV R4,R12
+        CMP R4,#00H
+        JMPR cc_SGE,L_BBC64
+        JB lv_conf_mis.06H,L_BBCEA
+        JMPA cc_UC,L_BBDB8
+L_BBCEA:                 ; 0xbbcea
+        JNB lv_conf_mis.04H,L_BBD10
+        MOVBZ R4,RL6
+        AND R4,#DATA16 00008H
+        JMPR cc_NE,L_BBD08
+        JB obd_sf.03H,L_BBD08
+        MOVB RL4,can_tcu_obd_status
+        ANDB RL4,#DATA16 00008H
+        JMPR cc_NE,L_BBD08
+        JNB lv_er_carb_b4.04H,L_BBD0C
+L_BBD08:                 ; 0xbbd08
+        BSET obd_sf.08H
+        JMPR cc_UC,L_BBD12
+L_BBD0C:                 ; 0xbbd0c
+        BCLR obd_sf.08H
+        JMPR cc_UC,L_BBD12
+L_BBD10:                 ; 0xbbd10
+        BCLR obd_sf.08H
+L_BBD12:                 ; 0xbbd12
+        BCLR obd_sf.0EH
+        JNB can_fd58.09H,L_BBDAC
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_BBD9E
+        BCLR obd_sf.0CH
+        JNB lv_conf_mis.04H,L_BBD7A
+        JB obd_sf.03H,L_BBD30
+        MOVB RL4,can_tcu_obd_status
+        ANDB RL4,#DATA16 00010H
+        JMPR cc_EQ,L_BBD4C
+L_BBD30:                 ; 0xbbd30
+        JNB state_out_fault.0CH,L_BBD3E
+        BCLR state_out_fault.0CH
+        JB state_out_req.06H,L_BBD46
+        BCLR state_out_diag.0CH
+        JMPR cc_UC,L_BBD46
+L_BBD3E:                 ; 0xbbd3e
+        BSET state_out_fault.0CH
+        JB state_out_req.06H,L_BBD46
+        BSET state_out_diag.0CH
+L_BBD46:                 ; 0xbbd46
+        BSET obd_sf.0EH
+        BSET obd_sf.0FH
+        JMPR cc_UC,L_BBDB6
+L_BBD4C:                 ; 0xbbd4c
+        BCLR obd_sf.0FH
+        MOVBZ R4,RL6
+        AND R4,#DATA16 00008H
+        JMPR cc_NE,L_BBD64
+        MOVB RL4,can_tcu_obd_status
+        ANDB RL4,#DATA16 00008H
+        JMPR cc_NE,L_BBD64
+        JNB lv_er_carb_b4.04H,L_BBD70
+L_BBD64:                 ; 0xbbd64
+        BSET state_out_fault.0CH
+        JB state_out_req.06H,L_BBD6C
+        BSET state_out_diag.0CH
+L_BBD6C:                 ; 0xbbd6c
+        BSET obd_sf.0EH
+        JMPR cc_UC,L_BBDB6
+L_BBD70:                 ; 0xbbd70
+        BCLR state_out_fault.0CH
+        JB state_out_req.06H,L_BBDB6
+        BCLR state_out_diag.0CH
+        JMPR cc_UC,L_BBDB6
+L_BBD7A:                 ; 0xbbd7a
+        CMPB RL6,#00H
+        JMPR cc_NE,L_BBD88
+        MOVB RL4,can_tcu_obd_status
+        ANDB RL4,#DATA16 00008H
+        JMPR cc_EQ,L_BBD94
+L_BBD88:                 ; 0xbbd88
+        BSET state_out_fault.0CH
+        JB state_out_req.06H,L_BBD90
+        BSET state_out_diag.0CH
+L_BBD90:                 ; 0xbbd90
+        BSET obd_sf.0EH
+        JMPR cc_UC,L_BBDB6
+L_BBD94:                 ; 0xbbd94
+        BCLR state_out_fault.0CH
+        JB state_out_req.06H,L_BBDB6
+        BCLR state_out_diag.0CH
+        JMPR cc_UC,L_BBDB6
+L_BBD9E:                 ; 0xbbd9e
+        BSET state_out_fault.0CH
+        JB state_out_req.06H,L_BBDA6
+        BSET state_out_diag.0CH
+L_BBDA6:                 ; 0xbbda6
+        BSET obd_sf.0EH
+        BSET obd_sf.0CH
+        JMPR cc_UC,L_BBDB6
+L_BBDAC:                 ; 0xbbdac
+        BCLR state_out_fault.0CH
+        JB state_out_req.06H,L_BBDB4
+        BCLR state_out_diag.0CH
+L_BBDB4:                 ; 0xbbdb4
+        BCLR obd_sf.0CH
+L_BBDB6:                 ; 0xbbdb6
+        BSET obd_sf.0AH
+L_BBDB8:                 ; 0xbbdb8
+        MOV R6,[R0+]
+        RETS
+
+; ======== Log_Event_f62d_b  (@0xbbdbc) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Log_Event_f62d_b:
+        MOVB RL4,#DATA16 0002CH
+        MOVBZ R5,tq_lo_wr
+        MOVB [R5+#0F66EH],RL4
+        MOVB RL4,tq_lo_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_wr,RL4
+        MOVB RL4,tq_lo_wr
+        CMPB RL4,tq_lo_rd
+        JMPR cc_NE,L_BBDF0
+        BSET sched_flags.03H
+        MOVB RL4,tq_lo_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_rd,RL4
+L_BBDF0:                 ; 0xbbdf0
+        MOV R4,#05H
+        MOV g_f968,R4
+        RETS
+
+; ======== Calc_Drv0_Er_Osc  (@0xbbdf8) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS2000, verified): Detection description (crankshaft oscillation misfire, drv0_er_osc)
+        ; ------------------------------------------------------------
+Calc_Drv0_Er_Osc:
+        MOV [-R0],R6
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_BBE02
+        JMPA cc_UC,L_BBFBE
+L_BBE02:                 ; 0xbbe02
+        MOVBZ R4,seg_nr_er
+        MOV R5,#01H
+        SHL R5,R4
+        MOVB RL6,RL5
+        MOVB RL4,iv_off_er
+        ANDB RL4,RL6
+        JMPR cc_NE,L_BBE28
+        MOVB RL4,mis_state_er
+        ANDB RL4,RL6
+        JMPR cc_EQ,L_BBE28
+        BSET lv_carb_err.0AH
+        MOV R4,DPP0:c_crk_mis_seg_max_osc
+        MOV crk_mis_seg_max_osc,R4
+        JMPR cc_UC,L_BBE3E
+L_BBE28:                 ; 0xbbe28
+        JNB lv_carb_err.0AH,L_BBE3E
+        MOV R4,crk_mis_seg_max_osc
+        CMP R4,#00H
+        JMPR cc_ULE,L_BBE3C
+        SUB R4,#01H
+        MOV crk_mis_seg_max_osc,R4
+        JMPR cc_UC,L_BBE3E
+L_BBE3C:                 ; 0xbbe3c
+        BCLR lv_carb_err.0AH
+L_BBE3E:                 ; 0xbbe3e
+        MOVB RL4,n_32
+        CMPB RL4,DPP0:c_crk_n_max_osc
+        JMPA cc_NC,L_BBF7E
+        JNB lv_cam_err.08H,L_BBE52
+        JMPA cc_UC,L_BBF7E
+L_BBE52:                 ; 0xbbe52
+        JNB lv_cam_err.07H,L_BBE5A
+        JMPA cc_UC,L_BBF7E
+L_BBE5A:                 ; 0xbbe5a
+        MOVB RL5,crk_vs_n_ratio_osc
+        CMPB RL5,DPP0:c_crk_vs_n_ratio_osc
+        JMPA cc_ULE,L_BBF7E
+        MOV R4,drv0_er
+        MOV R5,er_drv0_carry
+        XOR R4,g_ca02
+        XOR R5,g_ca04
+        MOV R4,R5
+        ASHR R4,#0FH
+        ASHR R5,#0FH
+        MOV R2,R4
+        OR R2,R5
+        JMPR cc_EQ,L_BBED2
+        MOV R12,#DATA16 POF ldp_n_32_crk_seg_min_frq_osc
+        MOV R13,#DATA16 PAG ldp_n_32_crk_seg_min_frq_osc
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_crk_seg_min_frq_osc__n_32
+        MOV R13,#DATA16 PAG ip_crk_seg_min_frq_osc__n_32
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB crk_seg_sum_frq_osc,RL4
+        MOV R4,drv0_er
+        MOV R5,er_drv0_carry
+        SUB R4,#00H
+        SUBC R5,#00H
+        JMPR cc_SGE,L_BBEC0
+        MOV R12,drv0_er
+        MOV R13,er_drv0_carry
+        NEG R12
+        ADDC R13,#00H
+        NEG R13
+        JMPR cc_UC,L_BBEC8
+L_BBEC0:                 ; 0xbbec0
+        MOV R12,drv0_er
+        MOV R13,er_drv0_carry
+L_BBEC8:                 ; 0xbbec8
+        CALLS 00FH,Sel_Ovf_U16
+        MOV drv0_er_sum_osc,R4
+        JMPR cc_UC,L_BBF18
+L_BBED2:                 ; 0xbbed2
+        MOVB RL4,crk_seg_sum_frq_osc
+        CMPB RL4,#00H
+        JMPR cc_ULE,L_BBEE0
+        SUBB RL4,#01H
+        MOVB crk_seg_sum_frq_osc,RL4
+L_BBEE0:                 ; 0xbbee0
+        MOV R4,drv0_er
+        MOV R5,er_drv0_carry
+        SUB R4,#00H
+        SUBC R5,#00H
+        JMPR cc_SGE,L_BBEFE
+        MOV R12,drv0_er
+        MOV R13,er_drv0_carry
+        NEG R12
+        ADDC R13,#00H
+        NEG R13
+        JMPR cc_UC,L_BBF06
+L_BBEFE:                 ; 0xbbefe
+        MOV R12,drv0_er
+        MOV R13,er_drv0_carry
+L_BBF06:                 ; 0xbbf06
+        CALLS 00FH,Sel_Ovf_U16
+        MOV R13,R4
+        MOV R12,drv0_er_sum_osc
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV drv0_er_sum_osc,R4
+L_BBF18:                 ; 0xbbf18
+        MOVBZ R4,seg_nr_er
+        SHL R4,#01H
+        MOV R5,[R4+#0C9F8H]
+        MOV drv0_er_thd_osc_sam,R5
+        MOVB RL4,crk_seg_sum_frq_osc
+        CMPB RL4,#00H
+        JMPR cc_ULE,L_BBF46
+        MOV R4,drv0_er_sum_osc
+        CMP R4,drv0_er_thd_osc_sam
+        JMPR cc_ULE,L_BBF46
+        JNB lv_carb_err.0AH,L_BBF46
+        BSET lv_carb_err.09H
+        MOVB RL4,DPP0:c_crk_seg_act_osc
+        MOVB g_c27d,RL4
+L_BBF46:                 ; 0xbbf46
+        MOV R12,#DATA16 POF ldp_n_32_drv0_er_thd_osc
+        MOV R13,#DATA16 PAG ldp_n_32_drv0_er_thd_osc
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_maf_drv0_er_thd_osc
+        MOV R13,#DATA16 PAG ldp_maf_drv0_er_thd_osc
+        MOV R14,maf_word
+        CALLS 00FH,Get_IP_Word_X_Axis
+        MOV R12,#DATA16 POF ip_drv0_er_thd_osc__n_32__maf
+        MOV R13,#DATA16 PAG ip_drv0_er_thd_osc__n_32__maf
+        CALLS 00FH,Get_IP_Word_3D_Table
+        MOVBZ R5,seg_nr_er
+        SHL R5,#01H
+        MOV [R5+#0C9F8H],R4
+        JMPR cc_UC,L_BBF98
+L_BBF7E:                 ; 0xbbf7e
+        MOV drv0_er_sum_osc,ZEROS
+        MOV R4,#DATA16 0FFFFH
+        MOVBZ R5,seg_nr_er
+        SHL R5,#01H
+        MOV [R5+#0C9F8H],R4
+        MOV drv0_er_thd_osc_sam,R4
+        MOVB crk_seg_sum_frq_osc,ZEROS
+L_BBF98:                 ; 0xbbf98
+        JNB lv_carb_err.09H,L_BBFAE
+        MOVB RL4,g_c27d
+        CMPB RL4,#00H
+        JMPR cc_ULE,L_BBFAC
+        SUBB RL4,#01H
+        MOVB g_c27d,RL4
+        JMPR cc_UC,L_BBFAE
+L_BBFAC:                 ; 0xbbfac
+        BCLR lv_carb_err.09H
+L_BBFAE:                 ; 0xbbfae
+        MOV R4,drv0_er
+        MOV R5,er_drv0_carry
+        MOV g_ca02,R4
+        MOV g_ca04,R5
+L_BBFBE:                 ; 0xbbfbe
+        MOV R6,[R0+]
+        RETS
+
+; ======== Calc_ER_Adapt_Mem  (@0xbbfc2) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by er_ad/mis/diag output signals + DTC): Roughness adaptation memory update:
+        ; iga_er_ad_mem / lamb_er_ad_mem (per-op-point learned smoothness).
+        ; ------------------------------------------------------------
+Calc_ER_Adapt_Mem:
+        CALLS 00BH,Calc_ER_Adapt_Precond
+        BMOV lv_carb_err.0BH,PSW.06H
+        CALLS 00BH,Check_ER_Adapt_State
+        BMOV lv_carb_err.0CH,PSW.06H
+        MOVB RL4,iga_er_ad_clc
+        MOVB iga_er_ad_mem,RL4
+        MOV R4,lamb_er_ad_clc
+        MOV lamb_er_ad_mem,R4
+        JB lv_carb_err.0CH,L_BBFEC
+        BCLR lv_carb_err.0DH
+        BCLR lv_carb_err.0EH
+        BCLR lv_carb_err.0BH
+L_BBFEC:                 ; 0xbbfec
+        JB lv_carb_err.0CH,L_BBFFC
+        JB lv_carb_err.0DH,L_BBFFC
+        JB lv_carb_err.0EH,L_BBFFC
+        MOV g_f96c,ZEROS
+L_BBFFC:                 ; 0xbbffc
+        RETS
+
+; ======== Calc_ER_Adapt_State  (@0xbbffe) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by er_ad/mis/diag output signals + DTC): Engine-roughness (misfire-threshold)
+        ; adaptation state machine: er_ad_state/_lst drives iga_er_ad_mem / lamb_er_ad_mem learning.
+        ; ------------------------------------------------------------
+Calc_ER_Adapt_State:
+        MOV R4,#01H
+        MOV g_f96c,R4
+        MOVB RL4,er_ad_state
+        MOVB er_ad_state_lst,RL4
+        BSET lv_carb_err.0CH
+        CALLS 00BH,Calc_ER_Adapt_Precond
+        BMOV lv_carb_err.0BH,PSW.06H
+        JB lv_lam_fd2c.0FH,L_BC02C
+        JB lv_ch.04H,L_BC02C
+        JB lv_carb_err.0BH,L_BC02C
+        MOVB er_ad_state,ZEROS
+        BCLR lv_carb_err.0DH
+        BCLR lv_carb_err.0EH
+        JMPR cc_UC,L_BC06A
+L_BC02C:                 ; 0xbc02c
+        JB lv_lam_fd2c.0FH,L_BC044
+        JB lv_ch.04H,L_BC044
+        JNB lv_carb_err.0BH,L_BC044
+        MOVB RL4,#03H
+        MOVB er_ad_state,RL4
+        BCLR lv_carb_err.0DH
+        BSET lv_carb_err.0EH
+        JMPR cc_UC,L_BC06A
+L_BC044:                 ; 0xbc044
+        JNB lv_lam_fd2c.0FH,L_BC058
+        JB lv_ch.04H,L_BC058
+        MOVB RL4,#01H
+        MOVB er_ad_state,RL4
+        BSET lv_carb_err.0DH
+        BCLR lv_carb_err.0EH
+        JMPR cc_UC,L_BC06A
+L_BC058:                 ; 0xbc058
+        JNB lv_lam_fd2c.0FH,L_BC06A
+        JNB lv_ch.04H,L_BC06A
+        MOVB RL4,#02H
+        MOVB er_ad_state,RL4
+        BSET lv_carb_err.0DH
+        BSET lv_carb_err.0EH
+L_BC06A:                 ; 0xbc06a
+        MOVB RL4,er_ad_state_lst
+        CMPB RL4,er_ad_state
+        JMPR cc_EQ,L_BC07C
+        MOVB iga_er_ad_mem,ZEROS
+        MOV lamb_er_ad_mem,ZEROS
+L_BC07C:                 ; 0xbc07c
+        RETS
+
+; ======== Log_Event_f96c  (@0xbc07e) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Log_Event_f96c:
+        MOV R4,#01H
+        MOV g_f96c,R4
+        MOVB RL4,#DATA16 0002EH
+        MOVBZ R5,tq_lo_wr
+        MOVB [R5+#0F66EH],RL4
+        MOVB RL4,tq_lo_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_wr,RL4
+        MOVB RL4,tq_lo_wr
+        CMPB RL4,tq_lo_rd
+        JMPR cc_NE,L_BC0B8
+        BSET sched_flags.03H
+        MOVB RL4,tq_lo_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_rd,RL4
+L_BC0B8:                 ; 0xbc0b8
+        RETS
+
+; ======== ClrBits_lv_carb_err_0ba  (@0xbc0ba) ========
+ClrBits_lv_carb_err_0ba:
+        BCLR lv_carb_err.0CH
+        BCLR lv_carb_err.0BH
+        BCLR lv_carb_err.0DH
+        BCLR lv_carb_err.0EH
+        RETS
+
+S_BBC52 ENDS
+        END

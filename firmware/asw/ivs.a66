@@ -1,0 +1,155 @@
+; asw/ivs.a66
+; 0xB0B9C-0xB0D2E  (402 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+ldpm_pq_estim_id_maf_fac_ofs                       EQU  0910BEH
+id_maf_fac_ofs                       EQU  091B4AH
+id_maf_fac_slop                      EQU  091B6AH
+
+PUBLIC  Calc_AirPath_Sp, Reset_Dc5dc_b9c
+EXTERN  Add_r12_r13_Return_r4:NEAR, Div_Frac_U16_Q16:NEAR, Div_U32_U16_Round:NEAR, Get_IP_Byte_2D_Table_DWord_YWord:NEAR
+EXTERN  Get_IP_Word_2D_Table_DWord_YWord:NEAR, Get_IP_Word_3D_Table_DWord_XWord_YWord:NEAR, Get_Word_Y_Axis:NEAR, Interp_U16:NEAR
+EXTERN  Mul_U16_Hi:NEAR, Read_Word_Far:NEAR, Sat_Add_S16_v2:NEAR, Sub_Floor0_S16:NEAR
+EXTERN  multipied_r12_r13_UGT_r14_rets_r4:NEAR, sub_r12_r13_rets_r4:NEAR
+
+S_B0B9C SECTION CODE AT 0B0B9CH
+
+; ======== Reset_Dc5dc_b9c  (@0xb0b9c) ========
+Reset_Dc5dc_b9c:
+        MOV g_c5dc,ZEROS
+        MOV opg_sp_mdl_isa,ZEROS
+        MOV prs_up_thr_ivs,ZEROS
+        RETS
+
+; ======== Calc_AirPath_Sp  (@0xb0baa) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS31, verified): Throttle Position Setpoint Calculation (ar_red_sp, opg_sp_mdl_isa)
+        ; ------------------------------------------------------------
+Calc_AirPath_Sp:
+        MOV [-R0],R9
+        MOV R12,maf_sp
+        MOV R13,n_C93C
+        SHL R13,#02H
+        MOV R14,#DATA16 0C000H
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV maf_kgh_sp,R4
+        MOV R12,amp
+        MOV R13,amp_mdl_dif_i_mmv
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV amp_mdl_ivs,R4
+        MOV R12,#DATA16 045D6H
+        MOV R13,maf_kgh_sp
+        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YWord
+        MOV R13,R4
+        MOV R12,amp_mdl_ivs
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV prs_up_thr_ivs,R4
+        MOV R12,maf_kgh_sp
+        MOV R13,#00H
+        MOV R4,eff_vol_ofs
+        MOV R5,#00H
+        ADD R12,R4
+        ADDC R13,R5
+        MOV R2,R12
+        SHL R12,#0BH
+        SHL R13,#0BH
+        SHR R2,#05H
+        OR R13,R2
+        MOV R14,eff_vol_slop
+        CALLS 00FH,Div_U32_U16_Round
+        MOV R12,R4
+        MOV R13,map_egr
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV R9,R4
+        CMP R9,prs_up_thr_ivs
+        JMPR cc_C,L_B0C26
+        MOV R9,prs_up_thr_ivs
+        SUB R9,#01H
+L_B0C26:                 ; 0xb0c26
+        MOV map_sp,R9
+        MOV R12,R9
+        MOV R13,prs_up_thr_ivs
+        CALLS 00FH,Div_Frac_U16_Q16
+        MOV pq_sp,R4
+        MOV R12,#DATA16 POF ldpm_pq_estim_id_maf_fac_ofs
+        MOV R13,#DATA16 PAG ldpm_pq_estim_id_maf_fac_ofs
+        MOV R14,R4
+        CALLS 00FH,Get_Word_Y_Axis
+        MOV R12,#DATA16 POF id_maf_fac_slop
+        MOV R13,#DATA16 PAG id_maf_fac_slop
+        CALLS 00FH,Read_Word_Far
+        MOV R12,R4
+        MOV R13,pq_sp
+        CALLS 00FH,Mul_U16_Hi
+        MOV [-R0],R4
+        MOV R12,#DATA16 POF id_maf_fac_ofs
+        MOV R13,#DATA16 PAG id_maf_fac_ofs
+        CALLS 00FH,Read_Word_Far
+        MOV R12,R4
+        MOV R13,[R0+]
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV psi_sp,R4
+        MOV R12,prs_up_thr_ivs
+        MOV R13,R4
+        CALLS 00FH,Mul_U16_Hi
+        MOV R12,R4
+        MOV R13,maf_mdl_con_1
+        CALLS 00FH,Mul_U16_Hi
+        MOV R14,R4
+        MOV R12,maf_kgh_sp
+        MOV R13,#DATA16 00040H
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV ar_red_sp_1,R4
+        MOV R12,R4
+        MOV R13,ar_red_ad_add
+        CALLS 00FH,Sub_Floor0_S16
+        MOV R12,R4
+        SHR R12,#01H
+        MOV R13,ar_red_ad_fac_cor
+        ASHR R13,#01H
+        MOV R4,ar_red_dif_i_rel_mmv
+        ASHR R4,#01H
+        ADD R13,R4
+        ADD R13,#DATA16 08000H
+        CALLS 00FH,Div_Frac_U16_Q16
+        MOV ar_red_sp,R4
+        MOV R12,R4
+        MOV R13,ar_red_bas_thr_ivs
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV ar_red_sp_isa,R4
+        MOV R12,#DATA16 045E6H
+        MOV R13,n_C93C
+        MOV R14,R4
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XWord_YWord
+        MOV opg_sp_mdl_bas_isa,R4
+        MOV R12,maf_min_cor
+        MOV R13,maf_max_cor
+        CALLS 00FH,Div_Frac_U16_Q16
+        MOV maf_ratio_isa,R4
+        MOV R12,#DATA16 045DEH
+        MOV R13,R4
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YWord
+        MOVB g_c21a,RL4
+        MOV R12,g_c5dc
+        MOV R13,opg_sp_mdl_bas_isa
+        MOVBZ R14,RL4
+        SHL R14,#08H
+        CALLS 00FH,Interp_U16
+        MOV g_c5dc,R4
+        CMP R4,opg_sp_lim_isa
+        JMPR cc_NC,L_B0D22
+        MOV R4,g_c5dc
+        JMPR cc_UC,L_B0D26
+L_B0D22:                 ; 0xb0d22
+        MOV R4,opg_sp_lim_isa
+L_B0D26:                 ; 0xb0d26
+        MOV opg_sp_mdl_isa,R4
+        MOV R9,[R0+]
+        RETS
+
+S_B0B9C ENDS
+        END

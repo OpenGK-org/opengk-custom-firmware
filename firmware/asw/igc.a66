@@ -1,0 +1,421 @@
+; asw/igc.a66
+; 0xC077A-0xC0BD2  (1112 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_abc_inc_igc                        EQU  0900ABH
+c_abc_max_igc                        EQU  0900E0H
+c_igc_dur_n_max_diag                 EQU  0901E3H
+c_tco_igc_dur_min                    EQU  090376H
+ldpm_n_32__fac_er                 EQU  0909A0H
+ldpm_maf_hb__fac_er               EQU  0909A7H
+id_t_igc_dur_min__n__maf             EQU  091DC4H
+
+PUBLIC  Diag_IGC_Duration, Diag_IGC_Misfire
+EXTERN  DTC_Update_Debounced:NEAR, Get_Byte_X_Axis:NEAR, Get_Byte_Y_Axis:NEAR, Read_Table_Indexed:NEAR
+
+S_C077A SECTION CODE AT 0C077AH
+
+; ======== Diag_IGC_Duration  (@0xc077a) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (MS42, verified): ignition-coil current duration diag per cyl (v_dur_igc_0_,
+        ; c_igc_dur_n_max_diag)
+        ; (was FUN_0c077a)
+        ; ------------------------------------------------------------
+Diag_IGC_Duration:
+        MOV [-R0],R9
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_C0784
+        JMPA cc_UC,L_C0BBE
+L_C0784:                 ; 0xc0784
+        MOVBZ R9,ctr_cyl_knk
+        MOV R4,R9
+        SHL R4,#01H
+        MOV R5,[R4+#0FA42H]
+        CMP R5,#DATA16 0BFFFH
+        JMPR cc_UGT,L_C07C0
+        MOV R4,R9
+        SHL R4,#01H
+        MOV R5,[R4+#0FA42H]
+        MOV R2,#DATA16 0AAAAH
+        MULU R5,R2
+        MOV R5,MDH_FE0C
+        MOV R4,0FE0EH
+        MOV R2,R5
+        SHR R4,#0FH
+        SHR R5,#0FH
+        SHL R2,#01H
+        OR R4,R2
+        MOV R5,R9
+        SHL R5,#01H
+        MOV [R5+#0F700H],R4
+        JMPR cc_UC,L_C07CC
+L_C07C0:                 ; 0xc07c0
+        MOV R4,#DATA16 0FFFFH
+        MOV R5,R9
+        SHL R5,#01H
+        MOV [R5+#0F700H],R4
+L_C07CC:                 ; 0xc07cc
+        JNB lv_conf_mis.02H,L_C07DA
+        MOV R4,#01H
+        SHL R4,R9
+        CPL R4
+        ANDB igc_diag_mis,RL4
+L_C07DA:                 ; 0xc07da
+        MOV R4,lv_inj_pattern
+        AND R4,#DATA16 000FFH
+        JMPA cc_NE,L_C0BB6
+        MOVBZ R4,msk_inj_cyl_ok
+        AND R4,#DATA16 0000FH
+        JMPA cc_NE,L_C0BB6
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_C07FA
+        JMPA cc_UC,L_C0BB6
+L_C07FA:                 ; 0xc07fa
+        JNB lv_pl.04H,L_C0802
+        JMPA cc_UC,L_C0BB6
+L_C0802:                 ; 0xc0802
+        JB can_fd58.0BH,L_C080A
+        JMPA cc_UC,L_C0BB6
+L_C080A:                 ; 0xc080a
+        JNB lv_cam_err.02H,L_C0812
+        JMPA cc_UC,L_C0BB6
+L_C0812:                 ; 0xc0812
+        JNB lv_cam_err.03H,L_C081A
+        JMPA cc_UC,L_C0BB6
+L_C081A:                 ; 0xc081a
+        JNB lv_cam_err.06H,L_C0822
+        JMPA cc_UC,L_C0BB6
+L_C0822:                 ; 0xc0822
+        MOVB RL4,mpl_iga_act
+        BMOVN PSW.06H,PSW.03H
+        JNB PSW.06H,L_C0832
+        JMPA cc_UC,L_C0BB6
+L_C0832:                 ; 0xc0832
+        MOVB RL4,lv_iga_c2e5
+        JMPA cc_NE,L_C0BB0
+        MOVB RL5,tco
+        CMPB RL5,DPP0:c_tco_igc_dur_min
+        JMPA cc_C,L_C0BBE
+        MOV R4,R9
+        SHL R4,#01H
+        MOV R5,[R4+#0F700H]
+        AND R5,#DATA16 07FFFH
+        CMP R5,#DATA16 007FFH
+        JMPR cc_NC,L_C0868
+        MOV R4,R9
+        SHL R4,#01H
+        MOV R5,[R4+#0F700H]
+        SHR R5,#03H
+        MOVB [R9+#0C2E6H],RL5
+        JMPR cc_UC,L_C0870
+L_C0868:                 ; 0xc0868
+        MOVB RL4,#DATA16 000FFH
+        MOVB [R9+#0C2E6H],RL4
+L_C0870:                 ; 0xc0870
+        JB lv_conf_mis.02H,L_C0878
+        JMPA cc_UC,L_C09D8
+L_C0878:                 ; 0xc0878
+        MOV R4,R9
+        SHL R4,#01H
+        MOV R5,[R4+#0F700H]
+        AND R5,#DATA16 08000H
+        JMPR cc_EQ,L_C089C
+        MOVB RL4,n_32
+        CMPB RL4,DPP0:c_igc_dur_n_max_diag
+        JMPR cc_NC,L_C0898
+        MOVB RL5,#01H
+        MOVB dtc_test_result,RL5
+        JMPR cc_UC,L_C0904
+L_C0898:                 ; 0xc0898
+        MOV R9,#04H
+        JMPR cc_UC,L_C0904
+L_C089C:                 ; 0xc089c
+        MOV R4,R9
+        SHL R4,#01H
+        MOV R5,[R4+#0F700H]
+        AND R5,#DATA16 07FFFH
+        JMPR cc_NE,L_C08BA
+        MOVB RL4,#04H
+        MOVB dtc_test_result,RL4
+        MOV R4,#01H
+        SHL R4,R9
+        ORB igc_diag_mis,RL4
+        JMPR cc_UC,L_C0904
+L_C08BA:                 ; 0xc08ba
+        MOV R12,#DATA16 POF ldpm_n_32__fac_er
+        MOV R13,#DATA16 PAG ldpm_n_32__fac_er
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_maf_hb__fac_er
+        MOV R13,#DATA16 PAG ldpm_maf_hb__fac_er
+        MOVBZ R14,lv_iga_cc2b
+        CALLS 00FH,Get_Byte_X_Axis
+        MOV R12,#DATA16 POF id_t_igc_dur_min__n__maf
+        MOV R13,#DATA16 PAG id_t_igc_dur_min__n__maf
+        CALLS 00FH,Read_Table_Indexed
+        MOV R5,R9
+        SHL R5,#01H
+        MOV R2,[R5+#0F700H]
+        AND R2,#DATA16 07FFFH
+        CMP R2,R4
+        JMPR cc_NC,L_C0904
+        MOVB RL4,#02H
+        MOVB dtc_test_result,RL4
+        MOV R4,#01H
+        SHL R4,R9
+        ORB igc_diag_mis,RL4
+L_C0904:                 ; 0xc0904
+        CMP R9,#00H
+        JMPR cc_EQ,L_C0918
+        CMP R9,#01H
+        JMPR cc_EQ,L_C0948
+        CMP R9,#02H
+        JMPR cc_EQ,L_C0978
+        CMP R9,#03H
+        JMPR cc_EQ,L_C09A8
+        JMPA cc_UC,L_C0BBE
+L_C0918:                 ; 0xc0918
+        MOV R12,#DATA16 0D3A8H
+        MOV R13,#DATA16 056A6H
+        MOVBZ R14,DPP0:c_abc_inc_igc
+        MOVBZ R15,DPP0:c_abc_max_igc
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_dur_igc_0_err.04H,dtc_status_work.06H
+        MOVBZ R4,lv_iga_d3b2
+        AND R4,#DATA16 00020H
+        JMPA cc_EQ,L_C0BBE
+        MOV R4,#DATA16 0FFEFH
+        AND dtc_st_grp_igc,R4
+        JMPA cc_UC,L_C0BBE
+L_C0948:                 ; 0xc0948
+        MOV R12,#DATA16 0D3B6H
+        MOV R13,#DATA16 056BCH
+        MOVBZ R14,DPP0:c_abc_inc_igc
+        MOVBZ R15,DPP0:c_abc_max_igc
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_dur_igc_0_err.05H,dtc_status_work.06H
+        MOVBZ R4,lv_iga_d3c0
+        AND R4,#DATA16 00020H
+        JMPA cc_EQ,L_C0BBE
+        MOV R4,#DATA16 0FFDFH
+        AND dtc_st_grp_igc,R4
+        JMPA cc_UC,L_C0BBE
+L_C0978:                 ; 0xc0978
+        MOV R12,#DATA16 0D3C4H
+        MOV R13,#DATA16 056D2H
+        MOVBZ R14,DPP0:c_abc_inc_igc
+        MOVBZ R15,DPP0:c_abc_max_igc
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_dur_igc_0_err.06H,dtc_status_work.06H
+        MOVBZ R4,lv_iga_d3ce
+        AND R4,#DATA16 00020H
+        JMPA cc_EQ,L_C0BBE
+        MOV R4,#DATA16 0FFBFH
+        AND dtc_st_grp_igc,R4
+        JMPA cc_UC,L_C0BBE
+L_C09A8:                 ; 0xc09a8
+        MOV R12,#DATA16 0D3D2H
+        MOV R13,#DATA16 056E8H
+        MOVBZ R14,DPP0:c_abc_inc_igc
+        MOVBZ R15,DPP0:c_abc_max_igc
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_dur_igc_0_err.07H,dtc_status_work.06H
+        MOVBZ R4,lv_iga_d3dc
+        AND R4,#DATA16 00020H
+        JMPA cc_EQ,L_C0BBE
+        MOV R4,#DATA16 0FF7FH
+        AND dtc_st_grp_igc,R4
+        JMPA cc_UC,L_C0BBE
+L_C09D8:                 ; 0xc09d8
+        MOV R4,R9
+        SHL R4,#01H
+        MOV R5,[R4+#0F700H]
+        AND R5,#DATA16 08000H
+        JMPR cc_EQ,L_C09FC
+        MOVB RL4,n_32
+        CMPB RL4,DPP0:c_igc_dur_n_max_diag
+        JMPR cc_NC,L_C09F8
+        MOVB RL5,#01H
+        MOVB dtc_test_result,RL5
+        JMPR cc_UC,L_C0A54
+L_C09F8:                 ; 0xc09f8
+        MOV R9,#04H
+        JMPR cc_UC,L_C0A54
+L_C09FC:                 ; 0xc09fc
+        MOV R4,R9
+        SHL R4,#01H
+        MOV R5,[R4+#0F700H]
+        AND R5,#DATA16 07FFFH
+        JMPR cc_NE,L_C0A12
+        MOVB RL4,#04H
+        MOVB dtc_test_result,RL4
+        JMPR cc_UC,L_C0A54
+L_C0A12:                 ; 0xc0a12
+        MOV R12,#DATA16 POF ldpm_n_32__fac_er
+        MOV R13,#DATA16 PAG ldpm_n_32__fac_er
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_maf_hb__fac_er
+        MOV R13,#DATA16 PAG ldpm_maf_hb__fac_er
+        MOVBZ R14,lv_iga_cc2b
+        CALLS 00FH,Get_Byte_X_Axis
+        MOV R12,#DATA16 POF id_t_igc_dur_min__n__maf
+        MOV R13,#DATA16 PAG id_t_igc_dur_min__n__maf
+        CALLS 00FH,Read_Table_Indexed
+        MOV R5,R9
+        SHL R5,#01H
+        MOV R2,[R5+#0F700H]
+        AND R2,#DATA16 07FFFH
+        CMP R2,R4
+        JMPR cc_NC,L_C0A54
+        MOVB RL4,#02H
+        MOVB dtc_test_result,RL4
+L_C0A54:                 ; 0xc0a54
+        CMP R9,#00H
+        JMPR cc_EQ,L_C0A68
+        CMP R9,#01H
+        JMPR cc_EQ,L_C0AA8
+        CMP R9,#02H
+        JMPR cc_EQ,L_C0AE8
+        CMP R9,#03H
+        JMPR cc_EQ,L_C0B28
+        JMPA cc_UC,L_C0B66
+L_C0A68:                 ; 0xc0a68
+        MOV R12,#DATA16 0D3A8H
+        MOV R13,#DATA16 056A6H
+        MOVBZ R14,DPP0:c_abc_inc_igc
+        MOVBZ R15,DPP0:c_abc_max_igc
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_dur_igc_0_err.04H,dtc_status_work.06H
+        MOVBZ R4,lv_iga_d3b2
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C0A92
+        MOV R4,#DATA16 0FFEFH
+        AND dtc_st_grp_igc,R4
+L_C0A92:                 ; 0xc0a92
+        JNB lv_dur_igc_0_err.04H,L_C0A9E
+        MOVB RL4,#01H
+        ORB lv_iga_c2ea,RL4
+        JMPR cc_UC,L_C0B66
+L_C0A9E:                 ; 0xc0a9e
+        MOVB RL4,#DATA16 000FEH
+        ANDB lv_iga_c2ea,RL4
+        JMPR cc_UC,L_C0B66
+L_C0AA8:                 ; 0xc0aa8
+        MOV R12,#DATA16 0D3B6H
+        MOV R13,#DATA16 056BCH
+        MOVBZ R14,DPP0:c_abc_inc_igc
+        MOVBZ R15,DPP0:c_abc_max_igc
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_dur_igc_0_err.05H,dtc_status_work.06H
+        MOVBZ R4,lv_iga_d3c0
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C0AD2
+        MOV R4,#DATA16 0FFDFH
+        AND dtc_st_grp_igc,R4
+L_C0AD2:                 ; 0xc0ad2
+        JNB lv_dur_igc_0_err.05H,L_C0ADE
+        MOVB RL4,#02H
+        ORB lv_iga_c2ea,RL4
+        JMPR cc_UC,L_C0B66
+L_C0ADE:                 ; 0xc0ade
+        MOVB RL4,#DATA16 000FDH
+        ANDB lv_iga_c2ea,RL4
+        JMPR cc_UC,L_C0B66
+L_C0AE8:                 ; 0xc0ae8
+        MOV R12,#DATA16 0D3C4H
+        MOV R13,#DATA16 056D2H
+        MOVBZ R14,DPP0:c_abc_inc_igc
+        MOVBZ R15,DPP0:c_abc_max_igc
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_dur_igc_0_err.06H,dtc_status_work.06H
+        MOVBZ R4,lv_iga_d3ce
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C0B12
+        MOV R4,#DATA16 0FFBFH
+        AND dtc_st_grp_igc,R4
+L_C0B12:                 ; 0xc0b12
+        JNB lv_dur_igc_0_err.06H,L_C0B1E
+        MOVB RL4,#04H
+        ORB lv_iga_c2ea,RL4
+        JMPR cc_UC,L_C0B66
+L_C0B1E:                 ; 0xc0b1e
+        MOVB RL4,#DATA16 000FBH
+        ANDB lv_iga_c2ea,RL4
+        JMPR cc_UC,L_C0B66
+L_C0B28:                 ; 0xc0b28
+        MOV R12,#DATA16 0D3D2H
+        MOV R13,#DATA16 056E8H
+        MOVBZ R14,DPP0:c_abc_inc_igc
+        MOVBZ R15,DPP0:c_abc_max_igc
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_dur_igc_0_err.07H,dtc_status_work.06H
+        MOVBZ R4,lv_iga_d3dc
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C0B52
+        MOV R4,#DATA16 0FF7FH
+        AND dtc_st_grp_igc,R4
+L_C0B52:                 ; 0xc0b52
+        JNB lv_dur_igc_0_err.07H,L_C0B5E
+        MOVB RL4,#08H
+        ORB lv_iga_c2ea,RL4
+        JMPR cc_UC,L_C0B66
+L_C0B5E:                 ; 0xc0b5e
+        MOVB RL4,#DATA16 000F7H
+        ANDB lv_iga_c2ea,RL4
+L_C0B66:                 ; 0xc0b66
+        MOV R9,#00H
+        JNB lv_dur_igc_0_err.04H,L_C0B6E
+        MOV R9,#01H
+L_C0B6E:                 ; 0xc0b6e
+        JNB lv_dur_igc_0_err.05H,L_C0B74
+        ADD R9,#01H
+L_C0B74:                 ; 0xc0b74
+        JNB lv_dur_igc_0_err.06H,L_C0B7A
+        ADD R9,#01H
+L_C0B7A:                 ; 0xc0b7a
+        JNB lv_dur_igc_0_err.07H,L_C0B80
+        ADD R9,#01H
+L_C0B80:                 ; 0xc0b80
+        CMP R9,#03H
+        JMPR cc_C,L_C0B88
+        MOVB lv_iga_c2ea,ZEROS
+L_C0B88:                 ; 0xc0b88
+        JNB lv_conf_mis.02H,L_C0B9E
+        MOVB RL4,inh_iv_as
+        ORB RL4,inh_iv_mis
+        ORB RL4,imob_c286
+        MOVB msk_inj_cyl_ok,RL4
+        JMPR cc_UC,L_C0BBE
+L_C0B9E:                 ; 0xc0b9e
+        MOVB RL4,inh_iv_as
+        ORB RL4,lv_iga_c2ea
+        ORB RL4,imob_c286
+        MOVB msk_inj_cyl_ok,RL4
+        JMPR cc_UC,L_C0BBE
+L_C0BB0:                 ; 0xc0bb0
+        ADDB lv_iga_c2e5,ONES
+        JMPR cc_UC,L_C0BBE
+L_C0BB6:                 ; 0xc0bb6
+        MOVB RL4,#DATA16 00014H
+        MOVB lv_iga_c2e5,RL4
+L_C0BBE:                 ; 0xc0bbe
+        MOV R9,[R0+]
+        RETS
+
+; ======== Diag_IGC_Misfire  (@0xc0bc2) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by iga/igc/td output signals): Ignition-coil misfire diagnosis igc_diag_mis.
+        ; ------------------------------------------------------------
+Diag_IGC_Misfire:
+        JNB lv_conf_mis.02H,L_C0BCC
+        MOVB igc_diag_mis,ZEROS
+        RETS
+L_C0BCC:                 ; 0xc0bcc
+        MOVB lv_iga_c2ea,ZEROS
+        RETS
+
+S_C077A ENDS
+        END

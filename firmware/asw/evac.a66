@@ -1,0 +1,96 @@
+; asw/evac.a66
+; 0xD391C-0xD39E8  (204 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_dtp_evac_mmv_crlc                  EQU  09019BH
+c_dtp_evac_slop_mmv_crlc             EQU  09019CH
+c_max_dif_slop_mmv                   EQU  090612H
+
+PUBLIC  Calc_DiagCP_Evac_Slop, Reset_uVar1_9b0
+EXTERN  Abs_Diff_S16:NEAR, Interp_S16:NEAR, Mul_S16_Sat16:NEAR, Sat_Sub_S16:NEAR
+
+S_D391C SECTION CODE AT 0D391CH
+
+; ======== Calc_DiagCP_Evac_Slop  (@0xd391c) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen signals, verified): EVAP diagnosis: tank-pressure evacuation slope
+        ; adaptation (dtp_evac_slop)
+        ; ------------------------------------------------------------
+Calc_DiagCP_Evac_Slop:
+        MOV [-R0],R9
+        MOV R9,dtp_evac_mmv
+        MOV R12,dtp_evac_mmv
+        MOV R13,dtp_sword
+        MOVBZ R14,DPP0:c_dtp_evac_mmv_crlc
+        SHL R14,#08H
+        CALLS 00FH,Interp_S16
+        MOV dtp_evac_mmv,R4
+        MOV R12,R4
+        MOV R13,R9
+        CALLS 00FH,Sat_Sub_S16
+        MOV R12,R4
+        MOV R13,#02H
+        CALLS 00FH,Mul_S16_Sat16
+        MOV dtp_evac_slop,R4
+        MOV R12,dtp_evac_slop_mmv
+        MOV R13,R4
+        MOVBZ R14,DPP0:c_dtp_evac_slop_mmv_crlc
+        SHL R14,#08H
+        CALLS 00FH,Interp_S16
+        MOV dtp_evac_slop_mmv,R4
+        JNB lv_diagcp_cdn_nok.04H,L_D39AC
+        JNB lv_diagcp_cdn_nok.05H,L_D399A
+        CMP R4,dtp_evac_slop_mmv_max
+        JMPR cc_SLE,L_D3972
+        MOV dtp_evac_slop_mmv_max,R4
+L_D3972:                 ; 0xd3972
+        MOV R4,dtp_evac_slop_mmv
+        CMP R4,dtp_evac_slop_mmv_min
+        JMPR cc_SGE,L_D3980
+        MOV dtp_evac_slop_mmv_min,R4
+L_D3980:                 ; 0xd3980
+        MOV R12,dtp_evac_slop_mmv_max
+        MOV R13,dtp_evac_slop_mmv_min
+        CALLS 00FH,Abs_Diff_S16
+        MOV dtp_evac_slop_mmv_dif,R4
+        CMP R4,DPP0:c_max_dif_slop_mmv
+        JMPR cc_ULE,L_D39AC
+        BSET lv_act_diagcps.05H
+        JMPR cc_UC,L_D39AC
+L_D399A:                 ; 0xd399a
+        MOV R4,dtp_evac_slop_mmv
+        MOV dtp_evac_slop_mmv_max,R4
+        MOV R5,dtp_evac_slop_mmv
+        MOV dtp_evac_slop_mmv_min,R5
+        BSET lv_diagcp_cdn_nok.05H
+L_D39AC:                 ; 0xd39ac
+        MOV R9,[R0+]
+        RET
+
+; ======== Reset_uVar1_9b0  (@0xd39b0) ========
+Reset_uVar1_9b0:
+        MOV [-R0],R9
+        MOV R9,dtp_evac_mmv
+        MOV R12,dtp_evac_mmv
+        MOV R13,dtp_sword
+        MOVBZ R14,DPP0:c_dtp_evac_mmv_crlc
+        SHL R14,#08H
+        CALLS 00FH,Interp_S16
+        MOV dtp_evac_mmv,R4
+        MOV R12,R4
+        MOV R13,R9
+        CALLS 00FH,Sat_Sub_S16
+        MOV R12,R4
+        MOV R13,#02H
+        CALLS 00FH,Mul_S16_Sat16
+        MOV dtp_evac_slop,R4
+        MOV dtp_evac_slop_mmv,R4
+        MOV R9,[R0+]
+        RET
+
+S_D391C ENDS
+        END

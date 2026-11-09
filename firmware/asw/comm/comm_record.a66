@@ -1,0 +1,314 @@
+; asw/comm/comm_record.a66
+; 0xDA41C-0xDA6A0  (644 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Delay_Loop_da664, Get_DTC_Record_1, Get_DTC_Record_2, Nop_da69e, Read_FreezeFrame_2
+
+S_DA41C SECTION CODE AT 0DA41CH
+
+; ======== Get_DTC_Record_1  (@0xda41c) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Get_DTC_Record_1:
+        MOV [-R0],R6
+        MOVB RL4,kwp_c360
+        JMPR cc_EQ,L_DA42A
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_DA488
+        JMPR cc_UC,L_DA4FC
+L_DA42A:                 ; 0xda42a
+        MOV R4,R12
+        MOVBZ R4,RL4
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL6,[R5+#0D0D0H]
+        ANDB RL6,#DATA16 0000FH
+        CMPB RL6,#01H
+        JMPR cc_EQ,L_DA448
+        CMPB RL6,#DATA16 00008H
+        JMPR cc_NE,L_DA45C
+L_DA448:                 ; 0xda448
+        MOV R4,R12
+        MOVBZ R4,RL4
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R13,[R4+#05230H]
+        JMPR cc_UC,L_DA4FC
+L_DA45C:                 ; 0xda45c
+        CMPB RL6,#02H
+        JMPR cc_NE,L_DA474
+        MOV R4,R12
+        MOVBZ R4,RL4
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R13,[R4+#05232H]
+        JMPR cc_UC,L_DA4FC
+L_DA474:                 ; 0xda474
+        MOV R4,R12
+        MOVBZ R4,RL4
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R13,[R4+#05234H]
+        JMPR cc_UC,L_DA4FC
+L_DA488:                 ; 0xda488
+        MOV R4,R12
+        MOVBZ R4,RL4
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL6,[R5+#0CE00H]
+        ANDB RL6,#DATA16 0000FH
+        CMPB RL6,#01H
+        JMPR cc_EQ,L_DA4A6
+        CMPB RL6,#DATA16 00008H
+        JMPR cc_NE,L_DA4C2
+L_DA4A6:                 ; 0xda4a6
+        MOV R4,R12
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        MOVB RL5,[R4+#0CE8DH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R13,[R4+#05230H]
+        JMPR cc_UC,L_DA4FC
+L_DA4C2:                 ; 0xda4c2
+        CMPB RL6,#02H
+        JMPR cc_NE,L_DA4E2
+        MOV R4,R12
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        MOVB RL5,[R4+#0CE8DH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R13,[R4+#05232H]
+        JMPR cc_UC,L_DA4FC
+L_DA4E2:                 ; 0xda4e2
+        MOV R4,R12
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        MOVB RL5,[R4+#0CE8DH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R13,[R4+#05234H]
+L_DA4FC:                 ; 0xda4fc
+        MOV R4,R13
+        MOV R6,[R0+]
+        RETS
+
+; ======== Read_FreezeFrame_2  (@0xda502) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Read_FreezeFrame_2:
+        MOV [-R0],R6
+        MOV R4,R12
+        MOVBZ R4,RL4
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL6,[R5+#0D0DDH]
+        ANDB RL6,#DATA16 0000FH
+        CMPB RL6,#01H
+        JMPR cc_EQ,L_DA528
+        CMPB RL6,#DATA16 00008H
+        JMPR cc_NE,L_DA542
+L_DA528:                 ; 0xda528
+        MOV R4,R12
+        MOVBZ R4,RL4
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R13,[R4+#05230H]
+        JMPR cc_UC,L_DA578
+L_DA542:                 ; 0xda542
+        CMPB RL6,#02H
+        JMPR cc_NE,L_DA560
+        MOV R4,R12
+        MOVBZ R4,RL4
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R13,[R4+#05232H]
+        JMPR cc_UC,L_DA578
+L_DA560:                 ; 0xda560
+        MOV R4,R12
+        MOVBZ R4,RL4
+        MOVB RL5,[R4+#0C3DBH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R13,[R4+#05234H]
+L_DA578:                 ; 0xda578
+        MOV R4,R13
+        MOV R6,[R0+]
+        RETS
+
+; ======== Get_DTC_Record_2  (@0xda57e) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Get_DTC_Record_2:
+        MOV [-R0],R6
+        MOVB RL4,kwp_c360
+        JMPR cc_EQ,L_DA58C
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_DA5EA
+        JMPR cc_UC,L_DA65E
+L_DA58C:                 ; 0xda58c
+        MOV R4,R12
+        MOVBZ R4,RL4
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL6,[R5+#0D0DDH]
+        ANDB RL6,#DATA16 0000FH
+        CMPB RL6,#01H
+        JMPR cc_EQ,L_DA5AA
+        CMPB RL6,#DATA16 00008H
+        JMPR cc_NE,L_DA5BE
+L_DA5AA:                 ; 0xda5aa
+        MOV R4,R12
+        MOVBZ R4,RL4
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R13,[R4+#05230H]
+        JMPR cc_UC,L_DA65E
+L_DA5BE:                 ; 0xda5be
+        CMPB RL6,#02H
+        JMPR cc_NE,L_DA5D6
+        MOV R4,R12
+        MOVBZ R4,RL4
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R13,[R4+#05232H]
+        JMPR cc_UC,L_DA65E
+L_DA5D6:                 ; 0xda5d6
+        MOV R4,R12
+        MOVBZ R4,RL4
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R13,[R4+#05234H]
+        JMPR cc_UC,L_DA65E
+L_DA5EA:                 ; 0xda5ea
+        MOV R4,R12
+        MOVBZ R4,RL4
+        MOV R5,R4
+        SHL R5,#03H
+        SUB R5,R4
+        SHL R5,#01H
+        MOVB RL6,[R5+#0CE0DH]
+        ANDB RL6,#DATA16 0000FH
+        CMPB RL6,#01H
+        JMPR cc_EQ,L_DA608
+        CMPB RL6,#DATA16 00008H
+        JMPR cc_NE,L_DA624
+L_DA608:                 ; 0xda608
+        MOV R4,R12
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        MOVB RL5,[R4+#0CE8DH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R13,[R4+#05230H]
+        JMPR cc_UC,L_DA65E
+L_DA624:                 ; 0xda624
+        CMPB RL6,#02H
+        JMPR cc_NE,L_DA644
+        MOV R4,R12
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        MOVB RL5,[R4+#0CE8DH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R13,[R4+#05232H]
+        JMPR cc_UC,L_DA65E
+L_DA644:                 ; 0xda644
+        MOV R4,R12
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        MOVB RL5,[R4+#0CE8DH]
+        MOVBZ R4,RL5
+        MOV R5,#DATA16 00016H
+        MULU R4,R5
+        MOV R4,0FE0EH
+        MOV R13,[R4+#05234H]
+L_DA65E:                 ; 0xda65e
+        MOV R4,R13
+        MOV R6,[R0+]
+        RETS
+
+; ======== Delay_Loop_da664  (@0xda664) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Delay_Loop_da664:
+        MOV R4,R14
+        ADDB RL4,#01H
+        MOV R14,R4
+        JMPR cc_UC,L_DA686
+L_DA66C:                 ; 0xda66c
+        MOV R4,R14
+        MOVBZ R4,RL4
+        MOV R5,R12
+        ADD R5,R4
+        MOV R4,R14
+        MOVBZ R4,RL4
+        MOV R2,R12
+        ADD R2,R4
+        SUB R2,#01H
+        MOVB [R2],[R5]
+        MOV R4,R14
+        ADDB RL4,#01H
+        MOV R14,R4
+L_DA686:                 ; 0xda686
+        MOV R4,R14
+        MOV R5,R13
+        CMPB RL4,RL5
+        JMPR cc_C,L_DA66C
+        MOVB RL4,#00H
+        MOV R5,R13
+        MOVBZ R5,RL5
+        MOV R2,R12
+        ADD R2,R5
+        SUB R2,#01H
+        MOVB [R2],RL4
+        RETS
+
+; ======== Nop_da69e  (@0xda69e) ========
+Nop_da69e:
+        RETS
+
+S_DA41C ENDS
+        END

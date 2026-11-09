@@ -1,0 +1,72 @@
+; asw/mem/mem_cppwm.a66
+; 0xB2E68-0xB2EEA  (130 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  CanPurge_Adapt_Flow, Reset_cppwm_ad_mem_ee0
+EXTERN  xor_routine:NEAR
+
+S_B2E68 SECTION CODE AT 0B2E68H
+
+; ======== CanPurge_Adapt_Flow  (@0xb2e68) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by cp/evap/dtp/diagcp output signals + DTC): Purge flow adaptation memory:
+        ; cppwm_ad_mem / flow_cor_cps_old.
+        ; ------------------------------------------------------------
+CanPurge_Adapt_Flow:
+        MOVB RL4,conf_cp
+        JMPR cc_EQ,L_B2EDA
+        JNB lv_pl.0CH,L_B2E78
+        MOVB RL5,conf_ad_rst
+        JMPR cc_NE,L_B2EDA
+L_B2E78:                 ; 0xb2e78
+        JB can_fd58.02H,L_B2EDA
+        MOV R12,diag_f890
+        MOV R13,diag_f892
+        ADD R12,#DATA16 001FAH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#04H
+        CALLS 00DH,xor_routine
+        MOV R10,diag_f890
+        MOV R11,diag_f892
+        EXTP R11, #02H
+        MOV R5,[R10+#01FEH]
+        NOP
+        CMP R5,R4
+        JMPR cc_NE,L_B2EDA
+        EXTP R11, #02H
+        MOV R4,[R10+#01FAH]
+        NOP
+        MOV cppwm_ad_mem,R4
+        EXTP R11, #02H
+        MOV R5,[R10+#01FCH]
+        NOP
+        MOV flow_cor_cps_old,R5
+        RETS
+L_B2EDA:                 ; 0xb2eda
+        CALLS 00BH,Reset_cppwm_ad_mem_ee0
+        RETS
+
+; ======== Reset_cppwm_ad_mem_ee0  (@0xb2ee0) ========
+Reset_cppwm_ad_mem_ee0:
+        MOV cppwm_ad_mem,ZEROS
+        MOV flow_cor_cps_old,ZEROS
+        RETS
+
+S_B2E68 ENDS
+        END

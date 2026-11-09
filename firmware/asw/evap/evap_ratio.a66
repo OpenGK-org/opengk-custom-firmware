@@ -1,0 +1,72 @@
+; asw/evap/evap_ratio.a66
+; 0xD124E-0xD12C2  (116 bytes, 2 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_tam_max_evap_rbm                   EQU  090361H
+c_tam_min_evap_rbm                   EQU  090364H
+c_tam_st_hys_evap_rbm                EQU  090367H
+c_tco_st_max_evap_rbm                EQU  090396H
+c_tco_st_min_evap_rbm                EQU  09039AH
+c_t_ast_evap_rbm                     EQU  0906C8H
+
+PUBLIC  Calc_Evap_RBM_Cond, Reset_lv_err_maf_tps_ratio_2_24e
+EXTERN  Sat_Add_U8:NEAR
+
+S_D124E SECTION CODE AT 0D124EH
+
+; ======== Reset_lv_err_maf_tps_ratio_2_24e  (@0xd124e) ========
+Reset_lv_err_maf_tps_ratio_2_24e:
+        BCLR lv_err_maf_tps_ratio_2.0EH
+        MOV t_ast_evap_rbm,ZEROS
+        MOVB RL4,tam
+        MOVB tam_st,RL4
+        BCLR lv_diagcp_cdn_nok.0DH
+        BCLR lv_diagcp_cdn_nok.0EH
+        BCLR lv_diagcp_cdn_nok.0FH
+        BCLR lv_act_diagcps.00H
+        BCLR lv_act_diagcps.01H
+        BCLR lv_act_diagcps.02H
+        RETS
+
+; ======== Calc_Evap_RBM_Cond  (@0xd126a) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen signals, verified): EVAP rate-base monitoring enable conditions
+        ; (t_ast_evap_rbm)
+        ; ------------------------------------------------------------
+Calc_Evap_RBM_Cond:
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_D12C0
+        MOVB RL4,tam
+        CMPB RL4,DPP0:c_tam_min_evap_rbm
+        JMPR cc_C,L_D128E
+        CMPB RL4,DPP0:c_tam_max_evap_rbm
+        JMPR cc_UGT,L_D128E
+        MOV R4,t_ast_evap_rbm
+        CMP R4,DPP0:c_t_ast_evap_rbm
+        JMPR cc_NC,L_D128E
+        ADD R4,#01H
+        MOV t_ast_evap_rbm,R4
+L_D128E:                 ; 0xd128e
+        JB lv_err_maf_tps_ratio_2.0EH,L_D12C0
+        MOV R4,t_ast_evap_rbm
+        CMP R4,DPP0:c_t_ast_evap_rbm
+        JMPR cc_C,L_D12C0
+        MOVB RL4,tco_st
+        CMPB RL4,DPP0:c_tco_st_min_evap_rbm
+        JMPR cc_C,L_D12C0
+        CMPB RL4,DPP0:c_tco_st_max_evap_rbm
+        JMPR cc_UGT,L_D12C0
+        MOVBZ R12,tam_st
+        MOVBZ R13,DPP0:c_tam_st_hys_evap_rbm
+        CALLS 00FH,Sat_Add_U8
+        CMPB RL4,tco_st
+        JMPR cc_C,L_D12C0
+        BSET lv_err_maf_tps_ratio_2.0EH
+L_D12C0:                 ; 0xd12c0
+        RETS
+
+S_D124E ENDS
+        END

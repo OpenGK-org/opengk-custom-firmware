@@ -1,0 +1,334 @@
+; asw/comm/comm_ret.a66
+; 0xBEE6E-0xBF160  (754 bytes, 9 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_t_dly_rly_main_diag                EQU  09032CH
+c_t_rly_main_diag                    EQU  09034EH
+c_t_thd_rly_main_diag                EQU  090358H
+c_v_igk_rly_main_diag                EQU  0903FDH
+c_vb_rly_main_diag                   EQU  09041CH
+sstm_tkw_1_8                      EQU  090E46H
+ip_tco_lam_min__tco_st               EQU  0965FCH
+ip_tco_lam_min_is__tco_st            EQU  096602H
+
+PUBLIC  Calc_CatHeat_State, Diag_CAN_BusOff, Diag_Lam_Lim_d1cc, Is_CCP_Active, Reset_Dc2b4_028, RetC_1_142
+PUBLIC  RetC_1_14c, RetC_1_156, Set_ADDRSEL2_15a
+EXTERN  DTC_Update_Debounced:NEAR, DTC_Update_Immediate:NEAR, Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_Y_Axis:NEAR
+
+S_BEE6E SECTION CODE AT 0BEE6EH
+
+; ======== Diag_CAN_BusOff  (@0xbee6e) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by er_ad/mis/diag output signals + DTC): CAN bus-off error diagnosis (DTC
+        ; 0xd568): lv_can_bus_off_err.
+        ; ------------------------------------------------------------
+Diag_CAN_BusOff:
+        JB can_fd58.09H,L_BEF36
+        JNB lv_iga_dif_max_er.06H,L_BEF36
+        MOVB RL4,pwl_dly_ctr
+        CMPB RL4,#01H
+        JMPR cc_UGT,L_BEF36
+        JNB can_fd9e.06H,L_BEE8E
+        BCLR can_fd9e.06H
+        JB state_out_req.00H,L_BEE8A
+        BSET P6.06H
+L_BEE8A:                 ; 0xbee8a
+        CALLS 00BH,Reset_Dc2b4_028
+L_BEE8E:                 ; 0xbee8e
+        JB lv_er_carb_b4.0DH,L_BEE96
+        JMPA cc_UC,L_BF026
+L_BEE96:                 ; 0xbee96
+        MOVB RL4,can_c2b4
+        JMPR cc_NE,L_BEF30
+        MOVB RL5,vb
+        CMPB RL5,DPP0:c_vb_rly_main_diag
+        JMPR cc_ULE,L_BEEAA
+        SUBB can_c2b3,ONES
+L_BEEAA:                 ; 0xbeeaa
+        MOVB RL4,can_c2b2
+        JMPR cc_NE,L_BEF2A
+        MOVB RL5,can_c2b3
+        CMPB RL5,DPP0:c_t_thd_rly_main_diag
+        JMPR cc_C,L_BEEE8
+        MOVB RL3,#01H
+        MOVB dtc_test_result,RL3
+        MOV R12,#DATA16 0D568H
+        MOV R13,#DATA16 05966H
+        MOV R14,#01H
+        MOV R15,#01H
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_can_bus_off_err.04H,dtc_status_work.06H
+        MOVBZ R4,can_d572
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BEF16
+        MOV R4,#DATA16 0FFEFH
+        AND dtc_st_grp_can,R4
+        JMPR cc_UC,L_BEF16
+L_BEEE8:                 ; 0xbeee8
+        MOVB RL4,can_d568
+        ANDB RL4,#02H
+        JMPR cc_NE,L_BEF16
+        MOV R12,#DATA16 0D568H
+        MOV R13,#DATA16 05966H
+        MOV R14,#01H
+        MOV R15,#01H
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_can_bus_off_err.04H,dtc_status_work.06H
+        MOVBZ R4,can_d572
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BEF16
+        MOV R4,#DATA16 0FFEFH
+        AND dtc_st_grp_can,R4
+L_BEF16:                 ; 0xbef16
+        MOVB RL4,pwl_dly_ctr
+        JMPR cc_EQ,L_BEF22
+        SUBB RL4,#01H
+        MOVB pwl_dly_ctr,RL4
+L_BEF22:                 ; 0xbef22
+        BCLR lv_er_carb_b4.0DH
+        CALLS 00BH,Reset_Dc2b4_028
+        RETS
+L_BEF2A:                 ; 0xbef2a
+        ADDB can_c2b2,ONES
+        RETS
+L_BEF30:                 ; 0xbef30
+        ADDB can_c2b4,ONES
+        RETS
+L_BEF36:                 ; 0xbef36
+        JB can_fd9e.06H,L_BEF48
+        BSET can_fd9e.06H
+        JB state_out_req.00H,L_BEF42
+        BCLR P6.06H
+L_BEF42:                 ; 0xbef42
+        CALLS 00BH,Reset_Dc2b4_028
+        JMPR cc_UC,L_BEF64
+L_BEF48:                 ; 0xbef48
+        JB P6.06H,L_BEF5C
+        JB dtc_rly_cond2.0FH,L_BEF54
+        JNB dtc_rly_cond1.0FH,L_BEF64
+L_BEF54:                 ; 0xbef54
+        BCLR dtc_rly_cond2.0FH
+        BCLR dtc_rly_cond1.0FH
+        BSET P6.06H
+        JMPR cc_UC,L_BEF64
+L_BEF5C:                 ; 0xbef5c
+        BSET can_fd9e.06H
+        JB state_out_req.00H,L_BEF64
+        BCLR P6.06H
+L_BEF64:                 ; 0xbef64
+        JB state_out_req.00H,L_BF010
+        JNB can_fd58.09H,L_BF010
+        MOVB RL4,v_igk
+        CMPB RL4,DPP0:c_v_igk_rly_main_diag
+        JMPR cc_ULE,L_BF010
+        MOVB RL5,can_c2b4
+        JMPR cc_NE,L_BF00A
+        MOVB RL3,vb
+        CMPB RL3,DPP0:c_vb_rly_main_diag
+        JMPR cc_NC,L_BEF8A
+        SUBB can_c2b3,ONES
+L_BEF8A:                 ; 0xbef8a
+        MOVB RL4,can_c2b2
+        JMPR cc_NE,L_BF004
+        MOVB RL5,can_c2b3
+        CMPB RL5,DPP0:c_t_thd_rly_main_diag
+        JMPR cc_C,L_BEFC8
+        MOVB RL3,#02H
+        MOVB dtc_test_result,RL3
+        MOV R12,#DATA16 0D568H
+        MOV R13,#DATA16 05966H
+        MOV R14,#01H
+        MOV R15,#01H
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_can_bus_off_err.04H,dtc_status_work.06H
+        MOVBZ R4,can_d572
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BEFF6
+        MOV R4,#DATA16 0FFEFH
+        AND dtc_st_grp_can,R4
+        JMPR cc_UC,L_BEFF6
+L_BEFC8:                 ; 0xbefc8
+        MOVB RL4,can_d568
+        ANDB RL4,#01H
+        JMPR cc_NE,L_BEFF6
+        MOV R12,#DATA16 0D568H
+        MOV R13,#DATA16 05966H
+        MOV R14,#01H
+        MOV R15,#01H
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_can_bus_off_err.04H,dtc_status_work.06H
+        MOVBZ R4,can_d572
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BEFF6
+        MOV R4,#DATA16 0FFEFH
+        AND dtc_st_grp_can,R4
+L_BEFF6:                 ; 0xbeff6
+        MOVB RL4,DPP0:c_t_rly_main_diag
+        MOVB can_c2b2,RL4
+        MOVB can_c2b3,ZEROS
+        JMPR cc_UC,L_BF014
+L_BF004:                 ; 0xbf004
+        ADDB can_c2b2,ONES
+        JMPR cc_UC,L_BF014
+L_BF00A:                 ; 0xbf00a
+        ADDB can_c2b4,ONES
+        JMPR cc_UC,L_BF014
+L_BF010:                 ; 0xbf010
+        CALLS 00BH,Reset_Dc2b4_028
+L_BF014:                 ; 0xbf014
+        JB lv_er_carb_b4.0DH,L_BF026
+        SUBB pwl_dly_ctr,ONES
+        BSET lv_er_carb_b4.0DH
+        MOVB RL4,#DATA16 00020H
+        ORB can_d572,RL4
+L_BF026:                 ; 0xbf026
+        RETS
+
+; ======== Reset_Dc2b4_028  (@0xbf028) ========
+Reset_Dc2b4_028:
+        MOVB RL4,DPP0:c_t_dly_rly_main_diag
+        MOVB can_c2b4,RL4
+        MOVB RL5,DPP0:c_t_rly_main_diag
+        MOVB can_c2b2,RL5
+        MOVB can_c2b3,ZEROS
+        RETS
+
+; ======== Diag_Lam_Lim_d1cc  (@0xbf03e) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by er_ad/mis/diag output signals + DTC): Lambda-limit diagnosis (DTC 0xd1cc):
+        ; lv_lam_lim_1_err.
+        ; ------------------------------------------------------------
+Diag_Lam_Lim_d1cc:
+        JB lv_err_pres_mwss.04H,L_BF046
+        JMPA cc_UC,L_BF11C
+L_BF046:                 ; 0xbf046
+        JB lv_cam_err.0CH,L_BF08E
+        JB lv_cam_err.0DH,L_BF08E
+        JB lv_cam_err.0EH,L_BF08E
+        JB lv_lam_lim_1_err.00H,L_BF08E
+        JB lv_cam_err.0AH,L_BF08E
+        JB lv_cam_err.0BH,L_BF08E
+        JB lv_cam_err.00H,L_BF08E
+        JB lv_cam_err.01H,L_BF08E
+        JB lv_cam_err.02H,L_BF08E
+        JB lv_cam_err.03H,L_BF08E
+        JB lv_dur_igc_0_err.00H,L_BF08E
+        JB lv_dur_igc_0_err.01H,L_BF08E
+        JB lv_dur_igc_0_err.02H,L_BF08E
+        JB lv_dur_igc_0_err.03H,L_BF08E
+        JB lv_er_carb_b4.04H,L_BF08E
+        JB lv_cam_err.07H,L_BF08E
+        JB lv_cam_err.05H,L_BF08E
+        JNB lv_cam_err.08H,L_BF0A0
+L_BF08E:                 ; 0xbf08e
+        BSET lv_er_carb_b4.0FH
+        BSET lv_er_carb_b4.0EH
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_BF0AC
+        MOV R4,#DATA16 0FFFBH
+        AND g_f872,R4
+        JMPR cc_UC,L_BF0AC
+L_BF0A0:                 ; 0xbf0a0
+        BCLR lv_er_carb_b4.0FH
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_BF0AA
+        BSET lv_er_carb_b4.0EH
+        JMPR cc_UC,L_BF0AC
+L_BF0AA:                 ; 0xbf0aa
+        BCLR lv_er_carb_b4.0EH
+L_BF0AC:                 ; 0xbf0ac
+        MOV R4,state_th_diag
+        CMP R4,#01H
+        JMPR cc_NE,L_BF11C
+        MOV R12,#DATA16 POF sstm_tkw_1_8
+        MOV R13,#DATA16 PAG sstm_tkw_1_8
+        MOVBZ R14,tco_st
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        JB lv_cdn_diag_maf_dif_ch_int.0EH,L_BF0DA
+        MOV R12,#DATA16 POF ip_tco_lam_min__tco_st
+        MOV R13,#DATA16 PAG ip_tco_lam_min__tco_st
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        CMPB RL4,tco_mes
+        JMPR cc_C,L_BF0F0
+L_BF0DA:                 ; 0xbf0da
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_BF11C
+        MOV R12,#DATA16 POF ip_tco_lam_min_is__tco_st
+        MOV R13,#DATA16 PAG ip_tco_lam_min_is__tco_st
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        CMPB RL4,tco_mes
+        JMPR cc_NC,L_BF11C
+L_BF0F0:                 ; 0xbf0f0
+        JNB lv_err_pres_mwss.05H,L_BF0FA
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+L_BF0FA:                 ; 0xbf0fa
+        MOV R12,#DATA16 0D1CCH
+        MOV R13,#DATA16 053BAH
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_lam_lim_1_err.02H,dtc_status_work.06H
+        MOVBZ R4,lv_lam_d1d6
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BF11C
+        MOV R4,#DATA16 0FFFBH
+        AND diag_f864,R4
+L_BF11C:                 ; 0xbf11c
+        RETS
+
+; ======== Calc_CatHeat_State  (@0xbf11e) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by vs/mwss/lv_ch output signals): Catalyst-heating state lv_ch.
+        ; ------------------------------------------------------------
+Calc_CatHeat_State:
+        BSET lv_ch.02H
+        MOV R4,#DATA16 04544H
+        MOV R5,#DATA16 05445H
+        RETS
+
+; ======== Is_CCP_Active  (@0xbf12a) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Is_CCP_Active:
+        MOV [-R0],R9
+        MOV R4,ccp_e79e
+        AND R4,#DATA16 04000H
+        JMPR cc_NE,L_BF13A
+        MOV R9,#01H
+        JMPR cc_UC,L_BF13C
+L_BF13A:                 ; 0xbf13a
+        MOV R9,#00H
+L_BF13C:                 ; 0xbf13c
+        MOV R4,R9
+        MOV R9,[R0+]
+        RETS
+
+; ======== RetC_1_142  (@0xbf142) ========
+RetC_1_142:
+        MOV [-R0],R9
+        MOV R9,#01H
+        MOV R4,R9
+        MOV R9,[R0+]
+        RETS
+
+; ======== RetC_1_14c  (@0xbf14c) ========
+RetC_1_14c:
+        MOV [-R0],R9
+        MOV R9,#01H
+        MOV R4,R9
+        MOV R9,[R0+]
+        RETS
+
+; ======== RetC_1_156  (@0xbf156) ========
+RetC_1_156:
+        MOV R4,#01H
+        RETS
+
+; ======== Set_ADDRSEL2_15a  (@0xbf15a) ========
+Set_ADDRSEL2_15a:
+        MOV ADDRSEL2,#DATA16 00904H
+        RETS
+
+S_BEE6E ENDS
+        END

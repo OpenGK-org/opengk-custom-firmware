@@ -1,0 +1,261 @@
+; asw/imob/imob_fmy.a66
+; 0xBCDF2-0xBD034  (578 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  Imob_CommErr_DTC, Imob_DTC_Fmy, L_BCF10, L_BCF16, Reset_lv_fmy_imob_f86, SMARTRA_auth_protocol_sm
+EXTERN  DTC_Update_Immediate:NEAR, Imob_DTC_update_comms:NEAR, SMARTRA_proto_step_arm:NEAR
+
+S_BCDF2 SECTION CODE AT 0BCDF2H
+
+; ======== Imob_CommErr_DTC  (@0xbcdf2) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): Immobilizer: comms-error response -> ans_err_com_imob + DTC
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): Immobilizer comms-error handler -- smartra_cmd path. Decodes
+        ; DAT_00c51d (err subcode 1-4, 0x11-0x17) -> DTC + lv_ecu_err bit [SHARED decode table, byte-identical
+        ; in twin 0xbd4f0]. DISTINCT vs twin: sets ans_err_com_imob from smartra_comms_status bits (0x4000->2;
+        ; 0x2000/0x8000/resp-flag->1) and issues smartra_cmd (4 if c291==0 else 1). Never touches
+        ; smartra_proto_step / c28a. Entry in SMARTRA handler ptr-table ~0xa0926.
+Imob_CommErr_DTC:
+        MOVB RL4,#03H
+        MOVB ans_err_com_imob,RL4
+        MOVB RL5,smartra_tx_len
+        CMPB RL5,#01H
+        JMPR cc_EQ,L_BCE38
+        CMPB RL5,#02H
+        JMPR cc_EQ,L_BCE62
+        CMPB RL5,#03H
+        JMPR cc_EQ,L_BCE8C
+        CMPB RL5,#04H
+        JMPR cc_EQ,L_BCEB6
+        CMPB RL5,#DATA16 00011H
+        JMPR cc_EQ,L_BCEE0
+        CMPB RL5,#DATA16 00012H
+        JMPR cc_EQ,L_BCEE0
+        CMPB RL5,#DATA16 00013H
+        JMPR cc_EQ,L_BCEE0
+        CMPB RL5,#DATA16 00014H
+        JMPR cc_EQ,L_BCEE0
+        CMPB RL5,#DATA16 00015H
+        JMPR cc_EQ,L_BCEE0
+        CMPB RL5,#DATA16 00016H
+        JMPR cc_EQ,L_BCEE0
+        CMPB RL5,#DATA16 00017H
+        JMPR cc_EQ,L_BCEE0
+        JMPR cc_UC,L_BCF08
+L_BCE38:                 ; 0xbce38
+        MOVB RL4,#01H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D506H
+        MOV R13,#DATA16 058CCH
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_ecu_err.0DH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_imob_b
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BCF08
+        MOV R4,#DATA16 0DFFFH
+        AND dtc_st_grp_ecu,R4
+        JMPR cc_UC,L_BCF08
+L_BCE62:                 ; 0xbce62
+        MOVB RL4,#04H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D4F8H
+        MOV R13,#DATA16 058B6H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_ecu_err.0CH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_imob_a
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BCF08
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_st_grp_ecu,R4
+        JMPR cc_UC,L_BCF08
+L_BCE8C:                 ; 0xbce8c
+        MOVB RL4,#04H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D514H
+        MOV R13,#DATA16 058E2H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_ecu_err.0EH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_imob_c
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BCF08
+        MOV R4,#DATA16 0BFFFH
+        AND dtc_st_grp_ecu,R4
+        JMPR cc_UC,L_BCF08
+L_BCEB6:                 ; 0xbceb6
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D4F8H
+        MOV R13,#DATA16 058B6H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_ecu_err.0CH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_imob_a
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BCF08
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_st_grp_ecu,R4
+        JMPR cc_UC,L_BCF08
+L_BCEE0:                 ; 0xbcee0
+        MOVB RL4,#01H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D4F8H
+        MOV R13,#DATA16 058B6H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_ecu_err.0CH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_imob_a
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BCF08
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_st_grp_ecu,R4
+L_BCF08:                 ; 0xbcf08
+        MOVB RL4,#01H
+        MOVB smartra_cmd,RL4
+        JMPR cc_UC,L_BCF16
+L_BCF10:                 ; 0xbcf10
+        MOVB RL4,#04H
+        MOVB smartra_cmd,RL4
+L_BCF16:                 ; 0xbcf16
+        MOVB RL4,smartra_cmd
+        JMPR cc_EQ,L_BCF96
+        JNB smartra_comms_status.0EH,L_BCF3C
+        MOVB RL5,ans_err_com_imob
+        CMPB RL5,#03H
+        JMPR cc_EQ,L_BCF2E
+        MOVB RL3,#02H
+        MOVB ans_err_com_imob,RL3
+L_BCF2E:                 ; 0xbcf2e
+        MOVB RL4,imob_resp_ready
+        CMPB RL4,#00H
+        JMPR cc_ULE,L_BCF3C
+        MOVB RL5,#01H
+        MOVB smartra_cmd,RL5
+L_BCF3C:                 ; 0xbcf3c
+        JB smartra_comms_status.0DH,L_BCF48
+        JB smartra_comms_status.0FH,L_BCF48
+        JNB lv_err_com_resp_imob.00H,L_BCF64
+L_BCF48:                 ; 0xbcf48
+        MOVB RL4,ans_err_com_imob
+        CMPB RL4,#03H
+        JMPR cc_EQ,L_BCF56
+        MOVB RL5,#01H
+        MOVB ans_err_com_imob,RL5
+L_BCF56:                 ; 0xbcf56
+        MOVB RL4,imob_resp_ready
+        CMPB RL4,#00H
+        JMPR cc_ULE,L_BCF64
+        MOVB RL5,#01H
+        MOVB smartra_cmd,RL5
+L_BCF64:                 ; 0xbcf64
+        MOVB RL4,imob_resp_ready
+        JMPR cc_NE,L_BCF96
+        MOVB RL5,smartra_cmd
+        JMPR cc_EQ,L_BCF96
+        CMPB RL5,#03H
+        JMPR cc_EQ,L_BCF96
+        CMPB RL5,#04H
+        JMPR cc_EQ,L_BCF96
+        CMPB RL5,#06H
+        JMPR cc_EQ,L_BCF96
+        BSET lv_fmy_imob.0BH
+        MOVB RL3,#04H
+        MOVB smartra_cmd,RL3
+        RETS
+
+; ======== Reset_lv_fmy_imob_f86  (@0xbcf86) ========
+Reset_lv_fmy_imob_f86:
+        BCLR lv_fmy_imob.02H
+        BCLR lv_fmy_imob.01H
+        BCLR imob_bw.01H
+        BSET imob_bw.08H
+        RETS
+
+; ======== Imob_DTC_Fmy  (@0xbcf90) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by imob/smartra output signals): Immobilizer DTC-update for family/learn: lv_fmy_imob
+        ; + Imob_DTC_update_comms.
+        ; ------------------------------------------------------------
+Imob_DTC_Fmy:
+        BSET lv_fmy_imob.0EH
+        CALLS 00BH,Imob_DTC_update_comms
+L_BCF96:                 ; 0xbcf96
+        RETS
+
+; ======== SMARTRA_auth_protocol_sm  (@0xbcf98) ========
+        ; ------------------------------------------------------------
+        ; SMARTRA immobilizer TEACH/LEARN protocol state machine. switch(smartra_proto_step), steps 1-9:
+        ; 1=init(send query 0x06)->2; 2=parse,send seed/challenge frame(0x57)->3; 3=send 0x4b->4; 4=on frame5
+        ; match key_table->done(9) else gen LCG challenge->5; 5=send computed response(0x41)->6; 6=verify
+        ; SMARTRA resp XOR->7 else fail c28a=4->9; 7=WRITE learned key into imob_key_table[c288]+update
+        ; key_imob_1..4+clear DTCs->9; 8=NAK/err subcode->9; 9=idle. Standalone arms:
+        ; SMARTRA_start_step2/3/4/6, SMARTRA_auth_step1/6/7_*_arm.
+        ; ------------------------------------------------------------
+        ;
+        ; [dispatch] invoked via the task function-pointer table @0x0a2308 (teach/learn path), distinct from
+        ; the run-time path in SMARTRA_eval_comms_result.
+SMARTRA_auth_protocol_sm:
+        MOV [-R0],R6
+        JNB smartra_comms_status.0EH,L_BCFA4
+        MOVB RL4,#02H
+        MOVB ans_err_com_imob,RL4
+L_BCFA4:                 ; 0xbcfa4
+        JB smartra_comms_status.0DH,L_BCFB0
+        JB smartra_comms_status.0FH,L_BCFB0
+        JNB lv_err_com_resp_imob.00H,L_BCFB6
+L_BCFB0:                 ; 0xbcfb0
+        MOVB RL4,#01H
+        MOVB ans_err_com_imob,RL4
+L_BCFB6:                 ; 0xbcfb6
+        MOVB RL4,ans_err_com_imob
+        CMPB RL4,#02H
+        JMPR cc_EQ,L_BCFC2
+        CMPB RL4,#01H
+        JMPR cc_NE,L_BD01A
+L_BCFC2:                 ; 0xbcfc2
+        MOVB RL4,#09H
+        MOVB smartra_proto_step,RL4
+        MOVB RL5,#02H
+        MOVB imob_key_wr_done,RL5
+        MOVB RL3,imob_auth_state
+        CMPB RL3,#03H
+        JMPR cc_NC,L_BCFDE
+        ADDB RL3,#01H
+        MOVB imob_auth_state,RL3
+        JMPR cc_UC,L_BD01A
+L_BCFDE:                 ; 0xbcfde
+        MOVB RL4,ans_err_com_imob
+        CMPB RL4,#02H
+        JMPR cc_EQ,L_BCFEA
+        JNB lv_fmy_imob.0BH,L_BCFF2
+L_BCFEA:                 ; 0xbcfea
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        JMPR cc_UC,L_BCFF8
+L_BCFF2:                 ; 0xbcff2
+        MOVB RL4,#02H
+        MOVB dtc_test_result,RL4
+L_BCFF8:                 ; 0xbcff8
+        MOV R12,#DATA16 0D522H
+        MOV R13,#DATA16 058F8H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_ecu_err.0FH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_imob_d
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BD01A
+        MOV R4,#DATA16 07FFFH
+        AND dtc_st_grp_ecu,R4
+L_BD01A:                 ; 0xbd01a
+        MOVB RL4,smartra_proto_step
+        SUBB RL4,#01H
+        CMPB RL4,#DATA16 00008H
+        JMPA cc_UGT,SMARTRA_proto_step_arm
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        ADD R4,#DATA16 04928H
+        MOV R4,[R4]
+        JMPI cc_UC,[R4]
+
+S_BCDF2 ENDS
+        END

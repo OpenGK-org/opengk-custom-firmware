@@ -1,0 +1,729 @@
+; asw/ar/ar_amp_2.a66
+; 0xC4082-0xC47AE  (1836 bytes, 8 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_amp_ad_cor_crlc                    EQU  090119H
+c_crlc_amp_mdl_dif_i_mmv             EQU  09015EH
+c_crlc_ar_red_ad_add                 EQU  09015FH
+c_crlc_ar_red_ad_fac                 EQU  090160H
+c_crlc_ar_red_bas_amp_ad_pl          EQU  090161H
+c_crlc_ar_red_dif_i_rel_mmv          EQU  090162H
+c_crlc_maf_kgh_amp_ad_pl             EQU  090167H
+c_n_amp_ad_max                       EQU  09028FH
+c_n_amp_ad_min                       EQU  090290H
+c_n_ar_red_ad_add_max                EQU  090291H
+c_n_ar_red_ad_add_min                EQU  090292H
+c_n_ar_red_ad_fac_max                EQU  090293H
+c_n_ar_red_ad_fac_min                EQU  090294H
+c_n_min_amp_ad_pl                    EQU  0902B7H
+c_tco_thd_amp_ad                     EQU  0903A3H
+lc_ar_red_ad_ena                     EQU  090452H
+c_amp_ad_pl_hys                      EQU  0904AEH
+c_amp_i_1                            EQU  0904B0H
+c_amp_ini                            EQU  0904B4H
+c_amp_max                            EQU  0904B6H
+c_amp_min                            EQU  0904B8H
+c_amp_p_1                            EQU  0904C0H
+c_lgrd_amp_mdl_dif_tra               EQU  09059EH
+c_lgrd_ar_red_dif_tra                EQU  0905A0H
+c_map_drv1_max_amp_ad_pl             EQU  090610H
+c_pq_amp_ad                          EQU  09066EH
+c_pq_amp_ad_pl                       EQU  090670H
+c_pq_amp_ctl                         EQU  090672H
+c_pq_ar_red_ad_add_max               EQU  090674H
+c_pq_ar_red_ad_fac_max               EQU  090676H
+c_pq_ar_red_ad_fac_min               EQU  090678H
+c_seg_ctr_amp_ad                     EQU  090696H
+c_seg_ctr_amp_ad_pl                  EQU  090698H
+c_t_ast_amp_ctl_deac                 EQU  0906C2H
+c_t_ast_ar_red_ctl_deac              EQU  0906C4H
+c_tps_min_amp_ad_pl                  EQU  0907BAH
+c_amp_ad_dif_neg                     EQU  090842H
+c_amp_ad_dif_pos                     EQU  090844H
+c_amp_dif_ti_lam_neg                 EQU  090846H
+c_amp_dif_ti_lam_pos                 EQU  090848H
+c_amp_mdl_dif_i_max                  EQU  09084AH
+c_amp_mdl_dif_i_min                  EQU  09084CH
+c_ar_red_ad_add_max                  EQU  09084EH
+c_ar_red_ad_add_min                  EQU  090850H
+c_ar_red_ad_fac_max                  EQU  090852H
+c_ar_red_ad_fac_min                  EQU  090854H
+c_ar_red_dif_i_rel_max               EQU  090856H
+c_ar_red_dif_i_rel_min               EQU  090858H
+c_ti_lam_maf_puls_max                EQU  090900H
+c_ti_lam_maf_puls_min                EQU  090902H
+ldpm_n_32__ar_red                 EQU  090AC6H
+ldpm_pq__ar_red                          EQU  091166H
+ldp_t_seg_t_1_ratio_crlc_hfm       EQU  091210H
+ldp_pq__fac_ar_red_cor              EQU  091304H
+ldp_maf_kgh_t_1_hfm                EQU  09173CH
+ip_ar_red_i_rel_1__n__pq             EQU  091F02H
+ip_ar_red_p_rel_1__n__pq             EQU  092032H
+ip_crlc_hfm__t_seg_t_1_ratio         EQU  0923F2H
+ip_t_1_hfm__maf_kgh                  EQU  0937F6H
+ip_fac_ar_red_cor__pq                EQU  095605H
+
+PUBLIC  Calc_AMP_Adapt, Calc_AMP_Mdl_Dif_I, Calc_AMP_Model_PI, Calc_AR_Red, Calc_HFM_TimeConst, ReducedArea_Adapt
+PUBLIC  Reset_uVar1_082, Scale_By_TSegAv
+EXTERN  Abs_S16:NEAR, Add_r12_r13_Return_r4:NEAR, Clamp_S16:NEAR, Clamp_U16:NEAR
+EXTERN  Div_Frac_U16_Q16:NEAR, Div_U32_U16_Round:NEAR, Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_Y_Axis:NEAR
+EXTERN  Get_IP_Word_2D_Table:NEAR, Get_IP_Word_3D_Table:NEAR, Get_IP_Word_X_Axis:NEAR, Get_IP_Word_Y_Axis:NEAR
+EXTERN  Interp_S16:NEAR, Interp_U16:NEAR, Mul_Q15_Sat_Signed:NEAR, Mul_S16_Hi:NEAR
+EXTERN  Mul_Shift_S16:NEAR, Mul_U16_Hi:NEAR, Ramp_Toward_S16:NEAR, Read_MD_Signed:NEAR
+EXTERN  Sat_Add_S16:NEAR, Sat_Add_S16_v2:NEAR, Sat_Sub_S16:NEAR, Shl3_Sat_S16:NEAR
+EXTERN  multipied_r12_r13_UGT_r14_rets_r4:NEAR, sub_r12_r13_rets_r4:NEAR
+
+S_C4082 SECTION CODE AT 0C4082H
+
+; ======== Reset_uVar1_082  (@0xc4082) ========
+Reset_uVar1_082:
+        MOV [-R0],R9
+        MOV R12,maf_mdl
+        MOV R13,maf_thr
+        MOV R14,lv_maf_cca0
+        CALLS 00FH,Interp_U16
+        MOV R9,R4
+        SHR R4,#01H
+        MOV R5,maf_mdl
+        SHR R5,#01H
+        ADD R4,R5
+        MOV maf_mdl_mv,R4
+        MOV maf_mdl,R9
+        SUB R4,lv_maf_cc26
+        NEG R4
+        MOV maf_mdl_dif,R4
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_AR_Red  (@0xc40b6) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS2000, verified): System variable for airpath (ar_red)
+        ; ------------------------------------------------------------
+Calc_AR_Red:
+        MOV [-R0],R9
+        MOV R4,t_ast
+        CMP R4,DPP0:c_t_ast_ar_red_ctl_deac
+        JMPR cc_C,L_C4186
+        MOV R5,pq
+        CMP R5,DPP0:c_pq_amp_ctl
+        JMPR cc_UGT,L_C4148
+        JB lv_cp_set_close.0FH,L_C413A
+        JNB lv_cp_set_close.0EH,L_C412C
+        JB lv_amp_ad_rst.00H,L_C4116
+        MOV R12,lv_maf_cca4
+        MOV R13,maf_mdl_dif
+        MOV R14,#08H
+        CALLA cc_UC,Scale_By_TSegAv
+        MOV R13,R4
+        MOV R12,ar_red_dif_i_rel
+        CALLS 00FH,Sat_Add_S16
+        MOV R12,R4
+        MOV R13,DPP0:c_ar_red_dif_i_rel_min
+        MOV R14,DPP0:c_ar_red_dif_i_rel_max
+        CALLS 00FH,Clamp_S16
+        MOV ar_red_dif_i_rel,R4
+        MOV R12,maf_mdl_dif
+        MOV R13,lv_maf_cca2
+        MOV R14,#08H
+        CALLS 00FH,Mul_Shift_S16
+        MOV ar_red_dif_p_rel,R4
+        JMPR cc_UC,L_C411A
+L_C4116:                 ; 0xc4116
+        MOV ar_red_dif_p_rel,ZEROS
+L_C411A:                 ; 0xc411a
+        MOV R12,ar_red_dif_p_rel
+        MOV R13,ar_red_dif_i_rel
+        CALLS 00FH,Sat_Add_S16
+        MOV ar_red_dif_rel,R4
+        JMPR cc_UC,L_C4192
+L_C412C:                 ; 0xc412c
+        MOV ar_red_dif_p_rel,ZEROS
+        MOV ar_red_dif_i_rel,ZEROS
+        MOV ar_red_dif_rel,ZEROS
+        JMPR cc_UC,L_C4192
+L_C413A:                 ; 0xc413a
+        MOV ar_red_dif_p_rel,ZEROS
+        MOV ar_red_dif_i_rel,ZEROS
+        MOV ar_red_dif_rel,ZEROS
+        JMPR cc_UC,L_C4192
+L_C4148:                 ; 0xc4148
+        MOV R4,ar_red_dif_p_rel
+        JMPR cc_EQ,L_C415E
+        MOV R12,#00H
+        MOV R13,R4
+        MOV R14,DPP0:c_lgrd_ar_red_dif_tra
+        CALLS 00FH,Ramp_Toward_S16
+        MOV ar_red_dif_p_rel,R4
+L_C415E:                 ; 0xc415e
+        MOV R4,ar_red_dif_i_rel
+        JMPR cc_EQ,L_C4174
+        MOV R12,#00H
+        MOV R13,R4
+        MOV R14,DPP0:c_lgrd_ar_red_dif_tra
+        CALLS 00FH,Ramp_Toward_S16
+        MOV ar_red_dif_i_rel,R4
+L_C4174:                 ; 0xc4174
+        MOV R12,ar_red_dif_i_rel
+        MOV R13,ar_red_dif_p_rel
+        CALLS 00FH,Sat_Add_S16
+        MOV ar_red_dif_rel,R4
+        JMPR cc_UC,L_C4192
+L_C4186:                 ; 0xc4186
+        MOV ar_red_dif_p_rel,ZEROS
+        MOV ar_red_dif_i_rel,ZEROS
+        MOV ar_red_dif_rel,ZEROS
+L_C4192:                 ; 0xc4192
+        MOV R12,#DATA16 POF ldp_pq__fac_ar_red_cor
+        MOV R13,#DATA16 PAG ldp_pq__fac_ar_red_cor
+        MOV R14,pq
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_fac_ar_red_cor__pq
+        MOV R13,#DATA16 PAG ip_fac_ar_red_cor__pq
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVBZ R13,RL4
+        MOV R12,ar_red_ad_fac
+        CALLS 00FH,Read_MD_Signed
+        MOV ar_red_ad_fac_cor,R4
+        MOV R12,R4
+        MOV R13,ar_red_dif_rel
+        CALLS 00FH,Sat_Add_S16
+        MOV R12,R4
+        MOV R13,ar_red_bas
+        CALLS 00FH,Mul_S16_Hi
+        MOV R13,R4
+        MOV R12,ar_red_bas
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV R9,R4
+        MOV R12,R9
+        MOV R13,ar_red_ad_add
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV ar_red,R4
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_AMP_Adapt  (@0xc41ee) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS31, verified): Ambient Pressure Adaptation (amp_estim/amp_ad)
+        ; ------------------------------------------------------------
+Calc_AMP_Adapt:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        JNB lv_pl.04H,L_C41FE
+        MOV amp_ad_dif,ZEROS
+        JMPA cc_UC,L_C4486
+L_C41FE:                 ; 0xc41fe
+        JNB lv_amp_ad_rst.05H,L_C4206
+        JMPA cc_UC,L_C4476
+L_C4206:                 ; 0xc4206
+        MOV R4,pq
+        CMP R4,DPP0:c_pq_amp_ad
+        JMPR cc_C,L_C42CC
+        MOV seg_ctr_amp_ad_pl,ZEROS
+        JNB lv_cp_set_close.0EH,L_C426A
+        MOVB RL4,n_32
+        CMPB RL4,DPP0:c_n_amp_ad_min
+        JMPR cc_ULE,L_C425E
+        CMPB RL4,DPP0:c_n_amp_ad_max
+        JMPR cc_NC,L_C425E
+        JB lv_amp_ad_rst.0EH,L_C425E
+        JB lv_amp_ad_rst.06H,L_C425E
+        SUB g_ccb0,ONES
+        MOV R4,g_ccb0
+        CMP R4,DPP0:c_seg_ctr_amp_ad
+        JMPR cc_NE,L_C4256
+        MOV R12,amp_mdl_dif_i_mmv
+        MOVBZ R13,DPP0:c_amp_ad_cor_crlc
+        CALLS 00FH,Read_MD_Signed
+        MOV amp_ad_dif,R4
+        MOV g_ccb0,ZEROS
+        JMPA cc_UC,L_C4434
+L_C4256:                 ; 0xc4256
+        MOV amp_ad_dif,ZEROS
+        JMPA cc_UC,L_C4434
+L_C425E:                 ; 0xc425e
+        MOV amp_ad_dif,ZEROS
+        MOV g_ccb0,ZEROS
+        JMPA cc_UC,L_C4434
+L_C426A:                 ; 0xc426a
+        MOV g_ccb0,ZEROS
+        JB lv_amp_ad_rst.06H,L_C42C4
+        MOVB RL4,tco
+        CMPB RL4,DPP0:c_tco_thd_amp_ad
+        JMPR cc_ULE,L_C42C4
+        MOV R4,lam_bank_1_lam_up_lam_up_carrier
+        AND R4,#01H
+        JMPR cc_EQ,L_C42C4
+        JNB lv_cam_ad_di_ivvt.08H,L_C42C4
+        JNB state_lam_ctl.05H,L_C42C4
+        JB lv_inh_fsd_cp.05H,L_C42C4
+        MOV R4,lv_cp_cf90
+        CMP R4,DPP0:c_ti_lam_maf_puls_min
+        JMPR cc_SGE,L_C42A6
+        MOV R5,DPP0:c_amp_dif_ti_lam_neg
+        MOV amp_ad_dif,R5
+        JMPA cc_UC,L_C4434
+L_C42A6:                 ; 0xc42a6
+        MOV R4,lv_cp_cf90
+        CMP R4,DPP0:c_ti_lam_maf_puls_max
+        JMPR cc_SLE,L_C42BC
+        MOV R5,DPP0:c_amp_dif_ti_lam_pos
+        MOV amp_ad_dif,R5
+        JMPA cc_UC,L_C4434
+L_C42BC:                 ; 0xc42bc
+        MOV amp_ad_dif,ZEROS
+        JMPA cc_UC,L_C4434
+L_C42C4:                 ; 0xc42c4
+        MOV amp_ad_dif,ZEROS
+        JMPA cc_UC,L_C4434
+L_C42CC:                 ; 0xc42cc
+        MOV g_ccb0,ZEROS
+        JNB lv_amp_ad_rst.06H,L_C42D8
+        JMPA cc_UC,L_C442C
+L_C42D8:                 ; 0xc42d8
+        JB lv_cp_set_close.0EH,L_C42E0
+        JMPA cc_UC,L_C441E
+L_C42E0:                 ; 0xc42e0
+        MOV R8,seg_ctr_amp_ad_pl
+        MOVB RL4,DPP0:lc_ar_red_ad_ena
+        JMPR cc_EQ,L_C430E
+        MOV R12,ar_red_ad_fac
+        MOV R13,ar_red_bas
+        CALLS 00FH,Mul_S16_Hi
+        MOV R13,R4
+        MOV R12,ar_red_bas
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV R12,R4
+        MOV R13,ar_red_ad_add
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV R9,R4
+        JMPR cc_UC,L_C4312
+L_C430E:                 ; 0xc430e
+        MOV R9,ar_red_bas
+L_C4312:                 ; 0xc4312
+        CMP R8,#00H
+        JMPR cc_NE,L_C4324
+        MOV R4,maf_kgh
+        MOV maf_kgh_mmv,R4
+        MOV ar_red_bas_mmv,R9
+        JMPR cc_UC,L_C434E
+L_C4324:                 ; 0xc4324
+        MOV R12,maf_kgh_mmv
+        MOV R13,maf_kgh
+        MOVBZ R14,DPP0:c_crlc_maf_kgh_amp_ad_pl
+        SHL R14,#08H
+        CALLS 00FH,Interp_U16
+        MOV maf_kgh_mmv,R4
+        MOV R12,ar_red_bas_mmv
+        MOV R13,R9
+        MOVBZ R14,DPP0:c_crlc_ar_red_bas_amp_ad_pl
+        SHL R14,#08H
+        CALLS 00FH,Interp_U16
+        MOV ar_red_bas_mmv,R4
+L_C434E:                 ; 0xc434e
+        ADD R8,#01H
+        JNB lv_ct.00H,L_C4380
+        MOV R4,pq
+        CMP R4,DPP0:c_pq_amp_ad_pl
+        JMPR cc_NC,L_C4380
+        MOVB RL4,n_32
+        CMPB RL4,DPP0:c_n_min_amp_ad_pl
+        JMPR cc_ULE,L_C4380
+        MOV R12,map_drv1
+        CALLS 00FH,Abs_S16
+        CMP R4,DPP0:c_map_drv1_max_amp_ad_pl
+        JMPR cc_NC,L_C4380
+        MOV R4,tps_av
+        CMP R4,DPP0:c_tps_min_amp_ad_pl
+        JMPR cc_NC,L_C4382
+L_C4380:                 ; 0xc4380
+        MOV R8,#00H
+L_C4382:                 ; 0xc4382
+        MOV seg_ctr_amp_ad_pl,R8
+        CMP R8,DPP0:c_seg_ctr_amp_ad_pl
+        JMPR cc_NE,L_C4414
+        MOV seg_ctr_amp_ad_pl,ZEROS
+        MOV R12,maf_mdl_con_1
+        SHL R12,#01H
+        MOV R13,maf_fac_ofs
+        CALLS 00FH,Mul_U16_Hi
+        MOV R12,R4
+        MOV R13,ar_red_bas_mmv
+        SHL R13,#01H
+        CALLS 00FH,Mul_U16_Hi
+        MOV R14,R4
+        MOV R12,maf_kgh_mmv
+        MOV R13,#00H
+        MOV R4,R12
+        SHL R12,#08H
+        SHL R13,#08H
+        SHR R4,#08H
+        OR R13,R4
+        CALLS 00FH,Div_U32_U16_Round
+        MOV R8,R4
+        MOV R12,maf_fac_slop
+        MOV R13,map
+        MOV R14,maf_fac_ofs
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV R13,R4
+        MOV R12,R8
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV R8,R4
+        MOV amp_estim,R4
+        MOV R12,amp_ad
+        MOV R13,DPP0:c_amp_ad_pl_hys
+        CALLS 00FH,Add_r12_r13_Return_r4
+        CMP R8,R4
+        JMPR cc_ULE,L_C43FA
+        MOV R4,DPP0:c_amp_ad_dif_pos
+        MOV amp_ad_dif,R4
+        JMPR cc_UC,L_C4434
+L_C43FA:                 ; 0xc43fa
+        MOV R12,amp_ad
+        MOV R13,DPP0:c_amp_ad_pl_hys
+        CALLS 00FH,sub_r12_r13_rets_r4
+        CMP R8,R4
+        JMPR cc_NC,L_C4434
+        MOV R4,DPP0:c_amp_ad_dif_neg
+        MOV amp_ad_dif,R4
+        JMPR cc_UC,L_C4434
+L_C4414:                 ; 0xc4414
+        MOV amp_estim,ZEROS
+        MOV amp_ad_dif,ZEROS
+        JMPR cc_UC,L_C4434
+L_C441E:                 ; 0xc441e
+        MOV amp_estim,ZEROS
+        MOV amp_ad_dif,ZEROS
+        MOV seg_ctr_amp_ad_pl,ZEROS
+        JMPR cc_UC,L_C4434
+L_C442C:                 ; 0xc442c
+        MOV amp_ad_dif,ZEROS
+        MOV seg_ctr_amp_ad_pl,ZEROS
+L_C4434:                 ; 0xc4434
+        MOV R4,amp_ad
+        MOV amp,R4
+        MOV R12,amp_ad
+        MOV R13,amp_ad_dif
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV R12,R4
+        MOV R13,DPP0:c_amp_min
+        MOV R14,DPP0:c_amp_max
+        CALLS 00FH,Clamp_U16
+        MOV amp_ad,R4
+        MOV R5,amp_ad_dif
+        JMPR cc_EQ,L_C4486
+        MOV R12,R5
+        CALLS 00FH,Shl3_Sat_S16
+        MOV R13,R4
+        MOV R12,amp_mdl_dif_i
+        CALLS 00FH,Sat_Sub_S16
+        MOV amp_mdl_dif_i,R4
+        JMPR cc_UC,L_C4486
+L_C4476:                 ; 0xc4476
+        MOV amp_ad_dif,ZEROS
+        MOV R4,DPP0:c_amp_ini
+        MOV amp_ad,R4
+        MOV amp,R4
+L_C4486:                 ; 0xc4486
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_AMP_Model_PI  (@0xc448c) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by dominant output signals): Manifold-pressure model PI controller: amp_mdl /
+        ; amp_mdl_dif / _dif_p / _dif_i.
+        ; ------------------------------------------------------------
+Calc_AMP_Model_PI:
+        MOV R4,t_ast
+        CMP R4,DPP0:c_t_ast_amp_ctl_deac
+        JMPR cc_C,L_C4560
+        MOV R5,pq
+        CMP R5,DPP0:c_pq_amp_ctl
+        JMPR cc_ULE,L_C451E
+        JB lv_amp_ad_rst.03H,L_C4510
+        JNB lv_cp_set_close.0EH,L_C4502
+        JB lv_amp_ad_rst.04H,L_C44EA
+        MOV R12,DPP0:c_amp_i_1
+        MOV R13,maf_mdl_dif
+        MOV R14,#0CH
+        CALLA cc_UC,Scale_By_TSegAv
+        MOV R13,R4
+        MOV R12,amp_mdl_dif_i
+        CALLS 00FH,Sat_Add_S16
+        MOV R12,R4
+        MOV R13,DPP0:c_amp_mdl_dif_i_min
+        MOV R14,DPP0:c_amp_mdl_dif_i_max
+        CALLS 00FH,Clamp_S16
+        MOV amp_mdl_dif_i,R4
+        MOV R12,maf_mdl_dif
+        MOV R13,DPP0:c_amp_p_1
+        MOV R14,#0CH
+        CALLS 00FH,Mul_Shift_S16
+        MOV amp_mdl_dif_p,R4
+        JMPR cc_UC,L_C44EE
+L_C44EA:                 ; 0xc44ea
+        MOV amp_mdl_dif_p,ZEROS
+L_C44EE:                 ; 0xc44ee
+        MOV R12,amp_mdl_dif_p
+        MOV R13,amp_mdl_dif_i
+        ASHR R13,#03H
+        CALLS 00FH,Sat_Add_S16
+        MOV amp_mdl_dif,R4
+        JMPR cc_UC,L_C456C
+L_C4502:                 ; 0xc4502
+        MOV amp_mdl_dif_p,ZEROS
+        MOV amp_mdl_dif_i,ZEROS
+        MOV amp_mdl_dif,ZEROS
+        JMPR cc_UC,L_C456C
+L_C4510:                 ; 0xc4510
+        MOV amp_mdl_dif_p,ZEROS
+        MOV amp_mdl_dif_i,ZEROS
+        MOV amp_mdl_dif,ZEROS
+        JMPR cc_UC,L_C456C
+L_C451E:                 ; 0xc451e
+        MOV R4,amp_mdl_dif_p
+        JMPR cc_EQ,L_C4534
+        MOV R12,#00H
+        MOV R13,R4
+        MOV R14,DPP0:c_lgrd_amp_mdl_dif_tra
+        CALLS 00FH,Ramp_Toward_S16
+        MOV amp_mdl_dif_p,R4
+L_C4534:                 ; 0xc4534
+        MOV R4,amp_mdl_dif_i
+        JMPR cc_EQ,L_C454C
+        MOV R12,#00H
+        MOV R13,R4
+        MOV R14,DPP0:c_lgrd_amp_mdl_dif_tra
+        SHL R14,#03H
+        CALLS 00FH,Ramp_Toward_S16
+        MOV amp_mdl_dif_i,R4
+L_C454C:                 ; 0xc454c
+        MOV R12,amp_mdl_dif_p
+        MOV R13,amp_mdl_dif_i
+        ASHR R13,#03H
+        CALLS 00FH,Sat_Add_S16
+        MOV amp_mdl_dif,R4
+        JMPR cc_UC,L_C456C
+L_C4560:                 ; 0xc4560
+        MOV amp_mdl_dif_p,ZEROS
+        MOV amp_mdl_dif_i,ZEROS
+        MOV amp_mdl_dif,ZEROS
+L_C456C:                 ; 0xc456c
+        MOV R12,amp
+        MOV R13,amp_mdl_dif
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV amp_mdl,R4
+        RETS
+
+; ======== ReducedArea_Adapt  (@0xc457e) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (ThetaII, verified): reduced-area (idle air) adaptation: ar_red_ad_fac/_add
+        ; (c_n/pq_ar_red_ad)
+        ; (was FUN_0c457e)
+        ; ------------------------------------------------------------
+ReducedArea_Adapt:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        JNB lv_amp_ad_rst.01H,L_C458A
+        JMPA cc_UC,L_C4662
+L_C458A:                 ; 0xc458a
+        JNB lv_amp_ad_rst.02H,L_C4592
+        JMPA cc_UC,L_C466A
+L_C4592:                 ; 0xc4592
+        JB lv_amp_ad_rst.0EH,L_C466A
+        JNB lv_ct.00H,L_C4600
+        MOVB RL4,n_32
+        CMPB RL4,DPP0:c_n_ar_red_ad_add_min
+        JMPR cc_ULE,L_C466A
+        CMPB RL4,DPP0:c_n_ar_red_ad_add_max
+        JMPR cc_NC,L_C466A
+        MOV R4,pq
+        CMP R4,DPP0:c_pq_ar_red_ad_add_max
+        JMPR cc_NC,L_C466A
+        MOV R12,ar_red_dif_i_rel_mmv
+        MOVBZ R13,DPP0:c_crlc_ar_red_ad_add
+        CALLS 00FH,Read_MD_Signed
+        MOV R8,R4
+        MOV R12,R8
+        MOV R13,ar_red_bas
+        CALLS 00FH,Mul_Q15_Sat_Signed
+        MOV R12,R4
+        MOV R13,ar_red_ad_add
+        CALLS 00FH,Sat_Add_S16
+        MOV R12,R4
+        MOV R13,DPP0:c_ar_red_ad_add_min
+        MOV R14,DPP0:c_ar_red_ad_add_max
+        CALLS 00FH,Clamp_S16
+        MOV R9,R4
+        CMP R9,ar_red_ad_add
+        JMPR cc_EQ,L_C466A
+        MOV ar_red_ad_add,R9
+        MOV R12,ar_red_dif_i_rel
+        MOV R13,R8
+        CALLS 00FH,Sat_Sub_S16
+        MOV ar_red_dif_i_rel,R4
+        JMPR cc_UC,L_C466A
+L_C4600:                 ; 0xc4600
+        MOVB RL4,n_32
+        CMPB RL4,DPP0:c_n_ar_red_ad_fac_min
+        JMPR cc_ULE,L_C466A
+        CMPB RL4,DPP0:c_n_ar_red_ad_fac_max
+        JMPR cc_NC,L_C466A
+        MOV R4,pq
+        CMP R4,DPP0:c_pq_ar_red_ad_fac_min
+        JMPR cc_ULE,L_C466A
+        CMP R4,DPP0:c_pq_ar_red_ad_fac_max
+        JMPR cc_NC,L_C466A
+        MOV R12,ar_red_dif_i_rel_mmv
+        MOVBZ R13,DPP0:c_crlc_ar_red_ad_fac
+        CALLS 00FH,Read_MD_Signed
+        MOV R8,R4
+        MOV R12,R8
+        MOV R13,ar_red_ad_fac
+        CALLS 00FH,Sat_Add_S16
+        MOV R12,R4
+        MOV R13,DPP0:c_ar_red_ad_fac_min
+        MOV R14,DPP0:c_ar_red_ad_fac_max
+        CALLS 00FH,Clamp_S16
+        MOV R9,R4
+        CMP R9,ar_red_ad_fac
+        JMPR cc_EQ,L_C466A
+        MOV ar_red_ad_fac,R9
+        MOV R12,ar_red_dif_i_rel
+        MOV R13,R8
+        CALLS 00FH,Sat_Sub_S16
+        MOV ar_red_dif_i_rel,R4
+        JMPR cc_UC,L_C466A
+L_C4662:                 ; 0xc4662
+        MOV ar_red_ad_add,ZEROS
+        MOV ar_red_ad_fac,ZEROS
+L_C466A:                 ; 0xc466a
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_HFM_TimeConst  (@0xc4670) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Calc_HFM_TimeConst:
+        MOV R12,#DATA16 POF ldp_maf_kgh_t_1_hfm
+        MOV R13,#DATA16 PAG ldp_maf_kgh_t_1_hfm
+        MOV R14,maf_kgh
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_t_1_hfm__maf_kgh
+        MOV R13,#DATA16 PAG ip_t_1_hfm__maf_kgh
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV R13,R4
+        MOV R12,t_seg_av
+        SHR R12,#01H
+        CALLS 00FH,Div_Frac_U16_Q16
+        MOV lv_maf_cc96,R4
+        MOV R12,#DATA16 POF ldp_t_seg_t_1_ratio_crlc_hfm
+        MOV R13,#DATA16 PAG ldp_t_seg_t_1_ratio_crlc_hfm
+        MOV R14,R4
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_crlc_hfm__t_seg_t_1_ratio
+        MOV R13,#DATA16 PAG ip_crlc_hfm__t_seg_t_1_ratio
+        CALLS 00FH,Get_IP_Word_2D_Table
+        MOV lv_maf_cca0,R4
+        MOV lv_maf_cca2,ZEROS
+        MOV lv_maf_cca4,ZEROS
+        JNB lv_cp_set_close.0EH,L_C4706
+        MOV R12,#DATA16 POF ldpm_n_32__ar_red
+        MOV R13,#DATA16 PAG ldpm_n_32__ar_red
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_pq__ar_red
+        MOV R13,#DATA16 PAG ldpm_pq__ar_red
+        MOV R14,pq
+        CALLS 00FH,Get_IP_Word_X_Axis
+        MOV R12,#DATA16 POF ip_ar_red_p_rel_1__n__pq
+        MOV R13,#DATA16 PAG ip_ar_red_p_rel_1__n__pq
+        CALLS 00FH,Get_IP_Word_3D_Table
+        MOV lv_maf_cca2,R4
+        MOV R12,#DATA16 POF ip_ar_red_i_rel_1__n__pq
+        MOV R13,#DATA16 PAG ip_ar_red_i_rel_1__n__pq
+        CALLS 00FH,Get_IP_Word_3D_Table
+        MOV lv_maf_cca4,R4
+L_C4706:                 ; 0xc4706
+        RETS
+
+; ======== Calc_AMP_Mdl_Dif_I  (@0xc4708) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Calc_AMP_Mdl_Dif_I:
+        MOV R12,amp_mdl_dif_i_mmv
+        MOV R13,amp_mdl_dif_i
+        ASHR R13,#03H
+        MOVBZ R14,DPP0:c_crlc_amp_mdl_dif_i_mmv
+        SHL R14,#08H
+        CALLS 00FH,Interp_S16
+        MOV amp_mdl_dif_i_mmv,R4
+        JB lv_amp_ad_rst.0EH,L_C4744
+        MOV R5,ar_red_dif_i_rel
+        MOV g_cc9e,R5
+        MOV R12,ar_red_dif_i_rel_mmv
+        MOV R13,ar_red_dif_i_rel
+        MOVBZ R14,DPP0:c_crlc_ar_red_dif_i_rel_mmv
+        SHL R14,#08H
+        CALLS 00FH,Interp_S16
+        MOV ar_red_dif_i_rel_mmv,R4
+        RETS
+L_C4744:                 ; 0xc4744
+        MOV R4,ar_red_dif_i_rel
+        CMP R4,#00H
+        JMPR cc_SLE,L_C4764
+        MOV R12,ar_red_dif_i_rel_mmv
+        MOV R13,g_cc9e
+        MOVBZ R14,DPP0:c_crlc_ar_red_dif_i_rel_mmv
+        SHL R14,#08H
+        CALLS 00FH,Interp_S16
+        MOV ar_red_dif_i_rel_mmv,R4
+        RETS
+L_C4764:                 ; 0xc4764
+        MOV ar_red_dif_i_rel_mmv,ZEROS
+        RETS
+
+; ======== Scale_By_TSegAv  (@0xc476a) ========
+Scale_By_TSegAv:
+        MOV [-R0],R14
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV R7,R13
+        MOV R8,R12
+        JMPR cc_EQ,L_C47A0
+        MOV R12,R7
+        MOV R13,R8
+        MOV R14,[R0+#06H]
+        CALLS 00FH,Mul_Shift_S16
+        MOV R12,R4
+        MOV R13,t_seg_av
+        CALLS 00FH,Mul_S16_Hi
+        MOV R9,R4
+        JMPR cc_NE,L_C47A2
+        CMP R7,#00H
+        JMPR cc_SLE,L_C479A
+        MOV R9,#01H
+        JMPR cc_UC,L_C47A2
+L_C479A:                 ; 0xc479a
+        MOV R9,#DATA16 0FFFFH
+        JMPR cc_UC,L_C47A2
+L_C47A0:                 ; 0xc47a0
+        MOV R9,#00H
+L_C47A2:                 ; 0xc47a2
+        MOV R4,R9
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        ADD R0,#02H
+        RET
+
+S_C4082 ENDS
+        END

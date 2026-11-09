@@ -1,0 +1,300 @@
+; asw/iga/iga_ext.a66
+; 0xBFA10-0xBFC7E  (622 bytes, 7 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+lc_iga_min_ext_lim_man               EQU  090468H
+lc_iga_min_rel                       EQU  090469H
+ldpm_n_32__iga                    EQU  090C0AH
+ldpm_maf_hb__iga                  EQU  090C1BH
+ldpm_lamb_sp__iga                     EQU  0914CCH
+ip_iga_bas__n_32__maf_hb             EQU  095935H
+ip_iga_bas_gear__n_32__maf_hb        EQU  095A15H
+ip_iga_bas_lamb__lamb_sp             EQU  095AD5H
+
+PUBLIC  Calc_IGA_Bas, Calc_IGA_Bas_Cor, Calc_IGA_Dif_Min_Ext_Lim, Calc_IGA_Min, Init_IGA_Dif_Min_Ext, Reset_cVar1_bb2
+PUBLIC  Set_iga_bas_cor_a10
+EXTERN  Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_2D_Table_DWord_YWord:NEAR, Get_IP_Byte_3D_Table:NEAR, Get_IP_Byte_3D_Table_DWord_XByte_YByte:NEAR
+EXTERN  Get_IP_Byte_3D_Table_DWord_XWord_YByte:NEAR, Get_IP_Byte_X_Axis:NEAR, Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_Y_Axis:NEAR
+EXTERN  Mul_S16_Q9_Sat:NEAR, Sub_Floor0_S16:NEAR, sub_r12_13_ret_r4:NEAR
+
+S_BFA10 SECTION CODE AT 0BFA10H
+
+; ======== Set_iga_bas_cor_a10  (@0xbfa10) ========
+Set_iga_bas_cor_a10:
+        MOVB RL4,#DATA16 0003FH
+        MOVB iga_bas_cor,RL4
+        RETS
+
+; ======== Calc_IGA_Bas_Cor  (@0xbfa1a) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by iga/igc/td output signals): Base ignition-advance correction iga_bas_cor
+        ; (temp/alt/mixture).
+        ; ------------------------------------------------------------
+Calc_IGA_Bas_Cor:
+        JNB lv_ast.06H,L_BFA54
+        MOVBZ R12,iga_bas
+        MOVBS R4,iga_tra_knk
+        ADD R12,R4
+        MOVBS R4,iga_bas_temp_cor
+        ADD R12,R4
+        MOVBS R4,iga_bas_vvt_cor
+        ADD R12,R4
+        MOVBS R4,iga_bas_amp_cor
+        ADD R12,R4
+        CMP R12,#DATA16 000FFH
+        JMPR cc_SLE,L_BFA46
+        MOV R4,#DATA16 000FFH
+        JMPR cc_UC,L_BFA50
+L_BFA46:                 ; 0xbfa46
+        CMP R12,#00H
+        JMPR cc_SGE,L_BFA4E
+        MOV R4,#00H
+        JMPR cc_UC,L_BFA50
+L_BFA4E:                 ; 0xbfa4e
+        MOV R4,R12
+L_BFA50:                 ; 0xbfa50
+        MOVB iga_bas_cor,RL4
+L_BFA54:                 ; 0xbfa54
+        RETS
+
+; ======== Init_IGA_Dif_Min_Ext  (@0xbfa56) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): Minimum Ignition Angle (iga_dif_min_ext_lim init)
+        ; ------------------------------------------------------------
+Init_IGA_Dif_Min_Ext:
+        MOVB iga_dif_min_ext_lim,ONES
+        RETS
+
+; ======== Calc_IGA_Dif_Min_Ext_Lim  (@0xbfa5c) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by iga/igc/td output signals): External min-ignition-diff limit
+        ; iga_dif_min_ext_lim(_max).
+        ; ------------------------------------------------------------
+Calc_IGA_Dif_Min_Ext_Lim:
+        MOV [-R0],R9
+        MOV [-R0],R7
+        MOV [-R0],R6
+        JNB can_fd58.09H,L_BFAEC
+        MOVB RL4,DPP0:lc_iga_min_ext_lim_man
+        JMPR cc_NE,L_BFA88
+        JB lv_dur_igc_0_err.0DH,L_BFA88
+        JB lv_dur_igc_0_err.0EH,L_BFA88
+        JB lv_amp_ad_rst.0DH,L_BFA88
+        JB lv_amp_ad_rst.0CH,L_BFA88
+        JB lv_err_tps_det.05H,L_BFA88
+        JB lv_diag_trip_avl_ivvt.04H,L_BFA88
+        JNB lv_ecu_err.00H,L_BFAE8
+L_BFA88:                 ; 0xbfa88
+        MOVB RL6,#DATA16 0007FH
+        MOVB RL7,#00H
+L_BFA8E:                 ; 0xbfa8e
+        MOVBZ R4,RL7
+        MOVB RL5,[R4+#0F487H]
+        CMPB RL6,RL5
+        JMPR cc_SGE,L_BFA9A
+        JMPR cc_UC,L_BFAA0
+L_BFA9A:                 ; 0xbfa9a
+        MOVBZ R4,RL7
+        MOVB RL6,[R4+#0F487H]
+L_BFAA0:                 ; 0xbfaa0
+        ADDB RL7,#01H
+        CMPB RL7,#04H
+        JMPR cc_C,L_BFA8E
+        MOVBZ R12,iga_ref_cor
+        MOVBZ R13,iga_bas_cor
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVBZ R12,RL4
+        MOVBS R13,RL6
+        CALLS 00FH,Sub_Floor0_S16
+        MOV R9,R4
+        CMP R9,#DATA16 000FFH
+        JMPR cc_C,L_BFAC8
+        MOVB iga_dif_min_ext_lim_max,ONES
+        JMPR cc_UC,L_BFACE
+L_BFAC8:                 ; 0xbfac8
+        MOV R4,R9
+        MOVB iga_dif_min_ext_lim_max,RL4
+L_BFACE:                 ; 0xbface
+        MOVB RL4,iga_dif_min_teg_bas
+        CMPB RL4,iga_dif_min_ext_lim_max
+        JMPR cc_ULE,L_BFADE
+        MOVB RL4,iga_dif_min_teg_bas
+        JMPR cc_UC,L_BFAE2
+L_BFADE:                 ; 0xbfade
+        MOVB RL4,iga_dif_min_ext_lim_max
+L_BFAE2:                 ; 0xbfae2
+        MOVB iga_dif_min_ext_lim,RL4
+        JMPR cc_UC,L_BFAEC
+L_BFAE8:                 ; 0xbfae8
+        MOVB iga_dif_min_ext_lim,ONES
+L_BFAEC:                 ; 0xbfaec
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_IGA_Bas  (@0xbfaf4) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by iga/igc/td output signals): Base ignition advance iga_bas (main n/load spark
+        ; map).
+        ; ------------------------------------------------------------
+Calc_IGA_Bas:
+        MOV [-R0],R9
+        JNB lv_ast.06H,L_BFBAE
+        MOV R12,#DATA16 POF ldpm_lamb_sp__iga
+        MOV R13,#DATA16 PAG ldpm_lamb_sp__iga
+        MOV R14,lamb_sp
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_iga_bas_lamb__lamb_sp
+        MOV R13,#DATA16 PAG ip_iga_bas_lamb__lamb_sp
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVBZ R9,RL4
+        MOV R12,#DATA16 POF ldpm_n_32__iga
+        MOV R13,#DATA16 PAG ldpm_n_32__iga
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_maf_hb__iga
+        MOV R13,#DATA16 PAG ldpm_maf_hb__iga
+        MOVBZ R14,lv_iga_cc2b
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_iga_bas__n_32__maf_hb
+        MOV R13,#DATA16 PAG ip_iga_bas__n_32__maf_hb
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        ADD R4,R9
+        SUB R4,#DATA16 00080H
+        MOV R9,R4
+        MOVB RL4,gr_mt
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_BFB5E
+        JB abs_def.04H,L_BFB94
+        JNB lv_cam_err.07H,L_BFB94
+L_BFB5E:                 ; 0xbfb5e
+        MOV R12,#DATA16 POF ldpm_n_32__iga
+        MOV R13,#DATA16 PAG ldpm_n_32__iga
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_maf_hb__iga
+        MOV R13,#DATA16 PAG ldpm_maf_hb__iga
+        MOVBZ R14,lv_iga_cc2b
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_iga_bas_gear__n_32__maf_hb
+        MOV R13,#DATA16 PAG ip_iga_bas_gear__n_32__maf_hb
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        ADD R4,R9
+        SUB R4,#DATA16 00080H
+        MOV R9,R4
+L_BFB94:                 ; 0xbfb94
+        CMP R9,#DATA16 000FFH
+        JMPR cc_SLE,L_BFBA0
+        MOV R4,#DATA16 000FFH
+        JMPR cc_UC,L_BFBAA
+L_BFBA0:                 ; 0xbfba0
+        CMP R9,#00H
+        JMPR cc_SGE,L_BFBA8
+        MOV R4,#00H
+        JMPR cc_UC,L_BFBAA
+L_BFBA8:                 ; 0xbfba8
+        MOV R4,R9
+L_BFBAA:                 ; 0xbfbaa
+        MOVB iga_bas,RL4
+L_BFBAE:                 ; 0xbfbae
+        MOV R9,[R0+]
+        RETS
+
+; ======== Reset_cVar1_bb2  (@0xbfbb2) ========
+Reset_cVar1_bb2:
+        MOV R12,#DATA16 049A6H
+        MOVBZ R13,tco
+        MOV R14,vo
+        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YByte
+        SUBB RL4,#DATA16 00080H
+        MOVB lv_iga_c2de,RL4
+        RETS
+
+; ======== Calc_IGA_Min  (@0xbfbcc) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by iga/igc/td output signals): Minimum ignition advance iga_min / iga_dif_min
+        ; (retard limit).
+        ; ------------------------------------------------------------
+Calc_IGA_Min:
+        MOV [-R0],R9
+        JNB lv_ast.06H,L_BFC7A
+        MOV R12,#DATA16 0499AH
+        MOVBZ R13,n_32
+        MOVBZ R14,lv_iga_cc2b
+        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XByte_YByte
+        MOVBZ R9,RL4
+        MOVBS R4,lv_iga_c2de
+        ADD R9,R4
+        SUB R9,#DATA16 00080H
+        MOV R12,#DATA16 049B2H
+        MOV R13,cycnr_st_ast
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YWord
+        MOVBZ R13,RL4
+        MOV R12,R9
+        CALLS 00FH,Mul_S16_Q9_Sat
+        MOV R9,R4
+        MOVB RL4,DPP0:lc_iga_min_rel
+        JMPR cc_EQ,L_BFC30
+        MOV R4,R9
+        NEG R4
+        CMP R4,#DATA16 000FFH
+        JMPR cc_SLE,L_BFC1A
+        MOV R4,#DATA16 000FFH
+        JMPR cc_UC,L_BFC2A
+L_BFC1A:                 ; 0xbfc1a
+        MOV R4,R9
+        NEG R4
+        CMP R4,#00H
+        JMPR cc_SGE,L_BFC26
+        MOV R4,#00H
+        JMPR cc_UC,L_BFC2A
+L_BFC26:                 ; 0xbfc26
+        MOV R4,R9
+        NEG R4
+L_BFC2A:                 ; 0xbfc2a
+        MOVB iga_dif_min,RL4
+        JMPR cc_UC,L_BFC56
+L_BFC30:                 ; 0xbfc30
+        ADD R9,#DATA16 0003FH
+        MOVBZ R4,iga_ref_cor
+        SUB R4,R9
+        MOV R9,R4
+        CMP R9,#DATA16 000FFH
+        JMPR cc_SLE,L_BFC48
+        MOV R4,#DATA16 000FFH
+        JMPR cc_UC,L_BFC52
+L_BFC48:                 ; 0xbfc48
+        CMP R9,#00H
+        JMPR cc_SGE,L_BFC50
+        MOV R4,#00H
+        JMPR cc_UC,L_BFC52
+L_BFC50:                 ; 0xbfc50
+        MOV R4,R9
+L_BFC52:                 ; 0xbfc52
+        MOVB iga_dif_min,RL4
+L_BFC56:                 ; 0xbfc56
+        MOVB RL4,iga_dif_min
+        CMPB RL4,iga_dif_min_ext_lim
+        JMPR cc_NC,L_BFC62
+        JMPR cc_UC,L_BFC6A
+L_BFC62:                 ; 0xbfc62
+        MOVB RL4,iga_dif_min_ext_lim
+        MOVB iga_dif_min,RL4
+L_BFC6A:                 ; 0xbfc6a
+        MOVBZ R12,iga_ref_cor
+        MOVBZ R13,iga_dif_min
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB iga_min,RL4
+L_BFC7A:                 ; 0xbfc7a
+        MOV R9,[R0+]
+        RETS
+
+S_BFA10 ENDS
+        END

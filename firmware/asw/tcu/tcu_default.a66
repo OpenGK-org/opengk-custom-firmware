@@ -1,0 +1,153 @@
+; asw/tcu/tcu_default.a66
+; 0xD77E0-0xD791A  (314 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+lv_maf_9014a                         EQU  09014AH
+
+PUBLIC  CAN1_SetDefault_TcsSignals, CAN1_SetDefault_TcuSignals, CAN1_SetDefault_WheelSpeeds, Calc_MAF_Dif_CH_Upd
+EXTERN  multipied_r12_r13_UGT_r14_rets_r4:NEAR
+
+S_D77E0 SECTION CODE AT 0D77E0H
+
+; ======== CAN1_SetDefault_TcuSignals  (@0xd77e0) ========
+        ; Defaults RECEIVED CAN torque-request signals from the TCU/gearbox: tqi_tcu_can, tqi_gs_req
+        ; (=f(tq_stnd)), gear select (g_sel_disp), f_tcu/tcu_obd flags, n_tur_conv (torque-converter turbine
+        ; speed). ECU receives these over CAN1 from the auto transmission.
+CAN1_SetDefault_TcuSignals:
+        BCLR abs_def.02H
+        MOVB tar_gc,ZEROS
+        MOVB can_gear_tcu,ZEROS
+        BCLR lv_asr_req.05H
+        BCLR abs_def.0BH
+        BCLR abs_def.06H
+        BCLR abs_def.07H
+        MOVB swi_cc,ZEROS
+        MOVB g_sel_disp,ZEROS
+        MOVB f_tcu,ZEROS
+        MOVB tcu_obd,ZEROS
+        MOVB can_tcu_obd_status,ZEROS
+        BCLR abs_def.03H
+        BCLR abs_def.01H
+        MOVB tqi_tcu_can,ONES
+        MOV R12,#DATA16 000FFH
+        MOVBZ R4,tq_stnd
+        MOV R13,R4
+        SHL R13,#02H
+        ADD R13,R4
+        SHL R13,#06H
+        MOV R14,#DATA16 00100H
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV can1_tq_scale_tmp,R4
+        CMP R4,#DATA16 07FFFH
+        JMPR cc_NC,L_D7836
+        MOV tqi_gs_req,R4
+        JMPR cc_UC,L_D783E
+L_D7836:                 ; 0xd7836
+        MOV R4,#DATA16 07FFFH
+        MOV tqi_gs_req,R4
+L_D783E:                 ; 0xd783e
+        MOVB toil_gb,ONES
+        MOV n_tur_conv,ZEROS
+        RETS
+
+; ======== CAN1_SetDefault_TcsSignals  (@0xd7848) ========
+        ; Defaults RECEIVED CAN torque-request signals from ABS/ESP/TCS: tqi_asr_req (ASR/traction),
+        ; tqi_msr_req (MSR/engine-drag), tqi_tcs_can, tqi_slw_tcs_can/tqi_asr_slw_req (slow torque path). ECU
+        ; receives these over CAN1 from the brake/stability controller.
+CAN1_SetDefault_TcsSignals:
+        BCLR lv_asr_req.04H
+        BCLR abs_def.0DH
+        BCLR lv_asr_req.07H
+        BCLR lv_asr_req.06H
+        BCLR abs_def.05H
+        BCLR abs_def.0CH
+        MOVB wheel,ZEROS
+        MOVB tqi_tcs_can,ONES
+        MOV R12,#DATA16 000FFH
+        MOVBZ R4,tq_stnd
+        MOV R13,R4
+        SHL R13,#02H
+        ADD R13,R4
+        SHL R13,#06H
+        MOV R14,#DATA16 00100H
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV can1_tq_scale_tmp,R4
+        CMP R4,#DATA16 07FFFH
+        JMPR cc_NC,L_D7884
+        MOV tqi_asr_req,R4
+        JMPR cc_UC,L_D788C
+L_D7884:                 ; 0xd7884
+        MOV R4,#DATA16 07FFFH
+        MOV tqi_asr_req,R4
+L_D788C:                 ; 0xd788c
+        MOVB tqi_msr_can,ZEROS
+        MOV R12,#00H
+        MOVBZ R4,tq_stnd
+        MOV R13,R4
+        SHL R13,#02H
+        ADD R13,R4
+        SHL R13,#06H
+        MOV R14,#DATA16 00100H
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV can1_tq_scale_tmp,R4
+        CMP R4,#DATA16 07FFFH
+        JMPR cc_NC,L_D78B6
+        MOV tqi_msr_req,R4
+        JMPR cc_UC,L_D78BE
+L_D78B6:                 ; 0xd78b6
+        MOV R4,#DATA16 07FFFH
+        MOV tqi_msr_req,R4
+L_D78BE:                 ; 0xd78be
+        MOVB tqi_slw_tcs_can,ONES
+        MOV R12,#DATA16 000FFH
+        MOVBZ R4,tq_stnd
+        MOV R13,R4
+        SHL R13,#02H
+        ADD R13,R4
+        SHL R13,#06H
+        MOV R14,#DATA16 00100H
+        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        MOV can1_tq_scale_tmp,R4
+        CMP R4,#DATA16 07FFFH
+        JMPR cc_NC,L_D78EA
+        MOV tqi_asr_slw_req,R4
+        RETS
+L_D78EA:                 ; 0xd78ea
+        MOV R4,#DATA16 07FFFH
+        MOV tqi_asr_slw_req,R4
+        RETS
+
+; ======== CAN1_SetDefault_WheelSpeeds  (@0xd78f4) ========
+        ; Defaults the four RECEIVED wheel-speed signals from ABS/ESP over CAN1: wheel_fl_tcs, wheel_fr_tcs,
+        ; wheel_rl_tcs, wheel_rr_tcs.
+CAN1_SetDefault_WheelSpeeds:
+        MOVB wheel_fl_tcs,ZEROS
+        MOVB wheel_fr_tcs,ZEROS
+        MOVB wheel_rl_tcs,ZEROS
+        MOVB wheel_rr_tcs,ZEROS
+        RETS
+
+; ======== Calc_MAF_Dif_CH_Upd  (@0xd7906) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signals): Update MAF-difference catalyst-heating condition
+        ; lv_cdn_diag_maf_dif_ch_int.
+        ; ------------------------------------------------------------
+Calc_MAF_Dif_CH_Upd:
+        MOVB RL4,DPP0:lv_maf_9014a
+        CMPB RL4,#02H
+        JMPR cc_EQ,L_D7916
+        CMPB RL4,#03H
+        JMPR cc_NE,L_D7918
+        BCLR lv_cdn_diag_maf_dif_ch_int.01H
+        RETS
+L_D7916:                 ; 0xd7916
+        BSET lv_cdn_diag_maf_dif_ch_int.01H
+L_D7918:                 ; 0xd7918
+        RETS
+
+S_D77E0 ENDS
+        END

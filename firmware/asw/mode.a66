@@ -1,0 +1,108 @@
+; asw/mode.a66
+; 0xDFB62-0xDFC04  (162 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  KWP_CommObj_SetPending, Nop_dfc02, Normalize_S32
+
+S_DFB62 SECTION CODE AT 0DFB62H
+
+; ======== Normalize_S32  (@0xdfb62) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Normalize_S32:
+        MOV R14,#00H
+        MOV R15,#00H
+        CMP R13,#00H
+        JMPR cc_NE,L_DFB6E
+        CMP R12,#00H
+        JMPR cc_EQ,L_DFB8C
+L_DFB6E:                 ; 0xdfb6e
+        CMP R13,#00H
+        JMPR cc_NE,L_DFB76
+        CMP R12,#01H
+        JMPR cc_EQ,L_DFB80
+L_DFB76:                 ; 0xdfb76
+        CMP R13,#00H
+        JMPR cc_NE,L_DFB7E
+        CMP R12,#02H
+        JMPR cc_EQ,L_DFB86
+L_DFB7E:                 ; 0xdfb7e
+        JMPR cc_UC,L_DFB90
+L_DFB80:                 ; 0xdfb80
+        MOV R14,#01H
+        MOV R15,#00H
+        JMPR cc_UC,L_DFB90
+L_DFB86:                 ; 0xdfb86
+        MOV R14,#02H
+        MOV R15,#00H
+        JMPR cc_UC,L_DFB90
+L_DFB8C:                 ; 0xdfb8c
+        MOV R14,#00H
+        MOV R15,#00H
+L_DFB90:                 ; 0xdfb90
+        MOV R4,R14
+        MOV R5,R15
+        RETS
+
+; ======== KWP_CommObj_SetPending  (@0xdfb96) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified): KWP CAN comms-object pending management
+        ; (CommObj_SetPendingByHandle/ClearPendingFlag).
+        ; ------------------------------------------------------------
+KWP_CommObj_SetPending:
+        MOV [-R0],R14
+        MOV [-R0],R13
+        MOV [-R0],R12
+        CMP R12,#00H
+        JMPR cc_EQ,L_DFBF2
+        CMP R12,#01H
+        JMPR cc_EQ,L_DFBAE
+        CMP R12,#02H
+        JMPR cc_EQ,L_DFBB6
+        CMP R12,#04H
+        JMPR cc_EQ,L_DFBE4
+        JMPR cc_UC,L_DFBFE
+L_DFBAE:                 ; 0xdfbae
+        MOV R12,#02H
+        CALLS 008H,CommObj_SetPendingByHandle
+        JMPR cc_UC,L_DFBFE
+L_DFBB6:                 ; 0xdfbb6
+        JB bl_mode_status_flags.05H,L_DFBC6
+        MOV R4,DPP1:0A0420H
+        MOV R5,DPP1:0A0422H
+        CALLS 000H,rt_callfar_via_r5r4
+L_DFBC6:                 ; 0xdfbc6
+        MOV R12,#00H
+        CALLS 008H,CommObj_ClearPendingFlagByHandle
+        MOV R12,#02H
+        CALLS 008H,CommObj_ClearPendingFlagByHandle
+        JB bl_mode_status_flags.05H,L_DFBFE
+        MOV R4,DPP1:0A0424H
+        MOV R5,DPP1:0A0426H
+        CALLS 000H,rt_callfar_via_r5r4
+        JMPR cc_UC,L_DFBFE
+L_DFBE4:                 ; 0xdfbe4
+        MOV R12,#01H
+        CALLS 008H,CommObj_SetPendingByHandle
+        MOV R12,#02H
+        CALLS 008H,CommObj_SetPendingByHandle
+        JMPR cc_UC,L_DFBFE
+L_DFBF2:                 ; 0xdfbf2
+        MOV R12,#00H
+        CALLS 008H,CommObj_SetPendingByHandle
+        MOV R12,#02H
+        CALLS 008H,CommObj_SetPendingByHandle
+L_DFBFE:                 ; 0xdfbfe
+        ADD R0,#06H
+        RETS
+
+; ======== Nop_dfc02  (@0xdfc02) ========
+Nop_dfc02:
+        RETS
+
+S_DFB62 ENDS
+        END

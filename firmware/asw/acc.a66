@@ -1,0 +1,283 @@
+; asw/acc.a66
+; 0xC67E2-0xC6A9A  (696 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_tq_loss_acc_lgrd                   EQU  0907C0H
+ldp_t_acc__fac_tq_loss_acc_off             EQU  090BCDH
+ldp_t_acc__tq_loss_acc_on_fast         EQU  090BD6H
+ldp_t_acc__tq_loss_acc_on_slow         EQU  090BDFH
+ldp_n_32__fac_tq_loss_acc_on         EQU  090BE8H
+ldp_tia__tq_loss_acc  EQU  090F7FH
+ldp_lv_prs_acc__tq_loss_acc  EQU  090F86H
+ldp_tia__tq_loss_acc_1         EQU  090F89H
+ldp_acp__tq_loss_acc_1         EQU  090F90H
+ldp_n_32__tq_loss_acc                 EQU  090F97H
+ip_tq_loss_acc_0__tia__lv_prs_acc    EQU  094A00H
+ip_tq_loss_acc_1__tia__acp           EQU  094A18H
+ip_fac_tq_loss_acc_off               EQU  0957D9H
+ip_fac_tq_loss_acc_on_fast           EQU  0957E1H
+ip_fac_tq_loss_acc_on_slow           EQU  0957E9H
+ip_tq_loss_acc_fac                   EQU  096B4CH
+
+PUBLIC  Calc_TQI_AV_EMS, Calc_TQ_Loss_Acc, Reset_t_acc_fast_862
+EXTERN  Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_3D_Table:NEAR, Get_IP_Byte_X_Axis:NEAR, Get_IP_Byte_Y_Axis:NEAR
+EXTERN  Get_IP_Word_3D_Table:NEAR, Max_S16:NEAR, Min_S16:NEAR, Mul_Q15_Sat_Signed:NEAR
+EXTERN  Mul_S16_Q23:NEAR, Ramp_Toward_S16:NEAR, Sat_Add_S16:NEAR
+
+S_C67E2 SECTION CODE AT 0C67E2H
+
+; ======== Calc_TQI_AV_EMS  (@0xc67e2) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (MS42, verified): available engine torque: tqi_av_ems =
+        ; f(tqi_ems,tqi_ref_iga,eff_lamb_av,eff_iga_min)
+        ; (was FUN_0c67e2)
+        ; ------------------------------------------------------------
+Calc_TQI_AV_EMS:
+        MOV [-R0],R9
+        JNB lv_ast.06H,L_C685E
+        JNB lv_asr_act.01H,L_C67FA
+        JNB lv_asr_req.05H,L_C67FA
+        MOV R4,tqi_gs_req
+        CMP R4,lv_tq_cd76
+        JMPR cc_C,L_C680C
+L_C67FA:                 ; 0xc67fa
+        JNB lv_asr_act.07H,L_C6810
+        JNB lv_asr_req.04H,L_C6810
+        MOV R4,tqi_asr_req
+        CMP R4,lv_tq_cd76
+        JMPR cc_NC,L_C6810
+L_C680C:                 ; 0xc680c
+        JNB lv_pl.02H,L_C681A
+L_C6810:                 ; 0xc6810
+        MOV R4,tqi_av
+        MOV tqi_av_ems,R4
+        JMPR cc_UC,L_C6856
+L_C681A:                 ; 0xc681a
+        MOV R12,tqi_ems
+        MOV R13,tq_dif_p_d_fast_is
+        CALLS 00FH,Sat_Add_S16
+        MOV [-R0],R4
+        MOV R12,tqi_ref_iga
+        MOV R13,eff_lamb_av
+        CALLS 00FH,Mul_Q15_Sat_Signed
+        MOV R12,R4
+        MOV R13,[R0+]
+        CALLS 00FH,Min_S16
+        MOV R9,R4
+        MOV R12,tqi_ref
+        MOV R13,eff_iga_min
+        CALLS 00FH,Mul_Q15_Sat_Signed
+        MOV R12,R4
+        MOV R13,R9
+        CALLS 00FH,Max_S16
+        MOV tqi_av_ems,R4
+L_C6856:                 ; 0xc6856
+        MOV R4,tqi_av_ems
+        MOV lv_tq_cd76,R4
+L_C685E:                 ; 0xc685e
+        MOV R9,[R0+]
+        RETS
+
+; ======== Reset_t_acc_fast_862  (@0xc6862) ========
+Reset_t_acc_fast_862:
+        MOVB t_acc_fast,ONES
+        MOVB t_acc_slow,ONES
+        BCLR lv_asr_act.0DH
+        BCLR lv_asr_act.0EH
+        BMOV lv_act_aj.00H,lv_im_acin.06H
+        MOVB t_acc_slow_div,ZEROS
+        RETS
+
+; ======== Calc_TQ_Loss_Acc  (@0xc6878) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tq/tqi output signals): ASR/anti-jerk acceleration torque-loss timers:
+        ; lv_asr_act, t_acc_fast/slow, tq_loss_acc, lv_act_aj.
+        ; ------------------------------------------------------------
+Calc_TQ_Loss_Acc:
+        MOV [-R0],R9
+        JNB lv_asr_act.0DH,L_C6890
+        MOVB RL4,t_acc_fast
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NE,L_C688C
+        BCLR lv_asr_act.0DH
+        JMPR cc_UC,L_C6890
+L_C688C:                 ; 0xc688c
+        SUBB t_acc_fast,ONES
+L_C6890:                 ; 0xc6890
+        JNB lv_asr_act.0EH,L_C68C6
+        SUBB t_acc_slow_div,ONES
+        MOVB RL4,t_acc_slow
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NE,L_C68B4
+        MOVB RL5,t_acc_slow_div
+        CMPB RL5,#DATA16 00064H
+        JMPR cc_C,L_C68B4
+        BCLR lv_asr_act.0EH
+        MOVB t_acc_slow_div,ZEROS
+        JMPR cc_UC,L_C68C6
+L_C68B4:                 ; 0xc68b4
+        MOVB RL4,t_acc_slow_div
+        CMPB RL4,#DATA16 00064H
+        JMPR cc_C,L_C68C6
+        SUBB t_acc_slow,ONES
+        MOVB t_acc_slow_div,ZEROS
+L_C68C6:                 ; 0xc68c6
+        JNB lv_act_aj.0CH,L_C68E0
+        JB lv_asr_act.0CH,L_C68E0
+        MOVB t_acc_fast,ZEROS
+        MOVB t_acc_slow,ZEROS
+        BSET lv_asr_act.0DH
+        BSET lv_asr_act.0EH
+        MOVB t_acc_slow_div,ZEROS
+        JMPR cc_UC,L_C6900
+L_C68E0:                 ; 0xc68e0
+        JB lv_act_aj.0CH,L_C6900
+        JNB lv_asr_act.0CH,L_C6900
+        MOV R4,tq_loss_acc
+        MOV tq_loss_acc_z,R4
+        MOVB t_acc_fast,ZEROS
+        MOVB t_acc_slow,ONES
+        BSET lv_asr_act.0DH
+        BCLR lv_asr_act.0EH
+        MOVB t_acc_slow_div,ZEROS
+L_C6900:                 ; 0xc6900
+        BMOV lv_asr_act.0CH,lv_act_aj.0CH
+        JB lv_act_aj.0CH,L_C690C
+        JMPA cc_UC,L_C6A52
+L_C690C:                 ; 0xc690c
+        BCMP lv_im_acin.06H,lv_act_aj.00H
+        JMPR cc_NN,L_C6918
+        BMOV lv_act_aj.00H,lv_im_acin.06H
+        BSET lv_asr_act.0FH
+L_C6918:                 ; 0xc6918
+        MOVB RL4,conf_acp
+        JMPR cc_EQ,L_C6952
+        MOV R12,#DATA16 POF ldp_tia__tq_loss_acc_1
+        MOV R13,#DATA16 PAG ldp_tia__tq_loss_acc_1
+        MOVBZ R14,tia
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_acp__tq_loss_acc_1
+        MOV R13,#DATA16 PAG ldp_acp__tq_loss_acc_1
+        MOVBZ R14,acp
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_tq_loss_acc_1__tia__acp
+        MOV R13,#DATA16 PAG ip_tq_loss_acc_1__tia__acp
+        CALLS 00FH,Get_IP_Word_3D_Table
+        MOV R9,R4
+        ADD R9,#DATA16 08000H
+        JMPR cc_UC,L_C6988
+L_C6952:                 ; 0xc6952
+        MOV R12,#DATA16 POF ldp_tia__tq_loss_acc
+        MOV R13,#DATA16 PAG ldp_tia__tq_loss_acc
+        MOVBZ R14,tia
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_lv_prs_acc__tq_loss_acc
+        MOV R13,#DATA16 PAG ldp_lv_prs_acc__tq_loss_acc
+        MOVB RL4,#00H
+        BMOV R4.00H,lv_im_acin.06H
+        MOVBZ R14,RL4
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_tq_loss_acc_0__tia__lv_prs_acc
+        MOV R13,#DATA16 PAG ip_tq_loss_acc_0__tia__lv_prs_acc
+        CALLS 00FH,Get_IP_Word_3D_Table
+        MOV R9,R4
+        ADD R9,#DATA16 08000H
+L_C6988:                 ; 0xc6988
+        JNB lv_asr_act.0FH,L_C69AC
+        MOV R12,R9
+        MOV R13,tq_loss_acc_ramp
+        EXTP #024H, #01H
+        MOV R14,DPP0:c_tq_loss_acc_lgrd
+        CALLS 00FH,Ramp_Toward_S16
+        MOV tq_loss_acc_ramp,R4
+        CMP R9,tq_loss_acc_ramp
+        JMPR cc_NE,L_C69B0
+        BCLR lv_asr_act.0FH
+        JMPR cc_UC,L_C69B0
+L_C69AC:                 ; 0xc69ac
+        MOV tq_loss_acc_ramp,R9
+L_C69B0:                 ; 0xc69b0
+        MOV R12,#DATA16 POF ldp_n_32__tq_loss_acc
+        MOV R13,#DATA16 PAG ldp_n_32__tq_loss_acc
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_tq_loss_acc_fac
+        MOV R13,#DATA16 PAG ip_tq_loss_acc_fac
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVBZ R4,RL4
+        SHL R4,#02H
+        MOV [-R0],R4
+        MOV R12,tq_loss_acc_ramp
+        MOV R13,tq_dif_is_ad_acc
+        CALLS 00FH,Sat_Add_S16
+        MOV R12,R4
+        MOV R13,[R0+]
+        CALLS 00FH,Mul_S16_Q23
+        MOV R9,R4
+        JNB lv_asr_act.0DH,L_C6A14
+        MOV R12,#DATA16 POF ldp_t_acc__tq_loss_acc_on_fast
+        MOV R13,#DATA16 PAG ldp_t_acc__tq_loss_acc_on_fast
+        MOVBZ R14,t_acc_fast
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_fac_tq_loss_acc_on_fast
+        MOV R13,#DATA16 PAG ip_fac_tq_loss_acc_on_fast
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVBZ R13,RL4
+        SHL R13,#04H
+        MOV R12,R9
+        CALLS 00FH,Mul_S16_Q23
+        MOV R9,R4
+L_C6A14:                 ; 0xc6a14
+        JNB lv_asr_act.0EH,L_C6A84
+        MOV R12,#DATA16 POF ldp_t_acc__tq_loss_acc_on_slow
+        MOV R13,#DATA16 PAG ldp_t_acc__tq_loss_acc_on_slow
+        MOVBZ R14,t_acc_slow
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldp_n_32__fac_tq_loss_acc_on
+        MOV R13,#DATA16 PAG ldp_n_32__fac_tq_loss_acc_on
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_fac_tq_loss_acc_on_slow
+        MOV R13,#DATA16 PAG ip_fac_tq_loss_acc_on_slow
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R13,RL4
+        SHL R13,#02H
+        MOV R12,R9
+        CALLS 00FH,Mul_S16_Q23
+        MOV R9,R4
+        JMPR cc_UC,L_C6A84
+L_C6A52:                 ; 0xc6a52
+        JNB lv_asr_act.0DH,L_C6A82
+        MOV R12,#DATA16 POF ldp_t_acc__fac_tq_loss_acc_off
+        MOV R13,#DATA16 PAG ldp_t_acc__fac_tq_loss_acc_off
+        MOVBZ R14,t_acc_fast
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ip_fac_tq_loss_acc_off
+        MOV R13,#DATA16 PAG ip_fac_tq_loss_acc_off
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVBZ R13,RL4
+        SHL R13,#02H
+        MOV R12,tq_loss_acc_z
+        CALLS 00FH,Mul_S16_Q23
+        MOV R9,R4
+        JMPR cc_UC,L_C6A84
+L_C6A82:                 ; 0xc6a82
+        MOV R9,#00H
+L_C6A84:                 ; 0xc6a84
+        CMP R9,#00H
+        JMPR cc_SLT,L_C6A8E
+        MOV tq_loss_acc,ZEROS
+        JMPR cc_UC,L_C6A92
+L_C6A8E:                 ; 0xc6a8e
+        MOV tq_loss_acc,R9
+L_C6A92:                 ; 0xc6a92
+        MOV tq_add_acc,ZEROS
+        MOV R9,[R0+]
+        RETS
+
+S_C67E2 ENDS
+        END

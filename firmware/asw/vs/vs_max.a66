@@ -1,0 +1,136 @@
+; asw/vs/vs_max.a66
+; 0xC8E2E-0xC8F28  (250 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_t_dly_tco_sub                      EQU  09032EH
+c_tco_mes_diag_stuck_rng             EQU  09037FH
+c_tco_stop_min_stuck_rng             EQU  09039FH
+c_tia_mes_max_stuck_rng              EQU  0903B9H
+c_toil_mes_max_stuck_rng             EQU  0903CEH
+c_toil_stop_min_stuck_rng            EQU  0903D4H
+c_t_tia_tco_diag                     EQU  090744H
+
+PUBLIC  Diag_Cam_N_Max_d194, Diag_DTC_dd1a2, Init_TCO_Sub, SetBits_lv_n_max_isa_err_e54, Set_lv_n_max_isa_err
+EXTERN  DTC_Update_Imm_V2:NEAR, DTC_Update_Immediate:NEAR
+
+S_C8E2E SECTION CODE AT 0C8E2EH
+
+; ======== Diag_Cam_N_Max_d194  (@0xc8e2e) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tco/tia/crank output signals): Cam / n-max ISA-error diagnosis (DTC 0xd194):
+        ; lv_cam_err / lv_n_max_isa_err.
+        ; ------------------------------------------------------------
+Diag_Cam_N_Max_d194:
+        MOV R12,#DATA16 0D194H
+        MOV R13,#DATA16 05362H
+        CALLS 00DH,DTC_Update_Imm_V2
+        BMOV lv_cam_err.0EH,dtc_status_work.06H
+        MOVBZ R4,g_d19e
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C8E50
+        MOV R4,#DATA16 0BFFFH
+        AND dtc_grp_maf_dif,R4
+L_C8E50:                 ; 0xc8e50
+        BCLR lv_n_max_isa_err.0DH
+        RETS
+
+; ======== SetBits_lv_n_max_isa_err_e54  (@0xc8e54) ========
+SetBits_lv_n_max_isa_err_e54:
+        BSET lv_n_max_isa_err.04H
+        RETS
+
+; ======== Set_lv_n_max_isa_err  (@0xc8e58) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Set_lv_n_max_isa_err:
+        BCLR lv_n_max_isa_err.04H
+        BCLR lv_n_max_isa_err.09H
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_C8E70
+        JB lv_pl.04H,L_C8E70
+        JB lv_n_max_isa_err.04H,L_C8E70
+        MOV R4,DPP0:c_t_tia_tco_diag
+        MOV t_tia_tco_diag,R4
+L_C8E70:                 ; 0xc8e70
+        RETS
+
+; ======== Init_TCO_Sub  (@0xc8e72) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tco/tia/crank output signals): Init coolant-temp substitute state machine:
+        ; tco_sub_state / tco_sub_word / t_dly_tco_sub / lv_inh_fsd_cp (feeds Acq_TCO_Mes switch).
+        ; ------------------------------------------------------------
+Init_TCO_Sub:
+        JNB lv_conf_mis.01H,L_C8E8E
+        BCLR lv_inh_fsd_cp.09H
+        MOVB tco_sub_state,ZEROS
+        MOVBZ R4,tco_st
+        SHL R4,#08H
+        MOV tco_sub_word,R4
+        MOVB RL4,DPP0:c_t_dly_tco_sub
+        MOVB t_dly_tco_sub,RL4
+L_C8E8E:                 ; 0xc8e8e
+        RETS
+
+; ======== Diag_DTC_dd1a2  (@0xc8e90) ========
+        ; ------------------------------------------------------------
+        ; Per-fault DTC setter: sets dtc_test_result and updates the DTC at status-address 0xd1a2. Name = DTC
+        ; status RAM address (unique per fault).
+        ; ------------------------------------------------------------
+Diag_DTC_dd1a2:
+        JB lv_n_max_isa_err.0CH,L_C8F24
+        MOVB RL4,toil_stop
+        CMPB RL4,DPP0:c_toil_stop_min_stuck_rng
+        JMPR cc_ULE,L_C8F24
+        MOVB RL5,tco_stop
+        CMPB RL5,DPP0:c_tco_stop_min_stuck_rng
+        JMPR cc_ULE,L_C8F24
+        MOVB RL3,toil_mes
+        CMPB RL3,DPP0:c_toil_mes_max_stuck_rng
+        JMPR cc_NC,L_C8F24
+        MOVB RL2,tia_mes
+        CMPB RL2,DPP0:c_tia_mes_max_stuck_rng
+        JMPR cc_NC,L_C8F24
+        MOVB RL1,tco_mes
+        CMPB RL1,DPP0:c_tco_mes_diag_stuck_rng
+        JMPR cc_ULE,L_C8ECE
+        MOVB RL4,#02H
+        MOVB dtc_test_result,RL4
+        JMPR cc_UC,L_C8ED2
+L_C8ECE:                 ; 0xc8ece
+        MOVB dtc_test_result,ZEROS
+L_C8ED2:                 ; 0xc8ed2
+        BSET lv_n_max_isa_err.0DH
+        MOV R12,#DATA16 0D194H
+        MOV R13,#DATA16 05362H
+        CALLS 00DH,DTC_Update_Imm_V2
+        BMOV lv_cam_err.0EH,dtc_status_work.06H
+        MOVBZ R4,g_d19e
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C8EF6
+        MOV R4,#DATA16 0BFFFH
+        AND dtc_grp_maf_dif,R4
+L_C8EF6:                 ; 0xc8ef6
+        JNB lv_cam_err.0EH,L_C8F26
+        MOVB RL4,#02H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D1A2H
+        MOV R13,#DATA16 05378H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cam_err.0FH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_tco_rat
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C8F26
+        MOV R4,#DATA16 07FFFH
+        AND dtc_grp_maf_dif,R4
+        RETS
+L_C8F24:                 ; 0xc8f24
+        BCLR lv_n_max_isa_err.0DH
+L_C8F26:                 ; 0xc8f26
+        RETS
+
+S_C8E2E ENDS
+        END

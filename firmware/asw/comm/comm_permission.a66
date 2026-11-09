@@ -1,0 +1,126 @@
+; asw/comm/comm_permission.a66
+; 0xDFC04-0xDFCD4  (208 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  KWP_Copy_Resp_Buffer, KWP_Svc_Permission_Gate, Nop_dfc04, Tail_rt_callfar_via_r5r4_c98
+
+S_DFC04 SECTION CODE AT 0DFC04H
+
+; ======== Nop_dfc04  (@0xdfc04) ========
+Nop_dfc04:
+        RETS
+
+; ======== KWP_Svc_Permission_Gate  (@0xdfc06) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by bl_/kwp_ output signals): KWP service permission gate: KWP_Check_ServicePermission
+        ; + kwp_comms_flags.
+        ; ------------------------------------------------------------
+KWP_Svc_Permission_Gate:
+        MOV [-R0],R13
+        MOV [-R0],R12
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOVB RL6,#00H
+        EXTP R13, #03H
+        MOV R8,[R12+#08H]
+        MOV R9,[R12+#0AH]
+        NOP
+        MOV R7,#00H
+        JMPR cc_UC,L_DFC72
+L_DFC24:                 ; 0xdfc24
+        EXTP R9, #02H
+        MOVB RL4,[R8+#04H]
+        NOP
+        CMPB RL4,kwp_record_fmt
+        JMPR cc_NE,L_DFC54
+        MOV R12,R8
+        MOV R13,R9
+        ADD R12,#05H
+        CALLS 008H,KWP_Check_ServicePermission
+        MOVB RL4,kwp_nrc
+        JMPR cc_NE,L_DFC50
+        BSET kwp_comms_flags.0FH
+        EXTP R9, #02H
+        MOV R5,[R8+#02H]
+        MOV R4,[R8]
+        CALLS 000H,rt_callfar_via_r5r4
+L_DFC50:                 ; 0xdfc50
+        MOVB RL6,#01H
+        JMPR cc_UC,L_DFC70
+L_DFC54:                 ; 0xdfc54
+        MOV R4,[R0+#08H]
+        MOV R5,[R0+#0AH]
+        EXTP R5, #02H
+        MOVB RL3,[R4+#02H]
+        NOP
+        MOVBZ R2,RL3
+        MOV R4,R8
+        MOV R5,R9
+        ADD R4,R2
+        MOV R8,R4
+        MOV R9,R5
+L_DFC70:                 ; 0xdfc70
+        ADD R7,#01H
+L_DFC72:                 ; 0xdfc72
+        MOV R4,[R0+#08H]
+        MOV R5,[R0+#0AH]
+        EXTP R5, #02H
+        MOVB RL3,[R4+#01H]
+        NOP
+        MOVBZ R2,RL3
+        CMP R7,R2
+        JMPR cc_NC,L_DFC8C
+        CMPB RL6,#00H
+        JMPR cc_EQ,L_DFC24
+L_DFC8C:                 ; 0xdfc8c
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        ADD R0,#04H
+        RETS
+
+; ======== Tail_rt_callfar_via_r5r4_c98  (@0xdfc98) ========
+Tail_rt_callfar_via_r5r4_c98:
+        EXTP #00H, #02H
+        MOV R4,g_202
+        MOV R5,g_204
+        CALLS 000H,rt_callfar_via_r5r4
+        RETS
+
+; ======== KWP_Copy_Resp_Buffer  (@0xdfcaa) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified): KWP response buffer copy/format helper (param_1 = source buffer ptr).
+        ; ------------------------------------------------------------
+KWP_Copy_Resp_Buffer:
+        MOV [-R0],R9
+        MOV R14,[R12+]
+        CMP R14,#00H
+        JMPR cc_ULE,L_DFCD0
+        CMP R14,R13
+        JMPR cc_ULE,L_DFCCC
+        MOV R14,R13
+        JMPR cc_UC,L_DFCCC
+L_DFCBA:                 ; 0xdfcba
+        MOV R15,[R12+]
+        MOV R2,R15
+        MOV R9,R2
+        AND R9,#DATA16 03FFFH
+        MOV R4,R15
+        MOV R5,R9
+        MOVB [R5],[R4]
+        SUB R14,#01H
+L_DFCCC:                 ; 0xdfccc
+        CMP R14,#00H
+        JMPR cc_UGT,L_DFCBA
+L_DFCD0:                 ; 0xdfcd0
+        MOV R9,[R0+]
+        RETS
+
+S_DFC04 ENDS
+        END

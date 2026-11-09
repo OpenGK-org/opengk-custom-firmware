@@ -1,0 +1,400 @@
+; asw/toil/toil_fca.a66
+; 0xB9F4A-0xBA37E  (1076 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_abc_inc_toil                       EQU  0900C7H
+c_abc_inc_toil_plaus_h               EQU  0900C8H
+c_abc_inc_toil_plaus_l               EQU  0900C9H
+c_inc_toil_stuck                     EQU  0900CAH
+c_abc_max_toil                       EQU  0900FCH
+c_abc_max_toil_plaus_h               EQU  0900FDH
+c_abc_max_toil_plaus_l               EQU  0900FEH
+c_max_toil_stuck                     EQU  0900FFH
+c_tco_max_toil_diag                  EQU  09037EH
+c_tco_min_toil_diag                  EQU  090392H
+c_tco_min_toil_plaus_h               EQU  090393H
+c_tco_st_max_toil_stuck_diag         EQU  090398H
+c_tco_st_min_toil_plaus_l            EQU  09039CH
+c_tco_th_open                        EQU  0903A2H
+c_toil_grd_max                       EQU  0903C6H
+c_toil_max_diag                      EQU  0903C8H
+c_toil_max_diag_cam_dif_ivvt         EQU  0903C9H
+c_toil_mdl_plaus_diag_l              EQU  0903CDH
+c_toil_min_diag                      EQU  0903D0H
+c_toil_min_diag_cam_dif_ivvt         EQU  0903D1H
+c_t_tco_toil_diag                    EQU  090740H
+ldp_v_toil__ip_toil                    EQU  0918BCH
+ip_toil__v_toil                      EQU  096ADAH
+
+PUBLIC  Acq_TOIL_2, Diag_TOIL, Reset_state_rbm_toil_stuck_374, Reset_toil_mes_max_diag_fca
+EXTERN  DTC_Update_Debounced:NEAR, DTC_Update_Debounced_OBD:NEAR, DTC_Update_Immediate:NEAR, Get_IP_Byte_2D_Table:NEAR
+EXTERN  Get_IP_Byte_2D_Table_DWord_YByte:NEAR, Get_IP_Word_Y_Axis:NEAR, Ramp_Toward_U16:NEAR, sub_r12_13_ret_r4:NEAR
+
+S_B9F4A SECTION CODE AT 0B9F4AH
+
+; ======== Acq_TOIL_2  (@0xb9f4a) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tam/toil/teg/th output signals): Oil-temperature sensor acquisition (second
+        ; path).
+        ; ------------------------------------------------------------
+Acq_TOIL_2:
+        MOV R4,g_fa76
+        AND R4,#DATA16 003FFH
+        MOV g_c97c,R4
+        SHR R4,#02H
+        MOVB v_toil,RL4
+        MOV R12,#DATA16 POF ldp_v_toil__ip_toil
+        MOV R13,#DATA16 PAG ldp_v_toil__ip_toil
+        MOV R14,g_c97c
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ip_toil__v_toil
+        MOV R13,#DATA16 PAG ip_toil__v_toil
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVB toil_mes,RL4
+        MOVB RL5,toil_mdl_byte_3_
+        CMPB RL5,g_c26f
+        JMPR cc_ULE,L_B9F8E
+        MOVB RL5,toil_mdl_byte_3_
+        MOVB g_c26f,RL5
+L_B9F8E:                 ; 0xb9f8e
+        JB lv_can_bus_off_err.09H,L_B9FB8
+        JB lv_can_bus_off_err.0CH,L_B9FB8
+        JB lv_can_bus_off_err.0BH,L_B9FB8
+        JNB lv_can_bus_off_err.0AH,L_B9FA2
+        JB lv_err_pres_mwss.0DH,L_B9FB8
+L_B9FA2:                 ; 0xb9fa2
+        MOVBZ R12,toil_mes
+        MOVBZ R13,toil
+        MOVBZ R14,DPP0:c_toil_grd_max
+        CALLS 00FH,Ramp_Toward_U16
+        MOVB toil,RL4
+        JMPR cc_UC,L_B9FC0
+L_B9FB8:                 ; 0xb9fb8
+        MOVB RL4,toil_mdl_byte_3_
+        MOVB toil,RL4
+L_B9FC0:                 ; 0xb9fc0
+        MOVB RL4,g_c26f
+        MOVB toil_max,RL4
+        RETS
+
+; ======== Reset_toil_mes_max_diag_fca  (@0xb9fca) ========
+Reset_toil_mes_max_diag_fca:
+        MOVB RL4,toil_mes
+        MOVB toil_mes_max_diag,RL4
+        MOVB toil_mes_min_diag,RL4
+        MOVB RL5,toil_mdl_byte_3_
+        MOVB toil_mdl_max_diag,RL5
+        MOVB toil_mdl_min_diag,RL5
+        MOVB toil_mdl_dif_diag,ZEROS
+        MOVB toil_mes_dif_diag,ZEROS
+        BCLR lv_err_pres_mwss.0DH
+        RETS
+
+; ======== Diag_TOIL  (@0xb9fee) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS31, verified): Oil temperature sensor diagnosis (TOIL)
+        ; ------------------------------------------------------------
+Diag_TOIL:
+        JB can_fd58.09H,L_B9FF6
+        JMPA cc_UC,L_BA0D2
+L_B9FF6:                 ; 0xb9ff6
+        JB sched_flags2.0EH,L_B9FFE
+        JMPA cc_UC,L_BA0D2
+L_B9FFE:                 ; 0xb9ffe
+        MOVB RL4,toil_mes
+        CMPB RL4,DPP0:c_toil_max_diag
+        JMPR cc_ULE,L_BA048
+        MOVB RL5,tco
+        CMPB RL5,DPP0:c_tco_max_toil_diag
+        JMPR cc_NC,L_BA0C6
+        JB lv_cam_err.0CH,L_BA0C6
+        MOVB RL3,#02H
+        MOVB dtc_test_result,RL3
+        MOV R12,#DATA16 0D5AEH
+        MOV R13,#DATA16 059D4H
+        MOVBZ R14,DPP0:c_abc_inc_toil
+        MOVBZ R15,DPP0:c_abc_max_toil
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_can_bus_off_err.09H,dtc_status_work.06H
+        MOVBZ R4,dtc_done_toil
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BA0C6
+        MOV R4,#DATA16 0FDFFH
+        AND dtc_st_grp_can,R4
+        JMPR cc_UC,L_BA0C6
+L_BA048:                 ; 0xba048
+        MOVB RL4,toil_mes
+        CMPB RL4,DPP0:c_toil_min_diag
+        JMPR cc_NC,L_BA09C
+        MOV R4,t_ast
+        CMP R4,DPP0:c_t_tco_toil_diag
+        JMPR cc_UGT,L_BA06A
+        MOVB RL4,tco
+        CMPB RL4,DPP0:c_tco_min_toil_diag
+        JMPR cc_C,L_BA0C6
+        JB lv_cam_err.0CH,L_BA0C6
+L_BA06A:                 ; 0xba06a
+        MOVB RL4,#01H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D5AEH
+        MOV R13,#DATA16 059D4H
+        MOVBZ R14,DPP0:c_abc_inc_toil
+        MOVBZ R15,DPP0:c_abc_max_toil
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_can_bus_off_err.09H,dtc_status_work.06H
+        MOVBZ R4,dtc_done_toil
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BA0C6
+        MOV R4,#DATA16 0FDFFH
+        AND dtc_st_grp_can,R4
+        JMPR cc_UC,L_BA0C6
+L_BA09C:                 ; 0xba09c
+        MOV R12,#DATA16 0D5AEH
+        MOV R13,#DATA16 059D4H
+        MOVBZ R14,DPP0:c_abc_inc_toil
+        MOVBZ R15,DPP0:c_abc_max_toil
+        CALLS 00DH,DTC_Update_Debounced
+        BMOV lv_can_bus_off_err.09H,dtc_status_work.06H
+        MOVBZ R4,dtc_done_toil
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BA0C6
+        MOV R4,#DATA16 0FDFFH
+        AND dtc_st_grp_can,R4
+L_BA0C6:                 ; 0xba0c6
+        MOVB RL4,dtc_toil_sub
+        JMPR cc_EQ,L_BA0D0
+        BSET lv_err_pres_mwss.0EH
+        JMPR cc_UC,L_BA0D2
+L_BA0D0:                 ; 0xba0d0
+        BCLR lv_err_pres_mwss.0EH
+L_BA0D2:                 ; 0xba0d2
+        MOVB RL4,tco_st
+        CMPB RL4,DPP0:c_tco_st_max_toil_stuck_diag
+        JMPA cc_NC,L_BA244
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_BA0E6
+        JMPA cc_UC,L_BA244
+L_BA0E6:                 ; 0xba0e6
+        JNB lv_pl.04H,L_BA0EE
+        JMPA cc_UC,L_BA244
+L_BA0EE:                 ; 0xba0ee
+        JB can_fd58.09H,L_BA0F6
+        JMPA cc_UC,L_BA242
+L_BA0F6:                 ; 0xba0f6
+        JB sched_flags2.0EH,L_BA0FE
+        JMPA cc_UC,L_BA242
+L_BA0FE:                 ; 0xba0fe
+        JNB lv_err_pres_mwss.0DH,L_BA106
+        JMPA cc_UC,L_BA242
+L_BA106:                 ; 0xba106
+        JNB lv_cam_err.0CH,L_BA10E
+        JMPA cc_UC,L_BA236
+L_BA10E:                 ; 0xba10e
+        JNB lv_lam_lim_1_err.01H,L_BA116
+        JMPA cc_UC,L_BA236
+L_BA116:                 ; 0xba116
+        JNB lv_lam_lim_1_err.00H,L_BA11E
+        JMPA cc_UC,L_BA236
+L_BA11E:                 ; 0xba11e
+        JNB lv_can_bus_off_err.09H,L_BA126
+        JMPA cc_UC,L_BA236
+L_BA126:                 ; 0xba126
+        JNB lv_can_bus_off_err.0CH,L_BA12E
+        JMPA cc_UC,L_BA236
+L_BA12E:                 ; 0xba12e
+        JNB lv_can_bus_off_err.0BH,L_BA136
+        JMPA cc_UC,L_BA236
+L_BA136:                 ; 0xba136
+        MOVB RL5,toil_mes
+        CMPB RL5,toil_mes_min_diag
+        JMPR cc_NC,L_BA146
+        MOVB toil_mes_min_diag,RL5
+        JMPR cc_UC,L_BA154
+L_BA146:                 ; 0xba146
+        MOVB RL4,toil_mes
+        CMPB RL4,toil_mes_max_diag
+        JMPR cc_ULE,L_BA154
+        MOVB toil_mes_max_diag,RL4
+L_BA154:                 ; 0xba154
+        MOVBZ R12,toil_mes_max_diag
+        MOVBZ R13,toil_mes_min_diag
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB toil_mes_dif_diag,RL4
+        MOVB RL5,toil_mdl_byte_3_
+        CMPB RL5,toil_mdl_min_diag
+        JMPR cc_NC,L_BA178
+        MOVB RL5,toil_mdl_byte_3_
+        MOVB toil_mdl_min_diag,RL5
+        JMPR cc_UC,L_BA18A
+L_BA178:                 ; 0xba178
+        MOVB RL4,toil_mdl_byte_3_
+        CMPB RL4,toil_mdl_max_diag
+        JMPR cc_ULE,L_BA18A
+        MOVB RL4,toil_mdl_byte_3_
+        MOVB toil_mdl_max_diag,RL4
+L_BA18A:                 ; 0xba18a
+        MOVBZ R12,toil_mdl_max_diag
+        MOVBZ R13,toil_mdl_min_diag
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB toil_mdl_dif_diag,RL4
+        MOV R12,#DATA16 0485CH
+        MOVBZ R13,tco_st
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        CMPB RL4,toil_mdl_dif_diag
+        JMPR cc_NC,L_BA244
+        MOVB RL4,tco_sub_byte_1_
+        CMPB RL4,DPP0:c_tco_th_open
+        JMPR cc_UGT,L_BA1C0
+        MOVB RL4,tco_mes
+        CMPB RL4,DPP0:c_tco_th_open
+        JMPR cc_ULE,L_BA244
+L_BA1C0:                 ; 0xba1c0
+        MOV R12,#DATA16 04864H
+        MOVBZ R13,tco_st
+        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        CMPB RL4,toil_mes_dif_diag
+        JMPR cc_ULE,L_BA204
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D5BCH
+        MOV R13,#DATA16 059EAH
+        MOVBZ R14,DPP0:c_inc_toil_stuck
+        MOVBZ R15,DPP0:c_max_toil_stuck
+        CALLS 00DH,DTC_Update_Debounced_OBD
+        BMOV lv_can_bus_off_err.0AH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_toil_stuck
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BA232
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_can,R4
+        JMPR cc_UC,L_BA232
+L_BA204:                 ; 0xba204
+        MOVB dtc_test_result,ZEROS
+        MOV R12,#DATA16 0D5BCH
+        MOV R13,#DATA16 059EAH
+        MOVBZ R14,DPP0:c_inc_toil_stuck
+        MOVBZ R15,DPP0:c_max_toil_stuck
+        CALLS 00DH,DTC_Update_Debounced_OBD
+        BMOV lv_can_bus_off_err.0AH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_toil_stuck
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BA232
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_st_grp_can,R4
+L_BA232:                 ; 0xba232
+        BSET lv_err_pres_mwss.0DH
+        JMPR cc_UC,L_BA244
+L_BA236:                 ; 0xba236
+        MOV R4,#DATA16 0FBFFH
+        AND dtc_grp_toil,R4
+        BSET lv_err_pres_mwss.0DH
+        JMPR cc_UC,L_BA244
+L_BA242:                 ; 0xba242
+        BSET lv_err_pres_mwss.0DH
+L_BA244:                 ; 0xba244
+        JB can_fd58.09H,L_BA24C
+        JMPA cc_UC,L_BA316
+L_BA24C:                 ; 0xba24c
+        JB sched_flags2.0EH,L_BA254
+        JMPA cc_UC,L_BA316
+L_BA254:                 ; 0xba254
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_BA316
+        JB lv_pl.04H,L_BA316
+        JB lv_cam_err.0CH,L_BA316
+        JB lv_lam_lim_1_err.01H,L_BA316
+        JB lv_cam_err.0DH,L_BA316
+        JB lv_cam_err.0EH,L_BA316
+        JB lv_err_pres_mwss.05H,L_BA316
+        JB lv_can_bus_off_err.09H,L_BA316
+        JB lv_can_bus_off_err.0AH,L_BA316
+        MOVB RL4,tco_st
+        CMPB RL4,DPP0:c_tco_st_min_toil_plaus_l
+        JMPR cc_NC,L_BA29E
+        MOVB RL5,toil_mdl_byte_3_
+        CMPB RL5,DPP0:c_toil_mdl_plaus_diag_l
+        JMPR cc_ULE,L_BA29E
+        MOVB RL5,toil_mes
+        CMPB RL5,DPP0:c_toil_min_diag_cam_dif_ivvt
+        JMPR cc_NC,L_BA29E
+        MOVB RL3,#08H
+        MOVB dtc_test_result,RL3
+        JMPR cc_UC,L_BA2A2
+L_BA29E:                 ; 0xba29e
+        MOVB dtc_test_result,ZEROS
+L_BA2A2:                 ; 0xba2a2
+        MOV R12,#DATA16 0D5D8H
+        MOV R13,#DATA16 05A16H
+        MOVBZ R14,DPP0:c_abc_inc_toil_plaus_l
+        MOVBZ R15,DPP0:c_abc_max_toil_plaus_l
+        CALLS 00DH,DTC_Update_Debounced_OBD
+        BMOV lv_can_bus_off_err.0CH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_toil_plaus_l
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BA2CC
+        MOV R4,#DATA16 0EFFFH
+        AND dtc_st_grp_can,R4
+L_BA2CC:                 ; 0xba2cc
+        MOVB RL4,tco
+        CMPB RL4,DPP0:c_tco_min_toil_plaus_h
+        JMPR cc_NC,L_BA2E8
+        MOVB RL5,toil_mes
+        CMPB RL5,DPP0:c_toil_max_diag_cam_dif_ivvt
+        JMPR cc_ULE,L_BA2E8
+        MOVB RL3,#08H
+        MOVB dtc_test_result,RL3
+        JMPR cc_UC,L_BA2EC
+L_BA2E8:                 ; 0xba2e8
+        MOVB dtc_test_result,ZEROS
+L_BA2EC:                 ; 0xba2ec
+        MOV R12,#DATA16 0D5CAH
+        MOV R13,#DATA16 05A00H
+        MOVBZ R14,DPP0:c_abc_inc_toil_plaus_h
+        MOVBZ R15,DPP0:c_abc_max_toil_plaus_h
+        CALLS 00DH,DTC_Update_Debounced_OBD
+        BMOV lv_can_bus_off_err.0BH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_toil_plaus_h
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BA316
+        MOV R4,#DATA16 0F7FFH
+        AND dtc_st_grp_can,R4
+L_BA316:                 ; 0xba316
+        JB lv_can_bus_off_err.0AH,L_BA34A
+        JB lv_can_bus_off_err.0CH,L_BA34A
+        JB lv_can_bus_off_err.0BH,L_BA34A
+        MOVB dtc_test_result,ZEROS
+        MOV R12,#DATA16 0D5E6H
+        MOV R13,#DATA16 05A2CH
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_can_bus_off_err.0DH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_toil_rat
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BA372
+        MOV R4,#DATA16 0DFFFH
+        AND dtc_st_grp_can,R4
+        RETS
+L_BA34A:                 ; 0xba34a
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        MOV R12,#DATA16 0D5E6H
+        MOV R13,#DATA16 05A2CH
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_can_bus_off_err.0DH,dtc_status_work.06H
+        MOVBZ R4,dtc_done_toil_rat
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_BA372
+        MOV R4,#DATA16 0DFFFH
+        AND dtc_st_grp_can,R4
+L_BA372:                 ; 0xba372
+        RETS
+
+; ======== Reset_state_rbm_toil_stuck_374  (@0xba374) ========
+Reset_state_rbm_toil_stuck_374:
+        MOVB state_rbm_toil_stuck,ZEROS
+        MOV rate_rbm_toil_stuck,ONES
+        RETS
+
+S_B9F4A ENDS
+        END

@@ -1,0 +1,784 @@
+; asw/ti/ti_maf.a66
+; 0xE4644-0xE4E38  (2036 bytes, 3 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_conf_vs                            EQU  090157H
+c_tco_min_co_is                      EQU  090384H
+c_tco_min_n_asa                      EQU  09038CH
+
+PUBLIC  KWP_App_Handler_0e4644, KWP_App_Handler_0e46bc, KWP_App_Handler_0e4d00
+EXTERN  Calc_VS:NEAR, Reset_lv_conf_mis_59c:NEAR, Reset_lv_conf_mis_69a:NEAR, Sat_Add_U8:NEAR
+EXTERN  sub_r12_13_ret_r4:NEAR
+
+S_E4644 SECTION CODE AT 0E4644H
+
+; ======== KWP_App_Handler_0e4644  (@0xe4644) ========
+KWP_App_Handler_0e4644:
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R4,kwp_msg_len
+        CMP R4,#04H
+        JMPR cc_NE,L_E46B0
+        MOVB RL6,#DATA16 00031H
+        MOV R4,R12
+        CMPB RL4,#DATA16 00095H
+        JMPR cc_EQ,L_E4664
+        CMPB RL4,#DATA16 00096H
+        JMPR cc_EQ,L_E4686
+        JMPR cc_UC,L_E46B4
+L_E4664:                 ; 0xe4664
+        MOVB RL7,[R13]
+        MOVBZ R4,RL7
+        AND R4,#DATA16 000FEH
+        JMPR cc_NE,L_E46B4
+        MOVBZ R4,RL7
+        AND R4,#01H
+        JMPR cc_EQ,L_E46B4
+        JNB can_fd58.09H,L_E46AA
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_E46AA
+        MOVB RL6,#00H
+        MOVB RL4,#01H
+        MOVB eol_state_diagcp,RL4
+        JMPR cc_UC,L_E46B4
+L_E4686:                 ; 0xe4686
+        MOVB RL7,[R13]
+        MOVBZ R4,RL7
+        AND R4,#DATA16 000FEH
+        JMPR cc_NE,L_E46B4
+        MOVBZ R4,RL7
+        AND R4,#01H
+        JMPR cc_EQ,L_E46B4
+        JNB can_fd58.09H,L_E46A4
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_E46A4
+        MOVB RL6,#00H
+        BSET lv_diag_trip_avl_ivvt.09H
+        JMPR cc_UC,L_E46B4
+L_E46A4:                 ; 0xe46a4
+        MOVB RL6,#DATA16 00022H
+        JMPR cc_UC,L_E46B4
+L_E46AA:                 ; 0xe46aa
+        MOVB RL6,#DATA16 00022H
+        JMPR cc_UC,L_E46B4
+L_E46B0:                 ; 0xe46b0
+        MOVB RL6,#DATA16 00079H
+L_E46B4:                 ; 0xe46b4
+        MOVB RL4,RL6
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        RETS
+
+; ======== KWP_App_Handler_0e46bc  (@0xe46bc) ========
+KWP_App_Handler_0e46bc:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R8,R12
+        MOV R9,R13
+        MOV R4,kwp_msg_len
+        CMP R4,#04H
+        JMPA cc_NE,L_E4CF0
+        MOVB RL6,#00H
+        MOV R4,R8
+        CMPB RL4,#DATA16 00010H
+        JMPR cc_EQ,L_E47D0
+        CMPB RL4,#DATA16 00011H
+        JMPA cc_EQ,L_E4802
+        CMPB RL4,#DATA16 00012H
+        JMPA cc_EQ,L_E4828
+        CMPB RL4,#DATA16 00013H
+        JMPA cc_EQ,L_E485A
+        CMPB RL4,#DATA16 00014H
+        JMPA cc_EQ,L_E488C
+        CMPB RL4,#DATA16 00015H
+        JMPA cc_EQ,L_E48BE
+        CMPB RL4,#DATA16 00016H
+        JMPA cc_EQ,L_E48F0
+        CMPB RL4,#DATA16 0001AH
+        JMPA cc_EQ,L_E4916
+        CMPB RL4,#DATA16 0001BH
+        JMPA cc_EQ,L_E493C
+        CMPB RL4,#DATA16 0001CH
+        JMPA cc_EQ,L_E4962
+        CMPB RL4,#DATA16 00020H
+        JMPA cc_EQ,L_E4984
+        CMPB RL4,#DATA16 00023H
+        JMPA cc_EQ,L_E49B8
+        CMPB RL4,#DATA16 00024H
+        JMPA cc_EQ,L_E49DE
+        CMPB RL4,#DATA16 00031H
+        JMPA cc_EQ,L_E4A04
+        CMPB RL4,#DATA16 00032H
+        JMPA cc_EQ,L_E4A2A
+        CMPB RL4,#DATA16 00039H
+        JMPA cc_EQ,L_E4A50
+        CMPB RL4,#DATA16 0003AH
+        JMPA cc_EQ,L_E4A96
+        CMPB RL4,#DATA16 0003BH
+        JMPA cc_EQ,L_E4ADC
+        CMPB RL4,#DATA16 0003CH
+        JMPA cc_EQ,L_E4B22
+        CMPB RL4,#DATA16 00070H
+        JMPA cc_EQ,L_E4B68
+        CMPB RL4,#DATA16 00071H
+        JMPA cc_EQ,L_E4B8C
+        CMPB RL4,#DATA16 00072H
+        JMPA cc_EQ,L_E4B8C
+        CMPB RL4,#DATA16 00073H
+        JMPA cc_EQ,L_E4B8C
+        CMPB RL4,#DATA16 00074H
+        JMPA cc_EQ,L_E4B8C
+        CMPB RL4,#DATA16 00079H
+        JMPA cc_EQ,L_E4BA8
+        CMPB RL4,#DATA16 0007AH
+        JMPA cc_EQ,L_E4BBE
+        CMPB RL4,#DATA16 0008EH
+        JMPA cc_EQ,L_E4BE2
+        CMPB RL4,#DATA16 0008FH
+        JMPA cc_EQ,L_E4BEA
+        CMPB RL4,#DATA16 00090H
+        JMPA cc_EQ,L_E4C04
+        CMPB RL4,#DATA16 00091H
+        JMPA cc_EQ,L_E4C8C
+        CMPB RL4,#DATA16 000A0H
+        JMPA cc_EQ,L_E4CC8
+        JMPA cc_UC,L_E4CEA
+L_E47D0:                 ; 0xe47d0
+        JNB lv_conf_mis.06H,L_E47FA
+        JNB can_fd58.09H,L_E47F2
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E47F2
+        JB state_out_req.00H,L_E47F2
+        MOVB RL4,[R9]
+        JMPR cc_EQ,L_E47EC
+        BSET lv_maf_trim.08H
+        BSET state_out_req.06H
+        JMPA cc_UC,L_E4CF4
+L_E47EC:                 ; 0xe47ec
+        BCLR state_out_req.06H
+        JMPA cc_UC,L_E4CF4
+L_E47F2:                 ; 0xe47f2
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4CF4
+L_E47FA:                 ; 0xe47fa
+        MOVB RL6,#DATA16 00031H
+        JMPA cc_UC,L_E4CF4
+L_E4802:                 ; 0xe4802
+        JNB can_fd58.09H,L_E4820
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E4820
+        JB state_out_req.00H,L_E4820
+        MOVB RL4,[R9]
+        JMPR cc_EQ,L_E481A
+        BSET lv_maf_trim.08H
+        BSET lv_maf_trim.0CH
+        JMPA cc_UC,L_E4CF4
+L_E481A:                 ; 0xe481a
+        BCLR lv_maf_trim.0CH
+        JMPA cc_UC,L_E4CF4
+L_E4820:                 ; 0xe4820
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4CF4
+L_E4828:                 ; 0xe4828
+        JNB can_fd58.09H,L_E4852
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E4852
+        JB state_out_req.00H,L_E4852
+        MOVB RL4,[R9]
+        JMPR cc_EQ,L_E4842
+        BSET lv_maf_trim.08H
+        BSET state_out_req.04H
+        BSET lv_maf_trim.0EH
+        JMPA cc_UC,L_E4CF4
+L_E4842:                 ; 0xe4842
+        BCLR lv_maf_trim.0EH
+        JNB lv_maf_trim.0DH,L_E484C
+        JMPA cc_UC,L_E4CF4
+L_E484C:                 ; 0xe484c
+        BCLR state_out_req.04H
+        JMPA cc_UC,L_E4CF4
+L_E4852:                 ; 0xe4852
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4CF4
+L_E485A:                 ; 0xe485a
+        JNB lv_conf_mis.0DH,L_E4884
+        JNB can_fd58.09H,L_E487C
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E487C
+        JB state_out_req.00H,L_E487C
+        MOVB RL4,[R9]
+        JMPR cc_EQ,L_E4876
+        BSET lv_maf_trim.08H
+        BSET state_out_req.02H
+        JMPA cc_UC,L_E4CF4
+L_E4876:                 ; 0xe4876
+        BCLR state_out_req.02H
+        JMPA cc_UC,L_E4CF4
+L_E487C:                 ; 0xe487c
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4CF4
+L_E4884:                 ; 0xe4884
+        MOVB RL6,#DATA16 00031H
+        JMPA cc_UC,L_E4CF4
+L_E488C:                 ; 0xe488c
+        JNB can_fd58.09H,L_E48B6
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E48B6
+        JB state_out_req.00H,L_E48B6
+        MOVB RL4,[R9]
+        JMPR cc_EQ,L_E48A6
+        BSET lv_maf_trim.08H
+        BSET state_out_req.04H
+        BSET lv_maf_trim.0DH
+        JMPA cc_UC,L_E4CF4
+L_E48A6:                 ; 0xe48a6
+        BCLR lv_maf_trim.0DH
+        JNB lv_maf_trim.0EH,L_E48B0
+        JMPA cc_UC,L_E4CF4
+L_E48B0:                 ; 0xe48b0
+        BCLR state_out_req.04H
+        JMPA cc_UC,L_E4CF4
+L_E48B6:                 ; 0xe48b6
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4CF4
+L_E48BE:                 ; 0xe48be
+        JNB lv_conf_mis.08H,L_E48E8
+        JNB can_fd58.09H,L_E48E0
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E48E0
+        JB state_out_req.00H,L_E48E0
+        MOVB RL4,[R9]
+        JMPR cc_EQ,L_E48DA
+        BSET lv_maf_trim.08H
+        BSET state_out_req.0AH
+        JMPA cc_UC,L_E4CF4
+L_E48DA:                 ; 0xe48da
+        BCLR state_out_req.0AH
+        JMPA cc_UC,L_E4CF4
+L_E48E0:                 ; 0xe48e0
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4CF4
+L_E48E8:                 ; 0xe48e8
+        MOVB RL6,#DATA16 00031H
+        JMPA cc_UC,L_E4CF4
+L_E48F0:                 ; 0xe48f0
+        JNB can_fd58.09H,L_E490E
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E490E
+        JB state_out_req.00H,L_E490E
+        MOVB RL4,[R9]
+        JMPR cc_EQ,L_E4908
+        BSET lv_maf_trim.08H
+        BSET state_out_req.09H
+        JMPA cc_UC,L_E4CF4
+L_E4908:                 ; 0xe4908
+        BCLR state_out_req.09H
+        JMPA cc_UC,L_E4CF4
+L_E490E:                 ; 0xe490e
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4CF4
+L_E4916:                 ; 0xe4916
+        JNB can_fd58.09H,L_E4934
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E4934
+        JB state_out_req.00H,L_E4934
+        MOVB RL4,[R9]
+        JMPR cc_EQ,L_E492E
+        BSET lv_maf_trim.08H
+        BSET state_out_req.03H
+        JMPA cc_UC,L_E4CF4
+L_E492E:                 ; 0xe492e
+        BCLR state_out_req.03H
+        JMPA cc_UC,L_E4CF4
+L_E4934:                 ; 0xe4934
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4CF4
+L_E493C:                 ; 0xe493c
+        JNB can_fd58.09H,L_E495A
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E495A
+        JB state_out_req.00H,L_E495A
+        MOVB RL4,[R9]
+        JMPR cc_EQ,L_E4954
+        BSET lv_maf_trim.08H
+        BSET state_out_req.01H
+        JMPA cc_UC,L_E4CF4
+L_E4954:                 ; 0xe4954
+        BCLR state_out_req.01H
+        JMPA cc_UC,L_E4CF4
+L_E495A:                 ; 0xe495a
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4CF4
+L_E4962:                 ; 0xe4962
+        JNB can_fd58.09H,L_E497C
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E497C
+        MOVB RL4,[R9]
+        JMPR cc_EQ,L_E4976
+        BSET lv_maf_trim.08H
+        BSET state_out_req.00H
+        JMPA cc_UC,L_E4CF4
+L_E4976:                 ; 0xe4976
+        BCLR state_out_req.00H
+        JMPA cc_UC,L_E4CF4
+L_E497C:                 ; 0xe497c
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4CF4
+L_E4984:                 ; 0xe4984
+        MOVB RL4,conf_cp
+        JMPR cc_EQ,L_E49B0
+        JNB can_fd58.09H,L_E49A8
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E49A8
+        JB state_out_req.00H,L_E49A8
+        MOVB RL5,[R9]
+        JMPR cc_EQ,L_E49A2
+        BSET lv_maf_trim.08H
+        BSET state_out_req.08H
+        JMPA cc_UC,L_E4CF4
+L_E49A2:                 ; 0xe49a2
+        BCLR state_out_req.08H
+        JMPA cc_UC,L_E4CF4
+L_E49A8:                 ; 0xe49a8
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4CF4
+L_E49B0:                 ; 0xe49b0
+        MOVB RL6,#DATA16 00031H
+        JMPA cc_UC,L_E4CF4
+L_E49B8:                 ; 0xe49b8
+        JNB can_fd58.09H,L_E49D6
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E49D6
+        JB state_out_req.00H,L_E49D6
+        MOVB RL4,[R9]
+        JMPR cc_EQ,L_E49D0
+        BSET lv_maf_trim.08H
+        BSET state_out_req.07H
+        JMPA cc_UC,L_E4CF4
+L_E49D0:                 ; 0xe49d0
+        BCLR state_out_req.07H
+        JMPA cc_UC,L_E4CF4
+L_E49D6:                 ; 0xe49d6
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4CF4
+L_E49DE:                 ; 0xe49de
+        JNB can_fd58.09H,L_E49FC
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E49FC
+        JB state_out_req.00H,L_E49FC
+        MOVB RL4,[R9]
+        JMPR cc_EQ,L_E49F6
+        BSET lv_maf_trim.08H
+        BSET state_out_req.0BH
+        JMPA cc_UC,L_E4CF4
+L_E49F6:                 ; 0xe49f6
+        BCLR state_out_req.0BH
+        JMPA cc_UC,L_E4CF4
+L_E49FC:                 ; 0xe49fc
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4CF4
+L_E4A04:                 ; 0xe4a04
+        JNB can_fd58.09H,L_E4A22
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E4A22
+        JB state_out_req.00H,L_E4A22
+        MOVB RL4,[R9]
+        JMPR cc_EQ,L_E4A1C
+        BSET lv_maf_trim.08H
+        BSET lv_maf_trim.0AH
+        JMPA cc_UC,L_E4CF4
+L_E4A1C:                 ; 0xe4a1c
+        BCLR lv_maf_trim.0AH
+        JMPA cc_UC,L_E4CF4
+L_E4A22:                 ; 0xe4a22
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4CF4
+L_E4A2A:                 ; 0xe4a2a
+        JNB can_fd58.09H,L_E4A48
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E4A48
+        JB state_out_req.00H,L_E4A48
+        MOVB RL4,[R9]
+        JMPR cc_EQ,L_E4A42
+        BSET lv_maf_trim.08H
+        BSET lv_maf_trim.0BH
+        JMPA cc_UC,L_E4CF4
+L_E4A42:                 ; 0xe4a42
+        BCLR lv_maf_trim.0BH
+        JMPA cc_UC,L_E4CF4
+L_E4A48:                 ; 0xe4a48
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4CF4
+L_E4A50:                 ; 0xe4a50
+        JNB can_fd58.09H,L_E4A8E
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_E4A8E
+        MOVB RL4,[R9]
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NE,L_E4A78
+        MOVB RL4,#01H
+        ORB inh_iv_as,RL4
+        MOVB RL4,inh_iv_as
+        JMPA cc_EQ,L_E4CF4
+        BCLR lv_asr_req.03H
+        BSET lv_maf_trim.08H
+        BSET lv_maf_trim.09H
+        JMPA cc_UC,L_E4CF4
+L_E4A78:                 ; 0xe4a78
+        MOVB RL4,#DATA16 000FEH
+        ANDB inh_iv_as,RL4
+        MOVB RL4,inh_iv_as
+        JMPA cc_NE,L_E4CF4
+        BCLR lv_maf_trim.09H
+        JMPA cc_UC,L_E4CF4
+L_E4A8E:                 ; 0xe4a8e
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4CF4
+L_E4A96:                 ; 0xe4a96
+        JNB can_fd58.09H,L_E4AD4
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_E4AD4
+        MOVB RL4,[R9]
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NE,L_E4ABE
+        MOVB RL4,#08H
+        ORB inh_iv_as,RL4
+        MOVB RL4,inh_iv_as
+        JMPA cc_EQ,L_E4CF4
+        BCLR lv_asr_req.03H
+        BSET lv_maf_trim.08H
+        BSET lv_maf_trim.09H
+        JMPA cc_UC,L_E4CF4
+L_E4ABE:                 ; 0xe4abe
+        MOVB RL4,#DATA16 000F7H
+        ANDB inh_iv_as,RL4
+        MOVB RL4,inh_iv_as
+        JMPA cc_NE,L_E4CF4
+        BCLR lv_maf_trim.09H
+        JMPA cc_UC,L_E4CF4
+L_E4AD4:                 ; 0xe4ad4
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4CF4
+L_E4ADC:                 ; 0xe4adc
+        JNB can_fd58.09H,L_E4B1A
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_E4B1A
+        MOVB RL4,[R9]
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NE,L_E4B04
+        MOVB RL4,#02H
+        ORB inh_iv_as,RL4
+        MOVB RL4,inh_iv_as
+        JMPA cc_EQ,L_E4CF4
+        BCLR lv_asr_req.03H
+        BSET lv_maf_trim.08H
+        BSET lv_maf_trim.09H
+        JMPA cc_UC,L_E4CF4
+L_E4B04:                 ; 0xe4b04
+        MOVB RL4,#DATA16 000FDH
+        ANDB inh_iv_as,RL4
+        MOVB RL4,inh_iv_as
+        JMPA cc_NE,L_E4CF4
+        BCLR lv_maf_trim.09H
+        JMPA cc_UC,L_E4CF4
+L_E4B1A:                 ; 0xe4b1a
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4CF4
+L_E4B22:                 ; 0xe4b22
+        JNB can_fd58.09H,L_E4B60
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_E4B60
+        MOVB RL4,[R9]
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NE,L_E4B4A
+        MOVB RL4,#04H
+        ORB inh_iv_as,RL4
+        MOVB RL4,inh_iv_as
+        JMPA cc_EQ,L_E4CF4
+        BCLR lv_asr_req.03H
+        BSET lv_maf_trim.08H
+        BSET lv_maf_trim.09H
+        JMPA cc_UC,L_E4CF4
+L_E4B4A:                 ; 0xe4b4a
+        MOVB RL4,#DATA16 000FBH
+        ANDB inh_iv_as,RL4
+        MOVB RL4,inh_iv_as
+        JMPA cc_NE,L_E4CF4
+        BCLR lv_maf_trim.09H
+        JMPA cc_UC,L_E4CF4
+L_E4B60:                 ; 0xe4b60
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4CF4
+L_E4B68:                 ; 0xe4b68
+        JNB can_fd58.09H,L_E4B84
+        BSET lv_asr_req.03H
+        MOVB RL7,[R9]
+        MOVB ti_as_0_,RL7
+        MOVB ti_as_1_,RL7
+        MOVB ti_as_2_,RL7
+        MOVB ti_as_3_,RL7
+        JMPA cc_UC,L_E4CF4
+L_E4B84:                 ; 0xe4b84
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4CF4
+L_E4B8C:                 ; 0xe4b8c
+        JNB can_fd58.09H,L_E4BA0
+        BSET lv_asr_req.03H
+        MOVB RL4,[R9]
+        MOV R5,R8
+        MOVBZ R5,RL5
+        MOVB [R5+#0F49EH],RL4
+        JMPA cc_UC,L_E4CF4
+L_E4BA0:                 ; 0xe4ba0
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4CF4
+L_E4BA8:                 ; 0xe4ba8
+        JNB can_fd58.09H,L_E4BB6
+        BSET lv_asr_req.03H
+        MOVB soi_as,[R9]
+        JMPA cc_UC,L_E4CF4
+L_E4BB6:                 ; 0xe4bb6
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4CF4
+L_E4BBE:                 ; 0xe4bbe
+        JNB can_fd58.09H,L_E4BDA
+        BSET lv_asr_req.03H
+        BCLR lv_maf_trim.09H
+        MOVB inh_iv_as,[R9]
+        MOVB RL4,inh_iv_as
+        ORB RL4,imob_c286
+        MOVB msk_inj_cyl_ok,RL4
+        JMPA cc_UC,L_E4CF4
+L_E4BDA:                 ; 0xe4bda
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4CF4
+L_E4BE2:                 ; 0xe4be2
+        MOVB RL6,#DATA16 00031H
+        JMPA cc_UC,L_E4CF4
+L_E4BEA:                 ; 0xe4bea
+        JNB can_fd58.09H,L_E4BFC
+        BSET lv_iga_dif_max_er.0EH
+        MOVB RL4,[R9]
+        MOVBZ R4,RL4
+        MOV opg_sp_isa_ext_adj,R4
+        JMPA cc_UC,L_E4CF4
+L_E4BFC:                 ; 0xe4bfc
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4CF4
+L_E4C04:                 ; 0xe4c04
+        JB lv_conf_mis.00H,L_E4C86
+        JNB can_fd58.09H,L_E4C80
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_E4C80
+        MOVB RL4,vs
+        JMPR cc_NE,L_E4C80
+        MOVB RL5,tco
+        CMPB RL5,DPP0:c_tco_min_co_is
+        JMPR cc_ULE,L_E4C80
+        JB lv_cam_err.0CH,L_E4C80
+        JB lv_cam_err.00H,L_E4C80
+        JB lv_cam_err.02H,L_E4C80
+        JB lv_dur_igc_0_err.0DH,L_E4C80
+        JB lv_dur_igc_0_err.0EH,L_E4C80
+        JB lv_dur_igc_0_err.00H,L_E4C80
+        JB lv_dur_igc_0_err.01H,L_E4C80
+        JB lv_dur_igc_0_err.02H,L_E4C80
+        JB lv_dur_igc_0_err.03H,L_E4C80
+        JB lv_cam_err.07H,L_E4C80
+        MOVB RL3,[R9]
+        JMPR cc_NE,L_E4C66
+        MOV R4,#04H
+        SUB ti_co_is,R4
+        MOV R4,ti_co_is
+        CMP R4,#DATA16 0FE00H
+        JMPR cc_SGE,L_E4CF4
+        MOV R5,#DATA16 0FE00H
+        MOV ti_co_is,R5
+        JMPR cc_UC,L_E4CF4
+L_E4C66:                 ; 0xe4c66
+        MOV R4,#04H
+        ADD ti_co_is,R4
+        MOV R4,ti_co_is
+        CMP R4,#DATA16 001FCH
+        JMPR cc_SLE,L_E4CF4
+        MOV R5,#DATA16 001FCH
+        MOV ti_co_is,R5
+        JMPR cc_UC,L_E4CF4
+L_E4C80:                 ; 0xe4c80
+        MOVB RL6,#DATA16 00022H
+        JMPR cc_UC,L_E4CF4
+L_E4C86:                 ; 0xe4c86
+        MOVB RL6,#DATA16 00031H
+        JMPR cc_UC,L_E4CF4
+L_E4C8C:                 ; 0xe4c8c
+        JNB can_fd58.09H,L_E4CC2
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_E4CC2
+        MOVB RL4,tco
+        CMPB RL4,DPP0:c_tco_min_n_asa
+        JMPR cc_ULE,L_E4CC2
+        MOVB RL5,[R9]
+        JMPR cc_NE,L_E4CB2
+        MOVBZ R12,n_sp_is_adj_asa
+        MOV R13,#01H
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB n_sp_is_adj_asa,RL4
+        JMPR cc_UC,L_E4CF4
+L_E4CB2:                 ; 0xe4cb2
+        MOVBZ R12,n_sp_is_adj_asa
+        MOV R13,#01H
+        CALLS 00FH,Sat_Add_U8
+        MOVB n_sp_is_adj_asa,RL4
+        JMPR cc_UC,L_E4CF4
+L_E4CC2:                 ; 0xe4cc2
+        MOVB RL6,#DATA16 00022H
+        JMPR cc_UC,L_E4CF4
+L_E4CC8:                 ; 0xe4cc8
+        JNB can_fd58.09H,L_E4CE4
+        MOVB RL4,[R9]
+        JMPR cc_EQ,L_E4CD6
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_E4CDC
+        JMPR cc_UC,L_E4CF4
+L_E4CD6:                 ; 0xe4cd6
+        MOVB kwp_c360,ZEROS
+        JMPR cc_UC,L_E4CF4
+L_E4CDC:                 ; 0xe4cdc
+        MOVB RL4,#01H
+        MOVB kwp_c360,RL4
+        JMPR cc_UC,L_E4CF4
+L_E4CE4:                 ; 0xe4ce4
+        MOVB RL6,#DATA16 00022H
+        JMPR cc_UC,L_E4CF4
+L_E4CEA:                 ; 0xe4cea
+        MOVB RL6,#DATA16 00031H
+        JMPR cc_UC,L_E4CF4
+L_E4CF0:                 ; 0xe4cf0
+        MOVB RL6,#DATA16 00079H
+L_E4CF4:                 ; 0xe4cf4
+        MOVB RL4,RL6
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== KWP_App_Handler_0e4d00  (@0xe4d00) ========
+KWP_App_Handler_0e4d00:
+        MOV [-R0],R12
+        MOV [-R0],R9
+        MOV [-R0],R6
+        MOV R9,R13
+        MOVB RL6,#00H
+        MOV R4,R12
+        CMPB RL4,#DATA16 00090H
+        JMPR cc_EQ,L_E4D30
+        CMPB RL4,#DATA16 00091H
+        JMPR cc_EQ,L_E4D64
+        CMPB RL4,#DATA16 00040H
+        JMPR cc_EQ,L_E4D94
+        CMPB RL4,#DATA16 00041H
+        JMPR cc_EQ,L_E4DC2
+        CMPB RL4,#DATA16 00042H
+        JMPA cc_EQ,L_E4DF0
+        JMPA cc_UC,L_E4E2A
+L_E4D30:                 ; 0xe4d30
+        JB lv_conf_mis.00H,L_E4D5C
+        MOV R4,kwp_msg_len
+        CMP R4,#03H
+        JMPR cc_NE,L_E4D54
+        JNB can_fd58.09H,L_E4D4C
+        MOV R4,ti_co_is
+        MOV lv_ti_c97a,R4
+        JMPA cc_UC,L_E4E2E
+L_E4D4C:                 ; 0xe4d4c
+        MOVB RL6,#DATA16 00022H
+        JMPA cc_UC,L_E4E2E
+L_E4D54:                 ; 0xe4d54
+        MOVB RL6,#DATA16 00079H
+        JMPA cc_UC,L_E4E2E
+L_E4D5C:                 ; 0xe4d5c
+        MOVB RL6,#DATA16 00031H
+        JMPA cc_UC,L_E4E2E
+L_E4D64:                 ; 0xe4d64
+        MOV R4,kwp_msg_len
+        CMP R4,#03H
+        JMPR cc_NE,L_E4D8E
+        JNB can_fd58.09H,L_E4D88
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_E4D88
+        MOVB RL4,tco
+        CMPB RL4,DPP0:c_tco_min_n_asa
+        JMPR cc_ULE,L_E4D88
+        MOVB RL5,n_sp_is_adj_asa
+        MOVB kwp_f38f,RL5
+        JMPR cc_UC,L_E4E2E
+L_E4D88:                 ; 0xe4d88
+        MOVB RL6,#DATA16 00022H
+        JMPR cc_UC,L_E4E2E
+L_E4D8E:                 ; 0xe4d8e
+        MOVB RL6,#DATA16 00079H
+        JMPR cc_UC,L_E4E2E
+L_E4D94:                 ; 0xe4d94
+        MOV R4,kwp_msg_len
+        CMP R4,#04H
+        JMPR cc_NE,L_E4DBC
+        JNB can_fd58.09H,L_E4DB6
+        MOVB RL4,[R9]
+        JMPR cc_EQ,L_E4DAA
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_E4E2E
+        JMPR cc_UC,L_E4DB0
+L_E4DAA:                 ; 0xe4daa
+        CALLS 00DH,Reset_lv_conf_mis_69a
+        JMPR cc_UC,L_E4E2E
+L_E4DB0:                 ; 0xe4db0
+        MOVB RL6,#DATA16 00031H
+        JMPR cc_UC,L_E4E2E
+L_E4DB6:                 ; 0xe4db6
+        MOVB RL6,#DATA16 00022H
+        JMPR cc_UC,L_E4E2E
+L_E4DBC:                 ; 0xe4dbc
+        MOVB RL6,#DATA16 00079H
+        JMPR cc_UC,L_E4E2E
+L_E4DC2:                 ; 0xe4dc2
+        MOV R4,kwp_msg_len
+        CMP R4,#04H
+        JMPR cc_NE,L_E4DEA
+        JNB can_fd58.09H,L_E4DE4
+        MOVB RL4,[R9]
+        JMPR cc_EQ,L_E4DD8
+        CMPB RL4,#01H
+        JMPR cc_EQ,L_E4E2E
+        JMPR cc_UC,L_E4DDE
+L_E4DD8:                 ; 0xe4dd8
+        CALLS 00DH,Reset_lv_conf_mis_59c
+        JMPR cc_UC,L_E4E2E
+L_E4DDE:                 ; 0xe4dde
+        MOVB RL6,#DATA16 00031H
+        JMPR cc_UC,L_E4E2E
+L_E4DE4:                 ; 0xe4de4
+        MOVB RL6,#DATA16 00022H
+        JMPR cc_UC,L_E4E2E
+L_E4DEA:                 ; 0xe4dea
+        MOVB RL6,#DATA16 00079H
+        JMPR cc_UC,L_E4E2E
+L_E4DF0:                 ; 0xe4df0
+        MOV R4,kwp_msg_len
+        CMP R4,#04H
+        JMPR cc_NE,L_E4E24
+        JNB can_fd58.09H,L_E4E1E
+        MOVB RL4,DPP0:c_conf_vs
+        JMPR cc_EQ,L_E4E1E
+        MOVB RL5,[R9]
+        JMPR cc_EQ,L_E4E0C
+        CMPB RL5,#01H
+        JMPR cc_EQ,L_E4E2E
+        JMPR cc_UC,L_E4E18
+L_E4E0C:                 ; 0xe4e0c
+        MOVB RL4,#03H
+        MOVB conf_vs,RL4
+        CALLS 00CH,Calc_VS
+        JMPR cc_UC,L_E4E2E
+L_E4E18:                 ; 0xe4e18
+        MOVB RL6,#DATA16 00031H
+        JMPR cc_UC,L_E4E2E
+L_E4E1E:                 ; 0xe4e1e
+        MOVB RL6,#DATA16 00022H
+        JMPR cc_UC,L_E4E2E
+L_E4E24:                 ; 0xe4e24
+        MOVB RL6,#DATA16 00079H
+        JMPR cc_UC,L_E4E2E
+L_E4E2A:                 ; 0xe4e2a
+        MOVB RL6,#DATA16 00031H
+L_E4E2E:                 ; 0xe4e2e
+        MOVB RL4,RL6
+        MOV R6,[R0+]
+        MOV R9,[R0+]
+        ADD R0,#02H
+        RETS
+
+S_E4644 ENDS
+        END

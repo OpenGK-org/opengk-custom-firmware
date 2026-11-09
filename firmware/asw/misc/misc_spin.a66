@@ -1,0 +1,531 @@
+; asw/misc/misc_spin.a66
+; 0xA0214-0xA040C  (504 bytes, 120 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+PUBLIC  ADCINT_handler_02B0, Acq_Crank_Segment_02A8, CAN_push_message_into_buffer_0314, CC0INT_Handler_0250, CC10INT_handler_0278, CC11INT_handler_027C
+PUBLIC  CC13INT_handler_0284, CC14INT_handler_0288, CC15INT_handler_028C, CC16INT_handler_02D0, CC17INT_handler_02D4, CC19INT_handler_02DC
+PUBLIC  CC1INT_Handler_0254, CC21INT_handler_02E4, CC22INT_handler_02E8, CC25INT_handler_02F4, CC27INT_handler_02FC, CC29INT_handler_0320
+PUBLIC  CC2INT_Handler_0258, CC30INT_handler_0324, CC3INT_Handler_025C, CC4INT_handler_0260, CC5INT_handler_0264, CC6INT_handler_0268
+PUBLIC  CC7INT_Handler_026C, CC8INT_handler_0270, CC9INT_handler_0274, CRINT_handler_02AC, Calc_MAF_Base_02F8, CallVia_368_02F0
+PUBLIC  CallVia_62e_02C8, CallVia_71e_02CC, EngOut_Scheduler_03AC, Get_Status_Marker_a8350_0390, Inc_Dfbb0_bf2_0294, Inc_Dfbb2_bf8_0308
+PUBLIC  Reset_CC28IC_f26_0300, Reset_S0EIC_e4e_02C0, Reset_S0TBIC_e40_032C, Reset_S0TIC_e34_02B8, SMARTRA_asc0_rx_isr_02BC, SetBits_SSCTIC_7aa_02C4
+PUBLIC  SpinHalt_a0214, SpinHalt_a021c, SpinHalt_a0224, SpinHalt_a022c, SpinHalt_a0230, SpinHalt_a0234
+PUBLIC  SpinHalt_a023c, SpinHalt_a0240, SpinHalt_a0244, SpinHalt_a0248, SpinHalt_a024c, SpinHalt_a0290
+PUBLIC  SpinHalt_a0298, SpinHalt_a029c, SpinHalt_a02b4, SpinHalt_a02d8, SpinHalt_a02e0, SpinHalt_a02ec
+PUBLIC  SpinHalt_a0304, SpinHalt_a031c, SpinHalt_a0328, SpinHalt_a0330, SpinHalt_a0334, SpinHalt_a0338
+PUBLIC  SpinHalt_a033c, SpinHalt_a0340, SpinHalt_a0344, SpinHalt_a0348, SpinHalt_a034c, SpinHalt_a0350
+PUBLIC  SpinHalt_a0354, SpinHalt_a0358, SpinHalt_a035c, SpinHalt_a0360, SpinHalt_a0364, SpinHalt_a0368
+PUBLIC  SpinHalt_a036c, SpinHalt_a0370, SpinHalt_a0374, SpinHalt_a0378, SpinHalt_a037c, SpinHalt_a0380
+PUBLIC  SpinHalt_a0384, SpinHalt_a0388, SpinHalt_a038c, SpinHalt_a0394, SpinHalt_a0398, SpinHalt_a039c
+PUBLIC  SpinHalt_a03a0, SpinHalt_a03a4, SpinHalt_a03a8, SpinHalt_a03b0, SpinHalt_a03b4, SpinHalt_a03b8
+PUBLIC  SpinHalt_a03bc, SpinHalt_a03c4, SpinHalt_a03c8, SpinHalt_a03cc, SpinHalt_a03d0, SpinHalt_a03d4
+PUBLIC  SpinHalt_a03d8, SpinHalt_a03dc, SpinHalt_a03e0, SpinHalt_a03e4, SpinHalt_a03e8, SpinHalt_a03ec
+PUBLIC  SpinHalt_a03f0, SpinHalt_a03f4, SpinHalt_a03f8, SpinHalt_a03fc, SpinHalt_a0400, SpinHalt_a0404
+PUBLIC  SpinHalt_a0408, T4INT_handler_02A0, T5INT_handler_02A4, XP2INT_handler_0318, caseD_ee, caseD_f0
+EXTERN  ADCINT_handler:NEAR, Acq_Crank_Segment:NEAR, CAN_push_message_into_buffer:NEAR, CC0INT_Handler:NEAR
+EXTERN  CC10INT_handler:NEAR, CC11INT_handler:NEAR, CC12INT_handler:NEAR, CC13INT_handler:NEAR
+EXTERN  CC14INT_handler:NEAR, CC15INT_handler:NEAR, CC16INT_handler:NEAR, CC17INT_handler:NEAR
+EXTERN  CC19INT_handler:NEAR, CC1INT_Handler:NEAR, CC21INT_handler:NEAR, CC22INT_handler:NEAR
+EXTERN  CC25INT_handler:NEAR, CC27INT_handler:NEAR, CC29INT_handler:NEAR, CC2INT_Handler:NEAR
+EXTERN  CC30INT_handler:NEAR, CC3INT_Handler:NEAR, CC4INT_handler:NEAR, CC5INT_handler:NEAR
+EXTERN  CC6INT_handler:NEAR, CC7INT_Handler:NEAR, CC8INT_handler:NEAR, CC9INT_handler:NEAR
+EXTERN  CRINT_handler:NEAR, Calc_MAF_Base:NEAR, CallVia_368:NEAR, CallVia_62e:NEAR
+EXTERN  CallVia_71e:NEAR, Ctl_PWM3_Output:NEAR, EngOut_Scheduler:NEAR, Get_Status_Marker_a8350:NEAR
+EXTERN  Inc_Dfbb0_bf2:NEAR, Inc_Dfbb2_bf8:NEAR, Reset_CC28IC_f26:NEAR, Reset_S0EIC_e4e:NEAR
+EXTERN  Reset_S0TBIC_e40:NEAR, Reset_S0TIC_e34:NEAR, SMARTRA_asc0_rx_isr:NEAR, SetBits_SSCTIC_7aa:NEAR
+EXTERN  T4INT_handler:NEAR, T5INT_handler:NEAR, XP2INT_handler:NEAR
+
+S_A0214 SECTION CODE AT 0A0214H
+
+; ======== SpinHalt_a0214  (@0xa0214) ========
+SpinHalt_a0214:
+        JMPS 00AH,SpinHalt_a0214
+        JMPS 008H,NMITRAP_handler
+
+; ======== SpinHalt_a021c  (@0xa021c) ========
+SpinHalt_a021c:
+        JMPS 00AH,SpinHalt_a021c
+        JMPS 008H,NMITRAP_handler_F432
+
+; ======== SpinHalt_a0224  (@0xa0224) ========
+SpinHalt_a0224:
+        JMPS 00AH,SpinHalt_a0224
+        JMPS 008H,NMITRAP_handler_F436
+
+; ======== SpinHalt_a022c  (@0xa022c) ========
+SpinHalt_a022c:
+        JMPS 00AH,SpinHalt_a022c
+
+; ======== SpinHalt_a0230  (@0xa0230) ========
+SpinHalt_a0230:
+        JMPS 00AH,SpinHalt_a0230
+
+; ======== SpinHalt_a0234  (@0xa0234) ========
+SpinHalt_a0234:
+        JMPS 00AH,SpinHalt_a0234
+        JMPS 008H,NMITRAP_handler_F43A
+
+; ======== SpinHalt_a023c  (@0xa023c) ========
+SpinHalt_a023c:
+        JMPS 00AH,SpinHalt_a023c
+
+; ======== SpinHalt_a0240  (@0xa0240) ========
+SpinHalt_a0240:
+        JMPS 00AH,SpinHalt_a0240
+
+; ======== SpinHalt_a0244  (@0xa0244) ========
+SpinHalt_a0244:
+        JMPS 00AH,SpinHalt_a0244
+
+; ======== SpinHalt_a0248  (@0xa0248) ========
+SpinHalt_a0248:
+        JMPS 00AH,SpinHalt_a0248
+
+; ======== SpinHalt_a024c  (@0xa024c) ========
+SpinHalt_a024c:
+        JMPS 00AH,SpinHalt_a024c
+
+; ======== CC0INT_Handler  (@0xa0250) ========
+CC0INT_Handler_0250:
+        JMPS 00AH,CC0INT_Handler
+
+; ======== CC1INT_Handler  (@0xa0254) ========
+CC1INT_Handler_0254:
+        JMPS 00AH,CC1INT_Handler
+
+; ======== CC2INT_Handler  (@0xa0258) ========
+CC2INT_Handler_0258:
+        JMPS 00AH,CC2INT_Handler
+
+; ======== CC3INT_Handler  (@0xa025c) ========
+CC3INT_Handler_025C:
+        JMPS 00AH,CC3INT_Handler
+
+; ======== CC4INT_handler  (@0xa0260) ========
+CC4INT_handler_0260:
+        JMPS 00AH,CC4INT_handler
+
+; ======== CC5INT_handler  (@0xa0264) ========
+CC5INT_handler_0264:
+        JMPS 00AH,CC5INT_handler
+
+; ======== CC6INT_handler  (@0xa0268) ========
+CC6INT_handler_0268:
+        JMPS 00AH,CC6INT_handler
+
+; ======== CC7INT_Handler  (@0xa026c) ========
+CC7INT_Handler_026C:
+        JMPS 00AH,CC7INT_Handler
+
+; ======== CC8INT_handler  (@0xa0270) ========
+CC8INT_handler_0270:
+        JMPS 00AH,CC8INT_handler
+
+; ======== CC9INT_handler  (@0xa0274) ========
+CC9INT_handler_0274:
+        JMPS 00AH,CC9INT_handler
+
+; ======== CC10INT_handler  (@0xa0278) ========
+CC10INT_handler_0278:
+        JMPS 00AH,CC10INT_handler
+
+; ======== CC11INT_handler  (@0xa027c) ========
+CC11INT_handler_027C:
+        JMPS 00AH,CC11INT_handler
+
+; ======== caseD_f0  (@0xa0280) ========
+caseD_f0:
+        JMPS 00AH,CC12INT_handler
+
+; ======== CC13INT_handler  (@0xa0284) ========
+CC13INT_handler_0284:
+        JMPS 00AH,CC13INT_handler
+
+; ======== CC14INT_handler  (@0xa0288) ========
+CC14INT_handler_0288:
+        JMPS 00AH,CC14INT_handler
+
+; ======== CC15INT_handler  (@0xa028c) ========
+CC15INT_handler_028C:
+        JMPS 00AH,CC15INT_handler
+
+; ======== SpinHalt_a0290  (@0xa0290) ========
+SpinHalt_a0290:
+        JMPS 00AH,SpinHalt_a0290
+
+; ======== Inc_Dfbb0_bf2  (@0xa0294) ========
+Inc_Dfbb0_bf2_0294:
+        JMPS 00AH,Inc_Dfbb0_bf2
+
+; ======== SpinHalt_a0298  (@0xa0298) ========
+SpinHalt_a0298:
+        JMPS 00AH,SpinHalt_a0298
+
+; ======== SpinHalt_a029c  (@0xa029c) ========
+SpinHalt_a029c:
+        JMPS 00AH,SpinHalt_a029c
+
+; ======== T4INT_handler  (@0xa02a0) ========
+T4INT_handler_02A0:
+        JMPS 00AH,T4INT_handler
+
+; ======== T5INT_handler  (@0xa02a4) ========
+T5INT_handler_02A4:
+        JMPS 00AH,T5INT_handler
+
+; ======== Acq_Crank_Segment  (@0xa02a8) ========
+Acq_Crank_Segment_02A8:
+        JMPS 00AH,Acq_Crank_Segment
+
+; ======== CRINT_handler  (@0xa02ac) ========
+CRINT_handler_02AC:
+        JMPS 00AH,CRINT_handler
+
+; ======== ADCINT_handler  (@0xa02b0) ========
+ADCINT_handler_02B0:
+        JMPS 00AH,ADCINT_handler
+
+; ======== SpinHalt_a02b4  (@0xa02b4) ========
+SpinHalt_a02b4:
+        JMPS 00AH,SpinHalt_a02b4
+
+; ======== Reset_S0TIC_e34  (@0xa02b8) ========
+Reset_S0TIC_e34_02B8:
+        JMPS 00AH,Reset_S0TIC_e34
+
+; ======== SMARTRA_asc0_rx_isr  (@0xa02bc) ========
+SMARTRA_asc0_rx_isr_02BC:
+        JMPS 00AH,SMARTRA_asc0_rx_isr
+
+; ======== Reset_S0EIC_e4e  (@0xa02c0) ========
+Reset_S0EIC_e4e_02C0:
+        JMPS 00AH,Reset_S0EIC_e4e
+
+; ======== SetBits_SSCTIC_7aa  (@0xa02c4) ========
+SetBits_SSCTIC_7aa_02C4:
+        JMPS 00AH,SetBits_SSCTIC_7aa
+
+; ======== CallVia_62e  (@0xa02c8) ========
+CallVia_62e_02C8:
+        JMPS 00AH,CallVia_62e
+
+; ======== CallVia_71e  (@0xa02cc) ========
+CallVia_71e_02CC:
+        JMPS 00AH,CallVia_71e
+
+; ======== CC16INT_handler  (@0xa02d0) ========
+CC16INT_handler_02D0:
+        JMPS 00AH,CC16INT_handler
+
+; ======== CC17INT_handler  (@0xa02d4) ========
+CC17INT_handler_02D4:
+        JMPS 00AH,CC17INT_handler
+
+; ======== SpinHalt_a02d8  (@0xa02d8) ========
+SpinHalt_a02d8:
+        JMPS 00AH,SpinHalt_a02d8
+
+; ======== CC19INT_handler  (@0xa02dc) ========
+CC19INT_handler_02DC:
+        JMPS 00AH,CC19INT_handler
+
+; ======== SpinHalt_a02e0  (@0xa02e0) ========
+SpinHalt_a02e0:
+        JMPS 00AH,SpinHalt_a02e0
+
+; ======== CC21INT_handler  (@0xa02e4) ========
+CC21INT_handler_02E4:
+        JMPS 00AH,CC21INT_handler
+
+; ======== CC22INT_handler  (@0xa02e8) ========
+CC22INT_handler_02E8:
+        JMPS 00AH,CC22INT_handler
+
+; ======== SpinHalt_a02ec  (@0xa02ec) ========
+SpinHalt_a02ec:
+        JMPS 00AH,SpinHalt_a02ec
+
+; ======== CallVia_368  (@0xa02f0) ========
+CallVia_368_02F0:
+        JMPS 00AH,CallVia_368
+
+; ======== CC25INT_handler  (@0xa02f4) ========
+CC25INT_handler_02F4:
+        JMPS 00AH,CC25INT_handler
+
+; ======== Calc_MAF_Base  (@0xa02f8) ========
+Calc_MAF_Base_02F8:
+        JMPS 00AH,Calc_MAF_Base
+
+; ======== CC27INT_handler  (@0xa02fc) ========
+CC27INT_handler_02FC:
+        JMPS 00AH,CC27INT_handler
+
+; ======== Reset_CC28IC_f26  (@0xa0300) ========
+Reset_CC28IC_f26_0300:
+        JMPS 00AH,Reset_CC28IC_f26
+
+; ======== SpinHalt_a0304  (@0xa0304) ========
+SpinHalt_a0304:
+        JMPS 00AH,SpinHalt_a0304
+
+; ======== Inc_Dfbb2_bf8  (@0xa0308) ========
+Inc_Dfbb2_bf8_0308:
+        JMPS 00AH,Inc_Dfbb2_bf8
+        JMPS 00AH,Ctl_PWM3_Output
+L_A0310:                 ; 0xa0310
+        JMPS 00AH,L_A0310
+
+; ======== CAN_push_message_into_buffer  (@0xa0314) ========
+CAN_push_message_into_buffer_0314:
+        JMPS 00AH,CAN_push_message_into_buffer
+
+; ======== XP2INT_handler  (@0xa0318) ========
+XP2INT_handler_0318:
+        JMPS 00AH,XP2INT_handler
+
+; ======== SpinHalt_a031c  (@0xa031c) ========
+SpinHalt_a031c:
+        JMPS 00AH,SpinHalt_a031c
+
+; ======== CC29INT_handler  (@0xa0320) ========
+CC29INT_handler_0320:
+        JMPS 00AH,CC29INT_handler
+
+; ======== CC30INT_handler  (@0xa0324) ========
+CC30INT_handler_0324:
+        JMPS 00AH,CC30INT_handler
+
+; ======== SpinHalt_a0328  (@0xa0328) ========
+SpinHalt_a0328:
+        JMPS 00AH,SpinHalt_a0328
+
+; ======== Reset_S0TBIC_e40  (@0xa032c) ========
+Reset_S0TBIC_e40_032C:
+        JMPS 00AH,Reset_S0TBIC_e40
+
+; ======== SpinHalt_a0330  (@0xa0330) ========
+SpinHalt_a0330:
+        JMPS 00AH,SpinHalt_a0330
+
+; ======== SpinHalt_a0334  (@0xa0334) ========
+SpinHalt_a0334:
+        JMPS 00AH,SpinHalt_a0334
+
+; ======== SpinHalt_a0338  (@0xa0338) ========
+SpinHalt_a0338:
+        JMPS 00AH,SpinHalt_a0338
+
+; ======== SpinHalt_a033c  (@0xa033c) ========
+SpinHalt_a033c:
+        JMPS 00AH,SpinHalt_a033c
+
+; ======== SpinHalt_a0340  (@0xa0340) ========
+SpinHalt_a0340:
+        JMPS 00AH,SpinHalt_a0340
+
+; ======== SpinHalt_a0344  (@0xa0344) ========
+SpinHalt_a0344:
+        JMPS 00AH,SpinHalt_a0344
+
+; ======== SpinHalt_a0348  (@0xa0348) ========
+SpinHalt_a0348:
+        JMPS 00AH,SpinHalt_a0348
+
+; ======== SpinHalt_a034c  (@0xa034c) ========
+SpinHalt_a034c:
+        JMPS 00AH,SpinHalt_a034c
+
+; ======== SpinHalt_a0350  (@0xa0350) ========
+SpinHalt_a0350:
+        JMPS 00AH,SpinHalt_a0350
+
+; ======== SpinHalt_a0354  (@0xa0354) ========
+SpinHalt_a0354:
+        JMPS 00AH,SpinHalt_a0354
+
+; ======== SpinHalt_a0358  (@0xa0358) ========
+SpinHalt_a0358:
+        JMPS 00AH,SpinHalt_a0358
+
+; ======== SpinHalt_a035c  (@0xa035c) ========
+SpinHalt_a035c:
+        JMPS 00AH,SpinHalt_a035c
+
+; ======== SpinHalt_a0360  (@0xa0360) ========
+SpinHalt_a0360:
+        JMPS 00AH,SpinHalt_a0360
+
+; ======== SpinHalt_a0364  (@0xa0364) ========
+SpinHalt_a0364:
+        JMPS 00AH,SpinHalt_a0364
+
+; ======== SpinHalt_a0368  (@0xa0368) ========
+SpinHalt_a0368:
+        JMPS 00AH,SpinHalt_a0368
+
+; ======== SpinHalt_a036c  (@0xa036c) ========
+SpinHalt_a036c:
+        JMPS 00AH,SpinHalt_a036c
+
+; ======== SpinHalt_a0370  (@0xa0370) ========
+SpinHalt_a0370:
+        JMPS 00AH,SpinHalt_a0370
+
+; ======== SpinHalt_a0374  (@0xa0374) ========
+SpinHalt_a0374:
+        JMPS 00AH,SpinHalt_a0374
+
+; ======== SpinHalt_a0378  (@0xa0378) ========
+SpinHalt_a0378:
+        JMPS 00AH,SpinHalt_a0378
+
+; ======== SpinHalt_a037c  (@0xa037c) ========
+SpinHalt_a037c:
+        JMPS 00AH,SpinHalt_a037c
+
+; ======== SpinHalt_a0380  (@0xa0380) ========
+SpinHalt_a0380:
+        JMPS 00AH,SpinHalt_a0380
+
+; ======== SpinHalt_a0384  (@0xa0384) ========
+SpinHalt_a0384:
+        JMPS 00AH,SpinHalt_a0384
+
+; ======== SpinHalt_a0388  (@0xa0388) ========
+SpinHalt_a0388:
+        JMPS 00AH,SpinHalt_a0388
+
+; ======== SpinHalt_a038c  (@0xa038c) ========
+SpinHalt_a038c:
+        JMPS 00AH,SpinHalt_a038c
+
+; ======== Get_Status_Marker_a8350  (@0xa0390) ========
+Get_Status_Marker_a8350_0390:
+        JMPS 00AH,Get_Status_Marker_a8350
+
+; ======== SpinHalt_a0394  (@0xa0394) ========
+SpinHalt_a0394:
+        JMPS 00AH,SpinHalt_a0394
+
+; ======== SpinHalt_a0398  (@0xa0398) ========
+SpinHalt_a0398:
+        JMPS 00AH,SpinHalt_a0398
+
+; ======== SpinHalt_a039c  (@0xa039c) ========
+SpinHalt_a039c:
+        JMPS 00AH,SpinHalt_a039c
+
+; ======== SpinHalt_a03a0  (@0xa03a0) ========
+SpinHalt_a03a0:
+        JMPS 00AH,SpinHalt_a03a0
+
+; ======== SpinHalt_a03a4  (@0xa03a4) ========
+SpinHalt_a03a4:
+        JMPS 00AH,SpinHalt_a03a4
+
+; ======== SpinHalt_a03a8  (@0xa03a8) ========
+SpinHalt_a03a8:
+        JMPS 00AH,SpinHalt_a03a8
+
+; ======== EngOut_Scheduler  (@0xa03ac) ========
+EngOut_Scheduler_03AC:
+        JMPS 00AH,EngOut_Scheduler
+
+; ======== SpinHalt_a03b0  (@0xa03b0) ========
+SpinHalt_a03b0:
+        JMPS 00AH,SpinHalt_a03b0
+
+; ======== SpinHalt_a03b4  (@0xa03b4) ========
+SpinHalt_a03b4:
+        JMPS 00AH,SpinHalt_a03b4
+
+; ======== SpinHalt_a03b8  (@0xa03b8) ========
+SpinHalt_a03b8:
+        JMPS 00AH,SpinHalt_a03b8
+
+; ======== SpinHalt_a03bc  (@0xa03bc) ========
+SpinHalt_a03bc:
+        JMPS 00AH,SpinHalt_a03bc
+
+; ======== caseD_ee  (@0xa03c0) ========
+caseD_ee:
+        JMPS 00AH,caseD_ee
+
+; ======== SpinHalt_a03c4  (@0xa03c4) ========
+SpinHalt_a03c4:
+        JMPS 00AH,SpinHalt_a03c4
+
+; ======== SpinHalt_a03c8  (@0xa03c8) ========
+SpinHalt_a03c8:
+        JMPS 00AH,SpinHalt_a03c8
+
+; ======== SpinHalt_a03cc  (@0xa03cc) ========
+SpinHalt_a03cc:
+        JMPS 00AH,SpinHalt_a03cc
+
+; ======== SpinHalt_a03d0  (@0xa03d0) ========
+SpinHalt_a03d0:
+        JMPS 00AH,SpinHalt_a03d0
+
+; ======== SpinHalt_a03d4  (@0xa03d4) ========
+SpinHalt_a03d4:
+        JMPS 00AH,SpinHalt_a03d4
+
+; ======== SpinHalt_a03d8  (@0xa03d8) ========
+SpinHalt_a03d8:
+        JMPS 00AH,SpinHalt_a03d8
+
+; ======== SpinHalt_a03dc  (@0xa03dc) ========
+SpinHalt_a03dc:
+        JMPS 00AH,SpinHalt_a03dc
+
+; ======== SpinHalt_a03e0  (@0xa03e0) ========
+SpinHalt_a03e0:
+        JMPS 00AH,SpinHalt_a03e0
+
+; ======== SpinHalt_a03e4  (@0xa03e4) ========
+SpinHalt_a03e4:
+        JMPS 00AH,SpinHalt_a03e4
+
+; ======== SpinHalt_a03e8  (@0xa03e8) ========
+SpinHalt_a03e8:
+        JMPS 00AH,SpinHalt_a03e8
+
+; ======== SpinHalt_a03ec  (@0xa03ec) ========
+SpinHalt_a03ec:
+        JMPS 00AH,SpinHalt_a03ec
+
+; ======== SpinHalt_a03f0  (@0xa03f0) ========
+SpinHalt_a03f0:
+        JMPS 00AH,SpinHalt_a03f0
+
+; ======== SpinHalt_a03f4  (@0xa03f4) ========
+SpinHalt_a03f4:
+        JMPS 00AH,SpinHalt_a03f4
+
+; ======== SpinHalt_a03f8  (@0xa03f8) ========
+SpinHalt_a03f8:
+        JMPS 00AH,SpinHalt_a03f8
+
+; ======== SpinHalt_a03fc  (@0xa03fc) ========
+SpinHalt_a03fc:
+        JMPS 00AH,SpinHalt_a03fc
+
+; ======== SpinHalt_a0400  (@0xa0400) ========
+SpinHalt_a0400:
+        JMPS 00AH,SpinHalt_a0400
+
+; ======== SpinHalt_a0404  (@0xa0404) ========
+SpinHalt_a0404:
+        JMPS 00AH,SpinHalt_a0404
+
+; ======== SpinHalt_a0408  (@0xa0408) ========
+SpinHalt_a0408:
+        JMPS 00AH,SpinHalt_a0408
+
+S_A0214 ENDS
+        END

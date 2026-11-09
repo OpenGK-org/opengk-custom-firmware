@@ -1,0 +1,549 @@
+; asw/lam/lam_ls.a66
+; 0xD0000-0xD0508  (1288 bytes, 8 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_fac_vls_up_mmv_hys                 EQU  0901BFH
+c_t_dly_ls_ready                     EQU  090325H
+c_ctr_vls_up_afl_cyc_min             EQU  09050AH
+c_r_min_ls_ready                     EQU  090688H
+c_temp_min_ls_up                     EQU  09077AH
+c_vls_afl                            EQU  0907D8H
+c_vls_afl_max_diag                   EQU  0907DAH
+c_vls_afl_ready                      EQU  0907DCH
+c_vls_afr                            EQU  0907E0H
+c_vls_afr_min_diag                   EQU  0907E2H
+c_vls_afr_ready                      EQU  0907E4H
+c_vls_crlc                           EQU  0907F0H
+c_vls_crlc_off                       EQU  0907F2H
+c_vls_ini_max                        EQU  090814H
+c_vls_ini_min                        EQU  090816H
+c_vls_up_mmv_hys_min                 EQU  09082EH
+ldpm_n_32__ti_lam                 EQU  090CA0H
+ldpm_maf__ti_lam                  EQU  090CA9H
+ip_t_afl_lock__n_32__maf             EQU  096174H
+
+PUBLIC  Acq_LS_Up_Voltage, Calc_LS_Up_Amplitude, Calc_LS_Up_Carrier, Calc_LS_Up_Switching, CanPurge_Set_Close_4, Init_LS_Up_Struct
+PUBLIC  Log_Event_d03c8, Reset_Dfd6a_070
+EXTERN  Abs_Diff_U16:NEAR, Abs_S16_Simple:NEAR, Add_r12_r13_Return_r4:NEAR, Clamp_U16:NEAR
+EXTERN  Get_IP_Byte_3D_Table:NEAR, Get_IP_Byte_X_Axis:NEAR, Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_2D_Table_DWord_YByte:NEAR
+EXTERN  Interp_U16:NEAR, Read_MulDiv_MD:NEAR, Sat_Sub_S16_v2:NEAR, sub_r12_r13_rets_r4:NEAR
+
+S_D0000 SECTION CODE AT 0D0000H
+
+; ======== Init_LS_Up_Struct  (@0xd0000) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signal): Upstream O2 sensor struct init: clears ls_up
+        ; carriers/counters, seeds vls min/max/bol/tol from c_vls_ini_*, t_afl_lock=0xff.
+        ; ------------------------------------------------------------
+Init_LS_Up_Struct:
+        MOV [-R0],R6
+        MOV lam_bank_1_ls_up_ls_up_carrier,ZEROS
+        MOV lam_bank_1_ls_up_ctr_vls_afl_cyc,ZEROS
+        MOVB lam_bank_1_ls_up_t_vls_cyc_afr,ZEROS
+        MOVB lam_bank_1_ls_up_t_vls_cyc_afl_hld,ZEROS
+        MOVB lam_bank_1_ls_up_t_vls_cyc_afl,ZEROS
+        MOVB lam_bank_1_ls_up_t_afl_lock,ONES
+        MOV R4,DPP0:c_vls_ini_max
+        SHL R4,#06H
+        MOV lam_bank_1_ls_up_vls_mmv_max,R4
+        MOV R5,DPP0:c_vls_ini_min
+        SHL R5,#06H
+        MOV lam_bank_1_ls_up_vls_mmv_min,R5
+        MOV R2,DPP0:c_vls_ini_max
+        MOV lam_bank_1_ls_up_vls_bol,R2
+        MOV R3,DPP0:c_vls_ini_min
+        MOV lam_bank_1_ls_up_vls_tol,R3
+        MOV R1,DPP0:c_vls_up_mmv_hys_min
+        MOV lam_bank_1_ls_up_vls_up_mmv_hys,R1
+        MOVB g_c7de,ZEROS
+        MOV g_c7dc,ZEROS
+        MOV lam_bank_1_ls_up_drv1_vls_up_abs_max,ZEROS
+        MOV lam_bank_1_ls_up_drv1_vls_up_mmv_min,ZEROS
+        MOV lam_bank_1_ls_up_drv1_vls_up_mmv,ZEROS
+        MOVB RL6,#00H
+L_D005C:                 ; 0xd005c
+        MOV R4,#00H
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        MOV [R5+#0C7D0H],R4
+        ADDB RL6,#01H
+        CMPB RL6,#05H
+        JMPR cc_ULE,L_D005C
+        MOV R6,[R0+]
+        RETS
+
+; ======== Reset_Dfd6a_070  (@0xd0070) ========
+Reset_Dfd6a_070:
+        BCLR state_lam_ctl2.08H
+        BCLR state_lam_ctl2.0BH
+        MOV lam_bank_1_ls_up_ls_up_carrier,ZEROS
+        MOV lv_cp_f958,ZEROS
+        BCLR lv_cp_set_close.0BH
+        MOV lv_cp_f95a,ZEROS
+        MOV lv_cp_f95c,ZEROS
+        BCLR lv_cp_set_close.0CH
+        RETS
+
+; ======== CanPurge_Set_Close_4  (@0xd008a) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+CanPurge_Set_Close_4:
+        MOVB RL4,conf_lam
+        JMPR cc_EQ,L_D00B4
+        MOVBZ R4,DPP0:c_t_dly_ls_ready
+        MOV lv_cp_f958,R4
+        BCLR lv_cp_set_close.0BH
+        MOV R5,#01H
+        MOV lv_cp_f98c,R5
+        BCLR lv_cp_set_close.0DH
+        MOV R12,#DATA16 04FEEH
+        MOVBZ R13,tco_st
+        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        MOV lv_cp_f95c,R4
+        BCLR lv_cp_set_close.0CH
+L_D00B4:                 ; 0xd00b4
+        RETS
+
+; ======== Acq_LS_Up_Voltage  (@0xd00b6) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by output signal): Upstream O2 (lambda) sensor voltage read:
+        ; lam_bank_1_ls_up_vls_up = ADC DAT_00fa78 & 0x3ff (10-bit), gated by immob fault flag.
+        ; ------------------------------------------------------------
+Acq_LS_Up_Voltage:
+        JB lv_err_com_resp_imob.05H,L_D00C6
+        MOV R4,adc_fa78
+        AND R4,#DATA16 003FFH
+        MOV lam_bank_1_ls_up_vls_up,R4
+L_D00C6:                 ; 0xd00c6
+        RETS
+
+; ======== Calc_LS_Up_Amplitude  (@0xd00c8) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified): Front-O2 voltage + amplitude modeling: reads vls_up (ADC fa78&0x3ff),
+        ; maintains a 6-sample ring buffer, computes vls_up_mmv min/max/amplitude + hysteresis for closed-loop
+        ; lambda & diag (DAT_00fd6a bits).
+        ; ------------------------------------------------------------
+Calc_LS_Up_Amplitude:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        MOV R7,p_lam_bank1
+        JB lv_err_com_resp_imob.05H,L_D00E4
+        MOV R4,adc_fa78
+        AND R4,#DATA16 003FFH
+        MOV [R7+#06AH],R4
+L_D00E4:                 ; 0xd00e4
+        MOV R4,[R7+#06AH]
+        SHR R4,#02H
+        MOVB [R7+#06CH],RL4
+        JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_D00F6
+        JMPA cc_UC,L_D0304
+L_D00F6:                 ; 0xd00f6
+        JB lv_pl.09H,L_D00FE
+        JMPA cc_UC,L_D0304
+L_D00FE:                 ; 0xd00fe
+        MOV R12,[R7+#06AH]
+        MOV R13,[R7+#082H]
+        CALLS 00FH,Sat_Sub_S16_v2
+        MOV R9,R4
+        SHL R9,#06H
+        MOV R4,[R7+#06AH]
+        MOV [R7+#082H],R4
+        MOVB RL4,[R7+#092H]
+        CMPB RL4,#05H
+        JMPR cc_ULE,L_D0126
+        BSET state_lam_ctl2.0FH
+        MOVB RL4,#00H
+        MOVB [R7+#092H],RL4
+L_D0126:                 ; 0xd0126
+        JNB state_lam_ctl2.0FH,L_D0146
+        MOVB RL4,[R7+#092H]
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        MOV R2,R7
+        ADD R2,#DATA16 00084H
+        ADD R2,R4
+        MOV R4,R7
+        ADD R4,#DATA16 00090H
+        MOV R5,[R4]
+        SUB R5,[R2]
+        MOV [R4],R5
+L_D0146:                 ; 0xd0146
+        MOVB RL4,[R7+#092H]
+        MOVBZ R4,RL4
+        SHL R4,#01H
+        MOV R5,R7
+        ADD R5,#DATA16 00084H
+        ADD R5,R4
+        MOV [R5],R9
+        MOV R4,R7
+        ADD R4,#DATA16 00090H
+        MOV R5,[R4]
+        ADD R5,R9
+        MOV [R4],R5
+        JNB state_lam_ctl2.0FH,L_D017C
+        MOV R4,[R7+#090H]
+        MOV R5,#06H
+        MOV 0FE0EH,R4
+        DIV R5
+        MOV R4,0FE0EH
+        MOV [R7+#07CH],R4
+L_D017C:                 ; 0xd017c
+        MOV R4,R7
+        ADD R4,#DATA16 00092H
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+        MOV R4,#00H
+        MOV [R7+#080H],R4
+        MOVB RL6,#00H
+L_D0190:                 ; 0xd0190
+        MOV R4,R7
+        ADD R4,#DATA16 00084H
+        MOVBZ R5,RL6
+        SHL R5,#01H
+        ADD R4,R5
+        MOV R12,[R4]
+        CALLS 00DH,Abs_S16_Simple
+        MOV R8,R4
+        MOV R4,[R7+#080H]
+        CMP R8,R4
+        JMPR cc_ULE,L_D01B0
+        MOV [R7+#080H],R8
+L_D01B0:                 ; 0xd01b0
+        ADDB RL6,#01H
+        CMPB RL6,#05H
+        JMPR cc_ULE,L_D0190
+        JNB lv_pl.02H,L_D01BE
+        JMPA cc_UC,L_D02DC
+L_D01BE:                 ; 0xd01be
+        MOV R4,[R7+#06AH]
+        MOV R5,[R7+#072H]
+        CMP R4,R5
+        JMPR cc_NC,L_D01D0
+        MOV R8,DPP0:c_vls_crlc
+        JMPR cc_UC,L_D01D4
+L_D01D0:                 ; 0xd01d0
+        MOV R8,DPP0:c_vls_crlc_off
+L_D01D4:                 ; 0xd01d4
+        MOV R12,[R7+#078H]
+        MOV R13,[R7+#06AH]
+        SHL R13,#06H
+        MOV R14,R8
+        CALLS 00FH,Interp_U16
+        MOV [R7+#078H],R4
+        MOV R4,[R7+#06AH]
+        MOV R5,[R7+#074H]
+        CMP R4,R5
+        JMPR cc_ULE,L_D0200
+        MOV R4,#00H
+        MOV [R7+#07EH],R4
+        MOV R8,DPP0:c_vls_crlc
+        JMPR cc_UC,L_D0218
+L_D0200:                 ; 0xd0200
+        MOV R4,[R7+#07CH]
+        MOV R5,[R7+#07EH]
+        CMP R4,R5
+        JMPR cc_SGE,L_D0214
+        MOV R4,[R7+#07CH]
+        MOV [R7+#07EH],R4
+L_D0214:                 ; 0xd0214
+        MOV R8,DPP0:c_vls_crlc_off
+L_D0218:                 ; 0xd0218
+        MOV R12,[R7+#076H]
+        MOV R13,[R7+#06AH]
+        SHL R13,#06H
+        MOV R14,R8
+        CALLS 00FH,Interp_U16
+        MOV [R7+#076H],R4
+        MOV R12,[R7+#076H]
+        MOV R13,[R7+#078H]
+        CALLS 00FH,Abs_Diff_U16
+        MOV R12,R4
+        MOVBZ R13,DPP0:c_fac_vls_up_mmv_hys
+        CALLS 00FH,Read_MulDiv_MD
+        MOV [R7+#07AH],R4
+        MOV R12,[R7+#07AH]
+        MOV R13,DPP0:c_vls_up_mmv_hys_min
+        MOV R14,#DATA16 03333H
+        CALLS 00FH,Clamp_U16
+        MOV [R7+#07AH],R4
+        MOV R12,[R7+#076H]
+        MOV R13,[R7+#078H]
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV R8,R4
+        MOV R4,[R7+#07AH]
+        SHL R4,#01H
+        CMP R8,R4
+        JMPR cc_UGT,L_D02B4
+        BSET state_lam_ctl2.0CH
+        MOV R12,[R7+#076H]
+        MOV R13,[R7+#078H]
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV R8,R4
+        SHR R4,#01H
+        SHR R4,#06H
+        MOV [R7+#072H],R4
+        MOV [R7+#074H],R4
+        MOV R12,[R7+#074H]
+        SHL R12,#06H
+        MOV R13,[R7+#07AH]
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV [R7+#076H],R4
+        MOV R12,[R7+#072H]
+        SHL R12,#06H
+        MOV R13,[R7+#07AH]
+        CALLS 00FH,sub_r12_r13_rets_r4
+        MOV [R7+#078H],R4
+        JMPR cc_UC,L_D02E2
+L_D02B4:                 ; 0xd02b4
+        BCLR state_lam_ctl2.0CH
+        MOV R12,[R7+#076H]
+        MOV R13,[R7+#07AH]
+        CALLS 00FH,sub_r12_r13_rets_r4
+        SHR R4,#06H
+        MOV [R7+#074H],R4
+        MOV R12,[R7+#078H]
+        MOV R13,[R7+#07AH]
+        CALLS 00FH,Add_r12_r13_Return_r4
+        SHR R4,#06H
+        MOV [R7+#072H],R4
+        JMPR cc_UC,L_D02E2
+L_D02DC:                 ; 0xd02dc
+        MOV R4,#00H
+        MOV [R7+#07EH],R4
+L_D02E2:                 ; 0xd02e2
+        JNB state_lam_ctl.00H,L_D0300
+        MOV R4,[R7+#078H]
+        MOV R5,[R7+#076H]
+        CMP R4,R5
+        JMPR cc_NC,L_D0300
+        MOV R4,[R7+#070H]
+        CMP R4,DPP0:c_ctr_vls_up_afl_cyc_min
+        JMPR cc_C,L_D0300
+        BSET state_lam_ctl2.0DH
+        JMPR cc_UC,L_D030A
+L_D0300:                 ; 0xd0300
+        BCLR state_lam_ctl2.0DH
+        JMPR cc_UC,L_D030A
+L_D0304:                 ; 0xd0304
+        MOV R4,#00H
+        MOV [R7+#07EH],R4
+L_D030A:                 ; 0xd030a
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_LS_Up_Carrier  (@0xd0314) ========
+        ; ------------------------------------------------------------
+        ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
+        ; ------------------------------------------------------------
+Calc_LS_Up_Carrier:
+        MOV R12,#DATA16 0C74CH
+        MOV R4,lam_bank_1_ls_up_ls_up_carrier
+        AND R4,#DATA16 00800H
+        MOVBZ R5,dtc_st_lsh_up
+        AND R5,#DATA16 00010H
+        JMPR cc_EQ,L_D032E
+        MOV R5,#01H
+        JMPR cc_UC,L_D0330
+L_D032E:                 ; 0xd032e
+        MOV R5,#00H
+L_D0330:                 ; 0xd0330
+        OR R4,R5
+        MOVBZ R5,dtc_done_vls_up_stk
+        AND R5,#DATA16 00010H
+        JMPR cc_EQ,L_D0340
+        MOV R5,#01H
+        JMPR cc_UC,L_D0342
+L_D0340:                 ; 0xd0340
+        MOV R5,#00H
+L_D0342:                 ; 0xd0342
+        OR R4,R5
+        JMPR cc_EQ,L_D0386
+        BSET state_lam_ctl2.0BH
+        MOV R4,#DATA16 00800H
+        OR lam_bank_1_ls_up_ls_up_carrier,R4
+        MOV R4,teg_dyn
+        CMP R4,DPP0:c_temp_min_ls_up
+        JMPR cc_ULE,L_D037A
+        MOV R5,[R12+#06AH]
+        CMP R5,DPP0:c_vls_afr_min_diag
+        JMPR cc_NC,L_D036E
+        MOV R5,[R12+#06AH]
+        CMP R5,DPP0:c_vls_afl_max_diag
+        JMPR cc_NC,L_D03B8
+L_D036E:                 ; 0xd036e
+        BSET state_lam_ctl2.08H
+        MOV R4,#DATA16 00100H
+        OR lam_bank_1_ls_up_ls_up_carrier,R4
+        JMPR cc_UC,L_D03B8
+L_D037A:                 ; 0xd037a
+        BCLR state_lam_ctl2.08H
+        MOV R4,#DATA16 0FEFFH
+        AND lam_bank_1_ls_up_ls_up_carrier,R4
+        JMPR cc_UC,L_D03B8
+L_D0386:                 ; 0xd0386
+        MOV R4,lam_bank_1_ls_up_ls_up_carrier
+        AND R4,#DATA16 00100H
+        JMPR cc_NE,L_D03B8
+        MOV R4,[R12+#06AH]
+        CMP R4,DPP0:c_vls_afl_ready
+        JMPR cc_C,L_D03AE
+        MOV R4,[R12+#06AH]
+        CMP R4,DPP0:c_vls_afr_ready
+        JMPR cc_UGT,L_D03AE
+        MOV R4,[R12+#0C6H]
+        CMP R4,DPP0:c_r_min_ls_ready
+        JMPR cc_NC,L_D03B8
+L_D03AE:                 ; 0xd03ae
+        BSET state_lam_ctl2.08H
+        MOV R4,#DATA16 00100H
+        OR lam_bank_1_ls_up_ls_up_carrier,R4
+L_D03B8:                 ; 0xd03b8
+        MOV R4,lam_bank_1_ls_up_ls_up_carrier
+        AND R4,#DATA16 00100H
+        JMPR cc_EQ,L_D03C6
+        MOV lv_cp_f95c,ZEROS
+L_D03C6:                 ; 0xd03c6
+        RETS
+
+; ======== Log_Event_d03c8  (@0xd03c8) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Log_Event_d03c8:
+        MOVB RL4,#DATA16 00014H
+        MOVBZ R5,tq_lo_wr
+        MOVB [R5+#0F66EH],RL4
+        MOVB RL4,tq_lo_wr
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_wr,RL4
+        MOVB RL4,tq_lo_wr
+        CMPB RL4,tq_lo_rd
+        JMPR cc_NE,L_D03FC
+        BSET sched_flags.03H
+        MOVB RL4,tq_lo_rd
+        ADDB RL4,#01H
+        ANDB RL4,#DATA16 0001FH
+        MOVB tq_lo_rd,RL4
+L_D03FC:                 ; 0xd03fc
+        MOV R4,#01H
+        MOV lv_cp_f95a,R4
+        RETS
+
+; ======== Calc_LS_Up_Switching  (@0xd0404) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Calc_LS_Up_Switching:
+        MOV [-R0],R9
+        MOV R9,p_lam_bank1
+        JB state_lam_ctl.00H,L_D0416
+        JB state_lam_ctl2.08H,L_D0416
+        JMPA cc_UC,L_D0504
+L_D0416:                 ; 0xd0416
+        JNB state_lam_ctl2.0AH,L_D042E
+        BCLR state_lam_ctl2.0AH
+        JNB state_lam_ctl2.09H,L_D0428
+        MOVB RL4,#00H
+        MOVB [R9+#06EH],RL4
+        JMPR cc_UC,L_D042E
+L_D0428:                 ; 0xd0428
+        MOVB RL4,#00H
+        MOVB [R9+#06DH],RL4
+L_D042E:                 ; 0xd042e
+        JNB state_lam_ctl.00H,L_D0466
+        JNB state_lam_ctl2.09H,L_D044E
+        MOVB RL4,[R9+#06EH]
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NC,L_D046C
+        MOV R4,R9
+        ADD R4,#DATA16 0006EH
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+        JMPR cc_UC,L_D046C
+L_D044E:                 ; 0xd044e
+        MOVB RL4,[R9+#06DH]
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NC,L_D046C
+        MOV R4,R9
+        ADD R4,#DATA16 0006DH
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+        JMPR cc_UC,L_D046C
+L_D0466:                 ; 0xd0466
+        MOV R4,#00H
+        MOV [R9+#070H],R4
+L_D046C:                 ; 0xd046c
+        JNB state_lam_ctl2.07H,L_D04B4
+        MOV R12,#DATA16 POF ldpm_n_32__ti_lam
+        MOV R13,#DATA16 PAG ldpm_n_32__ti_lam
+        MOVBZ R14,n_32
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_maf__ti_lam
+        MOV R13,#DATA16 PAG ldpm_maf__ti_lam
+        MOVBZ R14,lv_iga_cc2b
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOV R12,#DATA16 POF ip_t_afl_lock__n_32__maf
+        MOV R13,#DATA16 PAG ip_t_afl_lock__n_32__maf
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVB RL5,[R9+#093H]
+        CMPB RL5,RL4
+        JMPR cc_C,L_D04A8
+        BCLR state_lam_ctl2.07H
+        JMPR cc_UC,L_D04B4
+L_D04A8:                 ; 0xd04a8
+        MOV R4,R9
+        ADD R4,#DATA16 00093H
+        MOVB RL5,[R4]
+        ADDB RL5,#01H
+        MOVB [R4],RL5
+L_D04B4:                 ; 0xd04b4
+        JB state_lam_ctl2.07H,L_D0504
+        JNB state_lam_ctl2.09H,L_D04EA
+        MOV R4,[R9+#06AH]
+        CMP R4,DPP0:c_vls_afr
+        JMPR cc_ULE,L_D04F8
+        BCLR state_lam_ctl2.09H
+        BSET state_lam_ctl2.0AH
+        MOV R4,[R9+#070H]
+        CMP R4,#DATA16 0FFFFH
+        JMPR cc_NC,L_D04E0
+        MOV R4,R9
+        ADD R4,#DATA16 00070H
+        MOV R5,[R4]
+        ADD R5,#01H
+        MOV [R4],R5
+L_D04E0:                 ; 0xd04e0
+        MOVB RL4,[R9+#06EH]
+        MOVB [R9+#06FH],RL4
+        JMPR cc_UC,L_D04F8
+L_D04EA:                 ; 0xd04ea
+        MOV R4,[R9+#06AH]
+        CMP R4,DPP0:c_vls_afl
+        JMPR cc_NC,L_D04F8
+        BSET state_lam_ctl2.09H
+        BSET state_lam_ctl2.0AH
+L_D04F8:                 ; 0xd04f8
+        JNB state_lam_ctl2.0AH,L_D0504
+        BSET state_lam_ctl2.07H
+        MOVB RL4,#00H
+        MOVB [R9+#093H],RL4
+L_D0504:                 ; 0xd0504
+        MOV R9,[R0+]
+        RETS
+
+S_D0000 ENDS
+        END

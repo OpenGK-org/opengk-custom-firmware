@@ -1,0 +1,1073 @@
+; firmware/bsw/boot_low.a66 - flash 0x0000-0x2086
+;   0x0000-0x01FF  interrupt/trap vector table (JMPS to each handler)
+;   0x0200-0x1FFF  boot data: ECU-ID blocks, session/timing and pointer tables
+;   0x2000-0x2085  runtime helpers
+$MOD167
+$INCLUDE (REG167.INC)
+
+; --- external call/jump targets (other segments) ---
+SpinHalt_a0214         EQU  00214H
+SpinHalt_a021c         EQU  0021CH
+SpinHalt_a0224         EQU  00224H
+SpinHalt_a022c         EQU  0022CH
+SpinHalt_a0230         EQU  00230H
+SpinHalt_a0234         EQU  00234H
+SpinHalt_a023c         EQU  0023CH
+SpinHalt_a0240         EQU  00240H
+SpinHalt_a0244         EQU  00244H
+SpinHalt_a0248         EQU  00248H
+SpinHalt_a024c         EQU  0024CH
+CC0INT_Handler         EQU  00250H
+CC1INT_Handler         EQU  00254H
+CC2INT_Handler         EQU  00258H
+CC3INT_Handler         EQU  0025CH
+CC4INT_handler         EQU  00260H
+CC5INT_handler         EQU  00264H
+CC6INT_handler         EQU  00268H
+CC7INT_Handler         EQU  0026CH
+CC8INT_handler         EQU  00270H
+CC9INT_handler         EQU  00274H
+CC10INT_handler        EQU  00278H
+CC11INT_handler        EQU  0027CH
+caseD_f0               EQU  00280H
+CC13INT_handler        EQU  00284H
+CC14INT_handler        EQU  00288H
+CC15INT_handler        EQU  0028CH
+SpinHalt_a0290         EQU  00290H
+Inc_Dfbb0_bf2          EQU  00294H
+SpinHalt_a0298         EQU  00298H
+SpinHalt_a029c         EQU  0029CH
+T4INT_handler          EQU  002A0H
+T5INT_handler          EQU  002A4H
+Acq_Crank_Segment      EQU  002A8H
+CRINT_handler          EQU  002ACH
+ADCINT_handler         EQU  002B0H
+SpinHalt_a02b4         EQU  002B4H
+Reset_S0TIC_e34        EQU  002B8H
+SMARTRA_asc0_rx_isr    EQU  002BCH
+Reset_S0EIC_e4e        EQU  002C0H
+SetBits_SSCTIC_7aa     EQU  002C4H
+CallVia_62e            EQU  002C8H
+CallVia_71e            EQU  002CCH
+CC16INT_handler        EQU  002D0H
+CC17INT_handler        EQU  002D4H
+SpinHalt_a02d8         EQU  002D8H
+CC19INT_handler        EQU  002DCH
+SpinHalt_a02e0         EQU  002E0H
+CC21INT_handler        EQU  002E4H
+CC22INT_handler        EQU  002E8H
+SpinHalt_a02ec         EQU  002ECH
+CallVia_368            EQU  002F0H
+CC25INT_handler        EQU  002F4H
+Calc_MAF_Base          EQU  002F8H
+CC27INT_handler        EQU  002FCH
+Reset_CC28IC_f26       EQU  00300H
+SpinHalt_a0304         EQU  00304H
+Inc_Dfbb2_bf8          EQU  00308H
+CAN_push_message_into_buffer EQU  00314H
+XP2INT_handler         EQU  00318H
+SpinHalt_a031c         EQU  0031CH
+CC29INT_handler        EQU  00320H
+CC30INT_handler        EQU  00324H
+SpinHalt_a0328         EQU  00328H
+Reset_S0TBIC_e40       EQU  0032CH
+SpinHalt_a0330         EQU  00330H
+SpinHalt_a0334         EQU  00334H
+SpinHalt_a0338         EQU  00338H
+SpinHalt_a033c         EQU  0033CH
+SpinHalt_a0340         EQU  00340H
+SpinHalt_a0344         EQU  00344H
+SpinHalt_a0348         EQU  00348H
+SpinHalt_a034c         EQU  0034CH
+SpinHalt_a0350         EQU  00350H
+SpinHalt_a0354         EQU  00354H
+SpinHalt_a0358         EQU  00358H
+SpinHalt_a035c         EQU  0035CH
+SpinHalt_a0360         EQU  00360H
+SpinHalt_a0364         EQU  00364H
+SpinHalt_a0368         EQU  00368H
+SpinHalt_a036c         EQU  0036CH
+SpinHalt_a0370         EQU  00370H
+SpinHalt_a0374         EQU  00374H
+SpinHalt_a0378         EQU  00378H
+SpinHalt_a037c         EQU  0037CH
+SpinHalt_a0380         EQU  00380H
+SpinHalt_a0384         EQU  00384H
+SpinHalt_a0388         EQU  00388H
+SpinHalt_a038c         EQU  0038CH
+Get_Status_Marker_a8350 EQU  00390H
+SpinHalt_a0394         EQU  00394H
+SpinHalt_a0398         EQU  00398H
+SpinHalt_a039c         EQU  0039CH
+SpinHalt_a03a0         EQU  003A0H
+SpinHalt_a03a4         EQU  003A4H
+SpinHalt_a03a8         EQU  003A8H
+EngOut_Scheduler       EQU  003ACH
+SpinHalt_a03b0         EQU  003B0H
+SpinHalt_a03b4         EQU  003B4H
+SpinHalt_a03b8         EQU  003B8H
+SpinHalt_a03bc         EQU  003BCH
+caseD_ee               EQU  003C0H
+SpinHalt_a03c4         EQU  003C4H
+SpinHalt_a03c8         EQU  003C8H
+SpinHalt_a03cc         EQU  003CCH
+SpinHalt_a03d0         EQU  003D0H
+SpinHalt_a03d4         EQU  003D4H
+SpinHalt_a03d8         EQU  003D8H
+SpinHalt_a03dc         EQU  003DCH
+SpinHalt_a03e0         EQU  003E0H
+SpinHalt_a03e4         EQU  003E4H
+SpinHalt_a03e8         EQU  003E8H
+SpinHalt_a03ec         EQU  003ECH
+SpinHalt_a03f0         EQU  003F0H
+SpinHalt_a03f4         EQU  003F4H
+SpinHalt_a03f8         EQU  003F8H
+SpinHalt_a03fc         EQU  003FCH
+SpinHalt_a0400         EQU  00400H
+SpinHalt_a0404         EQU  00404H
+SpinHalt_a0408         EQU  00408H
+SpinHalt_a040c         EQU  0040CH
+cstart_reset_selftest_ramtest EQU  08046H
+NMITRAP_handler        EQU  0F42EH
+NMITRAP_handler_F432   EQU  0F432H
+NMITRAP_handler_F436   EQU  0F436H
+NMITRAP_handler_F43A   EQU  0F43AH
+
+BOOTLOW SECTION CODE AT 00000H
+
+; ======== RESET_VECTOR  (@0x0) ========
+        JMPS 008H,cstart_reset_selftest_ramtest  ; trap 00h
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0x4 [low]  W:{-}  R:{XP2INT_handler}
+        ; ------------------------------------------------------------
+        JMPS 00AH,SpinHalt_a0214                ; trap 01h
+
+; ======== NMITRAP_handler  (@0x8) ========
+        JMPS 008H,NMITRAP_handler               ; trap 02h
+        JMPS 00AH,SpinHalt_a021c                ; trap 03h
+        JMPS 008H,NMITRAP_handler_F432          ; trap 04h
+        JMPS 00AH,SpinHalt_a0224                ; trap 05h
+        JMPS 008H,NMITRAP_handler_F436          ; trap 06h
+        JMPS 00AH,SpinHalt_a022c                ; trap 07h
+        JMPS 00AH,SpinHalt_a0230                ; trap 08h
+        JMPS 00AH,SpinHalt_a0234                ; trap 09h
+        JMPS 008H,NMITRAP_handler_F43A          ; trap 0Ah
+        JMPS 00AH,SpinHalt_a023c                ; trap 0Bh
+        JMPS 00AH,SpinHalt_a0240                ; trap 0Ch
+        JMPS 00AH,SpinHalt_a0244                ; trap 0Dh
+        JMPS 00AH,SpinHalt_a0248                ; trap 0Eh
+        JMPS 00AH,SpinHalt_a024c                ; trap 0Fh
+        JMPS 00AH,CC0INT_Handler                ; trap 10h
+        JMPS 00AH,CC1INT_Handler                ; trap 11h
+        JMPS 00AH,CC2INT_Handler                ; trap 12h
+        JMPS 00AH,CC3INT_Handler                ; trap 13h
+        JMPS 00AH,CC4INT_handler                ; trap 14h
+        JMPS 00AH,CC5INT_handler                ; trap 15h
+        JMPS 00AH,CC6INT_handler                ; trap 16h
+        JMPS 00AH,CC7INT_Handler                ; trap 17h
+        JMPS 00AH,CC8INT_handler                ; trap 18h
+        JMPS 00AH,CC9INT_handler                ; trap 19h
+        JMPS 00AH,CC10INT_handler               ; trap 1Ah
+        JMPS 00AH,CC11INT_handler               ; trap 1Bh
+        JMPS 00AH,caseD_f0                      ; trap 1Ch
+        JMPS 00AH,CC13INT_handler               ; trap 1Dh
+        JMPS 00AH,CC14INT_handler               ; trap 1Eh
+        JMPS 00AH,CC15INT_handler               ; trap 1Fh
+        JMPS 00AH,SpinHalt_a0290                ; trap 20h
+        JMPS 00AH,Inc_Dfbb0_bf2                 ; trap 21h
+        JMPS 00AH,SpinHalt_a0298                ; trap 22h
+        JMPS 00AH,SpinHalt_a029c                ; trap 23h
+        JMPS 00AH,T4INT_handler                 ; trap 24h
+        JMPS 00AH,T5INT_handler                 ; trap 25h
+        JMPS 00AH,Acq_Crank_Segment             ; trap 26h
+        JMPS 00AH,CRINT_handler                 ; trap 27h
+        JMPS 00AH,ADCINT_handler                ; trap 28h
+        JMPS 00AH,SpinHalt_a02b4                ; trap 29h
+        JMPS 00AH,Reset_S0TIC_e34               ; trap 2Ah
+        JMPS 00AH,SMARTRA_asc0_rx_isr           ; trap 2Bh
+        JMPS 00AH,Reset_S0EIC_e4e               ; trap 2Ch
+        JMPS 00AH,SetBits_SSCTIC_7aa            ; trap 2Dh
+        JMPS 00AH,CallVia_62e                   ; trap 2Eh
+        JMPS 00AH,CallVia_71e                   ; trap 2Fh
+        JMPS 00AH,CC16INT_handler               ; trap 30h
+        JMPS 00AH,CC17INT_handler               ; trap 31h
+        JMPS 00AH,SpinHalt_a02d8                ; trap 32h
+        JMPS 00AH,CC19INT_handler               ; trap 33h
+        JMPS 00AH,SpinHalt_a02e0                ; trap 34h
+        JMPS 00AH,CC21INT_handler               ; trap 35h
+        JMPS 00AH,CC22INT_handler               ; trap 36h
+        JMPS 00AH,SpinHalt_a02ec                ; trap 37h
+        JMPS 00AH,CallVia_368                   ; trap 38h
+        JMPS 00AH,CC25INT_handler               ; trap 39h
+        JMPS 00AH,Calc_MAF_Base                 ; trap 3Ah
+        JMPS 00AH,CC27INT_handler               ; trap 3Bh
+        JMPS 00AH,Reset_CC28IC_f26              ; trap 3Ch
+        JMPS 00AH,SpinHalt_a0304                ; trap 3Dh
+        JMPS 00AH,Inc_Dfbb2_bf8                 ; trap 3Eh
+
+        ; data @0xfc (3 bytes)  ; trap 3Fh
+        DB      0FAH,00AH,00CH
+
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0xff [low]  W:{-}  R:{CC22INT_handler}
+        ; ------------------------------------------------------------
+        ; data @0xff (1 bytes)
+        DB      003H
+
+        ; data @0x100 (4 bytes)  ; trap 40h
+        DB      0FAH,00AH,010H,003H
+        JMPS 00AH,CAN_push_message_into_buffer  ; trap 41h
+        JMPS 00AH,XP2INT_handler                ; trap 42h
+        JMPS 00AH,SpinHalt_a031c                ; trap 43h
+        JMPS 00AH,CC29INT_handler               ; trap 44h
+        JMPS 00AH,CC30INT_handler               ; trap 45h
+        JMPS 00AH,SpinHalt_a0328                ; trap 46h
+        JMPS 00AH,Reset_S0TBIC_e40              ; trap 47h
+        JMPS 00AH,SpinHalt_a0330                ; trap 48h
+        JMPS 00AH,SpinHalt_a0334                ; trap 49h
+        JMPS 00AH,SpinHalt_a0338                ; trap 4Ah
+        JMPS 00AH,SpinHalt_a033c                ; trap 4Bh
+        JMPS 00AH,SpinHalt_a0340                ; trap 4Ch
+        JMPS 00AH,SpinHalt_a0344                ; trap 4Dh
+        JMPS 00AH,SpinHalt_a0348                ; trap 4Eh
+        JMPS 00AH,SpinHalt_a034c                ; trap 4Fh
+        JMPS 00AH,SpinHalt_a0350                ; trap 50h
+        JMPS 00AH,SpinHalt_a0354                ; trap 51h
+        JMPS 00AH,SpinHalt_a0358                ; trap 52h
+        JMPS 00AH,SpinHalt_a035c                ; trap 53h
+        JMPS 00AH,SpinHalt_a0360                ; trap 54h
+        JMPS 00AH,SpinHalt_a0364                ; trap 55h
+        JMPS 00AH,SpinHalt_a0368                ; trap 56h
+
+; ======== SpinHalt_a036c  (@0x15c) ========
+        JMPS 00AH,SpinHalt_a036c                ; trap 57h
+        JMPS 00AH,SpinHalt_a0370                ; trap 58h
+        JMPS 00AH,SpinHalt_a0374                ; trap 59h
+        JMPS 00AH,SpinHalt_a0378                ; trap 5Ah
+        JMPS 00AH,SpinHalt_a037c                ; trap 5Bh
+        JMPS 00AH,SpinHalt_a0380                ; trap 5Ch
+        JMPS 00AH,SpinHalt_a0384                ; trap 5Dh
+        JMPS 00AH,SpinHalt_a0388                ; trap 5Eh
+        JMPS 00AH,SpinHalt_a038c                ; trap 5Fh
+
+; ======== Get_Status_Marker_a8350  (@0x180) ========
+        JMPS 00AH,Get_Status_Marker_a8350       ; trap 60h
+        JMPS 00AH,SpinHalt_a0394                ; trap 61h
+        JMPS 00AH,SpinHalt_a0398                ; trap 62h
+        JMPS 00AH,SpinHalt_a039c                ; trap 63h
+
+; ======== SpinHalt_a03a0  (@0x190) ========
+        JMPS 00AH,SpinHalt_a03a0                ; trap 64h
+        JMPS 00AH,SpinHalt_a03a4                ; trap 65h
+        JMPS 00AH,SpinHalt_a03a8                ; trap 66h
+
+; ======== EngOut_Scheduler  (@0x19c) ========
+        JMPS 00AH,EngOut_Scheduler              ; trap 67h
+        JMPS 00AH,SpinHalt_a03b0                ; trap 68h
+        JMPS 00AH,SpinHalt_a03b4                ; trap 69h
+        JMPS 00AH,SpinHalt_a03b8                ; trap 6Ah
+        JMPS 00AH,SpinHalt_a03bc                ; trap 6Bh
+        JMPS 00AH,caseD_ee                      ; trap 6Ch
+        JMPS 00AH,SpinHalt_a03c4                ; trap 6Dh
+        JMPS 00AH,SpinHalt_a03c8                ; trap 6Eh
+        JMPS 00AH,SpinHalt_a03cc                ; trap 6Fh
+        JMPS 00AH,SpinHalt_a03d0                ; trap 70h
+        JMPS 00AH,SpinHalt_a03d4                ; trap 71h
+        JMPS 00AH,SpinHalt_a03d8                ; trap 72h
+        JMPS 00AH,SpinHalt_a03dc                ; trap 73h
+        JMPS 00AH,SpinHalt_a03e0                ; trap 74h
+        JMPS 00AH,SpinHalt_a03e4                ; trap 75h
+        JMPS 00AH,SpinHalt_a03e8                ; trap 76h
+        JMPS 00AH,SpinHalt_a03ec                ; trap 77h
+        JMPS 00AH,SpinHalt_a03f0                ; trap 78h
+        JMPS 00AH,SpinHalt_a03f4                ; trap 79h
+        JMPS 00AH,SpinHalt_a03f8                ; trap 7Ah
+        JMPS 00AH,SpinHalt_a03fc                ; trap 7Bh
+        JMPS 00AH,SpinHalt_a0400                ; trap 7Ch
+        JMPS 00AH,SpinHalt_a0404                ; trap 7Dh
+        JMPS 00AH,SpinHalt_a0408                ; trap 7Eh
+        JMPS 00AH,SpinHalt_a040c                ; trap 7Fh
+
+        ; ------------------------------------------------------------
+        ; RAM/paged global @0x200 [low]  W:{-}  R:{KWP_Response_Flush,KWP_Session_Tick}
+        ; ------------------------------------------------------------
+        ; data @0x200 (10 bytes)
+        DB      00EH,0E3H,042H,0EFH,008H,000H,01AH,0EFH,008H,000H
+
+        ; ------------------------------------------------------------
+        ; (likely) RAM/paged global @0x20a [low]  W:{-}  R:{KWP_SID2C_DynamicallyDefineLocalId}
+        ; ------------------------------------------------------------
+        ; data @0x20a (2 bytes)
+        DB      0EAH,0DBH
+
+        ; ------------------------------------------------------------
+        ; (likely) RAM/paged global @0x20c [low]  W:{-}  R:{KWP_SID2C_DynamicallyDefineLocalId}
+        ; ------------------------------------------------------------
+        ; data @0x20c (10 bytes)
+        DB      008H,000H,0F6H,0ECH,008H,000H,024H,0EDH,008H,000H
+
+        ; ------------------------------------------------------------
+        ; (likely) RAM/paged global @0x216 [low]  W:{-}  R:{KWP_ServiceTable_Dispatch}
+        ; ------------------------------------------------------------
+        ; data @0x216 (2 bytes)
+        DB      0E0H,0EEH
+
+        ; ------------------------------------------------------------
+        ; (likely) RAM/paged global @0x218 [low]  W:{-}  R:{KWP_ServiceTable_Dispatch}
+        ; ------------------------------------------------------------
+        ; data @0x218 (2 bytes)
+        DB      008H,000H
+
+        ; ------------------------------------------------------------
+        ; (likely) RAM/paged global @0x21a [low]  W:{-}  R:{KWP_Session_Setup}
+        ; ------------------------------------------------------------
+        ; data @0x21a (2 bytes)
+        DB      0B2H,090H
+
+        ; ------------------------------------------------------------
+        ; (likely) RAM/paged global @0x21c [low]  W:{-}  R:{KWP_Session_Setup}
+        ; ------------------------------------------------------------
+        ; data @0x21c (18 bytes)
+        DB      008H,000H,0DAH,0BAH,008H,000H,056H,0B8H,008H,000H,02EH,0B9H,008H,000H,0C4H,0B9H
+        DB      008H,000H
+
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0x22e [low]  W:{-}  R:{Tail_rt_callfar_via_r5r4_e1a}
+        ; ------------------------------------------------------------
+        ; data @0x22e (2 bytes)
+        DB      0CCH,0BBH
+
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0x230 [low]  W:{-}  R:{Tail_rt_callfar_via_r5r4_e1a}
+        ; ------------------------------------------------------------
+        ; data @0x230 (18 bytes)
+        DB      008H,000H,080H,0D3H,008H,000H,0EEH,0C7H,008H,000H,00CH,0BEH,008H,000H,048H,0C7H
+        DB      008H,000H
+
+        ; ------------------------------------------------------------
+        ; RAM/paged global @0x242 [low]  W:{-}  R:{BL_Kline_KwpProtocol_SM,BL_Kline_SendByte_Blocking}
+        ; ------------------------------------------------------------
+        ; data @0x242 (2 bytes)
+        DB      05AH,0C7H
+
+        ; ------------------------------------------------------------
+        ; RAM/paged global @0x244 [low]  W:{-}  R:{BL_Kline_KwpProtocol_SM,BL_Kline_SendByte_Blocking}
+        ; ------------------------------------------------------------
+        ; data @0x244 (2 bytes)
+        DB      008H,000H
+
+        ; ------------------------------------------------------------
+        ; (likely) RAM/paged global @0x246 [low]  W:{-}
+        ; R:{BL_Kline_KwpProtocol_SM,BL_Prog_DeferredResponse_SM}
+        ; ------------------------------------------------------------
+        ; data @0x246 (2 bytes)
+        DB      066H,0C7H
+
+        ; ------------------------------------------------------------
+        ; (likely) RAM/paged global @0x248 [low]  W:{-}
+        ; R:{BL_Kline_KwpProtocol_SM,BL_Prog_DeferredResponse_SM}
+        ; ------------------------------------------------------------
+        ; data @0x248 (2 bytes)
+        DB      008H,000H
+
+        ; ------------------------------------------------------------
+        ; RAM/paged global @0x24a [low]  W:{-}
+        ; R:{?KWP_SessionTick_Helper3,?KWP_SessionTick_Helper4,BL_KLine_ProtoInit,BL_Kline_InitBaud_Default,BL_Kline_KwpProtocol_SM,BL_Prog_DeferredResponse_SM}
+        ; ------------------------------------------------------------
+        ; data @0x24a (2 bytes)
+        DB      078H,0C7H
+
+        ; ------------------------------------------------------------
+        ; RAM/paged global @0x24c [low]  W:{-}
+        ; R:{?KWP_SessionTick_Helper3,?KWP_SessionTick_Helper4,BL_KLine_ProtoInit,BL_Kline_InitBaud_Default,BL_Kline_KwpProtocol_SM,BL_Prog_DeferredResponse_SM}
+        ; ------------------------------------------------------------
+        ; data @0x24c (2 bytes)
+        DB      008H,000H
+
+        ; ------------------------------------------------------------
+        ; RAM/paged global @0x24e [low]  W:{-}
+        ; R:{?KWP_SessionTick_Helper3,BL_KLine_ProtoInit,BL_Kline_InitBaud_Default,BL_Kline_KwpProtocol_SM,BL_Prog_DeferredResponse_SM,KWP_BL_SID_10_StartDiagSession_progB}
+        ; ------------------------------------------------------------
+        ; data @0x24e (2 bytes)
+        DB      090H,0C7H
+
+        ; ------------------------------------------------------------
+        ; RAM/paged global @0x250 [low]  W:{-}
+        ; R:{?KWP_SessionTick_Helper3,BL_KLine_ProtoInit,BL_Kline_InitBaud_Default,BL_Kline_KwpProtocol_SM,BL_Prog_DeferredResponse_SM,KWP_BL_SID_10_StartDiagSession_progB}
+        ; ------------------------------------------------------------
+        ; data @0x250 (2 bytes)
+        DB      008H,000H
+
+        ; ------------------------------------------------------------
+        ; RAM/paged global @0x252 [low]  W:{-}
+        ; R:{BL_KLine_ProtoInit,BL_Kline_Comm_Rearm,BL_Kline_KwpProtocol_SM,BL_Prog_DeferredResponse_SM}
+        ; ------------------------------------------------------------
+        ; data @0x252 (2 bytes)
+        DB      0A8H,0C7H
+
+        ; ------------------------------------------------------------
+        ; RAM/paged global @0x254 [low]  W:{-}
+        ; R:{BL_KLine_ProtoInit,BL_Kline_Comm_Rearm,BL_Kline_KwpProtocol_SM,BL_Prog_DeferredResponse_SM}
+        ; ------------------------------------------------------------
+        ; data @0x254 (2 bytes)
+        DB      008H,000H
+
+        ; ------------------------------------------------------------
+        ; (likely) RAM/paged global @0x256 [low]  W:{-}  R:{BL_Kline_SendByte_Blocking}
+        ; ------------------------------------------------------------
+        ; data @0x256 (2 bytes)
+        DB      0DCH,0C7H
+
+        ; ------------------------------------------------------------
+        ; (likely) RAM/paged global @0x258 [low]  W:{-}  R:{BL_Kline_SendByte_Blocking}
+        ; ------------------------------------------------------------
+        ; data @0x258 (2 bytes)
+        DB      008H,000H
+
+        ; ------------------------------------------------------------
+        ; (likely) RAM/paged global @0x25a [low]  W:{-}  R:{CCP_Main_Task}
+        ; ------------------------------------------------------------
+        ; data @0x25a (166 bytes)
+        DB      0A0H,0A3H,008H,000H,04CH,0B3H,008H,000H,0A6H,0A8H,008H,000H,0F6H,0B0H,008H,000H
+        DB      0DEH,004H,000H,000H,0C2H,004H,000H,000H,040H,004H,000H,000H,064H,004H,000H,000H
+        DB      0F2H,093H,008H,000H,0D0H,086H,008H,000H,04EH,085H,008H,000H,06EH,083H,008H,000H
+        DB      076H,09BH,008H,000H,076H,09BH,008H,000H,076H,09BH,008H,000H,076H,09BH,008H,000H
+        DB      076H,09BH,008H,000H,076H,09BH,008H,000H,076H,09BH,008H,000H,028H,03FH,000H,000H
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,060H,0C1H,000H,000H,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+
+        ; ------------------------------------------------------------
+        ; RAM/paged global @0x300 [low]  W:{-}  R:{KWP_Response_Flush,KWP_Session_Tick}
+        ; ------------------------------------------------------------
+        ; data @0x300 (454 bytes)
+        DB      000H,000H,00AH,000H,000H,000H,00BH,000H,000H,000H,00CH,000H,000H,000H,00DH,000H
+        DB      000H,000H,00EH,000H,000H,000H,00FH,000H,000H,000H,009H,000H,0B6H,097H,03EH,097H
+        DB      0C8H,097H,066H,097H,08EH,097H,02AH,097H,052H,097H,07AH,097H,0C8H,097H,0A2H,097H
+        DB      000H,000H,001H,000H,011H,080H,0F0H,000H,000H,000H,000H,000H,0E2H,09AH,008H,000H
+        DB      0E2H,09AH,008H,000H,001H,000H,030H,003H,000H,000H,086H,0B2H,0EAH,0B2H,06EH,0B1H
+        DB      03EH,0B3H,03EH,0B3H,02AH,0B2H,00AH,0B3H,0C8H,0B3H,0C8H,0B3H,0C8H,0B3H,0D8H,0B3H
+        DB      0CCH,0B3H,0D0H,0B3H,0D0H,0B3H,0E0H,0B3H,0E0H,0B3H,0D4H,0B3H,058H,0E5H,004H,001H
+        DB      001H,000H,0AEH,0C1H,007H,000H,000H,000H,001H,001H,000H,000H,006H,000H,010H,000H
+        DB      001H,000H,000H,000H,000H,000H,000H,000H,04AH,0B7H,008H,000H,0A4H,0B4H,008H,000H
+        DB      042H,0B7H,008H,000H,000H,000H,000H,000H,006H,000H,01FH,000H,001H,000H,000H,000H
+        DB      000H,000H,000H,000H,05CH,0B7H,008H,000H,054H,0B7H,008H,000H,06AH,0B7H,008H,000H
+        DB      000H,0FFH,000H,000H,001H,000H,001H,000H,001H,001H,000H,000H,000H,000H,000H,000H
+        DB      072H,0B7H,008H,000H,0A4H,0B4H,008H,000H,0E0H,0B7H,008H,000H,001H,000H,000H,000H
+        DB      0FFH,0FFH,0FFH,0FFH,002H,000H,001H,000H,0FFH,0FFH,0FFH,0FFH,003H,000H,002H,000H
+        DB      0FFH,0FFH,0FFH,0FFH,003H,003H,000H,002H,078H,003H,000H,000H,0CCH,003H,000H,000H
+        DB      06CH,003H,000H,000H,0B6H,0C1H,0E6H,0C1H,036H,0B8H,03AH,0B8H,036H,0B8H,03AH,0B8H
+        DB      03AH,0B8H,03EH,0B8H,032H,0B8H,042H,0B8H,04AH,0B8H,046H,0B8H,080H,025H,000H,000H
+        DB      000H,04BH,000H,000H,000H,096H,000H,000H,000H,0E1H,000H,000H,000H,0C2H,001H,000H
+        DB      068H,0C9H,05EH,0CAH,086H,0CBH,0AEH,0CBH,0E4H,0CBH,026H,0CCH,07AH,0CCH,0CAH,0CCH
+        DB      0AAH,0CDH,0FAH,0CDH,03AH,0CEH,088H,0CEH,0C8H,0CEH,01CH,0CFH,066H,0CFH,09AH,0CFH
+        DB      003H,08AH,06AH,003H,08BH,044H,003H,08CH,06CH,003H,08DH,06CH,003H,08EH,06CH,003H
+        DB      08FH,068H,004H,090H,06FH,062H,003H,091H,06CH,003H,092H,06CH,003H,098H,06AH,003H
+        DB      099H,044H,0FFH,0FFH,0E2H,07FH,009H,000H,0ECH,07FH,009H,000H,0DAH,03FH,000H,000H
+        DB      05CH,000H,00AH,000H,04CH,000H,009H,000H,008H,000H,009H,000H,08CH,000H,00AH,000H
+        DB      005H,03EH,000H,000H,011H,03EH,000H,000H,0A9H,000H,00AH,000H,0B3H,000H,00AH,000H
+        DB      000H,000H,000H,000H,0FFH,03FH,000H,000H,002H,000H,000H,040H,000H,000H,0FFH,07FH
+        DB      000H,000H,006H,000H,000H,080H,000H,000H,0FFH,0FFH,008H,000H,002H,000H,000H,000H
+        DB      009H,000H,00EH,000H,009H,000H,007H,000H,00FH,000H,009H,000H,0FFH,0FFH,00FH,000H
+        DB      002H,000H,090H,004H,000H,000H
+
+        ; ------------------------------------------------------------
+        ; (likely) RAM/paged global @0x4c6 [low]  W:{-}  R:{KWP_BL_SID_23_ReadMemoryByAddress}
+        ; ------------------------------------------------------------
+        ; data @0x4c6 (14 bytes)
+        DB      005H,000H,05CH,03FH,000H,000H,001H,03EH,000H,000H,0FDH,001H,004H,002H
+
+        ; ------------------------------------------------------------
+        ; (likely) RAM/paged global @0x4d4 [low]  W:{-}  R:{KWP_BL_SID_3D_WriteMemoryByAddress}
+        ; ------------------------------------------------------------
+        ; data @0x4d4 (304 bytes)
+        DB      000H,0C0H,000H,000H,0FFH,0C1H,000H,000H,002H,000H,0D4H,004H,000H,000H,001H,000H
+        DB      081H,085H,090H,0FFH,0D2H,0B5H,008H,000H,010H,007H,007H,007H,0E0H,0DEH,008H,000H
+        DB      011H,000H,004H,007H,0BCH,0DFH,008H,000H,01AH,007H,007H,007H,08AH,0B6H,008H,000H
+        DB      020H,007H,007H,007H,00CH,0E1H,008H,000H,023H,007H,007H,007H,066H,0E2H,008H,000H
+        DB      027H,000H,007H,007H,0B4H,0B6H,008H,000H,028H,000H,007H,007H,0B4H,0B6H,008H,000H
+        DB      029H,000H,007H,007H,038H,0E5H,008H,000H,031H,007H,007H,007H,0D0H,0E7H,008H,000H
+        DB      034H,000H,004H,000H,096H,0E8H,008H,000H,036H,000H,004H,000H,006H,0E9H,008H,000H
+        DB      037H,000H,004H,000H,058H,0E9H,008H,000H,03BH,000H,004H,000H,000H,0EBH,008H,000H
+        DB      03DH,007H,000H,007H,0FEH,0B6H,008H,000H,03EH,007H,007H,007H,081H,085H,082H,086H
+        DB      096H,0BEH,008H,000H,010H,007H,007H,007H,007H,000H,0E0H,0DEH,008H,000H,011H,000H
+        DB      004H,000H,000H,000H,0BCH,0DFH,008H,000H,01AH,007H,007H,000H,000H,000H,07CH,0C2H
+        DB      008H,000H,020H,007H,007H,007H,007H,000H,00CH,0E1H,008H,000H,023H,007H,007H,007H
+        DB      000H,000H,066H,0E2H,008H,000H,027H,007H,007H,000H,007H,000H,038H,0E5H,008H,000H
+        DB      031H,007H,007H,000H,007H,000H,0D0H,0E7H,008H,000H,034H,000H,004H,000H,000H,000H
+        DB      096H,0E8H,008H,000H,036H,000H,004H,000H,000H,000H,006H,0E9H,008H,000H,037H,000H
+        DB      004H,000H,000H,000H,058H,0E9H,008H,000H,03BH,000H,004H,000H,000H,000H,000H,0EBH
+        DB      008H,000H,03DH,007H,000H,000H,000H,000H,098H,0C3H,008H,000H,03EH,007H,007H,007H
+        DB      007H,000H,09EH,0C3H,008H,000H,081H,007H,000H,000H,000H,000H,0C4H,0C3H,008H,000H
+        DB      082H,007H,000H,000H,000H,000H,0E0H,0C3H,008H,000H,083H,007H,007H,007H,000H,000H
+
+        ; ------------------------------------------------------------
+        ; (likely) RAM/paged global @0x604 [low]  W:{-}  R:{KWP_BL_SID_10_StartDiagnosticSession}
+        ; ------------------------------------------------------------
+        ; data @0x604 (16 bytes)
+        DB      003H,00FH,008H,000H,0E4H,004H,000H,000H,0E8H,004H,000H,000H,004H,010H,00AH,000H
+
+        ; ------------------------------------------------------------
+        ; KWP session-type descriptor table (idx by session_type_idx)
+        ; ------------------------------------------------------------
+        ; data @0x614 (2 bytes)
+        DB      060H,005H
+
+        ; ------------------------------------------------------------
+        ; RAM/paged global @0x616 [low]  W:{-}
+        ; R:{?KWP_SessionTick_Helper1,KWP_BL_SID_10_StartDiagSession_progB,KWP_BL_SID_83_AccessTimingParameters,KWP_Session_Tick}
+        ; ------------------------------------------------------------
+        ; data @0x616 (6 bytes)
+        DB      000H,000H,064H,005H,000H,000H
+
+        ; ------------------------------------------------------------
+        ; RAM/paged global @0x61c [low]  W:{-}
+        ; R:{BL_CAN2_Init_CommObjects_0xEE00,BL_CAN2_LoadMailboxCfg_EE00,BL_CAN2_LoadMailboxCfg_EF00,BL_CAN2_ReloadMailboxCfg_EF00}
+        ; ------------------------------------------------------------
+        ; data @0x61c (1 bytes)
+        DB      041H
+
+        ; ------------------------------------------------------------
+        ; RAM/paged global @0x61d [low]  W:{-}
+        ; R:{BL_CAN2_Init_CommObjects_0xEE00,BL_CAN2_LoadMailboxCfg_EE00,BL_CAN2_LoadMailboxCfg_EF00,BL_CAN2_ReloadMailboxCfg_EF00}
+        ; ------------------------------------------------------------
+        ; data @0x61d (15 bytes)
+        DB      007H,000H,001H,001H,027H,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+
+        ; ------------------------------------------------------------
+        ; RAM/paged global @0x62c [low]  W:{-}  R:{BL_CAN2_LoadMailboxCfg_EF00,BL_CAN2_ReloadMailboxCfg_EF00}
+        ; ------------------------------------------------------------
+        ; data @0x62c (1 bytes)
+        DB      095H
+
+        ; ------------------------------------------------------------
+        ; RAM/paged global @0x62d [low]  W:{-}  R:{BL_CAN2_LoadMailboxCfg_EF00,BL_CAN2_ReloadMailboxCfg_EF00}
+        ; ------------------------------------------------------------
+        ; data @0x62d (239 bytes)
+        DB      055H,0FDH,000H,000H,000H,088H,000H,000H,000H,000H,000H,000H,000H,000H,000H,095H
+        DB      055H,0FCH,000H,000H,000H,080H,000H,000H,000H,000H,000H,000H,000H,000H,000H,095H
+        DB      055H,0FBH,0E0H,000H,000H,080H,000H,000H,000H,000H,000H,000H,000H,000H,000H,055H
+        DB      055H,0FFH,0FFH,0FFH,0FFH,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H,055H
+        DB      055H,0FFH,0FFH,0FFH,0FFH,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H,055H
+        DB      055H,0FFH,0FFH,0FFH,0FFH,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H,055H
+        DB      055H,0FFH,0FFH,0FFH,0FFH,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H,055H
+        DB      055H,0FFH,0FFH,0FFH,0FFH,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H,055H
+        DB      055H,0FFH,0FFH,0FFH,0FFH,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H,055H
+        DB      055H,0FFH,0FFH,0FFH,0FFH,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H,055H
+        DB      055H,0FFH,0FFH,0FFH,0FFH,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H,055H
+        DB      055H,0FFH,0FFH,0FFH,0FFH,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H,055H
+        DB      055H,0FFH,0FFH,0FFH,0FFH,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H,055H
+        DB      055H,0FFH,0FFH,0FFH,0FFH,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H,055H
+        DB      055H,0FFH,0FFH,0FFH,0FFH,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H
+
+        ; ------------------------------------------------------------
+        ; RAM/paged global @0x71c [low]  W:{-}
+        ; R:{BL_CAN2_Init_CommObjects_0xEE00,BL_CAN2_LoadMailboxCfg_EE00}
+        ; ------------------------------------------------------------
+        ; data @0x71c (1 bytes)
+        DB      095H
+
+        ; ------------------------------------------------------------
+        ; RAM/paged global @0x71d [low]  W:{-}
+        ; R:{BL_CAN2_Init_CommObjects_0xEE00,BL_CAN2_LoadMailboxCfg_EE00}
+        ; ------------------------------------------------------------
+        ; data @0x71d (2275 bytes)
+        DB      055H,01DH,001H,000H,000H,088H,000H,000H,000H,000H,000H,000H,000H,000H,000H,095H
+        DB      055H,01CH,001H,000H,000H,080H,000H,000H,000H,000H,000H,000H,000H,000H,000H,095H
+        DB      055H,01BH,0E1H,000H,000H,080H,000H,000H,000H,000H,000H,000H,000H,000H,000H,055H
+        DB      055H,0FFH,0FFH,0FFH,0FFH,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H,055H
+        DB      055H,0FFH,0FFH,0FFH,0FFH,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H,055H
+        DB      055H,0FFH,0FFH,0FFH,0FFH,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H,055H
+        DB      055H,0FFH,0FFH,0FFH,0FFH,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H,055H
+        DB      055H,0FFH,0FFH,0FFH,0FFH,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H,055H
+        DB      055H,0FFH,0FFH,0FFH,0FFH,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H,055H
+        DB      055H,0FFH,0FFH,0FFH,0FFH,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H,055H
+        DB      055H,0FFH,0FFH,0FFH,0FFH,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H,055H
+        DB      055H,0FFH,0FFH,0FFH,0FFH,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H,055H
+        DB      055H,0FFH,0FFH,0FFH,0FFH,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H,055H
+        DB      055H,0FFH,0FFH,0FFH,0FFH,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H,055H
+        DB      055H,0FFH,0FFH,0FFH,0FFH,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH
+
+        ; ------------------------------------------------------------
+        ; (likely) RAM/paged global @0x1000 [low]  W:{?BL_Cstart_StackFill}
+        ; R:{?BL_Cstart_StackFill,CC14INT_handler,EngCrank_ArmTimingCapture}
+        ; ------------------------------------------------------------
+        ; data @0x1000 (2 bytes)
+        DB      0FFH,0FFH
+
+        ; ------------------------------------------------------------
+        ; (unclassified) RAM/paged global @0x1002 [low]  W:{-}  R:{-}
+        ; ------------------------------------------------------------
+        ; data @0x1002 (4094 bytes)
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+
+; ======== rt_callfar_via_r5r4  (@0x2000) ========
+        ; ------------------------------------------------------------
+        ; Runtime helper: indirect FAR CALL via pointer in r5:r4. 'calls 0x2000' pushes the real return; this
+        ; pushes r5(seg)+r4(off) and RETS -> transfers to r5:r4, whose own RETS returns to the original
+        ; caller. (Was mislabeled Push_To_System_Stack_Program.)
+        ; ------------------------------------------------------------
+        PUSH R5
+        PUSH R4
+        RETS
+
+; ======== rt_read_dword_far_r5r4  (@0x2006) ========
+        ; ------------------------------------------------------------
+        ; Runtime helper: far 32-bit read. EXTS r5; r10=[r5:r4]; r4+=2; r11=[r5:r4]. Loads a dword from the
+        ; far pointer r5:r4 into r11:r10 (used e.g. by BL_Routine_VerifyAndRunMTOS to read the MTOS CRC
+        ; range).
+        ; ------------------------------------------------------------
+        EXTS R5, #01H
+        MOV R10,[R4]
+        ADD R4,#02H
+        ADDC R5,#00H
+        EXTS R5, #01H
+        MOV R11,[R4]
+        RETS
+
+; ======== q_rt_udiv32  (@0x2014) ========
+        ; ------------------------------------------------------------
+        ; ? Runtime helper: 32-bit unsigned divide (divlu/divu + normalization shifts + mulu back-multiply).
+        ; Classic Tasking/Keil C166 __udiv32-style long-division helper. Exact div-vs-divmod semantics
+        ; unconfirmed.
+        ; ------------------------------------------------------------
+        OR R11,R11
+        JMPR cc_NE,L_202E
+        MOV 0FE0EH,R5
+        DIVU R10
+        MOV R5,0FE0EH
+        MOV 0FE0EH,R4
+        DIVLU R10
+        MOV R4,0FE0EH
+        RETS
+L_202E:              ; 0x202e
+        MOV [-R0],R4
+        MOV [-R0],R5
+        MOV [-R0],R10
+        MOV [-R0],R11
+L_2036:              ; 0x2036
+        SHR R10,#01H
+        BMOV R10.0FH,R11.00H
+        SHR R11,#01H
+        SHR R4,#01H
+        BMOV R4.0FH,R5.00H
+        SHR R5,#01H
+        OR R11,R11
+        JMPR cc_NE,L_2036
+        MOV 0FE0CH,R5
+        MOV 0FE0EH,R4
+        DIVLU R10
+        MOV R4,0FE0EH
+        MOV R10,[R0+]
+        MULU R4,R10
+        MOV R5,0FE0EH
+        MOV R10,[R0+]
+        MULU R4,R10
+        MOV R11,0FE0EH
+        ADD R5,0FE0CH
+        JMPR cc_C,L_207E
+        MOV R10,[R0]
+        CMP R5,R10
+        JMPR cc_UGT,L_207E
+        JMPR cc_C,L_2080
+        MOV R10,[R0+#02H]
+        CMP R11,R10
+        JMPR cc_ULE,L_2080
+L_207E:              ; 0x207e
+        SUB R4,#01H
+L_2080:              ; 0x2080
+        MOV R5,#00H
+        ADD R0,#04H
+        RETS
+
+        ; data @0x2086 (1 bytes)
+        DB      0FFH
+
+BOOTLOW ENDS
+        END

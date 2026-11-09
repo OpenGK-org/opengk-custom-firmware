@@ -1,0 +1,441 @@
+; asw/ivvt/ivvt_clc.a66
+; 0xAE6B6-0xAEB0C  (1110 bytes, 5 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_cam_adj_rng_max_in                 EQU  09011CH
+c_cam_ini_in                         EQU  09012EH
+c_cam_sp_dif_adh_ivvt                EQU  090133H
+c_cam_sp_dif_max_ivvt                EQU  090134H
+c_cam_sp_hys_neut_ivvt_in            EQU  090135H
+c_t_cam_sp_lgrd_ivvt                 EQU  090318H
+lc_maf_ivvt_grd_conf                 EQU  09047DH
+c_cam_sp_as_ivvt_in                  EQU  09085CH
+ldpm_tco_st_1_ivvt                EQU  09807BH
+ldpm_tco_1_ivvt                   EQU  0980D3H
+ldpm_n_1_ivvt                           EQU  098220H
+ldpm_n_2_ivvt                           EQU  09826AH
+ldpm_maf_ivvt_1_ivvt                    EQU  098278H
+ldpm_maf_ivvt_2_ivvt                    EQU  098286H
+ip_cam_sp_tco_1_fl_ivvt_in           EQU  098EC0H
+ip_cam_sp_tco_1_is_ivvt_in           EQU  098ED0H
+ip_cam_sp_tco_1_pl_ivvt_in           EQU  098EF4H
+ip_cam_sp_tco_2_fl_ivvt_in           EQU  098FB4H
+ip_cam_sp_tco_2_is_ivvt_in           EQU  098FC4H
+ip_cam_sp_tco_2_pl_ivvt_in           EQU  098FE8H
+ip_fac_cam_sp_is_ivvt_in             EQU  099160H
+ip_fac_cam_sp_pl_ivvt_in             EQU  0991A0H
+
+PUBLIC  Calc_Cam_Sp_Clc, Calc_Cam_Sp_Ctl, Calc_IVVT_CamSp_Clc_2, Calc_IVVT_CamSp_Fac, Set_Dcbd4_b06
+EXTERN  Clamp_U16_v2:NEAR, Get_Byte_2D_Table_DWord_YByte:NEAR, Get_Byte_2D_Table_DWord_YWord:NEAR, Get_Byte_3D_Table_DWord_XWord_YWord:NEAR
+EXTERN  Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_3D_Table:NEAR, Get_IP_Byte_X_Axis:NEAR, Get_IP_Byte_Y_Axis:NEAR
+EXTERN  Get_IP_Word_X_Axis:NEAR, Get_IP_Word_Y_Axis:NEAR, Max_U16:NEAR, Ramp_S16_Q5:NEAR
+EXTERN  Sat_Add_S16_v2:NEAR, Sat_Sub_S16_v2:NEAR, sub_r12_13_ret_r4:NEAR, subtract_r12_r13_negate_if_not_rets_r4:NEAR
+
+S_AE6B6 SECTION CODE AT 0AE6B6H
+
+; ======== Calc_Cam_Sp_Clc  (@0xae6b6) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by ivvt/cam output signals + DTC): Cam setpoint base calc:
+        ; cam_sp_clc_afs/lgrd/ivvt + lv_tog_cam_sp (target cam angle).
+        ; ------------------------------------------------------------
+Calc_Cam_Sp_Clc:
+        MOVB lv_ivvt_c20f,ZEROS
+        CALLS 00AH,Calc_IVVT_CamSp_Fac
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_AE6D8
+        MOVB RL5,DPP0:c_cam_ini_in
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_clc_afs_ivvt,RL5
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_clc_lgrd_ivvt,RL5
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_ivvt,RL5
+        MOVB ivvt_in_struct_sp_ivvt_lv_tog_cam_sp,ZEROS
+L_AE6D8:                 ; 0xae6d8
+        RETS
+
+; ======== Calc_IVVT_CamSp_Clc_2  (@0xae6da) ========
+        ; ------------------------------------------------------------
+        ; Named from dominant IVVT struct field (auto-derived).
+        ; ------------------------------------------------------------
+Calc_IVVT_CamSp_Clc_2:
+        MOVB lv_ivvt_c20f,ZEROS
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_AE6FC
+        MOV lv_ivvt_f952,ZEROS
+        MOVB lv_ivvt_cbd4,ZEROS
+        MOVB RL5,DPP0:c_cam_ini_in
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_clc_afs_ivvt,RL5
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_clc_lgrd_ivvt,RL5
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_ivvt,RL5
+L_AE6FC:                 ; 0xae6fc
+        RETS
+
+; ======== Calc_Cam_Sp_Ctl  (@0xae6fe) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by ivvt/cam output signals + DTC): Cam setpoint control update: cam_sp_clc +
+        ; state_ivvt_act + sp_add cam setpoint offset.
+        ; ------------------------------------------------------------
+Calc_Cam_Sp_Ctl:
+        MOV [-R0],R9
+        MOV [-R0],R6
+        MOVB RL6,#00H
+        MOVB RL4,state_ivvt_tran
+        CMPB RL4,lv_ivvt_c20f
+        JMPR cc_EQ,L_AE7B4
+        MOV R4,state_ivvt_tran
+        CMP R4,#03H
+        JMPR cc_NE,L_AE736
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_AE7B4
+        MOVB RL5,ivvt_in_struct_sp_ivvt_cam_sp_ivvt
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_clc_afs_ivvt,RL5
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_clc_ivvt,RL5
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_clc_lgrd_ivvt,RL5
+        MOVB RL3,DPP0:c_cam_ini_in
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_dyw_ivvt,RL3
+        JMPR cc_UC,L_AE7B4
+L_AE736:                 ; 0xae736
+        MOV R4,state_ivvt
+        JMPR cc_EQ,L_AE746
+        MOV R5,state_ivvt_tran
+        CMP R5,#DATA16 00008H
+        JMPR cc_NE,L_AE75E
+L_AE746:                 ; 0xae746
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_AE7B4
+        MOVB lv_ivvt_cbd4,ZEROS
+        MOV lv_ivvt_f952,ZEROS
+        MOVB RL5,DPP0:c_cam_ini_in
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_ivvt,RL5
+        JMPR cc_UC,L_AE7B4
+L_AE75E:                 ; 0xae75e
+        MOV R4,state_ivvt_tran
+        CMP R4,#DATA16 0000BH
+        JMPR cc_NE,L_AE796
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_AE7B4
+        MOVB RL5,ivvt_in_struct_sp_ivvt_cam_sp_ivvt
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_clc_afs_ivvt,RL5
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_clc_ivvt,RL5
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_clc_lgrd_ivvt,RL5
+        MOVBZ R4,DPP0:c_t_cam_sp_lgrd_ivvt
+        MOV lv_ivvt_f952,R4
+        MOVB RL4,#01H
+        MOVB lv_ivvt_cbd4,RL4
+        MOVB RL3,DPP0:c_cam_ini_in
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_dyw_ivvt,RL3
+        JMPR cc_UC,L_AE7B4
+L_AE796:                 ; 0xae796
+        MOV R4,state_ivvt
+        CMP R4,#03H
+        JMPR cc_NE,L_AE7B4
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_AE7B4
+        MOVB RL5,DPP0:c_cam_ini_in
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_clc_afs_ivvt,RL5
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_ivvt,RL5
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_clc_lgrd_ivvt,RL5
+L_AE7B4:                 ; 0xae7b4
+        MOVB RL4,state_ivvt_tran
+        MOVB lv_ivvt_c20f,RL4
+        MOV R4,state_ivvt
+        CMP R4,#04H
+        JMPR cc_NE,L_AE7C8
+        JB lv_dc_rbm.0FH,L_AE7D2
+L_AE7C8:                 ; 0xae7c8
+        MOV R4,state_ivvt
+        CMP R4,#02H
+        JMPA cc_NE,L_AEA5A
+L_AE7D2:                 ; 0xae7d2
+        MOV R12,#DATA16 04530H
+        MOV R13,n_C93C
+        CALLS 00FH,Get_Byte_2D_Table_DWord_YWord
+        CMPB RL4,pv_av
+        JMPR cc_NC,L_AE7E8
+        BSET lv_ct.0EH
+        JMPR cc_UC,L_AE7EA
+L_AE7E8:                 ; 0xae7e8
+        BCLR lv_ct.0EH
+L_AE7EA:                 ; 0xae7ea
+        JNB lv_cam_ad_di_ivvt.04H,L_AE7F2
+        JMPA cc_UC,L_AE9E8
+L_AE7F2:                 ; 0xae7f2
+        MOV R12,#DATA16 04538H
+        MOV R13,#00H
+        CALLS 00FH,Get_Byte_2D_Table_DWord_YByte
+        MOVBZ R9,RL4
+        JMPA cc_NE,L_AE98C
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_AE860
+        MOV R12,#DATA16 POF ldpm_n_2_ivvt
+        MOV R13,#DATA16 PAG ldpm_n_2_ivvt
+        MOV R14,n_C93C
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ldpm_maf_ivvt_1_ivvt
+        MOV R13,#DATA16 PAG ldpm_maf_ivvt_1_ivvt
+        MOV R14,maf_ivvt
+        CALLS 00FH,Get_IP_Word_X_Axis
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_AE906
+        MOVB RL5,ivvt_in_struct_sp_add_ivvt_lv_cam_sp_add_ivvt
+        JMPR cc_EQ,L_AE906
+        MOV R12,#DATA16 POF ip_cam_sp_tco_2_is_ivvt_in
+        MOV R13,#DATA16 PAG ip_cam_sp_tco_2_is_ivvt_in
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV [-R0],R4
+        MOV R12,#DATA16 POF ip_cam_sp_tco_1_is_ivvt_in
+        MOV R13,#DATA16 PAG ip_cam_sp_tco_1_is_ivvt_in
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R12,RL4
+        MOVBS R14,ivvt_in_struct_sp_ivvt_fac_cam_sp_is_ivvt
+        MOV R13,[R0+]
+        CALLS 00FH,Ramp_S16_Q5
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_clc_afs_ivvt,RL4
+        JMPR cc_UC,L_AE906
+L_AE860:                 ; 0xae860
+        JNB lv_ct.0EH,L_AE8AE
+        MOV R12,#DATA16 POF ldpm_n_1_ivvt
+        MOV R13,#DATA16 PAG ldpm_n_1_ivvt
+        MOV R14,n_C93C
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_AE906
+        MOVB RL5,ivvt_in_struct_sp_add_ivvt_lv_cam_sp_add_ivvt
+        JMPR cc_EQ,L_AE906
+        MOV R12,#DATA16 POF ip_cam_sp_tco_2_fl_ivvt_in
+        MOV R13,#DATA16 PAG ip_cam_sp_tco_2_fl_ivvt_in
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVBZ R4,RL4
+        MOV [-R0],R4
+        MOV R12,#DATA16 POF ip_cam_sp_tco_1_fl_ivvt_in
+        MOV R13,#DATA16 PAG ip_cam_sp_tco_1_fl_ivvt_in
+        CALLS 00FH,Get_IP_Byte_2D_Table
+        MOVBZ R12,RL4
+        MOVBS R14,ivvt_in_struct_sp_ivvt_fac_cam_sp_pl_ivvt
+        MOV R13,[R0+]
+        CALLS 00FH,Ramp_S16_Q5
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_clc_afs_ivvt,RL4
+        JMPR cc_UC,L_AE906
+L_AE8AE:                 ; 0xae8ae
+        MOV R12,#DATA16 POF ldpm_n_1_ivvt
+        MOV R13,#DATA16 PAG ldpm_n_1_ivvt
+        MOV R14,n_C93C
+        CALLS 00FH,Get_IP_Word_Y_Axis
+        MOV R12,#DATA16 POF ldpm_maf_ivvt_2_ivvt
+        MOV R13,#DATA16 PAG ldpm_maf_ivvt_2_ivvt
+        MOV R14,maf_ivvt
+        CALLS 00FH,Get_IP_Word_X_Axis
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_AE906
+        MOVB RL5,ivvt_in_struct_sp_add_ivvt_lv_cam_sp_add_ivvt
+        JMPR cc_EQ,L_AE906
+        MOV R12,#DATA16 POF ip_cam_sp_tco_2_pl_ivvt_in
+        MOV R13,#DATA16 PAG ip_cam_sp_tco_2_pl_ivvt_in
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R4,RL4
+        MOV [-R0],R4
+        MOV R12,#DATA16 POF ip_cam_sp_tco_1_pl_ivvt_in
+        MOV R13,#DATA16 PAG ip_cam_sp_tco_1_pl_ivvt_in
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        MOVBZ R12,RL4
+        MOVBS R14,ivvt_in_struct_sp_ivvt_fac_cam_sp_pl_ivvt
+        MOV R13,[R0+]
+        CALLS 00FH,Ramp_S16_Q5
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_clc_afs_ivvt,RL4
+L_AE906:                 ; 0xae906
+        MOVB RL4,DPP0:lc_maf_ivvt_grd_conf
+        JMPR cc_EQ,L_AE91E
+        MOV R12,maf_ivvt
+        MOV R13,lv_ivvt_c57e
+        CALLS 00FH,Sat_Sub_S16_v2
+        MOV maf_ivvt_grd,R4
+        JMPR cc_UC,L_AE92E
+L_AE91E:                 ; 0xae91e
+        MOV R12,maf_ivvt
+        MOV R13,lv_ivvt_c580
+        CALLS 00FH,Sat_Sub_S16_v2
+        MOV maf_ivvt_grd,R4
+L_AE92E:                 ; 0xae92e
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_AE95E
+        MOV R12,#DATA16 04540H
+        MOV R13,n_C93C
+        MOV R14,maf_ivvt_grd
+        ADD R14,#DATA16 08000H
+        CALLS 00FH,Get_Byte_3D_Table_DWord_XWord_YWord
+        MOVBZ R13,RL4
+        MOVBZ R12,ivvt_in_struct_sp_ivvt_cam_sp_clc_ivvt
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVBZ R13,RL4
+        MOVBZ R12,ivvt_in_struct_sp_ivvt_cam_sp_clc_afs_ivvt
+        CALLS 00FH,Max_U16
+        MOVB RL6,RL4
+L_AE95E:                 ; 0xae95e
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_AE9A6
+        MOVB RL5,ivvt_in_struct_sp_add_ivvt_lv_cam_sp_add_ivvt
+        JMPR cc_EQ,L_AE986
+        MOVBZ R12,RL6
+        MOV R13,ivvt_in_struct_sp_add_ivvt_cam_sp_add_ivvt
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV R9,R4
+        CMP R9,#DATA16 000FFH
+        JMPR cc_ULE,L_AE982
+        MOVB RL6,#DATA16 000FFH
+        JMPR cc_UC,L_AE9A6
+L_AE982:                 ; 0xae982
+        MOV R6,R9
+        JMPR cc_UC,L_AE9A6
+L_AE986:                 ; 0xae986
+        MOVB RL6,ivvt_in_struct_sp_add_ivvt_cam_sp_value_ivvt
+        JMPR cc_UC,L_AE9A6
+L_AE98C:                 ; 0xae98c
+        CMP R9,#01H
+        JMPR cc_NE,L_AE99C
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_AE9A6
+        MOVB RL6,ivvt_in_struct_sp_afl_ivvt_cam_sp_clc_afl_ivvt
+        JMPR cc_UC,L_AE9A6
+L_AE99C:                 ; 0xae99c
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_AE9A6
+        MOVB RL6,lv_ivvt_cbca
+L_AE9A6:                 ; 0xae9a6
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_AE9F6
+        MOVBZ R12,RL6
+        MOV R13,DPP0:c_cam_sp_as_ivvt_in
+        CALLS 00FH,Sat_Add_S16_v2
+        MOV R9,R4
+        CMP R9,#DATA16 000FFH
+        JMPR cc_ULE,L_AE9C4
+        MOVB RL6,#DATA16 000FFH
+        JMPR cc_UC,L_AE9C6
+L_AE9C4:                 ; 0xae9c4
+        MOV R6,R9
+L_AE9C6:                 ; 0xae9c6
+        MOVB RL4,lv_ivvt_cbd4
+        JMPR cc_EQ,L_AE9E2
+        ADDB ivvt_in_struct_sp_ivvt_cam_sp_clc_lgrd_ivvt,ONES
+        CMPB RL6,ivvt_in_struct_sp_ivvt_cam_sp_clc_lgrd_ivvt
+        JMPR cc_C,L_AE9DE
+        MOV lv_ivvt_f952,ZEROS
+        MOVB lv_ivvt_cbd4,ZEROS
+L_AE9DE:                 ; 0xae9de
+        MOVB RL6,ivvt_in_struct_sp_ivvt_cam_sp_clc_lgrd_ivvt
+L_AE9E2:                 ; 0xae9e2
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_clc_ivvt,RL6
+        JMPR cc_UC,L_AE9F6
+L_AE9E8:                 ; 0xae9e8
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_AE9F6
+        MOVB RL5,ivvt_in_struct_diag_mec_cam_ivvt_cam_sp_trip_ivvt
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_clc_ivvt,RL5
+L_AE9F6:                 ; 0xae9f6
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_AEA5A
+        MOV R4,ivvt_in_1_struct_ctl_ivvt_state_ivvt_act
+        CMP R4,#03H
+        JMPR cc_EQ,L_AEA16
+        MOVBZ R12,ivvt_in_struct_sp_ivvt_cam_sp_ivvt
+        MOVBZ R13,ivvt_in_struct_sp_ivvt_cam_sp_clc_ivvt
+        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CMPB RL4,DPP0:c_cam_sp_dif_max_ivvt
+        JMPR cc_ULE,L_AEA34
+L_AEA16:                 ; 0xaea16
+        MOVBZ R12,DPP0:c_cam_ini_in
+        MOVBZ R13,DPP0:c_cam_adj_rng_max_in
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVBZ R13,RL4
+        MOVBZ R12,ivvt_in_struct_sp_ivvt_cam_sp_clc_ivvt
+        MOVBZ R14,DPP0:c_cam_ini_in
+        CALLS 00FH,Clamp_U16_v2
+        MOVBZ R9,RL4
+        JMPR cc_UC,L_AEA38
+L_AEA34:                 ; 0xaea34
+        MOVBZ R9,ivvt_in_struct_sp_ivvt_cam_sp_ivvt
+L_AEA38:                 ; 0xaea38
+        MOVBZ R12,DPP0:c_cam_ini_in
+        MOVBZ R13,DPP0:c_cam_sp_hys_neut_ivvt_in
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOV R5,R9
+        CMPB RL5,RL4
+        JMPR cc_ULE,L_AEA54
+        MOVB RL4,DPP0:c_cam_ini_in
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_ivvt,RL4
+        JMPR cc_UC,L_AEA5A
+L_AEA54:                 ; 0xaea54
+        MOV R4,R9
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_ivvt,RL4
+L_AEA5A:                 ; 0xaea5a
+        MOV R4,state_ivvt
+        CMP R4,#02H
+        JMPR cc_NE,L_AEAA0
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_AEAA0
+        MOVBZ R12,ivvt_in_struct_sp_ivvt_cam_sp_dyw_ivvt
+        MOVBZ R13,ivvt_in_struct_sp_ivvt_cam_sp_ivvt
+        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CMPB RL4,DPP0:c_cam_sp_dif_adh_ivvt
+        JMPR cc_UGT,L_AEA82
+        MOVB RL4,#01H
+        MOVB ivvt_in_struct_sp_ivvt_lv_cam_sp_dyw_ivvt,RL4
+        JMPR cc_UC,L_AEA8E
+L_AEA82:                 ; 0xaea82
+        MOVB ivvt_in_struct_sp_ivvt_lv_cam_sp_dyw_ivvt,ZEROS
+        MOVB RL4,ivvt_in_struct_sp_ivvt_cam_sp_ivvt
+        MOVB ivvt_in_struct_sp_ivvt_cam_sp_dyw_ivvt,RL4
+L_AEA8E:                 ; 0xaea8e
+        MOVB RL4,ivvt_in_struct_sp_ivvt_lv_tog_cam_sp
+        JMPR cc_NE,L_AEA9C
+        MOVB RL5,#01H
+        MOVB ivvt_in_struct_sp_ivvt_lv_tog_cam_sp,RL5
+        JMPR cc_UC,L_AEAA0
+L_AEA9C:                 ; 0xaea9c
+        MOVB ivvt_in_struct_sp_ivvt_lv_tog_cam_sp,ZEROS
+L_AEAA0:                 ; 0xaeaa0
+        MOV R4,lv_ivvt_c57e
+        MOV lv_ivvt_c580,R4
+        MOV R5,maf_ivvt
+        MOV lv_ivvt_c57e,R5
+        MOV R6,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Calc_IVVT_CamSp_Fac  (@0xaeab6) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): IVVT Factors for AFS Setpoint (fac_cam_sp_ivvt)
+        ; ------------------------------------------------------------
+Calc_IVVT_CamSp_Fac:
+        MOV R12,#DATA16 POF ldpm_tco_1_ivvt
+        MOV R13,#DATA16 PAG ldpm_tco_1_ivvt
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Byte_Y_Axis
+        MOV R12,#DATA16 POF ldpm_tco_st_1_ivvt
+        MOV R13,#DATA16 PAG ldpm_tco_st_1_ivvt
+        MOVBZ R14,tco_st
+        CALLS 00FH,Get_IP_Byte_X_Axis
+        MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
+        JMPR cc_NE,L_AEB04
+        MOV R12,#DATA16 POF ip_fac_cam_sp_is_ivvt_in
+        MOV R13,#DATA16 PAG ip_fac_cam_sp_is_ivvt_in
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        SUBB RL4,#DATA16 00080H
+        MOVB ivvt_in_struct_sp_ivvt_fac_cam_sp_is_ivvt,RL4
+        MOV R12,#DATA16 POF ip_fac_cam_sp_pl_ivvt_in
+        MOV R13,#DATA16 PAG ip_fac_cam_sp_pl_ivvt_in
+        CALLS 00FH,Get_IP_Byte_3D_Table
+        SUBB RL4,#DATA16 00080H
+        MOVB ivvt_in_struct_sp_ivvt_fac_cam_sp_pl_ivvt,RL4
+L_AEB04:                 ; 0xaeb04
+        RETS
+
+; ======== Set_Dcbd4_b06  (@0xaeb06) ========
+Set_Dcbd4_b06:
+        MOVB lv_ivvt_cbd4,ZEROS
+        RETS
+
+S_AE6B6 ENDS
+        END

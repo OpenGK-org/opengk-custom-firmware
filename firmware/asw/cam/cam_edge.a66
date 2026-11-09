@@ -1,0 +1,459 @@
+; asw/cam/cam_edge.a66
+; 0xC7F72-0xC840C  (1178 bytes, 4 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_abc_inc_cam                        EQU  0900A1H
+c_abc_max_cam                        EQU  0900D5H
+c_cam_1_edge_tooth_neg               EQU  09011AH
+c_cam_1_edge_tooth_pos               EQU  09011BH
+c_cam_diag_eng_stop_max              EQU  09011DH
+c_cam_dyw_diag                       EQU  090120H
+c_cam_eng_rev                        EQU  090121H
+c_cam_ref_cor_ivvt_in_1              EQU  0904CAH
+c_n_cam_lih_diag                     EQU  09062AH
+c_n_grd_cam_lih_diag                 EQU  09096BH
+
+PUBLIC  Calc_Crank_Tooth_Pattern, Diag_DTC_dd124, Set_Out_FuelReq, Snapshot_Cam_Edge_Ctr
+EXTERN  Abs_S16_Simple:NEAR, Add_r12_r13_Return_r4:NEAR, DTC_Update_Immediate:NEAR, Sat_Add_U8:NEAR
+EXTERN  Sat_Sub_S16:NEAR, sub_r12_13_ret_r4:NEAR
+
+S_C7F72 SECTION CODE AT 0C7F72H
+
+; ======== Diag_DTC_dd124  (@0xc7f72) ========
+        ; ------------------------------------------------------------
+        ; Per-fault DTC setter: sets dtc_test_result and updates the DTC at status-address 0xd124. Name = DTC
+        ; status RAM address (unique per fault).
+        ; ------------------------------------------------------------
+Diag_DTC_dd124:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        MOV [-R0],R6
+        SUB R0,#DATA16 0000CH
+        MOV R4,p_ivvt_cam_m
+        MOV [R0+#02H],R4
+        MOV R5,p_ivvt_cam_s
+        MOV [R0+#0AH],R5
+        CMP R4,#DATA16 0CADAH
+        JMPR cc_NE,L_C7FB4
+        MOV R2,#DATA16 0F6D0H
+        MOV [R4+#08H],R2
+        MOV R4,#DATA16 0F6D4H
+        MOV R5,[R0+#02H]
+        MOV [R5+#010H],R4
+        MOV R4,cam_ad_ivvt_in_1
+        MOV R5,[R0+#02H]
+        MOV [R5+#012H],R4
+L_C7FB4:                 ; 0xc7fb4
+        JB can_fd58.09H,L_C7FBC
+        JMPA cc_UC,L_C82DA
+L_C7FBC:                 ; 0xc7fbc
+        JB sched_flags2.0EH,L_C7FC4
+        JMPA cc_UC,L_C82DA
+L_C7FC4:                 ; 0xc7fc4
+        JNB lv_cam_err.05H,L_C7FCC
+        JMPA cc_UC,L_C82DA
+L_C7FCC:                 ; 0xc7fcc
+        JNB lv_crk_tooth_err.07H,L_C7FD4
+        JMPA cc_UC,L_C82DA
+L_C7FD4:                 ; 0xc7fd4
+        JNB lv_crk_tooth_err.09H,L_C7FDC
+        JMPA cc_UC,L_C82DA
+L_C7FDC:                 ; 0xc7fdc
+        MOV R4,cam_1_edge_ctr
+        MOV [R0+#04H],R4
+        MOV R5,diag_cdc2
+        ADD R5,#01H
+        CMP R4,R5
+        JMPA cc_NE,L_C81DC
+        MOV R5,cam_1_psn_av
+        SHR R5,#04H
+        MOVB [R0],RL5
+        MOVB RL4,cam_1_level
+        BMOVN PSW.06H,PSW.03H
+        JB PSW.06H,L_C8008
+        JMPA cc_UC,L_C80FE
+L_C8008:                 ; 0xc8008
+        MOVB RL4,cam_err_lih
+        JMPR cc_NE,L_C80A8
+        MOVBZ R12,DPP0:c_cam_1_edge_tooth_pos
+        MOVBZ R13,DPP0:c_cam_dyw_diag
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB RL5,[R0]
+        CMPB RL5,RL4
+        JMPR cc_C,L_C809E
+        MOVBZ R12,DPP0:c_cam_1_edge_tooth_pos
+        MOVBZ R13,DPP0:c_cam_dyw_diag
+        CALLS 00FH,Sat_Add_U8
+        MOVB RL5,[R0]
+        CMPB RL5,RL4
+        JMPR cc_UGT,L_C809E
+        MOV R4,[R0+#02H]
+        MOV R5,[R4+#08H]
+        MOVB RL4,[R5+#01H]
+        MOVBZ R12,RL4
+        MOV R4,[R0+#02H]
+        MOVB RL5,[R4+#013H]
+        MOVBS R5,RL5
+        MOV R13,#DATA16 000A0H
+        SUB R13,R5
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV R7,R4
+        MOV R12,R7
+        MOV R13,DPP0:c_cam_ref_cor_ivvt_in_1
+        ADD R13,#DATA16 07FFFH
+        CALLS 00FH,Sat_Sub_S16
+        MOV R8,R4
+        MOV R9,R8
+        ADD R9,#DATA16 08000H
+        MOV R4,R8
+        CMP R4,#00H
+        JMPR cc_SGE,L_C807A
+        MOVB cam_rise_av,ZEROS
+        JMPA cc_UC,L_C81E2
+L_C807A:                 ; 0xc807a
+        MOV R4,#0FH
+        AND R4,R9
+        CMP R4,#DATA16 00009H
+        JMPR cc_ULE,L_C8092
+        MOV R4,R9
+        SHR R4,#04H
+        ADDB RL4,#01H
+        MOVB cam_rise_av,RL4
+        JMPA cc_UC,L_C81E2
+L_C8092:                 ; 0xc8092
+        MOV R4,R9
+        SHR R4,#04H
+        MOVB cam_rise_av,RL4
+        JMPA cc_UC,L_C81E2
+L_C809E:                 ; 0xc809e
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        JMPA cc_UC,L_C81E2
+L_C80A8:                 ; 0xc80a8
+        MOVBZ R12,DPP0:c_cam_1_edge_tooth_pos
+        MOVBZ R13,DPP0:c_cam_dyw_diag
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB RL5,[R0]
+        CMPB RL5,RL4
+        JMPR cc_C,L_C80CE
+        MOVBZ R12,DPP0:c_cam_1_edge_tooth_pos
+        MOVBZ R13,DPP0:c_cam_dyw_diag
+        CALLS 00FH,Sat_Add_U8
+        MOVB RL5,[R0]
+        CMPB RL5,RL4
+        JMPA cc_ULE,L_C81E2
+L_C80CE:                 ; 0xc80ce
+        MOVBZ R12,DPP0:c_cam_1_edge_tooth_neg
+        MOVBZ R13,DPP0:c_cam_dyw_diag
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB RL5,[R0]
+        CMPB RL5,RL4
+        JMPR cc_C,L_C80F4
+        MOVBZ R12,DPP0:c_cam_1_edge_tooth_neg
+        MOVBZ R13,DPP0:c_cam_dyw_diag
+        CALLS 00FH,Sat_Add_U8
+        MOVB RL5,[R0]
+        CMPB RL5,RL4
+        JMPA cc_ULE,L_C81E2
+L_C80F4:                 ; 0xc80f4
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        JMPA cc_UC,L_C81E2
+L_C80FE:                 ; 0xc80fe
+        MOVB RL4,cam_err_lih
+        JMPR cc_NE,L_C818C
+        MOVBZ R12,DPP0:c_cam_1_edge_tooth_neg
+        MOVBZ R13,DPP0:c_cam_dyw_diag
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB RL5,[R0]
+        CMPB RL5,RL4
+        JMPR cc_C,L_C8184
+        MOVBZ R12,DPP0:c_cam_1_edge_tooth_neg
+        MOVBZ R13,DPP0:c_cam_dyw_diag
+        CALLS 00FH,Sat_Add_U8
+        MOVB RL5,[R0]
+        CMPB RL5,RL4
+        JMPR cc_UGT,L_C8184
+        MOV R4,[R0+#02H]
+        MOV R5,[R4+#08H]
+        MOVB RL4,[R5+#01H]
+        MOVBZ R12,RL4
+        MOV R13,#DATA16 00460H
+        CALLS 00FH,Add_r12_r13_Return_r4
+        MOV [R0+#08H],R4
+        MOV R12,R4
+        MOV R13,DPP0:c_cam_ref_cor_ivvt_in_1
+        ADD R13,#DATA16 07FFFH
+        CALLS 00FH,Sat_Sub_S16
+        MOV [R0+#06H],R4
+        MOV R6,R4
+        ADD R6,#DATA16 08000H
+        CMP R4,#00H
+        JMPR cc_SGE,L_C8164
+        MOVB cam_fall_av,ZEROS
+        JMPR cc_UC,L_C81E2
+L_C8164:                 ; 0xc8164
+        MOV R4,#0FH
+        AND R4,R6
+        CMP R4,#DATA16 00009H
+        JMPR cc_ULE,L_C817A
+        MOV R4,R6
+        SHR R4,#04H
+        ADDB RL4,#01H
+        MOVB cam_fall_av,RL4
+        JMPR cc_UC,L_C81E2
+L_C817A:                 ; 0xc817a
+        MOV R4,R6
+        SHR R4,#04H
+        MOVB cam_fall_av,RL4
+        JMPR cc_UC,L_C81E2
+L_C8184:                 ; 0xc8184
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        JMPR cc_UC,L_C81E2
+L_C818C:                 ; 0xc818c
+        MOVBZ R12,DPP0:c_cam_1_edge_tooth_neg
+        MOVBZ R13,DPP0:c_cam_dyw_diag
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB RL5,[R0]
+        CMPB RL5,RL4
+        JMPR cc_C,L_C81B0
+        MOVBZ R12,DPP0:c_cam_1_edge_tooth_neg
+        MOVBZ R13,DPP0:c_cam_dyw_diag
+        CALLS 00FH,Sat_Add_U8
+        MOVB RL5,[R0]
+        CMPB RL5,RL4
+        JMPR cc_ULE,L_C81E2
+L_C81B0:                 ; 0xc81b0
+        MOVBZ R12,DPP0:c_cam_1_edge_tooth_pos
+        MOVBZ R13,DPP0:c_cam_dyw_diag
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVB RL5,[R0]
+        CMPB RL5,RL4
+        JMPR cc_C,L_C81D4
+        MOVBZ R12,DPP0:c_cam_1_edge_tooth_pos
+        MOVBZ R13,DPP0:c_cam_dyw_diag
+        CALLS 00FH,Sat_Add_U8
+        MOVB RL5,[R0]
+        CMPB RL5,RL4
+        JMPR cc_ULE,L_C81E2
+L_C81D4:                 ; 0xc81d4
+        MOVB RL4,#08H
+        MOVB dtc_test_result,RL4
+        JMPR cc_UC,L_C81E2
+L_C81DC:                 ; 0xc81dc
+        MOVB RL4,#04H
+        MOVB dtc_test_result,RL4
+L_C81E2:                 ; 0xc81e2
+        MOV R4,[R0+#04H]
+        MOV diag_cdc2,R4
+        MOVB RL4,dtc_test_result
+        JMPR cc_NE,L_C8272
+        MOVB RL5,cam_err_lih
+        JMPR cc_EQ,L_C822A
+        MOVB RL5,diag_c346
+        JMPA cc_NE,L_C82DA
+        MOV R12,DPP0:c_n_cam_lih_diag
+        MOV R13,n_sp_is_max
+        CALLS 00FH,Add_r12_r13_Return_r4
+        CMP R4,n_C93C
+        JMPR cc_NC,L_C82DA
+        MOVBS R12,n_grd
+        CALLS 00DH,Abs_S16_Simple
+        MOVBS R5,DPP0:c_n_grd_cam_lih_diag
+        CMP R4,R5
+        JMPR cc_SGE,L_C82DA
+        MOVB RL4,diag_c345
+        CMPB RL4,DPP0:c_cam_diag_eng_stop_max
+        JMPR cc_NC,L_C82DA
+L_C822A:                 ; 0xc822a
+        MOVB RL4,diag_c340
+        JMPR cc_EQ,L_C82DA
+        SUBB RL4,#01H
+        MOVB diag_c340,RL4
+        CMPB RL4,#00H
+        JMPR cc_NE,L_C82DA
+        MOV R12,#DATA16 0D124H
+        MOV R13,#DATA16 052B2H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cam_err.06H,dtc_status_work.06H
+        MOVBZ R4,diag_d12e
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C825C
+        MOV R4,#DATA16 0FFBFH
+        AND dtc_grp_maf_dif,R4
+L_C825C:                 ; 0xc825c
+        BSET lv_crk_tooth_err.06H
+        MOVB RL4,cam_err_lih
+        JMPR cc_EQ,L_C82DA
+        SUBB diag_c345,ONES
+        MOVB RL4,#DATA16 00010H
+        ORB lv_sched_diag_inh,RL4
+        JMPR cc_UC,L_C82DA
+L_C8272:                 ; 0xc8272
+        MOVB RL4,diag_c340
+        CMPB RL4,DPP0:c_abc_max_cam
+        JMPR cc_NC,L_C82C2
+        MOVBZ R12,RL4
+        MOVBZ R13,DPP0:c_abc_inc_cam
+        CALLS 00FH,Sat_Add_U8
+        MOVB diag_c340,RL4
+        CMPB RL4,DPP0:c_abc_max_cam
+        JMPR cc_C,L_C82BC
+        MOVB RL5,DPP0:c_abc_max_cam
+        MOVB diag_c340,RL5
+        MOV R12,#DATA16 0D124H
+        MOV R13,#DATA16 052B2H
+        CALLS 00DH,DTC_Update_Immediate
+        BMOV lv_cam_err.06H,dtc_status_work.06H
+        MOVBZ R4,diag_d12e
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_C82C6
+        MOV R4,#DATA16 0FFBFH
+        AND dtc_grp_maf_dif,R4
+        JMPR cc_UC,L_C82C6
+L_C82BC:                 ; 0xc82bc
+        MOVB dtc_test_result,ZEROS
+        JMPR cc_UC,L_C82C6
+L_C82C2:                 ; 0xc82c2
+        MOVB dtc_test_result,ZEROS
+L_C82C6:                 ; 0xc82c6
+        JB lv_crk_tooth_err.06H,L_C82DA
+        JNB lv_cam_err.06H,L_C82DA
+        BSET lv_crk_tooth_err.06H
+        MOVB RL4,#01H
+        MOVB cam_err_lih,RL4
+        MOVB dbl_igc,RL4
+L_C82DA:                 ; 0xc82da
+        ADD R0,#DATA16 0000CH
+        MOV R6,[R0+]
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RET
+
+; ======== Snapshot_Cam_Edge_Ctr  (@0xc82e8) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Snapshot_Cam_Edge_Ctr:
+        MOV R4,cam_1_edge_ctr
+        MOV diag_cdc2,R4
+        RET
+
+; ======== Calc_Crank_Tooth_Pattern  (@0xc82f2) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tco/tia/crank output signals): Crank tooth-pattern / engine-rev detection:
+        ; lv_crk_tooth_err / nr_pat_eng_rev.
+        ; ------------------------------------------------------------
+Calc_Crank_Tooth_Pattern:
+        MOV [-R0],R6
+        MOV R4,cam_1_psn_av
+        SHR R4,#04H
+        MOVB RL6,RL4
+        MOVBZ R12,DPP0:c_cam_1_edge_tooth_neg
+        MOVBZ R13,DPP0:c_cam_eng_rev
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVBZ R13,RL4
+        MOV R12,#DATA16 00078H
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL6,RL4
+        JMPR cc_UGT,L_C8368
+        MOVBZ R12,DPP0:c_cam_1_edge_tooth_neg
+        MOVBZ R13,DPP0:c_cam_eng_rev
+        CALLS 00FH,Sat_Add_U8
+        MOVBZ R13,RL4
+        MOV R12,#DATA16 00078H
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL6,RL4
+        JMPR cc_C,L_C8368
+        MOVBZ R12,DPP0:c_cam_1_edge_tooth_pos
+        MOVBZ R13,DPP0:c_cam_eng_rev
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVBZ R13,RL4
+        MOV R12,#DATA16 00078H
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL4,crank_tim_1
+        JMPR cc_C,L_C8368
+        MOVBZ R12,DPP0:c_cam_1_edge_tooth_pos
+        MOVBZ R13,DPP0:c_cam_eng_rev
+        CALLS 00FH,Sat_Add_U8
+        MOVBZ R13,RL4
+        MOV R12,#DATA16 00078H
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL4,crank_tim_1
+        JMPR cc_ULE,L_C83D4
+L_C8368:                 ; 0xc8368
+        MOVBZ R12,DPP0:c_cam_1_edge_tooth_pos
+        MOVBZ R13,DPP0:c_cam_eng_rev
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVBZ R13,RL4
+        MOV R12,#DATA16 00078H
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL6,RL4
+        JMPR cc_UGT,L_C83DE
+        MOVBZ R12,DPP0:c_cam_1_edge_tooth_pos
+        MOVBZ R13,DPP0:c_cam_eng_rev
+        CALLS 00FH,Sat_Add_U8
+        MOVBZ R13,RL4
+        MOV R12,#DATA16 00078H
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL6,RL4
+        JMPR cc_C,L_C83DE
+        MOVBZ R12,DPP0:c_cam_1_edge_tooth_neg
+        MOVBZ R13,DPP0:c_cam_eng_rev
+        CALLS 00FH,sub_r12_13_ret_r4
+        MOVBZ R13,RL4
+        MOV R12,#DATA16 00078H
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL4,crank_tim_1
+        JMPR cc_C,L_C83DE
+        MOVBZ R12,DPP0:c_cam_1_edge_tooth_neg
+        MOVBZ R13,DPP0:c_cam_eng_rev
+        CALLS 00FH,Sat_Add_U8
+        MOVBZ R13,RL4
+        MOV R12,#DATA16 00078H
+        CALLS 00FH,sub_r12_13_ret_r4
+        CMPB RL4,crank_tim_1
+        JMPR cc_UGT,L_C83DE
+L_C83D4:                 ; 0xc83d4
+        BSET lv_crk_tooth_err.09H
+        MOVB RL4,#08H
+        MOVB nr_pat_eng_rev,RL4
+        JMPR cc_UC,L_C83E4
+L_C83DE:                 ; 0xc83de
+        BCLR lv_crk_tooth_err.09H
+        MOVB nr_pat_eng_rev,ZEROS
+L_C83E4:                 ; 0xc83e4
+        MOVB crank_tim_1,RL6
+        MOV R6,[R0+]
+        RET
+
+; ======== Set_Out_FuelReq  (@0xc83ec) ========
+        ; ------------------------------------------------------------
+        ; Digital-output-latch driver (fd94=request/fd96=state, fd98=feedback; CC5/P2.5=fuel-pump relay): Set
+        ; output-request latch fd94/fd96 bit 0x2000 (fuel-pump request).
+        ; ------------------------------------------------------------
+Set_Out_FuelReq:
+        MOVB RL4,#01H
+        ORB state_fuel_req,RL4
+        MOVB RL4,state_fuel_req
+        JMPR cc_NE,L_C8402
+        BSET state_out_fault.0DH
+        JB state_out_req.04H,L_C840A
+        BSET state_out_diag.0DH
+        RETS
+L_C8402:                 ; 0xc8402
+        BCLR state_out_fault.0DH
+        JB state_out_req.04H,L_C840A
+        BCLR state_out_diag.0DH
+L_C840A:                 ; 0xc840a
+        RETS
+
+S_C7F72 ENDS
+        END

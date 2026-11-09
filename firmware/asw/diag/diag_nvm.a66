@@ -1,0 +1,376 @@
+; asw/diag/diag_nvm.a66
+; 0xDAB06-0xDAE6A  (868 bytes, 8 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+c_conf_ad_rst                        EQU  090148H
+c_conf_nvmy_rst                      EQU  090155H
+
+PUBLIC  Calc_ECU_Diag_SF_2, Inc_Ctr_f896_NVM, NVM_Save_s00c, NVM_Save_s56a, Parse_Serial_Nibbles, Set_Conf_Ad_Rst
+PUBLIC  Set_PL_Flags, Store_TRT_NVM
+EXTERN  Backup_ER_Adapt:NEAR, DTC_Calc_Activation_MIL:NEAR, Diag_VS_Plaus:NEAR, Elevated_Write_Routine_prg_zone_wrapper:NEAR
+EXTERN  NVM_Save_s1a4:NEAR, NVM_Save_s1a8:NEAR, NVM_Save_s1b0:NEAR, NVM_Save_s1b4:NEAR
+EXTERN  NVM_Save_s1c2:NEAR, NVM_Save_s1ce_MisCtr:NEAR, NVM_Save_s1fa:NEAR, NVM_Save_s200:NEAR
+EXTERN  NVM_Save_s210:NEAR, NVM_Save_s210b:NEAR, NVM_Save_s3da:NEAR, NVM_Save_s4aa:NEAR
+EXTERN  NVM_Save_s56e:NEAR, NVM_Save_s574:NEAR, NVM_Save_s578:NEAR, NVM_Save_s57c:NEAR
+EXTERN  NVM_Save_s582_CamAd:NEAR, NVM_Save_s5aa:NEAR, NVM_Save_s5ae:NEAR, NVM_Save_s5b2:NEAR
+EXTERN  NVM_Save_s5c6:NEAR, NVM_Save_s5ce:NEAR, NVM_Save_s5d8:NEAR, NVM_Save_s5dc:NEAR
+EXTERN  NVM_Save_s62e:NEAR, NVM_Save_s62eb:NEAR, NVM_Save_s632:NEAR, NVM_Save_s63a:NEAR
+EXTERN  NVM_Save_s63e:NEAR, NVM_Save_s640:NEAR, NVM_Save_s641:NEAR, NVM_Save_s642:NEAR
+EXTERN  NVM_Save_s643:NEAR, SMARTRA_Save_data_to_EEPROM:NEAR, Store_IGA_Knk_Ad_NVM:NEAR, Store_Knks_Gain_NVM:NEAR
+EXTERN  xor_routine:NEAR
+
+S_DAB06 SECTION CODE AT 0DAB06H
+
+; ======== NVM_Save_s00c  (@0xdab06) ========
+        ; ------------------------------------------------------------
+        ; NVM adaptation I/O: saves RAM-> validated NVM block (DAT_00f890 base) section; xor_routine checksum.
+        ; Section offset in name.
+        ; ------------------------------------------------------------
+NVM_Save_s00c:
+        SUB R0,#02H
+        CALLA cc_UC,Parse_Serial_Nibbles
+        MOV [R0],R4
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        ADD R12,#DATA16 0000AH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,R0
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        ADD R12,#DATA16 0000AH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#02H
+        CALLS 00DH,xor_routine
+        MOV [R0],R4
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        ADD R12,#DATA16 0000CH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,R0
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        ADD R0,#02H
+        RETS
+
+; ======== Store_TRT_NVM  (@0xdab98) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by trt/ecu_diag/dtc output signals): Persist total-run-time trt_word to NVM
+        ; (Elevated_Write prg-zone).
+        ; ------------------------------------------------------------
+Store_TRT_NVM:
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0F87EH
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        SUB trt_word,ONES
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        ADD R12,#02H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0F87EH
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        SUB trt_word,ONES
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        ADD R12,#04H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0F87EH
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        MOV R4,#02H
+        SUB trt_word,R4
+        RETS
+
+; ======== Inc_Ctr_f896_NVM  (@0xdac1e) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Inc_Ctr_f896_NVM:
+        SUB diag_f896,ONES
+        SUBC diag_f898,ONES
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        ADD R12,#06H
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0F896H
+        MOV R15,#04H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        RETS
+
+; ======== NVM_Save_s56a  (@0xdac50) ========
+        ; ------------------------------------------------------------
+        ; NVM adaptation I/O: saves RAM-> validated NVM block (DAT_00f890 base) section; xor_routine checksum.
+        ; Section offset in name.
+        ; ------------------------------------------------------------
+NVM_Save_s56a:
+        SUB R0,#02H
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        ADD R12,#DATA16 0056AH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0F50CH
+        MOV R15,#01H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        ADD R12,#DATA16 0056BH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,#DATA16 0F4A6H
+        MOV R15,#01H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        ADD R12,#DATA16 0056AH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV [-R0],R12
+        SHR R12,#0EH
+        SHL R13,#02H
+        OR R13,R12
+        MOV R12,[R0+]
+        AND R12,#DATA16 03FFFH
+        MOV R14,#02H
+        CALLS 00DH,xor_routine
+        MOV [R0],R4
+        EXTP #03H, #02H
+        MOV R12,DPP0:diag_f890
+        MOV R13,DPP0:diag_f892
+        ADD R12,#DATA16 0056CH
+        MOV R4,R12
+        MOV R5,R13
+        SHL R5,#0EH
+        OR R4,R5
+        MOV R5,R13
+        SHR R5,#02H
+        MOV R12,R4
+        MOV R13,R5
+        MOV R14,R0
+        MOV R15,#02H
+        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        ADD R0,#02H
+        RETS
+
+; ======== Calc_ECU_Diag_SF_2  (@0xdad08) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by trt/ecu_diag/dtc output signals): ECU self-diagnosis status flags (variant):
+        ; ecu_diag_sf_word / lv_ecu_err.
+        ; ------------------------------------------------------------
+Calc_ECU_Diag_SF_2:
+        JNB can_fd58.00H,L_DAD2E
+        EXTP #03H, #02H
+        MOV R4,DPP0:diag_f890
+        MOV R5,DPP0:diag_f892
+        EXTP R5, #03H
+        MOV R10,[R4+#06H]
+        MOV R11,[R4+#08H]
+        NOP
+        MOV diag_f896,R10
+        MOV diag_f898,R11
+        JMPR cc_UC,L_DAD36
+L_DAD2E:                 ; 0xdad2e
+        MOV diag_f896,ZEROS
+        MOV diag_f898,ZEROS
+L_DAD36:                 ; 0xdad36
+        EXTP #03H, #02H
+        MOV R4,DPP0:bl_cur_addr_lo
+        MOV R5,DPP0:bl_cur_addr_hi
+        EXTP #03H, #02H
+        MOV DPP0:diag_f890,R4
+        MOV DPP0:diag_f892,R5
+        MOV R2,#DATA16 0FFBFH
+        AND ecu_diag_sf_word,R2
+        CALLS 00DH,Store_TRT_NVM
+        CALLS 00DH,Inc_Ctr_f896_NVM
+        MOVB RL4,lv_sched_diag_inh
+        ANDB RL4,#01H
+        JMPR cc_NE,L_DADE2
+        CALLS 00DH,NVM_Save_s1a8
+        CALLS 00CH,NVM_Save_s1a4
+        CALLS 00CH,Store_IGA_Knk_Ad_NVM
+        CALLS 00CH,NVM_Save_s1b0
+        CALLS 00DH,NVM_Save_s56a
+        CALLS 00DH,NVM_Save_s56e
+        CALLS 00DH,NVM_Save_s574
+        CALLS 00BH,NVM_Save_s57c
+        CALLS 00BH,NVM_Save_s63e
+        CALLS 00CH,NVM_Save_s640
+        CALLS 00CH,NVM_Save_s641
+        CALLS 00BH,NVM_Save_s642
+        CALLS 00CH,NVM_Save_s5b2
+        CALLS 00CH,Store_Knks_Gain_NVM
+        CALLS 00BH,NVM_Save_s62e
+        CALLS 00CH,NVM_Save_s62eb
+        CALLS 00BH,SMARTRA_Save_data_to_EEPROM
+        CALLS 00DH,NVM_Save_s5aa
+        CALLS 00DH,NVM_Save_s5ae
+        CALLS 00CH,NVM_Save_s1b4
+        CALLS 00BH,NVM_Save_s1fa
+        CALLS 00DH,NVM_Save_s200
+        CALLS 00DH,NVM_Save_s5ce
+        CALLS 00CH,NVM_Save_s582_CamAd
+        CALLS 00CH,NVM_Save_s5d8
+        CALLS 00DH,NVM_Save_s5dc
+        CALLS 00BH,NVM_Save_s5c6
+        CALLS 00BH,NVM_Save_s643
+        CALLS 00BH,NVM_Save_s578
+        CALLS 00CH,NVM_Save_s4aa
+        CALLS 00DH,NVM_Save_s632
+L_DADE2:                 ; 0xdade2
+        CALLS 00BH,NVM_Save_s63a
+        CALLS 00CH,Diag_VS_Plaus
+        CALLS 00CH,NVM_Save_s3da
+        CALLS 00CH,Backup_ER_Adapt
+        MOV R12,#DATA16 00040H
+        CALLS 00DH,DTC_Calc_Activation_MIL
+        BMOV lv_ecu_err.03H,dtc_status_work.06H
+        MOVBZ R4,dtc_ecu_flags
+        AND R4,#DATA16 00020H
+        JMPR cc_EQ,L_DAE10
+        MOV R4,#DATA16 0FFF7H
+        AND dtc_st_grp_ecu,R4
+L_DAE10:                 ; 0xdae10
+        CALLS 00DH,NVM_Save_s210
+        CALLS 00DH,NVM_Save_s210b
+        CALLS 00EH,NVM_Save_s1ce_MisCtr
+        CALLS 00EH,NVM_Save_s1c2
+        CALLS 00DH,NVM_Save_s00c
+        RETS
+
+; ======== Set_PL_Flags  (@0xdae26) ========
+        ; ------------------------------------------------------------
+        ; OEM (verified by trt/ecu_diag/dtc output signals): Set power-latch / part-load flags lv_pl.
+        ; ------------------------------------------------------------
+Set_PL_Flags:
+        MOVB RL4,DPP0:c_conf_nvmy_rst
+        CMPB RL4,#01H
+        JMPR cc_NE,L_DAE30
+        BSET lv_pl.0EH
+L_DAE30:                 ; 0xdae30
+        RETS
+
+; ======== Set_Conf_Ad_Rst  (@0xdae32) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (Funktionsrahmen, verified): Variant and Version Coding (conf_ad_rst)
+        ; ------------------------------------------------------------
+Set_Conf_Ad_Rst:
+        MOVB RL4,DPP0:c_conf_ad_rst
+        MOVB conf_ad_rst,RL4
+        RETS
+
+; ======== Parse_Serial_Nibbles  (@0xdae3c) ========
+        ; ------------------------------------------------------------
+        ; Named by caller-context + body analysis (push to 100pct).
+        ; ------------------------------------------------------------
+Parse_Serial_Nibbles:
+        MOVBZ R4,DPP1:0A0050H
+        AND R4,#DATA16 0000FH
+        SHL R4,#0CH
+        MOVBZ R5,DPP1:0A0051H
+        AND R5,#DATA16 0000FH
+        SHL R5,#08H
+        OR R4,R5
+        MOVBZ R5,DPP1:0A0052H
+        AND R5,#DATA16 0000FH
+        SHL R5,#04H
+        OR R4,R5
+        MOVBZ R5,DPP1:0A0053H
+        AND R5,#DATA16 0000FH
+        OR R4,R5
+        RET
+
+S_DAB06 ENDS
+        END

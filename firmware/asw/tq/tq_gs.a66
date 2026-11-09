@@ -1,0 +1,275 @@
+; asw/tq/tq_gs.a66
+; 0xC5F96-0xC622C  (662 bytes, 6 functions)
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+
+; calibration labels used here (documented in cal/cal.inc)
+lc_inh_pu_req                        EQU  090475H
+c_n_dif_tq_st_1                      EQU  0908E4H
+c_n_dif_tq_st_2                      EQU  0908E6H
+
+PUBLIC  Calc_TQI_GS_FAST_DEC, Calc_TQI_Req_Driv, Calc_TQ_Min_Clu, Init_TQ_Lamb_Defaults, Reset_Df748_14e, Reset_tqi_gs_slow_dec_196
+EXTERN  Get_IP_Word_2D_Table_DWord_YWord:NEAR, Get_IP_Word_3D_Table_DWord_XByte_YByte:NEAR, Max_U16:NEAR, MulDiv_S16_Sat_v2:NEAR
+EXTERN  Sat_Add_S16:NEAR, Sat_Sub_S16:NEAR
+
+S_C5F96 SECTION CODE AT 0C5F96H
+
+; ======== Calc_TQ_Min_Clu  (@0xc5f96) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (EMS2000, verified): Minimum Torque at Clutch
+        ; ------------------------------------------------------------
+Calc_TQ_Min_Clu:
+        MOV [-R0],R9
+        MOV [-R0],R8
+        MOV [-R0],R7
+        JB lv_cdn_diag_maf_dif_ch_int.0EH,L_C5FAC
+        JNB lv_ast.05H,L_C5FAC
+        JB lv_pl.01H,L_C5FAC
+        JNB lv_pl.02H,L_C5FB2
+L_C5FAC:                 ; 0xc5fac
+        MOVB lv_tq_c32a,ZEROS
+        JMPR cc_UC,L_C5FC2
+L_C5FB2:                 ; 0xc5fb2
+        SUBB lv_tq_c32a,ONES
+        MOVB RL4,lv_tq_c32a
+        CMPB RL4,#04H
+        JMPR cc_NE,L_C5FC2
+        MOVB lv_tq_c32a,ZEROS
+L_C5FC2:                 ; 0xc5fc2
+        MOVB RL4,lv_tq_c32a
+        JMPA cc_NE,L_C60D4
+        MOV R12,#DATA16 04B6EH
+        MOV R13,n_sp_is_ratio
+        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YWord
+        MOV R7,R4
+        ADD R7,#DATA16 08000H
+        CMP R7,#DATA16 0F000H
+        JMPR cc_SLE,L_C5FE6
+        MOV R4,R7
+        JMPR cc_UC,L_C5FEA
+L_C5FE6:                 ; 0xc5fe6
+        MOV R4,#DATA16 0F000H
+L_C5FEA:                 ; 0xc5fea
+        MOV fac_n_dif_is,R4
+        MOV R12,tq_conv
+        MOV R13,tq_loss_req_clu
+        CALLS 00FH,Sat_Sub_S16
+        MOV R12,R4
+        MOV R13,fac_n_dif_is
+        MOV R14,#DATA16 01000H
+        CALLS 00FH,MulDiv_S16_Sat_v2
+        MOV R13,R4
+        MOV R12,tq_conv
+        CALLS 00FH,Sat_Add_S16
+        MOV tq_min_clu_1,R4
+        MOV R12,#DATA16 04B76H
+        MOVBZ R13,n_32
+        MOVBZ R14,tco
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YByte
+        MOV R8,R4
+        MOV R12,#DATA16 04B82H
+        MOV R13,amp
+        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YWord
+        MOV R9,R4
+        ADD R9,#DATA16 08000H
+        MOV R12,R8
+        MOV R13,R9
+        CALLS 00FH,Sat_Add_S16
+        MOV tqi_min_req_pu,R4
+        MOV R12,R4
+        MOV R13,tq_loss_req_clu
+        CALLS 00FH,Sat_Add_S16
+        MOV tq_min_req_pu,R4
+        CMP R4,tq_min_clu_1
+        JMPR cc_SLE,L_C6060
+        MOV R7,tq_min_req_pu
+        JMPR cc_UC,L_C6064
+L_C6060:                 ; 0xc6060
+        MOV R7,tq_min_clu_1
+L_C6064:                 ; 0xc6064
+        MOV R12,R7
+        MOV R13,tq_dif_i_is
+        CALLS 00FH,Sat_Add_S16
+        MOV tq_min_clu_2,R4
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_C6098
+        MOV R5,n_dif_st
+        CMP R5,DPP0:c_n_dif_tq_st_1
+        JMPR cc_SGT,L_C608A
+        MOV R2,tq_st
+        CMP R2,tq_min_clu_2
+        JMPR cc_SLT,L_C6094
+L_C608A:                 ; 0xc608a
+        MOV R4,n_dif_st
+        CMP R4,DPP0:c_n_dif_tq_st_2
+        JMPR cc_SGT,L_C609A
+L_C6094:                 ; 0xc6094
+        BSET lv_ast.05H
+        JMPR cc_UC,L_C609A
+L_C6098:                 ; 0xc6098
+        BCLR lv_ast.05H
+L_C609A:                 ; 0xc609a
+        MOVB RL4,DPP0:lc_inh_pu_req
+        JMPR cc_NE,L_C60A8
+        JNB lv_pl.01H,L_C60A8
+        MOV R4,#01H
+        JMPR cc_UC,L_C60AA
+L_C60A8:                 ; 0xc60a8
+        MOV R4,#00H
+L_C60AA:                 ; 0xc60aa
+        MOV R5,#00H
+        BMOV R5.00H,lv_pl.02H
+        OR R4,R5
+        JMPR cc_EQ,L_C60BE
+        MOV R4,tq_loss
+        MOV tq_min_clu,R4
+        JMPR cc_UC,L_C60D4
+L_C60BE:                 ; 0xc60be
+        JNB lv_ast.05H,L_C60CC
+        MOV R4,tq_min_clu_2
+        MOV tq_min_clu,R4
+        JMPR cc_UC,L_C60D4
+L_C60CC:                 ; 0xc60cc
+        MOV R4,tq_st
+        MOV tq_min_clu,R4
+L_C60D4:                 ; 0xc60d4
+        MOV R7,[R0+]
+        MOV R8,[R0+]
+        MOV R9,[R0+]
+        RETS
+
+; ======== Init_TQ_Lamb_Defaults  (@0xc60dc) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tq/tqi output signals): Init torque/mixture setpoints to safe defaults:
+        ; lamb_sp=0x400, eff_egr_hom, lv_ast|0x240, lv_fcut_fast|0x10, limit words=0x7fff.
+        ; ------------------------------------------------------------
+Init_TQ_Lamb_Defaults:
+        MOV R4,#DATA16 08000H
+        MOV lv_lam_f74e,R4
+        MOV R5,#DATA16 00400H
+        MOV lamb_mv,R5
+        MOV R2,#DATA16 00400H
+        MOV lamb_sp,R2
+        MOV lv_lam_f74a,ONES
+        MOVB RL4,#DATA16 00061H
+        MOVB lv_lam_f495,RL4
+        BSET lv_ast.06H
+        MOVB lv_lam_f494,ZEROS
+        MOVB lv_lam_c32b,ZEROS
+        BSET lv_ast.09H
+        BSET lv_fcut_fast.04H
+        MOV R4,#DATA16 07FFFH
+        MOV lv_lam_f754,R4
+        MOV R3,#DATA16 07FFFH
+        MOV lv_lam_f740,R3
+        MOV R1,#DATA16 07FFFH
+        MOV lamb_mv_max,R1
+        MOV R2,#DATA16 00400H
+        MOV lv_lam_cd44,R2
+        BCLR lv_lam_fd2c.08H
+        MOV R2,#DATA16 08000H
+        MOV eff_egr_hom,R2
+        BCLR lv_lam_fd2c.09H
+        BCLR lv_lam_fd2c.0DH
+        MOV lv_lam_f756,ZEROS
+        BCLR lv_lam_fd2c.0EH
+        MOV R2,#DATA16 08000H
+        MOV lv_lam_f758,R2
+        BCLR lv_lam_fd2c.0AH
+        RETS
+
+; ======== Reset_Df748_14e  (@0xc614e) ========
+Reset_Df748_14e:
+        MOV R4,tq_max_clu
+        MOV g_f748,R4
+        BMOV lv_lam_fd2c.0FH,lv_ch.03H
+        BMOV lv_ast.0AH,lv_ch.03H
+        MOV R5,opg_av_isa
+        MOV isapwm,R5
+        RETS
+
+; ======== Calc_TQI_Req_Driv  (@0xc6168) ========
+        ; ------------------------------------------------------------
+        ; OEM-chain (verified by tq/tqi output signals): Driver indicated-torque request: tqi_req_driv =
+        ; max(0, tq_req_clu - tq_loss); snapshots tqi_req_tra_slow.
+        ; ------------------------------------------------------------
+Calc_TQI_Req_Driv:
+        MOV R4,tqi_req_tra
+        MOV tqi_req_tra_slow,R4
+        MOV R12,tq_req_clu
+        MOV R13,tq_loss
+        CALLS 00FH,Sat_Sub_S16
+        CMP R4,#00H
+        JMPR cc_SLE,L_C618E
+        MOV R12,tq_req_clu
+        MOV R13,tq_loss
+        CALLS 00FH,Sat_Sub_S16
+        JMPR cc_UC,L_C6190
+L_C618E:                 ; 0xc618e
+        MOV R4,#00H
+L_C6190:                 ; 0xc6190
+        MOV tqi_req_driv,R4
+        RETS
+
+; ======== Reset_tqi_gs_slow_dec_196  (@0xc6196) ========
+Reset_tqi_gs_slow_dec_196:
+        MOV R4,#DATA16 07FFFH
+        MOV tqi_gs_slow_dec,R4
+        MOV tqi_gs_fast_dec,R4
+        MOV tqi_gs_slow_inc,ZEROS
+        MOV tqi_gs_fast_inc,ZEROS
+        RETS
+
+; ======== Calc_TQI_GS_FAST_DEC  (@0xc61ac) ========
+        ; ------------------------------------------------------------
+        ; OEM-MATCH (MS42, verified): gearshift fast torque dec: tqi_gs_fast_dec from tqi_gs_req +
+        ; IP(n_32,maf), tar_gc gated
+        ; (was FUN_0c61ac)
+        ; ------------------------------------------------------------
+Calc_TQI_GS_FAST_DEC:
+        JB lv_cdn_diag_maf_dif_ch_int.0BH,L_C6220
+        JB lv_pl.04H,L_C6220
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_C61C8
+        JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_C6220
+        MOVB RL4,tar_gc
+        CMPB RL4,#03H
+        JMPR cc_EQ,L_C61C8
+        CMPB RL4,#02H
+        JMPR cc_NE,L_C6220
+L_C61C8:                 ; 0xc61c8
+        JNB abs_def.02H,L_C6220
+        MOVB RL4,tqi_tcu_can
+        CMPB RL4,#DATA16 000FFH
+        JMPR cc_NC,L_C6220
+        BSET lv_asr_act.01H
+        JB lv_asr_req.04H,L_C61E0
+        JNB lv_asr_req.07H,L_C6200
+L_C61E0:                 ; 0xc61e0
+        MOV R12,#DATA16 04B96H
+        MOVBZ R13,n_32
+        MOVBZ R14,lv_iga_cc2b
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YByte
+        MOV R13,R4
+        MOV R12,tqi_gs_req
+        CALLS 00FH,Max_U16
+        MOV tqi_gs_fast_dec,R4
+        RETS
+L_C6200:                 ; 0xc6200
+        MOV R12,#DATA16 04B8AH
+        MOVBZ R13,n_32
+        MOVBZ R14,lv_iga_cc2b
+        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YByte
+        MOV R13,R4
+        MOV R12,tqi_gs_req
+        CALLS 00FH,Max_U16
+        MOV tqi_gs_fast_dec,R4
+        RETS
+L_C6220:                 ; 0xc6220
+        BCLR lv_asr_act.01H
+        MOV R4,#DATA16 07FFFH
+        MOV tqi_gs_fast_dec,R4
+        RETS
+
+S_C5F96 ENDS
+        END
