@@ -11,7 +11,7 @@ description of it for INCA/CANape/CCP tools.
 ## Quick start
 
 ```bash
-pip install git+https://github.com/dante383/openc166   # needs CMake + a C++ compiler
+pip install -r requirements.txt          # openc166, pinned
 make                                    # -> build/out/opengk01.bin + .a2l
 ```
 
@@ -22,6 +22,24 @@ make                                    # -> build/out/opengk01.bin + .a2l
 | `python3 tools/build.py -v` | build, printing every assembler warning |
 | `python3 tools/checksum.py <image> [--fix]` | check (or fix) the checksums of any image |
 | `python3 tools/gen_a2l.py [-o file]` | regenerate only the A2L |
+
+## Releases
+
+`.github/workflows/build.yml` builds on every push to `main` and every pull
+request: it installs the pinned openc166 from `requirements.txt`, runs `make`,
+verifies the checksums and uploads `opengk01-<commit>.bin` / `.a2l` plus
+`SHA256SUMS` as a workflow artifact.
+
+Pushing a tag that starts with `v` also publishes a GitHub release with
+`opengk01-<tag>.bin`, `opengk01-<tag>.a2l` and `SHA256SUMS`:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The build is deterministic: the same commit produces the same image and A2L
+locally and in CI.
 
 ## Layout
 
