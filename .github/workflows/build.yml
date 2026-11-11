@@ -82,6 +82,13 @@ jobs:
             IFS=. read -r major minor patch <<< "${latest#v}"
             tag="v${major}.${minor}.$((10#$patch + 1))"
           fi
+          for file in dist/opengk01-*; do
+            suffix=".${file##*.}"
+            if [[ "$file" == *_8mbit.* ]]; then suffix="_8mbit$suffix"; fi
+            destination="dist/opengk01-${tag}${suffix}"
+            if [[ "$file" != "$destination" ]]; then mv "$file" "$destination"; fi
+          done
+          (cd dist && sha256sum -- opengk01-* > SHA256SUMS)
           gh release create "$tag" dist/* \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
