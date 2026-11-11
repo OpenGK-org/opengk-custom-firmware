@@ -32,6 +32,7 @@ import openc166
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import checksum  # noqa: E402
+import intel_hex  # noqa: E402
 
 REPO = os.path.dirname(HERE)
 FW_DIR = os.path.join(REPO, "firmware")
@@ -50,6 +51,10 @@ ap.add_argument("--no-checksum", action="store_true")
 ap.add_argument("--no-a2l", action="store_true", help="don't generate the A2L next to the image")
 ap.add_argument("-v", "--verbose", action="store_true", help="print every warning")
 args = ap.parse_args()
+output_base = os.path.splitext(args.output)[0]
+bin_file = output_base + ".bin"
+cpu_bin = output_base + "_8mbit.bin"
+hex_file = output_base + "_8mbit.hex"
 
 t0 = time.time()
 img = bytearray(b"\xff" * FLASH)
@@ -145,15 +150,20 @@ if not args.no_checksum:
         print("note  %d asw byte(s) lie outside the Program checksum zones" % loose)
 
 os.makedirs(os.path.dirname(os.path.abspath(args.output)), exist_ok=True)
-open(args.output, "wb").write(img)
-print("wrote %s (%.1fs)" % (os.path.relpath(args.output, os.getcwd()), time.time() - t0))
+open(bin_file, "wb").write(img)
+print("wrote %s (%.1fs)" % (os.path.relpath(bin_file, os.getcwd()), time.time() - t0))
+with open(cpu_bin, "wb") as output:
+    output.write(intel_hex.to_cpu_image(img))
+print("wrote %s " % os.path.relpath(cpu_bin, os.getcwd()))
+intel_hex.write_image(hex_file, img)
+print("hex   %s" % os.path.relpath(hex_file, os.getcwd()))
 
 # ---- A2L ------------------------------------------------------------------------------
 # from the ;@a2l annotations in firmware/; the asw link's symbol table resolves
 # annotated labels inside modules (e.g. new parameters in custom/)
 if not args.no_a2l:
     import gen_a2l
-    a2l = os.path.splitext(args.output)[0] + ".a2l"
+    a2l = output_base + ".a2l"
     try:
         st = gen_a2l.generate(a2l, link_symbols=asw_symbols)
     except gen_a2l.A2LError as e:

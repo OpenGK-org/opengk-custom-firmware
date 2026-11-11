@@ -6,13 +6,14 @@ software **OPENGK01**, written in C166 assembly (Keil A166 syntax) and built wit
 
 The `.a66` files under `firmware/` are the source. Edit them directly; the build
 produces a complete 512 KB flash image with all checksums fixed, and an ASAP2 (A2L)
-description of it for INCA/CANape/CCP tools.
+description of it for INCA/CANape/CCP tools. The 1 MiB flash image and Intel HEX files
+are padded for the CPU address space.
 
 ## Quick start
 
 ```bash
 pip install -r requirements.txt          # openc166, pinned
-make                                    # -> build/out/opengk01.bin + .a2l
+make                                     # -> build/out/opengk01.bin + .a2l + .hex
 ```
 
 | Command | What it does |
@@ -27,8 +28,8 @@ make                                    # -> build/out/opengk01.bin + .a2l
 
 `.github/workflows/build.yml` builds on every push to `main` and every pull
 request: it installs the pinned openc166 from `requirements.txt`, runs `make`,
-verifies the checksums and uploads `opengk01-<commit>.bin` / `.a2l` plus
-`SHA256SUMS` as a workflow artifact.
+verifies the checksums and uploads `opengk01-<commit>.bin` / `.a2l`,
+`opengk01-<commit>_8mbit.bin` / `.hex` plus `SHA256SUMS` as a workflow artifact.
 
 Pushing a tag that starts with `v` also publishes a GitHub release with
 `opengk01-<tag>.bin`, `opengk01-<tag>.a2l` and `SHA256SUMS`:

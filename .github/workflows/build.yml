@@ -37,6 +37,8 @@ jobs:
           if [[ "$GITHUB_REF" == refs/tags/* ]]; then v="$GITHUB_REF_NAME"; else v="$(git rev-parse --short HEAD)"; fi
           mkdir dist
           cp build/out/opengk01.bin "dist/opengk01-$v.bin"
+          cp build/out/opengk01_8mbit.bin "dist/opengk01-${v}_8mbit.bin"
+          cp build/out/opengk01_8mbit.hex "dist/opengk01-${v}_8mbit.hex"
           cp build/out/opengk01.a2l "dist/opengk01-$v.a2l"
           (cd dist && sha256sum -- * > SHA256SUMS)
           cat dist/SHA256SUMS
