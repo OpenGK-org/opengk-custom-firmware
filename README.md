@@ -19,6 +19,7 @@ make                                     # -> build/out/opengk01.bin + .a2l + .h
 | Command | What it does |
 |---|---|
 | `make` / `make build` | assemble and link everything, fix checksums, write the image |
+| `make check` | `build`, then validate the A2L with a2ltool (see below) |
 | `make clean` | remove `build/out/` |
 | `python3 tools/build.py -v` | build, printing every assembler warning |
 | `python3 tools/checksum.py <image> [--fix]` | check (or fix) the checksums of any image |
@@ -29,8 +30,9 @@ make                                     # -> build/out/opengk01.bin + .a2l + .h
 `.github/workflows/build.yml` builds on pushes to `main`, branches matching
 `test-*[0-9][0-9]-u[0-9]*` (for example `test-oct26-u1`), and every pull
 request: it installs the pinned openc166 from `requirements.txt`, runs `make`,
-verifies the checksums and uploads `opengk01-<commit>.bin` / `.a2l`,
-`opengk01-<commit>_8mbit.bin` / `.hex` plus `SHA256SUMS` as a workflow artifact.
+verifies the checksums, validates the A2L with a2ltool and uploads
+`opengk01-<commit>.bin` / `.a2l`, `opengk01-<commit>_8mbit.bin` / `.hex` plus
+`SHA256SUMS` as a workflow artifact.
 
 Successful branch pushes increment the patch number of the highest `vMAJOR.MINOR.PATCH`
 tag and publish a release for the built commit. For example, `v0.1.0` becomes
@@ -135,7 +137,7 @@ outside a `PROC`, or SFR accesses around `EXTR`). The build only counts them.
 
 ## A2L
 
-`make` also writes `build/out/opengk01.a2l` (ASAP2 1.61). It is generated from
+`make` also writes `build/out/opengk01.a2l` (ASAP2 1.71, UTF-8 with BOM). It is generated from
 the code: every A2L object is a `;@a2l` annotation on the symbol it describes, and
 its address is that symbol's value as the assembler computes it.
 
@@ -183,6 +185,12 @@ CUSTOM_CAL SECTION CODE
 my_gain:    DW 0100H
 CUSTOM_CAL ENDS
 ```
+
+**Validation:** `make check` runs [a2ltool](https://github.com/DanielT/a2ltool) on the
+A2L: `--check --strict` (grammar, cross-references, consistency) plus a check that
+every `IF_DATA` block parses against the A2ML. `tools/fetch_a2ltool.sh` downloads the
+pinned version (3.4.2) into `build/tools/` and refuses it unless its SHA-256 matches;
+CI runs the same check before packaging, so an invalid A2L never reaches a release.
 
 **CCP:** station 0x01, CRO 0x6A0, DTO 0x6A1, 500 kbit/s (from the CAN message-object
 table at 0xA2378, which also has DAQ IDs 0x6A2-0x6A4). DAQ lists, checksum and

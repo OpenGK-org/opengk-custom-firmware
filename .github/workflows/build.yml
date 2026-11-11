@@ -33,6 +33,11 @@ jobs:
       - name: Verify checksums
         run: python3 tools/checksum.py build/out/opengk01.bin
 
+      - name: Validate A2L (a2ltool, pinned + hash-checked)
+        run: |
+          tools/fetch_a2ltool.sh
+          python3 tools/check_a2l.py build/out/opengk01.a2l
+
       - name: Package
         run: |
           if [[ "$GITHUB_REF" == refs/tags/* ]]; then v="$GITHUB_REF_NAME"; else v="$(git rev-parse --short HEAD)"; fi
