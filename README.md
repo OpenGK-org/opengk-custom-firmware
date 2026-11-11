@@ -26,18 +26,19 @@ make                                     # -> build/out/opengk01.bin + .a2l + .h
 
 ## Releases
 
-`.github/workflows/build.yml` builds on every push to `main` and every pull
+`.github/workflows/build.yml` builds on pushes to `main`, branches matching
+`test-*[0-9][0-9]-u[0-9]*` (for example `test-oct26-u1`), and every pull
 request: it installs the pinned openc166 from `requirements.txt`, runs `make`,
 verifies the checksums and uploads `opengk01-<commit>.bin` / `.a2l`,
 `opengk01-<commit>_8mbit.bin` / `.hex` plus `SHA256SUMS` as a workflow artifact.
 
-Pushing a tag that starts with `v` also publishes a GitHub release with
-`opengk01-<tag>.bin`, `opengk01-<tag>.a2l` and `SHA256SUMS`:
+Successful branch pushes increment the patch number of the highest `vMAJOR.MINOR.PATCH`
+tag and publish a release for the built commit. For example, `v0.1.0` becomes
+`v0.1.1`, titled `OPENGK01 v0.1.1`. Both main and test branches use this sequence.
+Without an existing version tag, the first release is `v0.0.1`.
 
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
+Pushing an explicit `v*` tag publishes that tag without incrementing it.
+Pull requests and manual runs build artifacts without publishing releases.
 
 The build is deterministic: the same commit produces the same image and A2L
 locally and in CI.
