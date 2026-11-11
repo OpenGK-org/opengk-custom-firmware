@@ -1,6 +1,6 @@
 PYTHON ?= python3
 
-.PHONY: all build check tools clean
+.PHONY: all build check tools seedkey clean
 
 all: build
 
@@ -13,6 +13,10 @@ check: build tools
 
 tools:
 	tools/fetch_a2ltool.sh
+
+# CCP seed & key DLLs (x64 + x86) for the A2L; needs MinGW-w64
+seedkey:
+	$(MAKE) -C tools/seedkey
 
 clean:
 	rm -rf build/out

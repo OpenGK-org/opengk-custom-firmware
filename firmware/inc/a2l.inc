@@ -17,7 +17,8 @@
 ;@a2l MEMORY _ASW CODE FLASH 0xA0000 0x60000 "application software"
 ;@a2l MEMORY _RAM VARIABLES RAM 0xC000 0x4000 "RAM variables"
 ; CCP: CAN message-object table at 0xA2378 (6A1/6A0 CCP, 6A2-6A4 DAQ, 7E8/7E0/7DF OBD)
-;@a2l CCP station=0x01 cro=0x6A0 dto=0x6A1 baud=500000 page=0x90000,0x10000
+; Seed & key: tools/seedkey (key = seed; the firmware accepts any key)
+;@a2l CCP station=0x01 cro=0x6A0 dto=0x6A1 baud=500000 page=0x90000,0x10000 seed_key=opengk_seedkey.dll
 ;
 ; ---- conversions ----
 ;@a2l CONV cv_pct LINEAR 0.00152587890625 0 "&pct;"

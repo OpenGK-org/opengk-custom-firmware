@@ -20,6 +20,7 @@ make                                     # -> build/out/opengk01.bin + .a2l + .h
 |---|---|
 | `make` / `make build` | assemble and link everything, fix checksums, write the image |
 | `make check` | `build`, then validate the A2L with a2ltool (see below) |
+| `make seedkey` | build the CCP seed & key DLLs (needs MinGW-w64) |
 | `make clean` | remove `build/out/` |
 | `python3 tools/build.py -v` | build, printing every assembler warning |
 | `python3 tools/checksum.py <image> [--fix]` | check (or fix) the checksums of any image |
@@ -30,9 +31,10 @@ make                                     # -> build/out/opengk01.bin + .a2l + .h
 `.github/workflows/build.yml` builds on pushes to `main`, branches matching
 `test-*[0-9][0-9]-u[0-9]*` (for example `test-oct26-u1`), and every pull
 request: it installs the pinned openc166 from `requirements.txt`, runs `make`,
-verifies the checksums, validates the A2L with a2ltool and uploads
-`opengk01-<commit>.bin` / `.a2l`, `opengk01-<commit>_8mbit.bin` / `.hex` plus
-`SHA256SUMS` as a workflow artifact.
+builds the seed & key DLLs, verifies the checksums, validates the A2L with a2ltool
+and uploads `opengk01-<commit>.bin` / `.a2l`, `opengk01-<commit>_8mbit.bin` / `.hex`,
+`opengk_seedkey.dll` / `opengk_seedkey_x86.dll` plus `SHA256SUMS` as a workflow
+artifact.
 
 Successful branch pushes increment the patch number of the highest `vMAJOR.MINOR.PATCH`
 tag and publish a release for the built commit. For example, `v0.1.0` becomes
@@ -193,9 +195,20 @@ pinned version (3.4.2) into `build/tools/` and refuses it unless its SHA-256 mat
 CI runs the same check before packaging, so an invalid A2L never reaches a release.
 
 **CCP:** station 0x01, CRO 0x6A0, DTO 0x6A1, 500 kbit/s (from the CAN message-object
-table at 0xA2378, which also has DAQ IDs 0x6A2-0x6A4). DAQ lists, checksum and
-seed/key aren't described yet, so INCA measures by polling. **EPK:**
+table at 0xA2378, which also has DAQ IDs 0x6A2-0x6A4). DAQ lists and checksum
+aren't described yet, so INCA measures by polling. **EPK:**
 `OPENGK01OG0001` at 0x90000.
+
+**Seed & key:** the A2L's CCP block names `opengk_seedkey.dll` for the CAL, DAQ and
+PGM privileges. The firmware sends a fixed seed and accepts any key, so the DLL
+(`tools/seedkey/opengk_seedkey.c`) returns the seed as the key. It exports the
+standard CCP function `ASAP1A_CCP_ComputeKeyFromSeed` (`__cdecl`, undecorated).
+Releases ship two builds; put the one matching your tool next to the A2L:
+
+| File | For |
+|---|---|
+| `opengk_seedkey.dll` | 64-bit tools (current CANape) |
+| `opengk_seedkey_x86.dll` | 32-bit tools: rename it to `opengk_seedkey.dll` |
 
 ## Writing code
 
@@ -295,5 +308,5 @@ Other things to know:
   with no branch-out patches.
 - Extend the Program checksum zones automatically to cover custom code.
 - Custom calibration parameters in the free calibration space.
-- CCP DAQ lists (event channels, ODT sizes), seed/key and checksum in the A2L.
+- CCP DAQ lists (event channels, ODT sizes) and checksum in the A2L.
 - Choose real file names; KWP/comm is probably split too finely (43 modules).

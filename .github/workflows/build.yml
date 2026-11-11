@@ -24,11 +24,17 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      - name: Install openc166
-        run: pip install -r requirements.txt
+      - name: Install openc166 + MinGW-w64
+        run: |
+          pip install -r requirements.txt
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq gcc-mingw-w64-x86-64 gcc-mingw-w64-i686
 
       - name: Build image + A2L
         run: make
+
+      - name: Build seed & key DLLs
+        run: make seedkey
 
       - name: Verify checksums
         run: python3 tools/checksum.py build/out/opengk01.bin
@@ -46,6 +52,7 @@ jobs:
           cp build/out/opengk01_8mbit.bin "dist/opengk01-${v}_8mbit.bin"
           cp build/out/opengk01_8mbit.hex "dist/opengk01-${v}_8mbit.hex"
           cp build/out/opengk01.a2l "dist/opengk01-$v.a2l"
+          cp build/out/opengk_seedkey.dll build/out/opengk_seedkey_x86.dll dist/
           (cd dist && sha256sum -- * > SHA256SUMS)
           cat dist/SHA256SUMS
 
@@ -93,7 +100,7 @@ jobs:
             destination="dist/opengk01-${tag}${suffix}"
             if [[ "$file" != "$destination" ]]; then mv "$file" "$destination"; fi
           done
-          (cd dist && sha256sum -- opengk01-* > SHA256SUMS)
+          (cd dist && sha256sum -- opengk01-* opengk_seedkey*.dll > SHA256SUMS)
           gh release create "$tag" dist/* \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
