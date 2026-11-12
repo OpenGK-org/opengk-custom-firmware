@@ -7,6 +7,7 @@ $INCLUDE (REG167.INC)
 $INCLUDE (zone_syms.inc)
 
 PUBLIC  Acq_Crank_Segment, CC15INT_handler, CRINT_handler, Get_Status_Marker_a8350, T5INT_handler
+EXTERN  L_A7370:NEAR, L_A7A3A:NEAR
 
 S_A8080 SECTION CODE AT 0A8080H
 
@@ -289,10 +290,10 @@ Get_Status_Marker_a8350:
         SCXT CP,#DATA16 0FBEAH
         CMPB ZEROS,crank_tim_6
         JMPR cc_EQ,L_A8360
-        MOV R4,#DATA16 07A3AH
+        MOV R4,#SOF L_A7A3A
         JMPR cc_UC,L_A8364
 L_A8360:                 ; 0xa8360
-        MOV R4,#DATA16 07370H
+        MOV R4,#SOF L_A7370
 L_A8364:                 ; 0xa8364
         POP CP
         RETI

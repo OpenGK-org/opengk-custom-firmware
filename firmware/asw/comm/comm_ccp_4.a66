@@ -41,7 +41,7 @@ CCP_Session_Ctl:
         CALLS SEG CCP_Submit_Cmd, SOF CCP_Submit_Cmd
         CALLS SEG Init_KeyBuf_c508, SOF Init_KeyBuf_c508
         BSET ccp_engine_flags.0EH
-        MOV R4,#DATA16 00030H
+        MOV R4,#DATA16 00030H                    ;@reloc-ok constant
         MOV ccp_session_state,R4
         RETS
 

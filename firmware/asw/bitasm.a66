@@ -210,7 +210,7 @@ L_E33D6:                 ; 0xe33d6
         MOV R14,#DATA16 0C000H
         CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV R12,R4
-        MOV R13,#0AH
+        MOV R13,#0AH                    ;@reloc-ok constant
         MOV R14,#05H
         CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV kwp_m_maf_max,R4
@@ -220,7 +220,7 @@ L_E33D6:                 ; 0xe33d6
         MOV R14,#DATA16 0C000H
         CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV R12,R4
-        MOV R13,#0AH
+        MOV R13,#0AH                    ;@reloc-ok constant
         MOV R14,#05H
         CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV kwp_m_maf_min,R4

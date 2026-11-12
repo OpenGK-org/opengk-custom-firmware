@@ -9,6 +9,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  CAN_push_message_into_buffer, CC11INT_handler, CC12INT_handler, CC13INT_handler, CC19INT_handler, CC21INT_handler
 PUBLIC  CC29INT_handler, CC30INT_handler, CC4INT_handler, CC5INT_handler, Ctl_PWM3_Output, Inc_Dfbb0_bf2
 PUBLIC  Inc_Dfbb2_bf8, Reset_CC28IC_f26
+PUBLIC  L_ABE46, L_ABEA8, L_ABEE2
 
 S_ABBF2 SECTION CODE AT 0ABBF2H
 
@@ -244,6 +245,7 @@ CC19INT_handler:
         BFLDH CCM4_FF22,#070H,#00H
         MOV R1,[R0+#065E4H]
         JMPI cc_UC,[R1]
+L_ABE46:                 ; 0xabe46  (pointer target)
         MOV R4,CC19_FE66
         MOV R2,lv_ivvt_f9c8
         MOV R3,#DATA16 0493EH
@@ -289,6 +291,7 @@ L_ABE9E:                 ; 0xabe9e
 L_ABEA4:                 ; 0xabea4
         MOV R0,#02H
         JMPR cc_UC,L_ABF22
+L_ABEA8:                 ; 0xabea8  (pointer target)
         MOV CC19_FE66,R4
         ADD CC19_FE66,R3
         BFLDH CCM4_FF22,#070H,#060H
@@ -301,7 +304,7 @@ L_ABEA4:                 ; 0xabea4
         MOV R1,R2
         SHR R1,#01H
         JMPR cc_EQ,L_ABEDE
-        MOV R1,#DATA16 0493EH
+        MOV R1,#DATA16 0493EH                    ;@reloc-ok constant
         SUB R1,R2
         SHR R1,#01H
         JMPR cc_EQ,L_ABEDE
@@ -314,6 +317,7 @@ L_ABEDC:                 ; 0xabedc
 L_ABEDE:                 ; 0xabede
         MOV R0,#04H
         JMPR cc_UC,L_ABF22
+L_ABEE2:                 ; 0xabee2  (pointer target)
         NEG R3
         ADD R3,#DATA16 0493EH
         MOV R1,CC19_FE66
@@ -328,7 +332,7 @@ L_ABEDE:                 ; 0xabede
         MOV R1,R3
         SHR R1,#01H
         JMPR cc_EQ,L_ABF1E
-        MOV R1,#DATA16 0493EH
+        MOV R1,#DATA16 0493EH                    ;@reloc-ok constant
         SUB R1,R3
         SHR R1,#01H
         JMPR cc_EQ,L_ABF1E

@@ -32,7 +32,7 @@ Acq_AMP_Mes:
         MOV g_cc6e,R4
         MOV R12,R4
         MOV R13,maf_fac_ofs
-        MOV R14,#0BH
+        MOV R14,#0BH                    ;@reloc-ok constant
         CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV R6,R4
         MOV R12,#00H
@@ -344,7 +344,7 @@ L_C3F38:                 ; 0xc3f38
 L_C3F3A:                 ; 0xc3f3a
         MOV R12,eff_vol_slop
         MOV R13,map_fg
-        MOV R14,#0BH
+        MOV R14,#0BH                    ;@reloc-ok constant
         CALLS SEG Mul_Shift_U16_Sat32, SOF Mul_Shift_U16_Sat32
         MOV R12,R4
         MOV R13,eff_vol_ofs
@@ -395,7 +395,7 @@ L_C3FBE:                 ; 0xc3fbe
         CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV R12,R4
         MOV R13,R7
-        MOV R14,#0BH
+        MOV R14,#0BH                    ;@reloc-ok constant
         CALLS SEG Mul_Shift_S16, SOF Mul_Shift_S16
         MOV maf_pred_kgh,R4
         MOV R12,#DATA16 0C000H

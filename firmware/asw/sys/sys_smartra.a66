@@ -8,6 +8,7 @@ $INCLUDE (zone_syms.inc)
 
 PUBLIC  SMARTRA_clear_comms_timeout_flags, SMARTRA_comms_timeout_monitor, SMARTRA_flush_RX_buffers, SMARTRA_tx_begin
 EXTERN  Push_To_System_Stack:NEAR
+PUBLIC  L_A35DA, L_A35F6, L_A35FA, L_A3614, L_A3624, L_A3636
 
 S_A3554 SECTION CODE AT 0A3554H
 
@@ -86,6 +87,7 @@ SMARTRA_comms_timeout_monitor:
         ; ------------------------------------------------------------
         ; (unclassified) RAM/paged global @0xa35da [dpp]  W:{-}  R:{-}
         ; ------------------------------------------------------------
+L_A35DA:                 ; 0xa35da  (pointer target)
         MOV R4,smartra_byte_timer
         CMP R4,#DATA16 00014H
         JMPR cc_ULE,L_A3654
@@ -99,10 +101,12 @@ L_A35F0:                 ; 0xa35f0
         ; ------------------------------------------------------------
         ; (unclassified) RAM/paged global @0xa35f6 [dpp]  W:{-}  R:{-}
         ; ------------------------------------------------------------
+L_A35F6:                 ; 0xa35f6  (pointer target)
         CALLS SEG SMARTRA_tx_begin, SOF SMARTRA_tx_begin
         ; ------------------------------------------------------------
         ; (unclassified) RAM/paged global @0xa35fa [dpp]  W:{-}  R:{-}
         ; ------------------------------------------------------------
+L_A35FA:                 ; 0xa35fa  (pointer target)
         MOV R4,smartra_byte_timer
         CMP R4,#01H
         JMPR cc_ULE,L_A3654
@@ -116,6 +120,7 @@ L_A360E:                 ; 0xa360e
         ; ------------------------------------------------------------
         ; (unclassified) RAM/paged global @0xa3614 [dpp]  W:{-}  R:{-}
         ; ------------------------------------------------------------
+L_A3614:                 ; 0xa3614  (pointer target)
         MOV R4,smartra_byte_timer
         CMP R4,#04H
         JMPR cc_ULE,L_A3654
@@ -125,6 +130,7 @@ L_A360E:                 ; 0xa360e
         ; ------------------------------------------------------------
         ; (unclassified) RAM/paged global @0xa3624 [dpp]  W:{-}  R:{-}
         ; ------------------------------------------------------------
+L_A3624:                 ; 0xa3624  (pointer target)
         MOV R4,smartra_byte_timer
         CMP R4,#DATA16 0025BH
         JMPR cc_ULE,L_A3654
@@ -134,6 +140,7 @@ L_A360E:                 ; 0xa360e
         ; ------------------------------------------------------------
         ; (unclassified) RAM/paged global @0xa3636 [dpp]  W:{-}  R:{-}
         ; ------------------------------------------------------------
+L_A3636:                 ; 0xa3636  (pointer target)
         MOV R4,smartra_byte_timer
         CMP R4,#04H
         JMPR cc_ULE,L_A3654

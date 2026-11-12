@@ -27,6 +27,7 @@ PUBLIC  Calc_LSH_Up_Loop, IGC_Dur_Arm_0, IGC_Dur_Arm_1, IGC_Dur_Arm_2, IGC_Dur_A
 PUBLIC  IGC_Dur_Arm_5, IGC_Dur_Arm_6
 EXTERN  Get_IP_Byte_3D_Table:NEAR, Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_X_Axis:NEAR, Sat_Add_U8:NEAR
 EXTERN  Set_LSH_Up_PWM:NEAR, sub_r12_13_ret_r4:NEAR
+PUBLIC  L_B68E2, L_B6956, L_B69AC
 
 S_B6880 SECTION CODE AT 0B6880H
 
@@ -179,6 +180,7 @@ L_B699E:                 ; 0xb699e
         JMPR cc_ULE,L_B6A08
         MOVB [R9+#04H],RL7
         JMPR cc_UC,L_B6A08
+L_B69AC:                 ; 0xb69ac  (pointer target)
         MOVB RL4,DPP0:c_v_efc_red
         MOVB [R9+#04H],RL4
         JMPR cc_UC,L_B6A08

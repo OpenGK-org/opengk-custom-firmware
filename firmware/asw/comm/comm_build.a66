@@ -9,6 +9,7 @@ $INCLUDE (zone_syms.inc)
 
 PUBLIC  CCP_Check_Checksum, CCP_DAQ_BuildDTO, Init_CommObj_States, KWP_Build_NegResponse, Tail_f0a6818_5b8
 EXTERN  CCP_Calc_Checksum:NEAR, CCP_Set_EngineFlags:NEAR, CCP_Svc_Prog_DAQ:NEAR
+PUBLIC  L_A65BE, L_A6626, L_A6632, L_A663A, L_A6642, L_A664A
 
 S_A65B8 SECTION CODE AT 0A65B8H
 
@@ -16,6 +17,7 @@ S_A65B8 SECTION CODE AT 0A65B8H
 Tail_f0a6818_5b8:
         CALLS SEG Init_CommObj_States, SOF Init_CommObj_States
         RETS
+L_A65BE:                 ; 0xa65be  (pointer target)
         MOVB RL4,#DATA16 00028H
         MOVB ccp_svc_cmd,RL4
         MOVB ccp_svc_param,ZEROS
@@ -43,22 +45,27 @@ Tail_f0a6818_5b8:
         BOR can_sched_flags1.0DH,can_sched_flags0.0DH
         BMOV can_sched_flags0.0DH,can_sched_flags2.0DH
         RETS
+L_A6626:                 ; 0xa6626  (pointer target)
         BSET sched_flags2.01H
         BOR can_sched_flags1.0DH,can_sched_flags0.0DH
         BMOV can_sched_flags0.0DH,can_sched_flags2.0DH
         RETS
+L_A6632:                 ; 0xa6632  (pointer target)
         MOV R12,#00H
         CALLS SEG CommObj_Tp_TxStateMachine, SOF CommObj_Tp_TxStateMachine
         RETS
+L_A663A:                 ; 0xa663a  (pointer target)
         MOV R12,#01H
         CALLS SEG CommObj_Tp_OnRxFrame, SOF CommObj_Tp_OnRxFrame
         RETS
+L_A6642:                 ; 0xa6642  (pointer target)
         MOV R12,#02H
         CALLS SEG CommObj_Tp_OnRxFrame, SOF CommObj_Tp_OnRxFrame
         RETS
         ; ------------------------------------------------------------
         ; (unclassified) RAM/paged global @0xa664a [dpp]  W:{-}  R:{CC3INT_Handler}
         ; ------------------------------------------------------------
+L_A664A:                 ; 0xa664a  (pointer target)
         MOVB RL4,#DATA16 00030H
         MOVB g_d768,RL4
         MOVB RL5,#DATA16 00096H

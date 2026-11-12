@@ -7,6 +7,7 @@ $INCLUDE (REG167.INC)
 $INCLUDE (zone_syms.inc)
 
 PUBLIC  CC16INT_handler
+PUBLIC  L_AB34C, L_AB39A, L_AB406
 
 S_AB32C SECTION CODE AT 0AB32CH
 
@@ -22,6 +23,7 @@ CC16INT_handler:
         SHL R0,#01H
         MOV R0,[R0+#065AEH]
         JMPI cc_UC,[R0]
+L_AB34C:                 ; 0xab34c  (pointer target)
         MOVBZ R0,hld_adj_ivvt_in_1
         JMPA cc_NE,L_AB490
         BCLR P7.03H
@@ -50,6 +52,7 @@ L_AB38A:                 ; 0xab38a
         MOV ivvt_epwm_frq,R1
         MOVB hld_adj_ivvt_in_1,ONES
         JMPA cc_UC,L_AB490
+L_AB39A:                 ; 0xab39a  (pointer target)
         ATOMIC #02H
         BCLR PWMCON0.03H
         MOV CC16,T8_F052
@@ -92,6 +95,7 @@ L_AB3E8:                 ; 0xab3e8
         EXTR #01H
         BFLDL 0F160H,#0FFH,#0CEH
         JMPR cc_UC,L_AB490
+L_AB406:                 ; 0xab406  (pointer target)
         JMPR cc_UC,L_AB490
 L_AB408:                 ; 0xab408
         CMP R2,0FF1CH

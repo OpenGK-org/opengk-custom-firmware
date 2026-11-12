@@ -14,6 +14,7 @@ c_t_dly_st_cle_slv_ivvt              EQU  09032DH
 
 PUBLIC  IVVT_OCV_CleanSlv, Set_ctr_cyc_cle_slv_ivvt_f22
 EXTERN  Get_Byte_2D_Table_DWord_YByte:NEAR, Mul_S16_Q7_Sat:NEAR
+PUBLIC  L_AFFFE
 
 S_AFF22 SECTION CODE AT 0AFF22H
 
@@ -106,6 +107,7 @@ L_AFFD6:                 ; 0xaffd6
 L_AFFFA:                 ; 0xafffa
         MOV R9,[R0+]
         RETS
+L_AFFFE:                 ; 0xafffe  (pointer target)
         RETS
 
 S_AFF22 ENDS

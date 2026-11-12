@@ -203,22 +203,22 @@ L_DB336:                 ; 0xdb336
         MOV R12,#DATA16 00028H
         CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_dtp_con,RL4
-        MOV R12,#DATA16 00029H
+        MOV R12,#DATA16 00029H                    ;@reloc-ok constant
         CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_dtp_noise,RL4
         MOV R12,#DATA16 00026H
         CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_cps_mecha,RL4
-        MOV R12,#DATA16 0002DH
+        MOV R12,#DATA16 0002DH                    ;@reloc-ok constant
         CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_tc,RL4
         MOV R12,#DATA16 0002CH
         CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_leak_large,RL4
-        MOV R12,#DATA16 0002BH
+        MOV R12,#DATA16 0002BH                    ;@reloc-ok constant
         CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_leak_small_1mm,RL4
-        MOV R12,#DATA16 0002AH
+        MOV R12,#DATA16 0002AH                    ;@reloc-ok constant
         CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_leak_small_05mm,RL4
         MOV R12,#DATA16 00040H

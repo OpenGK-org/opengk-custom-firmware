@@ -7,6 +7,10 @@ $INCLUDE (REG167.INC)
 $INCLUDE (zone_syms.inc)
 
 PUBLIC  Calc_MAF_Base, CallVia_62e, CallVia_71e, SetBits_SSCTIC_7aa, XP2INT_handler
+PUBLIC  L_AB4B8, L_AB4F4, L_AB57C, L_AB5E6, L_AB63A, L_AB660
+PUBLIC  L_AB6B4, L_AB6E8, L_AB72A, L_AB73A, L_AB75C, L_AB77E
+PUBLIC  L_ABA32, L_ABA4E, L_ABA7E, L_ABAA0, L_ABAD0, L_ABB00
+PUBLIC  L_ABB18, L_ABB34, L_ABB64, L_ABB86, L_ABBB6, L_ABBE6
 
 S_AB494 SECTION CODE AT 0AB494H
 
@@ -23,6 +27,7 @@ XP2INT_handler:
         BSET sched_flags2.06H
         MOV R0,[R5+#065B4H]
         JMPI cc_UC,[R0]
+L_AB4B8:                 ; 0xab4b8  (pointer target)
         BMOV P3.0DH,SSCCON.06H
         BFLDL 0FF76H,#0C0H,#00H
         BCLR SSCCON.0FH
@@ -42,6 +47,7 @@ XP2INT_handler:
         EXTR #01H
         BFLDL 0F196H,#0C0H,#00H
         JMPA cc_UC,L_AB62A
+L_AB4F4:                 ; 0xab4f4  (pointer target)
         BMOV P3.0DH,SSCCON.06H
         BFLDL 0FF76H,#0C0H,#00H
         BCLR SSCCON.0FH
@@ -63,7 +69,7 @@ XP2INT_handler:
         MOV R0,dtc_mil_req
         JMPR cc_EQ,L_AB552
         PRIOR R1,R0
-        MOV R0,#DATA16 08000H
+        MOV R0,#DATA16 08000H                    ;@reloc-ok constant
         SHR R0,R1
         XOR dtc_mil_req,R0
         MOV R1,R0
@@ -91,6 +97,7 @@ L_AB554:                 ; 0xab554
         EXTR #01H
         BFLDL 0F196H,#0C0H,#00H
         JMPR cc_UC,L_AB62A
+L_AB57C:                 ; 0xab57c  (pointer target)
         BMOV P3.0DH,SSCCON.06H
         BFLDL 0FF76H,#0C0H,#00H
         BCLR SSCCON.0FH
@@ -125,6 +132,7 @@ L_AB554:                 ; 0xab554
         EXTR #01H
         BFLDL 0F196H,#0C0H,#00H
         JMPR cc_UC,L_AB62A
+L_AB5E6:                 ; 0xab5e6  (pointer target)
         BMOV P3.0DH,SSCCON.06H
         BFLDL 0FF76H,#0C0H,#00H
         BCLR SSCCON.0FH
@@ -158,6 +166,7 @@ CallVia_62e:
         NOP
         MOV R0,[R5+#065BCH]
         JMPI cc_UC,[R0]
+L_AB63A:                 ; 0xab63a  (pointer target)
         BSET P6.07H
         ADDB RH2,SSCRB_F0B2
         SUB R6,#01H
@@ -177,6 +186,7 @@ L_AB656:                 ; 0xab656
         ADDB RL2,[R3+]
 L_AB65E:                 ; 0xab65e
         JMPR cc_UC,L_AB71A
+L_AB660:                 ; 0xab660  (pointer target)
         MOVB RL0,SSCRB_F0B2
         MOVB [R6+#0F580H],RL0
         SUB R6,#01H
@@ -209,6 +219,7 @@ L_AB6AC:                 ; 0xab6ac
         SUB R3,#01H
 L_AB6B2:                 ; 0xab6b2
         JMPR cc_UC,L_AB71A
+L_AB6B4:                 ; 0xab6b4  (pointer target)
         MOVB RL0,SSCRB_F0B2
         MOVB [R6+#0F580H],RL0
         SUB R6,#01H
@@ -230,6 +241,7 @@ L_AB6E0:                 ; 0xab6e0
         SUB R3,#01H
 L_AB6E6:                 ; 0xab6e6
         JMPR cc_UC,L_AB71A
+L_AB6E8:                 ; 0xab6e8  (pointer target)
         MOVB RL0,SSCRB_F0B2
         MOVB [R6+#0F583H],RL0
         SUB R6,#01H
@@ -260,6 +272,7 @@ CallVia_71e:
         NOP
         MOV R0,[R5+#065C4H]
         JMPI cc_UC,[R0]
+L_AB72A:                 ; 0xab72a  (pointer target)
         BSET P6.07H
         BSET capcom_12.07H
         BCLR capcom_12.0FH
@@ -267,6 +280,7 @@ CallVia_71e:
         EXTR #01H
         BFLDL 0F196H,#0C0H,#0C0H
         JMPR cc_UC,L_AB7A0
+L_AB73A:                 ; 0xab73a  (pointer target)
         BSET lv_iga_fd06.04H
         EXTP #02H, #04H
         SCXT CP,#DATA16 0FD06H
@@ -280,6 +294,7 @@ CallVia_71e:
         EXTR #01H
         BFLDL 0F196H,#0C0H,#0C0H
         JMPR cc_UC,L_AB7A0
+L_AB75C:                 ; 0xab75c  (pointer target)
         BSET lv_iga_fd06.04H
         EXTP #02H, #04H
         SCXT CP,#DATA16 0FD06H
@@ -293,6 +308,7 @@ CallVia_71e:
         EXTR #01H
         BFLDL 0F196H,#0C0H,#0C0H
         JMPR cc_UC,L_AB7A0
+L_AB77E:                 ; 0xab77e  (pointer target)
         BSET lv_iga_fd06.03H
         EXTP #02H, #04H
         SCXT CP,#DATA16 0FD06H
@@ -467,7 +483,7 @@ L_AB940:                 ; 0xab940
         JMPR cc_UC,L_AB940
 L_AB942:                 ; 0xab942
         MOVB ctr_maf_fault,ZEROS
-        MOV R0,#DATA16 0F000H
+        MOV R0,#DATA16 0F000H                    ;@reloc-ok constant
         XOR adc_maf_st,R0
 L_AB94E:                 ; 0xab94e
         MOVB RL0,#01H
@@ -559,6 +575,7 @@ L_ABA28:                 ; 0xaba28
         MOVBZ R0,diag_f5be
         MOV R0,[R0+#065CCH]
         JMPI cc_UC,[R0]
+L_ABA32:                 ; 0xaba32  (pointer target)
         MOV R0,#DATA16 01000H
         ATOMIC #02H
         OR capcom_11,R0
@@ -570,6 +587,7 @@ L_ABA46:                 ; 0xaba46
         MOVB RL0,#02H
         MOVB diag_f5be,RL0
         JMPR cc_UC,L_ABB08
+L_ABA4E:                 ; 0xaba4e  (pointer target)
         MOV R0,adc_fa78
         AND R0,#DATA16 003FFH
         MOV vls_cur_off_vls_up_1,R0
@@ -585,6 +603,7 @@ L_ABA46:                 ; 0xaba46
         MOVB RL0,#04H
         MOVB diag_f5be,RL0
         JMPR cc_UC,L_ABB08
+L_ABA7E:                 ; 0xaba7e  (pointer target)
         ADDB g_f5bf,ONES
         JMPR cc_NE,L_ABB08
         MOV R0,#DATA16 01000H
@@ -598,6 +617,7 @@ L_ABA98:                 ; 0xaba98
         MOVB RL0,#06H
         MOVB diag_f5be,RL0
         JMPR cc_UC,L_ABB08
+L_ABAA0:                 ; 0xabaa0  (pointer target)
         MOV R0,adc_fa78
         AND R0,#DATA16 003FFH
         MOV vls_cur_on_vls_up_1,R0
@@ -613,6 +633,7 @@ L_ABA98:                 ; 0xaba98
         MOVB RL0,#08H
         MOVB diag_f5be,RL0
         JMPR cc_UC,L_ABB08
+L_ABAD0:                 ; 0xabad0  (pointer target)
         MOV R0,adc_fa78
         AND R0,#DATA16 003FFH
         CMP R0,vls_cur_on_vls_up_1
@@ -631,6 +652,7 @@ L_ABAF8:                 ; 0xabaf8
         MOVB RL0,#0AH
         MOVB diag_f5be,RL0
         JMPR cc_UC,L_ABB08
+L_ABB00:                 ; 0xabb00  (pointer target)
         BCLR lv_err_com_resp_imob.05H
         MOVB RL0,#00H
         MOVB diag_f5be,RL0
@@ -641,6 +663,7 @@ L_ABB0E:                 ; 0xabb0e
         MOVBZ R0,diag_f5c2
         MOV R0,[R0+#065D8H]
         JMPI cc_UC,[R0]
+L_ABB18:                 ; 0xabb18  (pointer target)
         MOV R0,#DATA16 00800H
         ATOMIC #02H
         OR capcom_11,R0
@@ -652,6 +675,7 @@ L_ABB2C:                 ; 0xabb2c
         MOVB RL0,#02H
         MOVB diag_f5c2,RL0
         JMPR cc_UC,L_ABBEE
+L_ABB34:                 ; 0xabb34  (pointer target)
         MOV R0,g_fa70
         AND R0,#DATA16 003FFH
         MOV vls_cur_off_vls_down_1,R0
@@ -667,6 +691,7 @@ L_ABB2C:                 ; 0xabb2c
         MOVB RL0,#04H
         MOVB diag_f5c2,RL0
         JMPR cc_UC,L_ABBEE
+L_ABB64:                 ; 0xabb64  (pointer target)
         ADDB g_f5c3,ONES
         JMPR cc_NE,L_ABBEE
         MOV R0,#DATA16 00800H
@@ -680,6 +705,7 @@ L_ABB7E:                 ; 0xabb7e
         MOVB RL0,#06H
         MOVB diag_f5c2,RL0
         JMPR cc_UC,L_ABBEE
+L_ABB86:                 ; 0xabb86  (pointer target)
         MOV R0,g_fa70
         AND R0,#DATA16 003FFH
         MOV vls_cur_on_vls_down_1,R0
@@ -695,6 +721,7 @@ L_ABB7E:                 ; 0xabb7e
         MOVB RL0,#08H
         MOVB diag_f5c2,RL0
         JMPR cc_UC,L_ABBEE
+L_ABBB6:                 ; 0xabbb6  (pointer target)
         MOV R0,g_fa70
         AND R0,#DATA16 003FFH
         CMP R0,vls_cur_on_vls_down_1
@@ -713,6 +740,7 @@ L_ABBDE:                 ; 0xabbde
         MOVB RL0,#0AH
         MOVB diag_f5c2,RL0
         JMPR cc_UC,L_ABBEE
+L_ABBE6:                 ; 0xabbe6  (pointer target)
         BCLR lv_err_com_resp_imob.06H
         MOVB RL0,#00H
         MOVB diag_f5c2,RL0

@@ -7,6 +7,12 @@ $INCLUDE (REG167.INC)
 $INCLUDE (zone_syms.inc)
 
 PUBLIC  CC0INT_Handler, CC1INT_Handler, CC2INT_Handler, CC3INT_Handler
+PUBLIC  L_A8706, L_A87A0, L_A87E6, L_A88D0, L_A8918, L_A8924
+PUBLIC  L_A8928, L_A89BE, L_A89D8, L_A8A72, L_A8AB8, L_A8BA2
+PUBLIC  L_A8BEA, L_A8BF6, L_A8BFA, L_A8C90, L_A8CAA, L_A8D44
+PUBLIC  L_A8D8A, L_A8E74, L_A8EBC, L_A8EC8, L_A8ECC, L_A8F60
+PUBLIC  L_A8F7A, L_A9014, L_A905A, L_A9144, L_A918C, L_A9198
+PUBLIC  L_A919C, L_A9232
 
 S_A86F0 SECTION CODE AT 0A86F0H
 
@@ -23,6 +29,7 @@ CC0INT_Handler:
         MOVBZ R2,inj_ic_cyl0
         MOV R2,[R2+#064D6H]
         JMPI cc_UC,[R2]
+L_A8706:                 ; 0xa8706  (pointer target)
         MOVB RL2,prev_state_iv
         JNB R2.00H,L_A875C
         ADD R4,ti_dur_cyl0
@@ -76,6 +83,7 @@ L_A8796:                 ; 0xa8796
         MOVB RL2,#02H
         MOVB inj_ic_cyl0,RL2
         JMPA cc_UC,L_A89BE
+L_A87A0:                 ; 0xa87a0  (pointer target)
         MOV R0,lv_inj_pattern
         CMP R0,inj_cc_12
         JMPR cc_EQ,L_A87C0
@@ -102,6 +110,7 @@ L_A87CC:                 ; 0xa87cc
 L_A87E0:                 ; 0xa87e0
         MOVB RL2,#04H
         MOVB inj_ic_cyl0,RL2
+L_A87E6:                 ; 0xa87e6  (pointer target)
         MOVB RL0,msk_inj_cyl_ok
         JB R0.00H,L_A88CC
         BSET state_mtv.07H
@@ -194,6 +203,7 @@ L_A88C6:                 ; 0xa88c6
         POP MDC
 L_A88CC:                 ; 0xa88cc
         JMPA cc_UC,L_A89BE
+L_A88D0:                 ; 0xa88d0  (pointer target)
         MOVB RL2,#DATA16 00010H
         MOVB inj_ic_cyl0,RL2
         MOV R0,tipr_bas
@@ -217,12 +227,15 @@ L_A890E:                 ; 0xa890e
         MOVB RL0,#DATA16 000FEH
         ANDB inj_cc_1,RL0
         JMPR cc_UC,L_A89BE
+L_A8918:                 ; 0xa8918  (pointer target)
         BSET P2.00H
         MOVB RL2,#DATA16 00012H
         MOVB inj_ic_cyl0,RL2
         JMPR cc_UC,L_A89BE
+L_A8924:                 ; 0xa8924  (pointer target)
         BSET P2.00H
         JMPR cc_UC,L_A89BE
+L_A8928:                 ; 0xa8928  (pointer target)
         BSET P2.00H
         MOVB RL0,#01H
         ORB inj_cc_5,RL0
@@ -293,6 +306,7 @@ CC1INT_Handler:
         MOVBZ R2,inj_ic_cyl1
         MOV R2,[R2+#064EAH]
         JMPI cc_UC,[R2]
+L_A89D8:                 ; 0xa89d8  (pointer target)
         MOVB RL2,prev_state_iv
         JNB R2.01H,L_A8A2E
         ADD R5,ti_dur_cyl1
@@ -346,6 +360,7 @@ L_A8A68:                 ; 0xa8a68
         MOVB RL2,#02H
         MOVB inj_ic_cyl1,RL2
         JMPA cc_UC,L_A8C90
+L_A8A72:                 ; 0xa8a72  (pointer target)
         MOV R0,lv_inj_pattern
         CMP R0,inj_cc_12
         JMPR cc_EQ,L_A8A92
@@ -372,6 +387,7 @@ L_A8A9E:                 ; 0xa8a9e
 L_A8AB2:                 ; 0xa8ab2
         MOVB RL2,#04H
         MOVB inj_ic_cyl1,RL2
+L_A8AB8:                 ; 0xa8ab8  (pointer target)
         MOVB RL0,msk_inj_cyl_ok
         JB R0.01H,L_A8B9E
         BSET state_mtv.0AH
@@ -464,6 +480,7 @@ L_A8B98:                 ; 0xa8b98
         POP MDC
 L_A8B9E:                 ; 0xa8b9e
         JMPA cc_UC,L_A8C90
+L_A8BA2:                 ; 0xa8ba2  (pointer target)
         MOVB RL2,#DATA16 00010H
         MOVB inj_ic_cyl1,RL2
         MOV R0,tipr_bas
@@ -487,12 +504,15 @@ L_A8BE0:                 ; 0xa8be0
         MOVB RL0,#DATA16 000FDH
         ANDB inj_cc_1,RL0
         JMPR cc_UC,L_A8C90
+L_A8BEA:                 ; 0xa8bea  (pointer target)
         BSET P2.01H
         MOVB RL2,#DATA16 00012H
         MOVB inj_ic_cyl1,RL2
         JMPR cc_UC,L_A8C90
+L_A8BF6:                 ; 0xa8bf6  (pointer target)
         BSET P2.01H
         JMPR cc_UC,L_A8C90
+L_A8BFA:                 ; 0xa8bfa  (pointer target)
         BSET P2.01H
         MOVB RL0,#02H
         ORB inj_cc_5,RL0
@@ -563,6 +583,7 @@ CC2INT_Handler:
         MOVBZ R2,inj_ic_cyl2
         MOV R2,[R2+#064FEH]
         JMPI cc_UC,[R2]
+L_A8CAA:                 ; 0xa8caa  (pointer target)
         MOVB RL2,prev_state_iv
         JNB R2.02H,L_A8D00
         ADD R6,ti_dur_cyl2
@@ -616,6 +637,7 @@ L_A8D3A:                 ; 0xa8d3a
         MOVB RL2,#02H
         MOVB inj_ic_cyl2,RL2
         JMPA cc_UC,L_A8F60
+L_A8D44:                 ; 0xa8d44  (pointer target)
         MOV R0,lv_inj_pattern
         CMP R0,inj_cc_12
         JMPR cc_EQ,L_A8D64
@@ -642,6 +664,7 @@ L_A8D70:                 ; 0xa8d70
 L_A8D84:                 ; 0xa8d84
         MOVB RL2,#04H
         MOVB inj_ic_cyl2,RL2
+L_A8D8A:                 ; 0xa8d8a  (pointer target)
         MOVB RL0,msk_inj_cyl_ok
         JB R0.02H,L_A8E70
         BSET state_mtv.0DH
@@ -734,6 +757,7 @@ L_A8E6A:                 ; 0xa8e6a
         POP MDC
 L_A8E70:                 ; 0xa8e70
         JMPA cc_UC,L_A8F60
+L_A8E74:                 ; 0xa8e74  (pointer target)
         MOVB RL2,#DATA16 00010H
         MOVB inj_ic_cyl2,RL2
         MOV R0,tipr_bas
@@ -757,12 +781,15 @@ L_A8EB2:                 ; 0xa8eb2
         MOVB RL0,#DATA16 000FBH
         ANDB inj_cc_1,RL0
         JMPR cc_UC,L_A8F60
+L_A8EBC:                 ; 0xa8ebc  (pointer target)
         BSET P2.02H
         MOVB RL2,#DATA16 00012H
         MOVB inj_ic_cyl2,RL2
         JMPR cc_UC,L_A8F60
+L_A8EC8:                 ; 0xa8ec8  (pointer target)
         BSET P2.02H
         JMPR cc_UC,L_A8F60
+L_A8ECC:                 ; 0xa8ecc  (pointer target)
         BSET P2.02H
         MOVB RL0,#04H
         ORB inj_cc_5,RL0
@@ -833,6 +860,7 @@ CC3INT_Handler:
         MOVBZ R2,inj_ic_cyl3
         MOV R2,[R2+#06512H]
         JMPI cc_UC,[R2]
+L_A8F7A:                 ; 0xa8f7a  (pointer target)
         MOVB RL2,prev_state_iv
         JNB R2.03H,L_A8FD0
         ADD R7,ti_dur_cyl3
@@ -886,6 +914,7 @@ L_A900A:                 ; 0xa900a
         MOVB RL2,#02H
         MOVB inj_ic_cyl3,RL2
         JMPA cc_UC,L_A9232
+L_A9014:                 ; 0xa9014  (pointer target)
         MOV R0,lv_inj_pattern
         CMP R0,inj_cc_12
         JMPR cc_EQ,L_A9034
@@ -912,6 +941,7 @@ L_A9040:                 ; 0xa9040
 L_A9054:                 ; 0xa9054
         MOVB RL2,#04H
         MOVB inj_ic_cyl3,RL2
+L_A905A:                 ; 0xa905a  (pointer target)
         MOVB RL0,msk_inj_cyl_ok
         JB R0.03H,L_A9140
         BSET smartra_comms_status.00H
@@ -1004,6 +1034,7 @@ L_A913A:                 ; 0xa913a
         POP MDC
 L_A9140:                 ; 0xa9140
         JMPA cc_UC,L_A9232
+L_A9144:                 ; 0xa9144  (pointer target)
         MOVB RL2,#DATA16 00010H
         MOVB inj_ic_cyl3,RL2
         MOV R0,tipr_bas
@@ -1027,12 +1058,15 @@ L_A9182:                 ; 0xa9182
         MOVB RL0,#DATA16 000F7H
         ANDB inj_cc_1,RL0
         JMPR cc_UC,L_A9232
+L_A918C:                 ; 0xa918c  (pointer target)
         BSET P2.03H
         MOVB RL2,#DATA16 00012H
         MOVB inj_ic_cyl3,RL2
         JMPR cc_UC,L_A9232
+L_A9198:                 ; 0xa9198  (pointer target)
         BSET P2.03H
         JMPR cc_UC,L_A9232
+L_A919C:                 ; 0xa919c  (pointer target)
         BSET P2.03H
         MOVB RL0,#08H
         ORB inj_cc_5,RL0

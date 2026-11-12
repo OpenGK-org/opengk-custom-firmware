@@ -7,6 +7,11 @@ $INCLUDE (REG167.INC)
 $INCLUDE (zone_syms.inc)
 
 PUBLIC  CC27INT_handler, CC6INT_handler, CC7INT_Handler, CC9INT_handler, T4INT_handler
+PUBLIC  L_AA4F6, L_AA5C4, L_AA668, L_AA738, L_AA854, L_AA968
+PUBLIC  L_AAA1E, L_AAA48, L_AAABE, L_AAB34, L_AAB38, L_AAB9C
+PUBLIC  L_AAC6A, L_AAD0E, L_AADDE, L_AAEFA, L_AB00E, L_AB0C4
+PUBLIC  L_AB0EE, L_AB164, L_AB1DA, L_AB1DE, L_AB206, L_AB210
+PUBLIC  L_AB23C, L_AB25C
 
 S_AA49E SECTION CODE AT 0AA49EH
 
@@ -41,6 +46,7 @@ L_AA4CA:                 ; 0xaa4ca
 L_AA4F0:                 ; 0xaa4f0
         MOV R0,[R1+#06576H]
         JMPI cc_UC,[R0]
+L_AA4F6:                 ; 0xaa4f6  (pointer target)
         MOV R0,DSTP7_FCFE
         MOV R1,[R0+#0FFFCH]
         MOV R0,[R0+#0FFFEH]
@@ -121,6 +127,7 @@ L_AA5B4:                 ; 0xaa5b4
         ATOMIC #01H
         BFLDL 0F184H,#080H,#080H
         JMPA cc_UC,L_AAB3C
+L_AA5C4:                 ; 0xaa5c4  (pointer target)
         MOV R0,DSTP7_FCFE
         MOV R1,[R0+#0FFFCH]
         MOV R0,[R0+#0FFFEH]
@@ -268,6 +275,7 @@ L_AA72E:                 ; 0xaa72e
 L_AA732:                 ; 0xaa732
         ATOMIC #01H
         BFLDL 0F184H,#080H,#00H
+L_AA738:                 ; 0xaa738  (pointer target)
         MOVB RL0,#06H
         MOVB ign_cmp_a,RL0
         JB smartra_comms_status.03H,L_AA762
@@ -370,6 +378,7 @@ L_AA84A:                 ; 0xaa84a
         ATOMIC #01H
         BFLDL 0F184H,#080H,#080H
         JMPA cc_UC,L_AAB3C
+L_AA854:                 ; 0xaa854  (pointer target)
         MOVB RL0,#08H
         MOVB ign_cmp_a,RL0
         JNB smartra_comms_status.09H,L_AA8DE
@@ -479,6 +488,7 @@ L_AA956:                 ; 0xaa956
         BCLR EXICON.06H
         ATOMIC #01H
         BFLDL 0F184H,#080H,#00H
+L_AA968:                 ; 0xaa968  (pointer target)
         BCLR P2.06H
         MOVBZ R0,ign_cc_8
         BCLR R0.00H
@@ -608,6 +618,7 @@ L_AAAB6:                 ; 0xaaab6
         ATOMIC #01H
         BFLDL 0F184H,#080H,#080H
         JMPR cc_UC,L_AAB3C
+L_AAABE:                 ; 0xaaabe  (pointer target)
         MOVB RL0,mpl_iga_act
         JMPR cc_EQ,L_AAAF2
         MOV R1,T1_FE52
@@ -656,6 +667,7 @@ L_AAB2C:                 ; 0xaab2c
         BFLDL 0F184H,#080H,#080H
 L_AAB32:                 ; 0xaab32
         JMPR cc_UC,L_AAB3C
+L_AAB34:                 ; 0xaab34  (pointer target)
         BCLR P2.06H
         JMPR cc_UC,L_AAB3C
 L_AAB38:                 ; 0xaab38
@@ -704,6 +716,7 @@ L_AAB70:                 ; 0xaab70
 L_AAB96:                 ; 0xaab96
         MOV R0,[R1+#0658CH]
         JMPI cc_UC,[R0]
+L_AAB9C:                 ; 0xaab9c  (pointer target)
         MOV R0,DSTP7_FCFE
         MOV R1,[R0+#0FFFCH]
         MOV R0,[R0+#0FFFEH]
@@ -784,6 +797,7 @@ L_AAC5A:                 ; 0xaac5a
         ATOMIC #01H
         BFLDL 0F186H,#080H,#080H
         JMPA cc_UC,L_AB1E2
+L_AAC6A:                 ; 0xaac6a  (pointer target)
         MOV R0,DSTP7_FCFE
         MOV R1,[R0+#0FFFCH]
         MOV R0,[R0+#0FFFEH]
@@ -931,6 +945,7 @@ L_AADD4:                 ; 0xaadd4
 L_AADD8:                 ; 0xaadd8
         ATOMIC #01H
         BFLDL 0F186H,#080H,#00H
+L_AADDE:                 ; 0xaadde  (pointer target)
         MOVB RL0,#06H
         MOVB ign_cmp_b,RL0
         JB smartra_comms_status.06H,L_AAE08
@@ -1033,6 +1048,7 @@ L_AAEF0:                 ; 0xaaef0
         ATOMIC #01H
         BFLDL 0F186H,#080H,#080H
         JMPA cc_UC,L_AB1E2
+L_AAEFA:                 ; 0xaaefa  (pointer target)
         MOVB RL0,#08H
         MOVB ign_cmp_b,RL0
         JNB smartra_comms_status.08H,L_AAF84
@@ -1142,6 +1158,7 @@ L_AAFFC:                 ; 0xaaffc
         BCLR EXICON.07H
         ATOMIC #01H
         BFLDL 0F186H,#080H,#00H
+L_AB00E:                 ; 0xab00e  (pointer target)
         BCLR P2.07H
         MOVBZ R0,ign_cc_8
         BCLR R0.01H
@@ -1271,6 +1288,7 @@ L_AB15C:                 ; 0xab15c
         ATOMIC #01H
         BFLDL 0F186H,#080H,#080H
         JMPR cc_UC,L_AB1E2
+L_AB164:                 ; 0xab164  (pointer target)
         MOVB RL0,mpl_iga_act
         JMPR cc_EQ,L_AB198
         MOV R1,T1_FE52
@@ -1319,6 +1337,7 @@ L_AB1D2:                 ; 0xab1d2
         BFLDL 0F186H,#080H,#080H
 L_AB1D8:                 ; 0xab1d8
         JMPR cc_UC,L_AB1E2
+L_AB1DA:                 ; 0xab1da  (pointer target)
         BCLR P2.07H
         JMPR cc_UC,L_AB1E2
 L_AB1DE:                 ; 0xab1de
@@ -1342,11 +1361,13 @@ CC9INT_handler:
         SHL R0,#01H
         MOV R0,[R0+#065A2H]
         JMPI cc_UC,[R0]
+L_AB206:                 ; 0xab206  (pointer target)
         CMPB RL1,ign_cmp_a
         JMPR cc_EQ,L_AB20E
         BSET CC6IC.07H
 L_AB20E:                 ; 0xab20e
         JMPR cc_UC,L_AB21A
+L_AB210:                 ; 0xab210  (pointer target)
         CMPB RL1,ign_cmp_b
         JMPR cc_EQ,L_AB218
         BSET CC7IC.07H
@@ -1367,6 +1388,7 @@ CC27INT_handler:
         MOV R0,[R0+#0FA4EH]
         MOV R0,[R0+#065AAH]
         JMPI cc_UC,[R0]
+L_AB23C:                 ; 0xab23c  (pointer target)
         JNB smartra_comms_status.02H,L_AB25A
         BFLDH CCM1_FF54,#0FH,#00H
         ATOMIC #02H
@@ -1379,6 +1401,7 @@ CC27INT_handler:
         BFLDL 0F184H,#080H,#080H
 L_AB25A:                 ; 0xab25a
         JMPR cc_UC,L_AB27A
+L_AB25C:                 ; 0xab25c  (pointer target)
         JNB smartra_comms_status.05H,L_AB27A
         BFLDH CCM1_FF54,#0F0H,#00H
         ATOMIC #02H

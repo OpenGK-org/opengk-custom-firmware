@@ -194,7 +194,7 @@ L_C556A:                 ; 0xc556a
         CALLS SEG Get_IP_Word_2D_Table_DWord_YWord, SOF Get_IP_Word_2D_Table_DWord_YWord
         MOV R13,R4
         MOV R12,R8
-        MOV R14,#0EH
+        MOV R14,#0EH                    ;@reloc-ok constant
         CALLS SEG Mul_Shift_U16_Sat32, SOF Mul_Shift_U16_Sat32
         MOV R8,R4
         MOV R12,#DATA16 04A9AH

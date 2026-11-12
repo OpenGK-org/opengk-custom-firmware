@@ -32,6 +32,7 @@ c_t_vs_min_is_diag                   EQU  09074AH
 
 PUBLIC  Calc_IGC_Dur_Fault, Calc_ISA_CatHeat, CanPurge_Set_Close, Diag_IGC_Dur
 EXTERN  Add_r12_r13_Return_r4:NEAR, DTC_Update_Debounced:NEAR, sub_r12_r13_rets_r4:NEAR
+PUBLIC  L_CD90C
 
 S_CD8EA SECTION CODE AT 0CD8EAH
 
@@ -54,6 +55,7 @@ L_CD90A:                 ; 0xcd90a
         ; ------------------------------------------------------------
         ; (unclassified) on-chip RAM global @0xcd90c  W:{-}  R:{-}
         ; ------------------------------------------------------------
+L_CD90C:                 ; 0xcd90c  (pointer target)
         RETS
 
 ; ======== Calc_ISA_CatHeat  (@0xcd90e) ========

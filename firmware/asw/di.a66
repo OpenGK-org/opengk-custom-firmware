@@ -78,7 +78,7 @@ L_B2082:                 ; 0xb2082
         MOV cp_tra_state,ZEROS
         JMPR cc_UC,L_B20A0
 L_B2094:                 ; 0xb2094
-        MOV R4,#0BH
+        MOV R4,#0BH                    ;@reloc-ok constant
         MOV cp_tra_state,R4
         MOV R5,#06H
         MOV cp_state,R5
@@ -138,7 +138,7 @@ L_B213C:                 ; 0xb213c
 L_B214E:                 ; 0xb214e
         MOV R4,#06H
         MOV cp_state,R4
-        MOV R5,#0BH
+        MOV R5,#0BH                    ;@reloc-ok constant
         MOV cp_tra_state,R5
 L_B215A:                 ; 0xb215a
         MOV state_cp_ctl,ZEROS

@@ -63,7 +63,7 @@ S_DCE40 SECTION CODE AT 0DCE40H
         ; / ti_cyl_sam / ti_fac_cor / tco_rest.
         ; ------------------------------------------------------------
 Calc_TI_Hom_Base:
-        MOV R12,#DATA16 00032H
+        MOV R12,#DATA16 00032H                    ;@reloc-ok constant
         MOV R4,R12
         MOV R2,#DATA16 06000H
         MULU R4,R2

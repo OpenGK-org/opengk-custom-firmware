@@ -6,6 +6,7 @@ $SEGMENTED
 $INCLUDE (REG167.INC)
 $INCLUDE (zone_syms.inc)
 
+PUBLIC  L_A7370, L_A7A3A
 PUBLIC  CC14INT_handler, CallVia_368, Reset_S0EIC_e4e, Reset_S0TBIC_e40, Reset_S0TIC_e34, Set_Output_CC24
 PUBLIC  Set_lv_err_com_resp_imob_a800
 
@@ -497,10 +498,11 @@ L_A7364:                 ; 0xa7364
 CallVia_368:
         SCXT CP,#DATA16 0FBEAH
         NOP
-        JMPI cc_UC,[R4]
+        JMPI cc_UC,[R4]                    ;@reloc-ok bank code pointer, set symbolically
+L_A7370:                 ; 0xa7370  (pointer target)
         CMP ZEROS,crank_tim_21
         JMPR cc_EQ,L_A73D4
-        MOV R4,#DATA16 073AAH
+        MOV R4,#DATA16 SOF L_A73AA
         BFLDL 0FF26H,#0FH,#00H
         EXTR #01H
         BFLDL 0F170H,#080H,#00H
@@ -527,16 +529,17 @@ L_A73AA:                 ; 0xa73aa
         MOV T7,#DATA16 01000H
         MOV CC24,#DATA16 01001H
         BFLDL 0FF26H,#0FH,#05H
-        MOV R4,#DATA16 073D4H
+        MOV R4,#DATA16 SOF L_A73D4
         JMPA cc_UC,L_A806E
 L_A73D4:                 ; 0xa73d4
         BSET ccp_engine_flags.06H
         BSET ccp_engine_flags.02H
         BSET T5CON.06H
         MOV R9,CC15_FE9E
-        MOV R4,#DATA16 073EAH
+        MOV R4,#DATA16 SOF L_A73EA
         SUB CC24,0FF1EH
         JMPA cc_UC,L_A806E
+L_A73EA:                 ; 0xa73ea  (pointer target)
         MOV R5,CC15_FE9E
         SUB R5,R9
         MOV R9,CC15_FE9E
@@ -560,7 +563,7 @@ L_A7420:                 ; 0xa7420
         MOV R3,R5
         MOV R1,R5
         MOVBZ R2,crank_tim_8
-        MOV R4,#DATA16 074BCH
+        MOV R4,#DATA16 SOF L_A74BC
         SUB CC24,0FF1EH
         BSET can_sched_flags2.0EH
         BOR can_sched_flags1.0EH,can_sched_flags0.0EH
@@ -572,7 +575,7 @@ L_A744C:                 ; 0xa744c
         BCLR T78CON.06H
         BCLR lv_err_com_resp_imob.0DH
         MOVB crank_tim_7,ZEROS
-        MOV R4,#DATA16 073EAH
+        MOV R4,#DATA16 SOF L_A73EA
         MOV CC24,#DATA16 01002H
         EXTR #01H
         MOV T7,#DATA16 01001H
@@ -607,6 +610,7 @@ L_A7476:                 ; 0xa7476
         MOV seg_t_mes_bas,ONES
 L_A74B8:                 ; 0xa74b8
         JMPA cc_UC,L_A806E
+L_A74BC:                 ; 0xa74bc  (pointer target)
         SCXT MDC,#DATA16 00000H
         PUSH MDH
         PUSH MDL
@@ -661,7 +665,7 @@ L_A7548:                 ; 0xa7548
         JMPR cc_NE,L_A756A
         MOVB crk_tooth_det,ONES
         MOVB run_eng,ONES
-        MOV R4,#DATA16 07656H
+        MOV R4,#DATA16 SOF L_A7656
         MOV R8,CC15_FE9E
         BCLR lv_err_com_resp_imob.0CH
         CMP R5,#DATA16 00177H
@@ -684,7 +688,7 @@ L_A7580:                 ; 0xa7580
         BCLR T78CON.06H
         BCLR lv_err_com_resp_imob.0DH
         MOVB crank_tim_7,ZEROS
-        MOV R4,#DATA16 073EAH
+        MOV R4,#DATA16 SOF L_A73EA
         MOV CC24,#DATA16 01002H
         EXTR #01H
         MOV T7,#DATA16 01001H
@@ -699,7 +703,7 @@ L_A75B6:                 ; 0xa75b6
         BCLR T78CON.06H
         BCLR lv_err_com_resp_imob.0DH
         MOVB crank_tim_7,ZEROS
-        MOV R4,#DATA16 073EAH
+        MOV R4,#DATA16 SOF L_A73EA
         MOV CC24,#DATA16 01002H
         EXTR #01H
         MOV T7,#DATA16 01001H
@@ -714,7 +718,7 @@ L_A75E0:                 ; 0xa75e0
         BCLR T78CON.06H
         BCLR lv_err_com_resp_imob.0DH
         MOVB crank_tim_7,ZEROS
-        MOV R4,#DATA16 073EAH
+        MOV R4,#DATA16 SOF L_A73EA
         MOV CC24,#DATA16 01002H
         EXTR #01H
         MOV T7,#DATA16 01001H
@@ -752,6 +756,7 @@ L_A764C:                 ; 0xa764c
         POP MDH
         POP MDC
         JMPA cc_UC,L_A806E
+L_A7656:                 ; 0xa7656  (pointer target)
         SCXT MDC,#DATA16 00000H
         PUSH MDH
         PUSH MDL
@@ -1053,7 +1058,7 @@ L_A799A:                 ; 0xa799a
         BCLR T78CON.06H
         BCLR lv_err_com_resp_imob.0DH
         MOVB crank_tim_7,ZEROS
-        MOV R4,#DATA16 073EAH
+        MOV R4,#DATA16 SOF L_A73EA
         MOV CC24,#DATA16 01002H
         EXTR #01H
         MOV T7,#DATA16 01001H
@@ -1091,7 +1096,7 @@ L_A7A08:                 ; 0xa7a08
         BCLR T78CON.06H
         BCLR lv_err_com_resp_imob.0DH
         MOVB crank_tim_7,ZEROS
-        MOV R4,#DATA16 073EAH
+        MOV R4,#DATA16 SOF L_A73EA
         MOV CC24,#DATA16 01002H
         EXTR #01H
         MOV T7,#DATA16 01001H
@@ -1106,6 +1111,7 @@ L_A7A30:                 ; 0xa7a30
         POP MDH
         POP MDC
         JMPA cc_UC,L_A806E
+L_A7A3A:                 ; 0xa7a3a  (pointer target)
         BCLR T78CON.06H
         MOVBZ R0,cam_1_level
         JNB R0.00H,L_A7A46

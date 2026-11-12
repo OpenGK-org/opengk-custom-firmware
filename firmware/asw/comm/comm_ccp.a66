@@ -9,6 +9,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  CCP_Init, CCP_Resp_Dispatch, CCP_Svc_Prog_DAQ
 EXTERN  CCP_Cmd_StateMachine:NEAR, CCP_DAQ_Security:NEAR, CCP_Prog_State:NEAR, CCP_Reset_State:NEAR
 EXTERN  CCP_Set_EngineFlags:NEAR, CCP_Svc_Conn_Security:NEAR, Move_xFF_items__from_PTR_R12_to_PTR_R13:NEAR
+PUBLIC  L_A53AE
 
 S_A53A0 SECTION CODE AT 0A53A0H
 
@@ -22,6 +23,7 @@ CCP_Init:
         ; ------------------------------------------------------------
         ; (unclassified) RAM/paged global @0xa53ae [dpp]  W:{-}  R:{-}
         ; ------------------------------------------------------------
+L_A53AE:                 ; 0xa53ae  (pointer target)
         MOV R12,#DATA16 0FAF4H
         CALLS SEG CCP_Svc_Conn_Security, SOF CCP_Svc_Conn_Security
         RETS

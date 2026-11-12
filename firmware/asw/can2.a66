@@ -8,6 +8,7 @@ $INCLUDE (zone_syms.inc)
 
 PUBLIC  BL_CAN2_RxFrame, CCP_GetCalPageStatus_0x1c
 EXTERN  CCP_Rebuild_CanDaqObjects:NEAR, Move_xFF_items__from_PTR_R12_to_PTR_R13:NEAR
+PUBLIC  L_A58FA, L_A5990, L_A5A5A
 
 S_A58DC SECTION CODE AT 0A58DCH
 
@@ -26,6 +27,7 @@ L_A58F0:                 ; 0xa58f0
 L_A58F6:                 ; 0xa58f6
         MOVB RL4,#00H
         RETS
+L_A58FA:                 ; 0xa58fa  (pointer target)
         MOV [-R0],R9
         MOVB RL4,can_c1a0
         JMPR cc_NE,L_A598C
@@ -92,6 +94,7 @@ L_A5970:                 ; 0xa5970
 L_A598C:                 ; 0xa598c
         MOV R9,[R0+]
         RETS
+L_A5990:                 ; 0xa5990  (pointer target)
         MOV [-R0],R9
         MOV [-R0],R8
         MOVB RL4,can_c1a0
@@ -187,6 +190,7 @@ L_A5A54:                 ; 0xa5a54
         MOV R8,[R0+]
         MOV R9,[R0+]
         RETS
+L_A5A5A:                 ; 0xa5a5a  (pointer target)
         MOV [-R0],R9
         MOV [-R0],R8
         MOVB bl_can2_poll_result,ZEROS

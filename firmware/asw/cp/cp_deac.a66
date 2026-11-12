@@ -169,7 +169,7 @@ L_B1E36:                 ; 0xb1e36
 L_B1E48:                 ; 0xb1e48
         MOV R4,#06H
         MOV cp_state,R4
-        MOV R5,#0BH
+        MOV R5,#0BH                    ;@reloc-ok constant
         MOV cp_tra_state,R5
         RET
 

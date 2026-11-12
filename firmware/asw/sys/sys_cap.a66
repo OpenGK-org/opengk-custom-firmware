@@ -9,6 +9,10 @@ $INCLUDE (zone_syms.inc)
 
 PUBLIC  CC25INT_handler, CC8INT_handler, CapCom_CC0_Ch0_Drv, CapCom_CC1_Ch1_Drv, CapCom_CC2_Ch2_Drv, CapCom_CC3_Ch3_Drv_ImobGated
 PUBLIC  EngOut_Scheduler
+PUBLIC  L_A95B0, L_A95D8, L_A9634, L_A9666, L_A96BC, L_A970E
+PUBLIC  L_A9722, L_A974A, L_A97A6, L_A97D8, L_A982E, L_A9880
+PUBLIC  L_A9894, L_A98BC, L_A9918, L_A994A, L_A99A0, L_A99F2
+PUBLIC  L_A9A08, L_A9A30, L_A9A8C, L_A9ABE, L_A9B14, L_A9B66
 
 S_A9236 SECTION CODE AT 0A9236H
 
@@ -16,7 +20,7 @@ S_A9236 SECTION CODE AT 0A9236H
 CC25INT_handler:
         SCXT CP,#DATA16 0FC16H
         BFLDH PSW_FF10,#0F0H,#070H
-        JMPI cc_UC,[R3]
+        JMPI cc_UC,[R3]                    ;@reloc-ok bank code pointer, set symbolically
 
 ; ======== CapCom_CC0_Ch0_Drv  (@0xa9240) ========
         ; CAPCOM output-compare channel driver, CHANNEL 0 (CC0/CC0IC, P2.0, accumulator DAT_00fa12->fa0a,
@@ -106,7 +110,7 @@ L_A92FC:                 ; 0xa92fc
         MOVB prev_state_iv,RL2
         BCLR state_mtv.07H
 L_A930E:                 ; 0xa930e
-        MOV R3,#DATA16 09316H
+        MOV R3,#DATA16 SOF CapCom_CC1_Ch1_Drv
         JMPA cc_UC,L_A958E
 
 ; ======== CapCom_CC1_Ch1_Drv  (@0xa9316) ========
@@ -190,7 +194,7 @@ L_A93D2:                 ; 0xa93d2
         MOVB prev_state_iv,RL2
         BCLR state_mtv.0AH
 L_A93E4:                 ; 0xa93e4
-        MOV R3,#DATA16 093ECH
+        MOV R3,#DATA16 SOF CapCom_CC2_Ch2_Drv
         JMPA cc_UC,L_A958E
 
 ; ======== CapCom_CC2_Ch2_Drv  (@0xa93ec) ========
@@ -274,7 +278,7 @@ L_A94A4:                 ; 0xa94a4
         MOVB prev_state_iv,RL2
         BCLR state_mtv.0DH
 L_A94B6:                 ; 0xa94b6
-        MOV R3,#DATA16 094BCH
+        MOV R3,#DATA16 SOF CapCom_CC3_Ch3_Drv_ImobGated
         JMPR cc_UC,L_A958E
 
 ; ======== CapCom_CC3_Ch3_Drv_ImobGated  (@0xa94bc) ========
@@ -362,7 +366,7 @@ L_A9578:                 ; 0xa9578
         MOVB prev_state_iv,RL2
         BCLR smartra_comms_status.00H
 L_A958A:                 ; 0xa958a
-        MOV R3,#DATA16 09240H
+        MOV R3,#DATA16 SOF CapCom_CC0_Ch0_Drv
 L_A958E:                 ; 0xa958e
         POP CP
         RETI
@@ -385,6 +389,7 @@ EngOut_Scheduler:
         MOVBZ R2,inj_ic_cyl0
         MOV R2,[R2+#06526H]
         JMPI cc_UC,[R2]
+L_A95B0:                 ; 0xa95b0  (pointer target)
         BCMP state_mtv.06H,state_mtv.06H
         JMPA cc_NC,L_A970E
         MOV R0,T0_FE50
@@ -398,6 +403,7 @@ L_A95C8:                 ; 0xa95c8
         BCLR state_mtv.06H
         MOVB RL2,#02H
         MOVB inj_ic_cyl0,RL2
+L_A95D8:                 ; 0xa95d8  (pointer target)
         MOVB RL0,T0_FE50
         SUBB RL0,#DATA16 0006EH
         CMPB RL0,#00H
@@ -431,6 +437,7 @@ L_A962C:                 ; 0xa962c
         MOVB RL2,#00H
         MOVB inj_ic_cyl0,RL2
         JMPR cc_UC,L_A970E
+L_A9634:                 ; 0xa9634  (pointer target)
         JNB state_mtv.06H,L_A9666
         MOV R0,T0_FE50
         SUBB RL0,#DATA16 00046H
@@ -481,6 +488,7 @@ L_A96B2:                 ; 0xa96b2
         BSET CC0IC.07H
 L_A96BA:                 ; 0xa96ba
         JMPR cc_UC,L_A970E
+L_A96BC:                 ; 0xa96bc  (pointer target)
         MOV R0,ti_hom_bas_1
         SUB R0,R4
         JMPR cc_ULE,L_A970E
@@ -514,6 +522,7 @@ L_A970E:                 ; 0xa970e
         MOVBZ R2,inj_ic_cyl1
         MOV R2,[R2+#0653AH]
         JMPI cc_UC,[R2]
+L_A9722:                 ; 0xa9722  (pointer target)
         BCMP state_mtv.09H,state_mtv.09H
         JMPA cc_NC,L_A9880
         MOV R0,T0_FE50
@@ -527,6 +536,7 @@ L_A973A:                 ; 0xa973a
         BCLR state_mtv.09H
         MOVB RL2,#02H
         MOVB inj_ic_cyl1,RL2
+L_A974A:                 ; 0xa974a  (pointer target)
         MOVB RL0,T0_FE50
         SUBB RL0,#DATA16 00014H
         CMPB RL0,#00H
@@ -560,6 +570,7 @@ L_A979E:                 ; 0xa979e
         MOVB RL2,#00H
         MOVB inj_ic_cyl1,RL2
         JMPR cc_UC,L_A9880
+L_A97A6:                 ; 0xa97a6  (pointer target)
         JNB state_mtv.09H,L_A97D8
         MOV R0,T0_FE50
         SUBB RL0,#DATA16 00064H
@@ -610,6 +621,7 @@ L_A9824:                 ; 0xa9824
         BSET CC1IC.07H
 L_A982C:                 ; 0xa982c
         JMPR cc_UC,L_A9880
+L_A982E:                 ; 0xa982e  (pointer target)
         MOV R0,ti_hom_bas_1
         SUB R0,R5
         JMPR cc_ULE,L_A9880
@@ -643,6 +655,7 @@ L_A9880:                 ; 0xa9880
         MOVBZ R2,inj_ic_cyl2
         MOV R2,[R2+#0654EH]
         JMPI cc_UC,[R2]
+L_A9894:                 ; 0xa9894  (pointer target)
         BCMP state_mtv.0CH,state_mtv.0CH
         JMPA cc_NC,L_A99F2
         MOV R0,T0_FE50
@@ -656,6 +669,7 @@ L_A98AC:                 ; 0xa98ac
         BCLR state_mtv.0CH
         MOVB RL2,#02H
         MOVB inj_ic_cyl2,RL2
+L_A98BC:                 ; 0xa98bc  (pointer target)
         MOVB RL0,T0_FE50
         SUBB RL0,#DATA16 00032H
         CMPB RL0,#00H
@@ -689,6 +703,7 @@ L_A9910:                 ; 0xa9910
         MOVB RL2,#00H
         MOVB inj_ic_cyl2,RL2
         JMPR cc_UC,L_A99F2
+L_A9918:                 ; 0xa9918  (pointer target)
         JNB state_mtv.0CH,L_A994A
         MOV R0,T0_FE50
         SUBB RL0,#DATA16 0000AH
@@ -739,6 +754,7 @@ L_A9996:                 ; 0xa9996
         BSET CC2IC.07H
 L_A999E:                 ; 0xa999e
         JMPR cc_UC,L_A99F2
+L_A99A0:                 ; 0xa99a0  (pointer target)
         MOV R0,ti_hom_bas_1
         SUB R0,R6
         JMPR cc_ULE,L_A99F2
@@ -772,6 +788,7 @@ L_A99F2:                 ; 0xa99f2
         MOVBZ R2,inj_ic_cyl3
         MOV R2,[R2+#06562H]
         JMPI cc_UC,[R2]
+L_A9A08:                 ; 0xa9a08  (pointer target)
         BCMP state_mtv.0FH,state_mtv.0FH
         JMPA cc_NC,L_A9B66
         MOV R0,T0_FE50
@@ -785,6 +802,7 @@ L_A9A20:                 ; 0xa9a20
         BCLR state_mtv.0FH
         MOVB RL2,#02H
         MOVB inj_ic_cyl3,RL2
+L_A9A30:                 ; 0xa9a30  (pointer target)
         MOVB RL0,T0_FE50
         SUBB RL0,#DATA16 00050H
         CMPB RL0,#00H
@@ -818,6 +836,7 @@ L_A9A84:                 ; 0xa9a84
         MOVB RL2,#00H
         MOVB inj_ic_cyl3,RL2
         JMPR cc_UC,L_A9B66
+L_A9A8C:                 ; 0xa9a8c  (pointer target)
         JNB state_mtv.0FH,L_A9ABE
         MOV R0,T0_FE50
         SUBB RL0,#DATA16 00028H
@@ -868,6 +887,7 @@ L_A9B0A:                 ; 0xa9b0a
         BSET CC3IC.07H
 L_A9B12:                 ; 0xa9b12
         JMPR cc_UC,L_A9B66
+L_A9B14:                 ; 0xa9b14  (pointer target)
         MOV R0,ti_hom_bas_1
         SUB R0,R7
         JMPR cc_ULE,L_A9B66
@@ -1150,11 +1170,11 @@ L_A9DDC:                 ; 0xa9ddc
         CMP T7,#DATA16 0003CH
         JMPR cc_UGT,L_A9DEE
         MOV CC25,#DATA16 00014H
-        MOV R3,#DATA16 09316H
+        MOV R3,#DATA16 SOF CapCom_CC1_Ch1_Drv
         JMPR cc_UC,L_A9DF6
 L_A9DEE:                 ; 0xa9dee
         MOV CC25,#DATA16 00050H
-        MOV R3,#DATA16 094BCH
+        MOV R3,#DATA16 SOF CapCom_CC3_Ch3_Drv_ImobGated
 L_A9DF6:                 ; 0xa9df6
         EXTR #01H
         CMP T0,CC25_FE72
