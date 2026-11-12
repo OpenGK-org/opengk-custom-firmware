@@ -199,6 +199,14 @@ table at 0xA2378, which also has DAQ IDs 0x6A2-0x6A4). DAQ lists and checksum
 aren't described yet, so INCA measures by polling. **EPK:**
 `OPENGK01OG0001` at 0x90000.
 
+**Calibration pages:** two pages, both at 0x90000 (64 KB), declared with `CCP_PAGE`:
+page 1 "Working page" (RAM, initialised by the ECU, flash-back) and page 2
+"Reference page" (flash, default). The working page is the RAM on chip select CS2,
+which the firmware maps over the calibration flash with `ADDRSEL2 = 0x0904`
+(`exec.a66`, `bootloader.a66`). CS2 is not populated on retail boards, so online
+calibration needs that RAM fitted. The `OPTIONAL_CMD` list (incl. GET_SEED 0x12 and
+UNLOCK 0x13) is the set OEM A2Ls of this Siemens CCP stack declare.
+
 **Seed & key:** the A2L's CCP block names `opengk_seedkey.dll` for the CAL, DAQ and
 PGM privileges. The firmware sends a fixed seed and accepts any key, so the DLL
 (`tools/seedkey/opengk_seedkey.c`) returns the seed as the key. It exports the

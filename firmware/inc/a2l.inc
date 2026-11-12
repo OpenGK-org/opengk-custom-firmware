@@ -18,7 +18,15 @@
 ;@a2l MEMORY _RAM VARIABLES RAM 0xC000 0x4000 "RAM variables"
 ; CCP: CAN message-object table at 0xA2378 (6A1/6A0 CCP, 6A2-6A4 DAQ, 7E8/7E0/7DF OBD)
 ; Seed & key: tools/seedkey (key = seed; the firmware accepts any key)
-;@a2l CCP station=0x01 cro=0x6A0 dto=0x6A1 baud=500000 page=0x90000,0x10000 seed_key=opengk_seedkey.dll
+; Optional commands: the set the Siemens CCP stack declares in OEM A2Ls of this
+; family (same CRO/DTO IDs); GET_SEED 0x12 / UNLOCK 0x13 make tools use seed & key.
+;@a2l CCP station=0x01 cro=0x6A0 dto=0x6A1 baud=500000 seed_key=opengk_seedkey.dll optional_cmd=0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0C,0x0D,0x0E,0x0F,0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1B,0x20,0x21,0x22,0x23
+; Calibration pages (SELECT_CAL_PAGE).  Both live at 0x90000: the working page
+; is the RAM on chip select CS2, which the firmware maps over the calibration
+; flash with ADDRSEL2 = 0x0904 (0x90000, 64 KB; see exec.a66, bootloader.a66)
+; and copies back to flash.  CS2 is not populated on retail boards.
+;@a2l CCP_PAGE 1 "Working page" 0x90000 0x10000 RAM RAM_INIT_BY_ECU FLASH_BACK
+;@a2l CCP_PAGE 2 "Reference page" 0x90000 0x10000 FLASH DEFAULT
 ;
 ; ---- conversions ----
 ;@a2l CONV cv_pct LINEAR 0.00152587890625 0 "&pct;"

@@ -18,7 +18,9 @@ Object annotations (KIND DTYPE key=value ... ["description"]):
 Standalone annotations (firmware/inc/a2l.inc):
     PROJECT <name> "text" / MODULE <name> "text" / VERSION "text"
     EPK <addr> "text" / MEMORY <name> <CODE|DATA|VARIABLES> <FLASH|RAM> <addr> <size> "text"
-    CCP station= cro= dto= baud= page=<addr>,<size> [seed_key=<dll>]
+    CCP station= cro= dto= baud= [seed_key=<dll>] [optional_cmd=<code>,<code>,...]
+    CCP_PAGE <no> "name" <addr> <size> <flag>...      (DEFINED_PAGES; flags RAM FLASH
+                                    RAM_INIT_BY_ECU RAM_INIT_BY_TOOL FLASH_BACK DEFAULT ...)
     CONV <name> LINEAR <scale> <offset> "unit"          (phys = scale*raw + offset; a/b allowed)
     CONV <name> VTAB "unit" 0="OFF" 1="ON" ...
     CONV <name> VTAB_RANGE "unit" 1..3="X" ...
@@ -227,7 +229,7 @@ def generate(output, link_symbols=None):
 
     convs = Convs()
     proj = {"PROJECT": ("OPENGK", ""), "MODULE": ("MODULE", ""), "VERSION": "", "EPK": None,
-            "MEMORY": [], "CCP": {}}
+            "MEMORY": [], "CCP": {}, "CCP_PAGE": []}
     for toks, where in standalone:
         k = toks[0]
         if k == "CONV":
@@ -242,6 +244,10 @@ def generate(output, link_symbols=None):
             proj[k].append(toks[1:])
         elif k == "CCP":
             proj[k] = kv(toks[1:])[1]
+        elif k == "CCP_PAGE":
+            if len(toks) < 5:
+                raise A2LError("%s: CCP_PAGE <no> \"name\" <addr> <size> <flag>..." % where)
+            proj[k].append(toks[1:])
         else:
             raise A2LError("%s: unknown ;@a2l %s" % (where, k))
 
@@ -355,11 +361,11 @@ def generate(output, link_symbols=None):
     ccp = proj["CCP"]
     ccp_txt = ""
     if ccp:
-        page = ""
-        if "page" in ccp:
-            pa, ps = ccp["page"].split(",")
-            page = ("        /begin DEFINED_PAGES 1 \"Calibration flash\" 0 %s %s FLASH DEFAULT /end DEFINED_PAGES\n"
-                    % (pa, ps))
+        page = "".join("        /begin DEFINED_PAGES\n          %s %s 0 %s %s\n%s        /end DEFINED_PAGES\n"
+                       % (p[0], q(p[1]), p[2], p[3], "".join("          %s\n" % f for f in p[4:]))
+                       for p in proj["CCP_PAGE"])
+        page += "".join("        OPTIONAL_CMD %s\n" % c
+                        for c in ccp.get("optional_cmd", "").split(",") if c)
         seed = ""
         if "seed_key" in ccp:       # same DLL for the CAL, DAQ and PGM privileges
             dll = q(ccp["seed_key"])
