@@ -124,7 +124,7 @@ CC22INT_handler:
         BFLDH CCM5_FF24,#0FH,#00H
         MOVB RL0,capcom_7
         MOVB RH0,RL0
-        ANDB RL0,#0FFH
+        DB      067H,0F0H,0FFH,0FFH             ; ANDB RL0,#0FFH in its original encoding (unused high byte 0FFh)
         JMPR cc_EQ,L_A84A2
         ORB capcom_6,RL0
         MOV R1,#DATA16 01000H
