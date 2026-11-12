@@ -1,7 +1,6 @@
 ; asw/exec.a66
 ; CCP program validation and bootloader execution magic / parameters (flash-back of the CS2
 ; RAM page).
-; 0xA6A44-0xA6D32  (750 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -10,7 +9,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  BL_Set_ExecMagic_Full, BL_Set_ExecParams, CCP_Validate_Program
 EXTERN  Push_To_System_Stack:NEAR, xor_routine:NEAR
 
-S_A6A44 SECTION CODE AT 0A6A44H
+S_EXEC SECTION CODE
 
 ; ======== CCP_Validate_Program  (@0xa6a44) ========
         ; ------------------------------------------------------------
@@ -313,5 +312,5 @@ L_A6D28:                 ; 0xa6d28
         MOV R9,[R0+]
         RETS
 
-S_A6A44 ENDS
+S_EXEC ENDS
         END

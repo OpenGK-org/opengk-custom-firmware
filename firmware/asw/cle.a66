@@ -1,6 +1,5 @@
 ; asw/cle.a66
 ; IVVT oil-control solenoid cleaning PWM cycle.
-; 0xAFF22-0xB0000  (222 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -16,7 +15,7 @@ PUBLIC  IVVT_OCV_CleanSlv, Set_ctr_cyc_cle_slv_ivvt_f22
 EXTERN  Get_Byte_2D_Table_DWord_YByte:NEAR, Mul_S16_Q7_Sat:NEAR
 PUBLIC  L_AFFFE
 
-S_AFF22 SECTION CODE AT 0AFF22H
+S_CLE SECTION CODE
 
 ; ======== Set_ctr_cyc_cle_slv_ivvt_f22  (@0xaff22) ========
 Set_ctr_cyc_cle_slv_ivvt_f22:
@@ -110,5 +109,5 @@ L_AFFFA:                 ; 0xafffa
 L_AFFFE:                 ; 0xafffe  (pointer target)
         RETS
 
-S_AFF22 ENDS
+S_CLE ENDS
         END

@@ -1,7 +1,6 @@
 ; asw/diag/diag_nvm.a66
 ; Total run time and ECU diagnosis flags NVM storage, power-latch flags, adaptation-reset
 ; coding, serial parsing.
-; 0xDAB06-0xDAE6A  (868 bytes, 8 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -25,7 +24,7 @@ EXTERN  NVM_Save_s63e:NEAR, NVM_Save_s640:NEAR, NVM_Save_s641:NEAR, NVM_Save_s64
 EXTERN  NVM_Save_s643:NEAR, SMARTRA_Save_data_to_EEPROM:NEAR, Store_IGA_Knk_Ad_NVM:NEAR, Store_Knks_Gain_NVM:NEAR
 EXTERN  xor_routine:NEAR
 
-S_DAB06 SECTION CODE AT 0DAB06H
+S_DIAG_NVM SECTION CODE
 
 ; ======== NVM_Save_s00c  (@0xdab06) ========
         ; ------------------------------------------------------------
@@ -374,5 +373,5 @@ Parse_Serial_Nibbles:
         OR R4,R5
         RET
 
-S_DAB06 ENDS
+S_DIAG_NVM ENDS
         END

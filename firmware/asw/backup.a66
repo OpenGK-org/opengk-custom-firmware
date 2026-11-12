@@ -1,7 +1,6 @@
 ; asw/backup.a66
 ; NVM backup of adaptations: misfire roughness adaptation per segment and the DTC shadow
 ; table.
-; 0xCABF2-0xCB400  (2062 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -14,7 +13,7 @@ c_crk_dif_max_er                     EQU  0904EEH
 PUBLIC  Backup_ER_Adapt, Backup_ER_Adapt_Seg, Init_DTC_Shadow_Table, NVM_Save_s3da
 EXTERN  Elevated_Write_Routine_prg_zone_wrapper:NEAR, xor_routine:NEAR
 
-S_CABF2 SECTION CODE AT 0CABF2H
+S_BACKUP SECTION CODE
 
 ; ======== NVM_Save_s3da  (@0xcabf2) ========
         ; ------------------------------------------------------------
@@ -812,5 +811,5 @@ L_CB3E0:                 ; 0xcb3e0
         MOV R7,[R0+]
         RETS
 
-S_CABF2 ENDS
+S_BACKUP ENDS
         END

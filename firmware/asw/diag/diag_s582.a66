@@ -1,6 +1,5 @@
 ; asw/diag/diag_s582.a66
 ; Cam adaptation NVM save (block 0x582) and cam hysteresis reference.
-; 0xC1B8C-0xC1DEC  (608 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -14,7 +13,7 @@ c_tol_tooth_off_cam_in               EQU  0903D5H
 PUBLIC  Calc_Cam_Hys_Ref, NVM_Save_s582_CamAd
 EXTERN  Elevated_Write_Routine_prg_zone_wrapper:NEAR, Sat_Add_U8:NEAR, sub_r12_13_ret_r4:NEAR, xor_routine:NEAR
 
-S_C1B8C SECTION CODE AT 0C1B8CH
+S_DIAG_S582 SECTION CODE
 
 ; ======== NVM_Save_s582_CamAd  (@0xc1b8c) ========
         ; ------------------------------------------------------------
@@ -260,5 +259,5 @@ L_C1DDE:                 ; 0xc1dde
         ADD R0,#04H
         RETS
 
-S_C1B8C ENDS
+S_DIAG_S582 ENDS
         END

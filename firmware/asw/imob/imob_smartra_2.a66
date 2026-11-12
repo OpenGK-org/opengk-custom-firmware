@@ -1,6 +1,5 @@
 ; asw/imob/imob_smartra_2.a66
 ; SMARTRA authentication steps, challenge-response frame and key validation.
-; 0xBD034-0xBD3C8  (916 bytes, 11 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -13,7 +12,7 @@ PUBLIC  Imob_BuildResponse, Imob_ValidateKey_Fmy, SMARTRA_SetCommErr, SMARTRA_au
 PUBLIC  SMARTRA_proto_SendFrame5, SMARTRA_start_step2, SMARTRA_start_step3, SMARTRA_start_step4, SMARTRA_start_step6
 EXTERN  L_BD656:NEAR, SMARTRA_flush_RX_buffers:NEAR, SMARTRA_gen_challenge_lcg:NEAR, SMARTRA_load_response_compare:NEAR
 
-S_BD034 SECTION CODE AT 0BD034H
+S_IMOB_SMARTRA_2 SECTION CODE
 
 ; ======== SMARTRA_auth_step1_Init_arm  (@0xbd034) ========
 SMARTRA_auth_step1_Init_arm:
@@ -368,5 +367,5 @@ L_BD3C2:                 ; 0xbd3c2
         BSET lv_err_com_resp_imob.00H
         JMPA cc_UC,L_BD656
 
-S_BD034 ENDS
+S_IMOB_SMARTRA_2 ENDS
         END

@@ -1,6 +1,5 @@
 ; asw/iga/iga_av.a66
 ; Per-cylinder ignition angle and ignition efficiency.
-; 0xC0000-0xC06DC  (1756 bytes, 6 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -28,7 +27,7 @@ EXTERN  Sat_Add_S8:NEAR, Sat_Sub_S16:NEAR, SignByBit7_fe0f:NEAR, sub_r12_13_ret_
 EXTERN  sub_r12_r13_rets_r4:NEAR
 PUBLIC  L_C0028
 
-S_C0000 SECTION CODE AT 0C0000H
+S_IGA_AV SECTION CODE
 
 ; ======== Calc_IGA_Av  (@0xc0000) ========
         ; ------------------------------------------------------------
@@ -691,5 +690,5 @@ L_C06C0:                 ; 0xc06c0
 L_C06DA:                 ; 0xc06da
         RETS
 
-S_C0000 ENDS
+S_IGA_AV ENDS
         END

@@ -1,6 +1,5 @@
 ; asw/ex.a66
 ; Exhaust pressure, measured segment time and injection-valve state.
-; 0xC47AE-0xC48A2  (244 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -18,7 +17,7 @@ EXTERN  Add_r12_r13_Return_r4:NEAR, Calc_Drv0_Er_Osc:NEAR, Calc_ER_Seg_Nr:NEAR, 
 EXTERN  Get_IP_Word_2D_Table:NEAR, Get_IP_Word_Y_Axis:NEAR, Mul_Frac_Sat_x2:NEAR, Mul_S16_Hi:NEAR
 EXTERN  Mul_Shift_U16_Sat32:NEAR, Sat_Add_S16_v2:NEAR, Sat_Sub_S16_v2:NEAR
 
-S_C47AE SECTION CODE AT 0C47AEH
+S_EX SECTION CODE
 
 ; ======== Calc_prs_ex  (@0xc47ae) ========
         ; ------------------------------------------------------------
@@ -123,5 +122,5 @@ Set_state_iv:
         MOVB state_iv,RL4
         RETS
 
-S_C47AE ENDS
+S_EX ENDS
         END

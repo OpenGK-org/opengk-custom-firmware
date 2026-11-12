@@ -1,6 +1,5 @@
 ; asw/igc.a66
 ; Ignition coil diagnosis: current duration and misfire.
-; 0xC077A-0xC0BD2  (1112 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -18,7 +17,7 @@ id_t_igc_dur_min__n__maf             EQU  091DC4H
 PUBLIC  Diag_IGC_Duration, Diag_IGC_Misfire
 EXTERN  DTC_Update_Debounced:NEAR, Get_Byte_X_Axis:NEAR, Get_Byte_Y_Axis:NEAR, Read_Table_Indexed:NEAR
 
-S_C077A SECTION CODE AT 0C077AH
+S_IGC SECTION CODE
 
 ; ======== Diag_IGC_Duration  (@0xc077a) ========
         ; ------------------------------------------------------------
@@ -418,5 +417,5 @@ L_C0BCC:                 ; 0xc0bcc
         MOVB lv_iga_c2ea,ZEROS
         RETS
 
-S_C077A ENDS
+S_IGC ENDS
         END

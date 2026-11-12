@@ -1,6 +1,5 @@
 ; asw/comm/comm_nrc.a66
 ; KWP negative response code and SID 0x14 clear diagnostic information.
-; 0xDF052-0xDF0EC  (154 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  Compare_r9_to_0xff00_return_rl6_xFE_xFD_or_xFF, KWP_SID14_ClearDiagnosticInformation, SetBits_kwp_comms_flags_05c, Set_kwp_nrc_052
 EXTERN  Reset_Adaptive_LearnedValues:NEAR
 
-S_DF052 SECTION CODE AT 0DF052H
+S_COMM_NRC SECTION CODE
 
 ; ======== Set_kwp_nrc_052  (@0xdf052) ========
 Set_kwp_nrc_052:
@@ -89,5 +88,5 @@ L_DF0E4:                 ; 0xdf0e4
         MOV R9,[R0+]
         RETS
 
-S_DF052 ENDS
+S_COMM_NRC ENDS
         END

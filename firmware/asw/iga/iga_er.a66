@@ -1,7 +1,6 @@
 ; asw/iga/iga_er.a66
 ; Ignition roughness adaptation, roughness standard deviation and clutch torque-request
 ; hysteresis.
-; 0xAD900-0xADDAC  (1196 bytes, 6 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -44,7 +43,7 @@ EXTERN  Get_IP_Word_2D_Table:NEAR, Get_IP_Word_3D_Table:NEAR, Get_IP_Word_Y_Axis
 EXTERN  Mul_S16_Hi:NEAR, Mul_S8_Q7_Sat:NEAR, Mul_Shift_S16:NEAR, Mul_Shift_U16_Sat32:NEAR
 EXTERN  Read_MD_Signed:NEAR, Sat_Add_S8:NEAR, Sat_Sub_S16:NEAR, sub_r12_r13_rets_r4:NEAR
 
-S_AD900 SECTION CODE AT 0AD900H
+S_IGA_ER SECTION CODE
 
 ; ======== Calc_FacTqReqClu_Hys  (@0xad900) ========
         ; ------------------------------------------------------------
@@ -492,5 +491,5 @@ Reset_Dc534_d9a:
         BCLR lv_ct.05H
         RETS
 
-S_AD900 ENDS
+S_IGA_ER ENDS
         END

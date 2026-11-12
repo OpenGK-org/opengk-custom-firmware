@@ -1,7 +1,6 @@
 ; asw/comm/comm_m01_2.a66
 ; OBD-II Mode 01 PIDs 0x30 and up (warm-ups, distance, EVAP, baro, cat temps, monitor
 ; status...).
-; 0xE05AC-0xE2736  (8586 bytes, 26 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -67,7 +66,7 @@ EXTERN  OBD_Scale_RPM:NEAR, OBD_Scale_Temp:NEAR, Read_FreezeFrame_1:NEAR, Read_F
 EXTERN  Read_MulDiv_MD:NEAR, Reset_Adaptive_LearnedValues:NEAR, RetC_fe_85e:NEAR, RetC_ff_864:NEAR
 EXTERN  Ret_Const_fe0f:NEAR, Sat_HiByte_ff:NEAR, Sel_Ovf_U16:NEAR, sub_r12_r13_rets_r4:NEAR
 
-S_E05AC SECTION CODE AT 0E05ACH
+S_COMM_M01_2 SECTION CODE
 
 ; ======== OBD_M01_PID30_WarmupsSinceClear  (@0xe05ac) ========
         ; ------------------------------------------------------------
@@ -3777,5 +3776,5 @@ RetC_6_704:
         MOVB RL6,#06H
         JMPA cc_UC,L_E2868
 
-S_E05AC ENDS
+S_COMM_M01_2 ENDS
         END

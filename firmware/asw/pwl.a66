@@ -1,6 +1,5 @@
 ; asw/pwl.a66
 ; Idle air actuator opening ramp (piecewise linear) and its state.
-; 0xC0BD2-0xC0C9E  (204 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -13,7 +12,7 @@ c_lgrd_isa_pwl                       EQU  0905A2H
 PUBLIC  Calc_ISA_PWL, Calc_ISA_PWL_State, Set_Df38d_c0e
 EXTERN  Add_r12_r13_Return_r4:NEAR, Calc_ISA_Opening_Sp:NEAR, sub_r12_r13_rets_r4:NEAR
 
-S_C0BD2 SECTION CODE AT 0C0BD2H
+S_PWL SECTION CODE
 
 ; ======== Calc_ISA_PWL_State  (@0xc0bd2) ========
         ; ------------------------------------------------------------
@@ -110,5 +109,5 @@ L_C0C80:                 ; 0xc0c80
 L_C0C9C:                 ; 0xc0c9c
         RETS
 
-S_C0BD2 ENDS
+S_PWL ENDS
         END

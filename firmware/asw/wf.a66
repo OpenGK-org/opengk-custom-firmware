@@ -1,6 +1,5 @@
 ; asw/wf.a66
 ; Wall-film injection correction.
-; 0xBB18C-0xBB95A  (1998 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -49,7 +48,7 @@ EXTERN  Get_IP_Word_Y_Axis:NEAR, MulDiv_S16_PSW:NEAR, MulDiv_S16_Sat:NEAR, Mul_Q
 EXTERN  Read_MD_Signed:NEAR, Sat_Add_S16:NEAR, Sat_Add_S32:NEAR, Sat_Sub_S16:NEAR
 EXTERN  Sat_Sub_S16_v2:NEAR, sub_r12_13_ret_r4:NEAR
 
-S_BB18C SECTION CODE AT 0BB18CH
+S_WF SECTION CODE
 
 ; ======== Calc_WallFilm_Seg  (@0xbb18c) ========
         ; ------------------------------------------------------------
@@ -764,5 +763,5 @@ Calc_WallFilm_Seg_2:
         MOV thd_dif_slow_wf,R4
         RETS
 
-S_BB18C ENDS
+S_WF ENDS
         END

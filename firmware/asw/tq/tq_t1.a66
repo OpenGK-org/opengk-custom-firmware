@@ -1,6 +1,5 @@
 ; asw/tq/tq_t1.a66
 ; CCP main task, CPU load measurement and timer T1 helpers.
-; 0xA3F1A-0xA4B22  (3080 bytes, 7 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -18,7 +17,7 @@ EXTERN  Reset_Dfba4_e0a:NEAR, Reset_Dfbae_e8e:NEAR, Reset_Dfd62_338:NEAR, Reset_
 EXTERN  Reset_Dfd62_8ca:NEAR, Reset_P3_4f0:NEAR, Set_lv_err_com_resp_imob:NEAR, SpinHalt_a3d48:NEAR
 EXTERN  SpinHalt_a3eae:NEAR
 
-S_A3F1A SECTION CODE AT 0A3F1AH
+S_TQ_T1 SECTION CODE
 
 ; ======== Reset_CC26IC_f1a  (@0xa3f1a) ========
 Reset_CC26IC_f1a:
@@ -1092,5 +1091,5 @@ L_A4B00:                 ; 0xa4b00
         CALLS SEG Calc_CPU_Load_Idle, SOF Calc_CPU_Load_Idle
         RETS
 
-S_A3F1A ENDS
+S_TQ_T1 ENDS
         END

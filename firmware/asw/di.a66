@@ -1,6 +1,5 @@
 ; asw/di.a66
 ; Canister purge control state machine and relative purge flow.
-; 0xB1FF0-0xB21FA  (522 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -17,7 +16,7 @@ ip_t_dly_cp__maf_cyl                 EQU  09380AH
 PUBLIC  CanPurge_Calc_RelFlow, CanPurge_Control_SM
 EXTERN  Get_IP_Word_2D_Table:NEAR, Get_IP_Word_Y_Axis:NEAR, Set_cp_state_68c:NEAR
 
-S_B1FF0 SECTION CODE AT 0B1FF0H
+S_DI SECTION CODE
 
 ; ======== CanPurge_Control_SM  (@0xb1ff0) ========
         ; ------------------------------------------------------------
@@ -201,5 +200,5 @@ CanPurge_Calc_RelFlow:
         MOV R4,[R4]
         JMPI cc_UC,[R4]
 
-S_B1FF0 ENDS
+S_DI ENDS
         END

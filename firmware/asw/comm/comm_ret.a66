@@ -1,7 +1,6 @@
 ; asw/comm/comm_ret.a66
 ; CAN bus-off and lambda-limit diagnosis, catalyst heating state, CCP-active check and small
 ; return-constant helpers.
-; 0xBEE6E-0xBF160  (754 bytes, 9 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -21,7 +20,7 @@ PUBLIC  Calc_CatHeat_State, Diag_CAN_BusOff, Diag_Lam_Lim_d1cc, Is_CCP_Active, R
 PUBLIC  RetC_1_14c, RetC_1_156, Set_ADDRSEL2_15a
 EXTERN  DTC_Update_Debounced:NEAR, DTC_Update_Immediate:NEAR, Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_Y_Axis:NEAR
 
-S_BEE6E SECTION CODE AT 0BEE6EH
+S_COMM_RET SECTION CODE
 
 ; ======== Diag_CAN_BusOff  (@0xbee6e) ========
         ; ------------------------------------------------------------
@@ -332,5 +331,5 @@ Set_ADDRSEL2_15a:
         MOV ADDRSEL2,#DATA16 00904H
         RETS
 
-S_BEE6E ENDS
+S_COMM_RET ENDS
         END

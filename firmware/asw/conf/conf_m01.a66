@@ -1,7 +1,6 @@
 ; asw/conf/conf_m01.a66
 ; OBD-II Mode 01 PIDs 0x1C-0x2F (OBD standard, run time, distance with MIL, purge, fuel
 ; level).
-; 0xE04D6-0xE05AC  (214 bytes, 6 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -10,7 +9,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  OBD_M01_PID1C_OBDStandard, OBD_M01_PID1F_RunTimeSinceStart, OBD_M01_PID20_SupportedPID_21_40, OBD_M01_PID21_DistWithMILOn, OBD_M01_PID2E_CommandedPurge, OBD_M01_PID2F_FuelLevel_diagcpVol
 EXTERN  L_E0940:NEAR
 
-S_E04D6 SECTION CODE AT 0E04D6H
+S_CONF_M01 SECTION CODE
 
 ; ======== OBD_M01_PID1C_OBDStandard  (@0xe04d6) ========
         ; ------------------------------------------------------------
@@ -141,5 +140,5 @@ L_E05A4:                 ; 0xe05a4
         MOVB RL7,#DATA16 000FEH
         JMPA cc_UC,L_E0940
 
-S_E04D6 ENDS
+S_CONF_M01 ENDS
         END

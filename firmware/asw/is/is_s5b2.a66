@@ -1,6 +1,5 @@
 ; asw/is/is_s5b2.a66
 ; Idle speed set point maximum and idle torque adaptation NVM restore/save (block 0x5B2).
-; 0xC0E64-0xC1090  (556 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -14,7 +13,7 @@ PUBLIC  Calc_N_SP_IS_MAX, NVM_Save_s5b2, Restore_TQ_Dif_IS_Ad
 EXTERN  Elevated_Write_Routine_prg_zone_wrapper:NEAR, Mul_S16_Hi:NEAR, Reset_TQ_Dif_IS_Ad:NEAR, Sub_Floor0_S16:NEAR
 EXTERN  xor_routine:NEAR
 
-S_C0E64 SECTION CODE AT 0C0E64H
+S_IS_S5B2 SECTION CODE
 
 ; ======== Calc_N_SP_IS_MAX  (@0xc0e64) ========
         ; ------------------------------------------------------------
@@ -236,5 +235,5 @@ L_C108A:                 ; 0xc108a
         CALLS SEG Reset_TQ_Dif_IS_Ad, SOF Reset_TQ_Dif_IS_Ad
         RETS
 
-S_C0E64 ENDS
+S_IS_S5B2 ENDS
         END

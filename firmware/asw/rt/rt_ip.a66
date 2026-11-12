@@ -1,6 +1,5 @@
 ; asw/rt/rt_ip.a66
 ; Runtime: 2D/3D table interpolation (byte and word tables).
-; 0xFEE94-0xFF0D8  (580 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -8,7 +7,7 @@ $INCLUDE (zone_syms.inc)
 
 PUBLIC  Get_IP_Byte_2D_Table, Get_IP_Byte_3D_Table, Get_IP_Word_2D_Table, Get_IP_Word_3D_Table, Get_IP_Word_Y_Axis
 
-S_FEE94 SECTION CODE AT 0FEE94H
+S_RT_IP SECTION CODE
 
 ; ======== Get_IP_Word_Y_Axis  (@0xfee94) ========
 Get_IP_Word_Y_Axis:
@@ -265,5 +264,5 @@ L_FF0D2:                 ; 0xff0d2
         MOVB RL4,[R12]
         RETS
 
-S_FEE94 ENDS
+S_RT_IP ENDS
         END

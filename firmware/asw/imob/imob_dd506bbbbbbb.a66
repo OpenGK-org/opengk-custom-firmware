@@ -1,6 +1,5 @@
 ; asw/imob/imob_dd506bbbbbbb.a66
 ; SMARTRA command arming and immobilizer DTCs.
-; 0xBCCAC-0xBCDF2  (326 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  Diag_DTC_dd506bbbbbbb, Diag_DTC_dd522, SMARTRA_cmd_Arm, SMARTRA_cmd_Arm_2
 EXTERN  DTC_Update_Immediate:NEAR, Imob_DTC_update_comms:NEAR, Imob_Update_WarnLamp:NEAR, L_BCF16:NEAR
 
-S_BCCAC SECTION CODE AT 0BCCACH
+S_IMOB_DD506BBBBBBB SECTION CODE
 
 ; ======== Diag_DTC_dd506bbbbbbb  (@0xbccac) ========
         ; ------------------------------------------------------------
@@ -156,5 +155,5 @@ L_BCDEA:                 ; 0xbcdea
         MOVB smartra_cmd,ZEROS
         JMPA cc_UC,L_BCF16
 
-S_BCCAC ENDS
+S_IMOB_DD506BBBBBBB ENDS
         END

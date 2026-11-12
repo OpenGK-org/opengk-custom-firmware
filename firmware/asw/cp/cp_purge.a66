@@ -1,6 +1,5 @@
 ; asw/cp/cp_purge.a66
 ; Canister purge: lambda disturbance sum, transition flow and state update.
-; 0xB1E56-0xB1FF0  (410 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  CanPurge_Calc_Flow_2, CanPurge_Calc_LamSum, CanPurge_State_Upd, CanPurge_State_Upd_2, L_B1FEE, Set_cp_state_fe8
 EXTERN  CanPurge_Reset:NEAR
 
-S_B1E56 SECTION CODE AT 0B1E56H
+S_CP_PURGE SECTION CODE
 
 ; ======== CanPurge_Calc_LamSum  (@0xb1e56) ========
         ; ------------------------------------------------------------
@@ -191,5 +190,5 @@ Set_cp_state_fe8:
 L_B1FEE:                 ; 0xb1fee
         RET
 
-S_B1E56 ENDS
+S_CP_PURGE ENDS
         END

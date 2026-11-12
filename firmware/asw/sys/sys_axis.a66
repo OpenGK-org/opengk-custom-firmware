@@ -1,6 +1,5 @@
 ; asw/sys/sys_axis.a66
 ; Runtime: axis lookup and indexed table read helpers.
-; 0xFF0D8-0xFF16C  (148 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -8,7 +7,7 @@ $INCLUDE (zone_syms.inc)
 
 PUBLIC  Get_Byte_X_Axis, Get_Word_Y_Axis, Read_Table_Indexed
 
-S_FF0D8 SECTION CODE AT 0FF0D8H
+S_SYS_AXIS SECTION CODE
 
 ; ======== Get_Word_Y_Axis  (@0xff0d8) ========
 Get_Word_Y_Axis:
@@ -87,5 +86,5 @@ L_FF15C:                 ; 0xff15c
         MOV DPP0,#DATA16 00024H
         RETS
 
-S_FF0D8 ENDS
+S_SYS_AXIS ENDS
         END

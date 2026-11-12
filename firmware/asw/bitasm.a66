@@ -1,7 +1,6 @@
 ; asw/bitasm.a66
 ; KWP SID 0x21 local-identifier descriptors and I/O control by local ID; injection inhibit
 ; after start.
-; 0xE3220-0xE44E8  (4808 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -58,7 +57,7 @@ EXTERN  Ret_Const_fe0f:NEAR, SatNeg_To_7fff:NEAR, Sat_Add_U8:NEAR, Sat_HiByte_ff
 EXTERN  Sat_S8:NEAR, Sat_Sub_S8:NEAR, Tail_Div_Ratio_U8_Sat_89e:NEAR, multipied_r12_r13_UGT_r14_rets_r4:NEAR
 EXTERN  sub_r12_r13_rets_r4:NEAR
 
-S_E3220 SECTION CODE AT 0E3220H
+S_BITASM SECTION CODE
 
 ; ======== KWP_SID21_ResolveLID_Descriptor  (@0xe3220) ========
         ; KWP SID 0x21 ReadDataByLocalIdentifier - per-LID descriptor resolver.
@@ -1675,5 +1674,5 @@ L_E44D4:                 ; 0xe44d4
         MOV R9,[R0+]
         RETS
 
-S_E3220 ENDS
+S_BITASM ENDS
         END

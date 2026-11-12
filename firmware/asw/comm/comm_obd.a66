@@ -1,7 +1,6 @@
 ; asw/comm/comm_obd.a66
 ; OBD DTC list builder and statistical data (time / distance since clear, MIL) restore,
 ; reset and NVM save.
-; 0xE2D72-0xE3220  (1198 bytes, 10 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -15,7 +14,7 @@ PUBLIC  Calc_TAst_OBD, Inc_Ctr_Wup_DTC_Clr, NVM_Save_s1c2, OBD_Build_DTC_List, R
 PUBLIC  Set__t_ast_obd_ee2, Set_lv_maf_trim_e2d7, Set_lv_maf_trim_e31a, Set_lv_pl
 EXTERN  Div_U32_U16_Round32:NEAR, Elevated_Write_Routine_prg_zone_wrapper:NEAR, Sat_Add_U32:NEAR, xor_routine:NEAR
 
-S_E2D72 SECTION CODE AT 0E2D72H
+S_COMM_OBD SECTION CODE
 
 ; ======== Set_lv_maf_trim_e2d7  (@0xe2d72) ========
         ; ------------------------------------------------------------
@@ -545,5 +544,5 @@ L_E3214:                 ; 0xe3214
         MOV R9,[R0+]
         RETS
 
-S_E2D72 ENDS
+S_COMM_OBD ENDS
         END

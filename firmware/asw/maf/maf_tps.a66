@@ -1,6 +1,5 @@
 ; asw/maf/maf_tps.a66
 ; MAF sensor diagnosis and MAF/TPS ratio plausibility.
-; 0xD09F0-0xD0CFE  (782 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -30,7 +29,7 @@ EXTERN  Abs_S16:NEAR, DTC_Update_Debounced:NEAR, Diag_MAF_TPS_Plaus_1:NEAR, Diag
 EXTERN  Get_IP_Word_2D_Table_DWord_YByte:NEAR, Get_IP_Word_3D_Table_DWord_XByte_YWord:NEAR, Read_MulDiv_MD:NEAR, Sat_Add_S16:NEAR
 EXTERN  sub_r12_13_ret_r4:NEAR
 
-S_D09F0 SECTION CODE AT 0D09F0H
+S_MAF_TPS SECTION CODE
 
 ; ======== Reset_sum_maf_tps_plaus_diag_2_9f0  (@0xd09f0) ========
 Reset_sum_maf_tps_plaus_diag_2_9f0:
@@ -317,5 +316,5 @@ L_D0CF8:                 ; 0xd0cf8
         MOV opg_sp_lim_isa,ONES
         RETS
 
-S_D09F0 ENDS
+S_MAF_TPS ENDS
         END

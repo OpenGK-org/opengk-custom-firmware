@@ -1,6 +1,5 @@
 ; asw/cps.a66
 ; Canister purge solenoid: flow set point, PWM duty, flow dynamics and solenoid adaptation.
-; 0xB2874-0xB2E68  (1524 bytes, 7 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -44,7 +43,7 @@ EXTERN  Mul_S16_Hi:NEAR, Mul_S16_Q7_Sat:NEAR, Mul_Shift_U16_Sat32:NEAR, Mul_U16_
 EXTERN  Sat_Add_S16:NEAR, Sat_Add_S16_v2:NEAR, Sat_Sub_S16_v2:NEAR, multipied_r12_r13_UGT_r14_rets_r4:NEAR
 EXTERN  sub_r12_r13_rets_r4:NEAR
 
-S_B2874 SECTION CODE AT 0B2874H
+S_CPS SECTION CODE
 
 ; ======== CanPurge_Reset  (@0xb2874) ========
         ; ------------------------------------------------------------
@@ -587,5 +586,5 @@ L_B2E64:                 ; 0xb2e64
         MOV R9,[R0+]
         RETS
 
-S_B2874 ENDS
+S_CPS ENDS
         END

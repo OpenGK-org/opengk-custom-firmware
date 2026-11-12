@@ -1,7 +1,6 @@
 ; asw/acp.a66
 ; A/C refrigerant pressure: variant coding, sensor acquisition, state machine (fuel-cut
 ; request) and sensor diagnosis.
-; 0xB1B34-0xB1D1A  (486 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -24,7 +23,7 @@ c_acp_min_diag                       EQU  0904A4H
 PUBLIC  Calc_ACP, Calc_ACP_State, Diag_ACP_Sensor, Set_Conf_ACP
 EXTERN  DTC_Update_Debounced:NEAR, Get_IP_Byte_2D_Table_DWord_YWord:NEAR, sub_r12_13_ret_r4:NEAR
 
-S_B1B34 SECTION CODE AT 0B1B34H
+S_ACP SECTION CODE
 
 ; ======== Set_Conf_ACP  (@0xb1b34) ========
         ; ------------------------------------------------------------
@@ -233,5 +232,5 @@ L_B1D0E:                 ; 0xb1d0e
 L_B1D18:                 ; 0xb1d18
         RETS
 
-S_B1B34 ENDS
+S_ACP ENDS
         END

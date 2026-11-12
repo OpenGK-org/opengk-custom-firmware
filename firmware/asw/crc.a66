@@ -1,6 +1,5 @@
 ; asw/crc.a66
 ; CRC-16 checksum fault handling (crc_status).
-; 0xC7D86-0xC7EB0  (298 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  Diag_CRC16, Reset_Dc2b6_e9a
 EXTERN  DTC_Calc_Activation_MIL:NEAR, Push_To_System_Stack:NEAR
 
-S_C7D86 SECTION CODE AT 0C7D86H
+S_CRC SECTION CODE
 
 ; ======== Diag_CRC16  (@0xc7d86) ========
         ; ------------------------------------------------------------
@@ -114,5 +113,5 @@ Reset_Dc2b6_e9a:
         OR crc_status,R4
         RETS
 
-S_C7D86 ENDS
+S_CRC ENDS
         END

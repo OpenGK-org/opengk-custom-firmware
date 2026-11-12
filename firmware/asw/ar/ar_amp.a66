@@ -1,6 +1,5 @@
 ; asw/ar/ar_amp.a66
 ; Reset/init helpers for ambient-pressure and reduced-area adaptation values.
-; 0xC400C-0xC4082  (118 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -11,7 +10,7 @@ c_amp_ini                            EQU  0904B4H
 
 PUBLIC  Nop_c4080, Reset_Dcc92_06e, Reset_amp_ad_00c, Reset_amp_mdl_026, Reset_ar_red_ad_add_048
 
-S_C400C SECTION CODE AT 0C400CH
+S_AR_AMP SECTION CODE
 
 ; ======== Reset_amp_ad_00c  (@0xc400c) ========
 Reset_amp_ad_00c:
@@ -63,5 +62,5 @@ Reset_Dcc92_06e:
 Nop_c4080:
         RETS
 
-S_C400C ENDS
+S_AR_AMP ENDS
         END

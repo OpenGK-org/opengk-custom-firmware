@@ -1,6 +1,5 @@
 ; asw/comm/comm_flash_4.a66
 ; KWP flash-reprogramming commands 0x0E-0x10.
-; 0xCBE36-0xCBF96  (352 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  KWP_Flash_Cmd14_arm, KWP_Flash_Cmd15_arm, KWP_Flash_Cmd16_arm
 EXTERN  Calc_CRC16_Flash:NEAR, CanPurge_SetAct_2:NEAR, L_CC708:NEAR
 
-S_CBE36 SECTION CODE AT 0CBE36H
+S_COMM_FLASH_4 SECTION CODE
 
 ; ======== KWP_Flash_Cmd14_arm  (@0xcbe36) ========
         ; ------------------------------------------------------------
@@ -149,5 +148,5 @@ KWP_Flash_Cmd16_arm:
         MOVB kwp_nrc_D78B,RL4
         JMPA cc_UC,L_CC708
 
-S_CBE36 ENDS
+S_COMM_FLASH_4 ENDS
         END

@@ -1,6 +1,5 @@
 ; asw/sys/sys_er.a66
 ; Roughness adaptation preconditions and misfire variant coding.
-; 0xBC21E-0xBC2F0  (210 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -17,7 +16,7 @@ c_amp_ad_min_ad_fuel                 EQU  0904AAH
 
 PUBLIC  Calc_Conf_Mis, Calc_ER_Adapt_Precond, Check_ER_Adapt_State
 
-S_BC21E SECTION CODE AT 0BC21EH
+S_SYS_ER SECTION CODE
 
 ; ======== Calc_ER_Adapt_Precond  (@0xbc21e) ========
         ; ------------------------------------------------------------
@@ -111,5 +110,5 @@ Calc_Conf_Mis:
 L_BC2EE:                 ; 0xbc2ee
         RETS
 
-S_BC21E ENDS
+S_SYS_ER ENDS
         END

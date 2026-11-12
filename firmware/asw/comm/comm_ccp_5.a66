@@ -1,6 +1,5 @@
 ; asw/comm/comm_ccp_5.a66
 ; CCP checksum calculation and bootloader-execution arming.
-; 0xA68D2-0xA6A44  (370 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  CCP_Arm_BL_Exec, CCP_Arm_BL_Exec_2, CCP_Calc_Checksum, CCP_Checksum_Gate
 EXTERN  BL_Set_ExecMagic_Full:NEAR, BL_Set_ExecParams:NEAR, CCP_Validate_Program:NEAR, Push_To_System_Stack:NEAR
 
-S_A68D2 SECTION CODE AT 0A68D2H
+S_COMM_CCP_5 SECTION CODE
 
 ; ======== CCP_Checksum_Gate  (@0xa68d2) ========
         ; ------------------------------------------------------------
@@ -170,5 +169,5 @@ L_A6A34:                 ; 0xa6a34
         ADD R0,#02H
         RETS
 
-S_A68D2 ENDS
+S_COMM_CCP_5 ENDS
         END

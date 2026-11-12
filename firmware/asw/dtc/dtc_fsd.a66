@@ -1,6 +1,5 @@
 ; asw/dtc/dtc_fsd.a66
 ; DTC setters for catalyst efficiency, canister purge / fuel system and related faults.
-; 0xCF682-0xCF900  (638 bytes, 9 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -10,7 +9,7 @@ PUBLIC  Diag_CP_FSD_SetDTC, Diag_Cat_Eff_SetDTC, Diag_DTC_dd1be, Diag_DTC_dd266,
 PUBLIC  Diag_DTC_dd290, Diag_DTC_dd29e, Diag_DTC_dd2c8
 EXTERN  DTC_Status_Proc_3:NEAR, DTC_Update_Imm_V2:NEAR, DTC_Update_Immediate:NEAR
 
-S_CF682 SECTION CODE AT 0CF682H
+S_DTC_FSD SECTION CODE
 
 ; ======== Diag_DTC_dd1be  (@0xcf682) ========
         ; ------------------------------------------------------------
@@ -278,5 +277,5 @@ L_CF8F6:                 ; 0xcf8f6
 L_CF8FE:                 ; 0xcf8fe
         RETS
 
-S_CF682 ENDS
+S_DTC_FSD ENDS
         END

@@ -1,6 +1,5 @@
 ; asw/sys/sys_sub32.a66
 ; Bootloader programming-session check and buffer scaling helpers.
-; 0xDFCD4-0xDFD70  (156 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -8,7 +7,7 @@ $INCLUDE (zone_syms.inc)
 
 PUBLIC  Interp_Scale_Buffer, Is_BL_Prog_Session, Sub32_8
 
-S_DFCD4 SECTION CODE AT 0DFCD4H
+S_SYS_SUB32 SECTION CODE
 
 ; ======== Is_BL_Prog_Session  (@0xdfcd4) ========
         ; ------------------------------------------------------------
@@ -102,5 +101,5 @@ L_DFD64:                 ; 0xdfd64
         MOV R9,[R0+]
         RETS
 
-S_DFCD4 ENDS
+S_SYS_SUB32 ENDS
         END

@@ -1,7 +1,6 @@
 ; asw/slv/slv_sid35.a66
 ; Start ignition angle, MAF/lambda set points, IVVT trip flag and KWP SID 0x35 (not
 ; supported).
-; 0xBFF28-0xC0000  (216 bytes, 6 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -18,7 +17,7 @@ ip_iga_st__n__tco_st                 EQU  095E25H
 PUBLIC  Calc_IGA_ST_FF28, Calc_IGA_St, Calc_lamb_sp, Calc_maf_sp, KWP_SID35_RequestUpload, Set_lv_diag_trip_avl_ivvt
 EXTERN  Div_Frac_U16_Q16:NEAR, Get_IP_Byte_3D_Table:NEAR, Get_IP_Byte_X_Axis:NEAR, Get_IP_Word_Y_Axis:NEAR
 
-S_BFF28 SECTION CODE AT 0BFF28H
+S_SLV_SID35 SECTION CODE
 
 ; ======== Calc_IGA_ST  (@0xbff28) ========
         ; ------------------------------------------------------------
@@ -123,5 +122,5 @@ KWP_SID35_RequestUpload:
         ; data @0xbfffc (4 bytes)
         DB      0FFH,0FFH,0FFH,0FFH
 
-S_BFF28 ENDS
+S_SLV_SID35 ENDS
         END

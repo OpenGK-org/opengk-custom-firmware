@@ -1,7 +1,6 @@
 ; asw/comm/comm_lsh.a66
 ; Rear O2 heater OBD temperature diagnosis and its rate-based monitor; catalyst-diagnosis
 ; enable conditions.
-; 0xB901E-0xB9318  (762 bytes, 6 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -30,7 +29,7 @@ PUBLIC  Calc_LSH_Down_OBD2_Temp, Calc_RBM_LSH_Down_OBD2, ClrBits_state_rbm_lsh_d
 EXTERN  Add_r12_r13_Return_r4:NEAR, Diag_DTC_dd274:NEAR, Div_U32_U16_Round32:NEAR, Get_IP_Byte_2D_Table:NEAR
 EXTERN  Get_IP_Word_Y_Axis:NEAR, Mul_Frac_U16_Sat:NEAR, sub_r12_r13_rets_r4:NEAR
 
-S_B901E SECTION CODE AT 0B901EH
+S_COMM_LSH SECTION CODE
 
 ; ======== Diag_Cat_Eff_Ena  (@0xb901e) ========
         ; ------------------------------------------------------------
@@ -334,5 +333,5 @@ L_B9310:                 ; 0xb9310
         MOV R9,[R0+]
         RETS
 
-S_B901E ENDS
+S_COMM_LSH ENDS
         END

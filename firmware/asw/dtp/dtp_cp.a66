@@ -1,6 +1,5 @@
 ; asw/dtp/dtp_cp.a66
 ; EVAP differential tank pressure acquisition and leak-diagnosis DTC.
-; 0xD39E8-0xD3F04  (1308 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -32,7 +31,7 @@ PUBLIC  Acq_DiagCP_Pressure, Delay_Dc397, DiagCP_Acq_Dtp, DiagCP_SetDTC_d300
 EXTERN  DTC_Update_Debounced:NEAR, DTC_Update_Immediate:NEAR, Div_S32_Signed:NEAR, Get_IP_Word_2D_Table:NEAR
 EXTERN  Get_IP_Word_Y_Axis:NEAR, Sat_Add_U8:NEAR, Sat_Sub_S16:NEAR, sub_r12_r13_rets_r4:NEAR
 
-S_D39E8 SECTION CODE AT 0D39E8H
+S_DTP_CP SECTION CODE
 
 ; ======== Acq_DiagCP_Pressure  (@0xd39e8) ========
         ; ------------------------------------------------------------
@@ -479,5 +478,5 @@ L_D3EFE:                 ; 0xd3efe
         ADD R0,#02H
         RETS
 
-S_D39E8 ENDS
+S_DTP_CP ENDS
         END

@@ -1,6 +1,5 @@
 ; asw/sw/sw_pump_2.a66
 ; Fuel pump output latches, run-on timer and trailing-throttle fuel cut entry.
-; 0xE5B2C-0xE5C38  (268 bytes, 7 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -17,7 +16,7 @@ EXTERN  Diag_DTC_dd116:NEAR, Diag_MAF_TPS_Ratio_d1be:NEAR, EngState_TrailThrottl
 EXTERN  Output_CC12_P2_12_Disable:NEAR, Output_CC5_P2_5_Enable:NEAR, Read_Coding_Nibble:NEAR, Reset_Dfaae_b84:NEAR
 EXTERN  Set_TCO_Stop:NEAR, Set_TOIL_Stop:NEAR
 
-S_E5B2C SECTION CODE AT 0E5B2CH
+S_SW_PUMP_2 SECTION CODE
 
 ; ======== FuelPump_Out_1  (@0xe5b2c) ========
         ; ------------------------------------------------------------
@@ -151,5 +150,5 @@ L_E5C22:                 ; 0xe5c22
         CALLS SEG Set_TCO_Stop, SOF Set_TCO_Stop
         RETS
 
-S_E5B2C ENDS
+S_SW_PUMP_2 ENDS
         END

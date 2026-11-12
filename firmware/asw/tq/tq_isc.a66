@@ -1,6 +1,5 @@
 ; asw/tq/tq_isc.a66
 ; Idle speed controller: P-D and I terms, state requests and low-speed torque reserve.
-; 0xB3DF4-0xB46D4  (2272 bytes, 6 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -54,7 +53,7 @@ EXTERN  Get_IP_Word_3D_Table_DWord_XByte_YWord:NEAR, Get_IP_Word_X_Axis:NEAR, Ge
 EXTERN  Mul_Q15_Sat_Signed:NEAR, Mul_S16_Sat16:NEAR, Mul_S8_Q7_Sat:NEAR, Read_Word_Far:NEAR
 EXTERN  Sat_Add_S16:NEAR, Sat_Add_S16_v2:NEAR, Sat_Add_S32:NEAR, Sat_Sub_S16:NEAR
 
-S_B3DF4 SECTION CODE AT 0B3DF4H
+S_TQ_ISC SECTION CODE
 
 ; ======== Init_ISC_State  (@0xb3df4) ========
         ; ------------------------------------------------------------
@@ -922,5 +921,5 @@ L_B46D0:                 ; 0xb46d0
         MOV R9,[R0+]
         RETS
 
-S_B3DF4 ENDS
+S_TQ_ISC ENDS
         END

@@ -1,6 +1,5 @@
 ; asw/sys/sys_tx.a66
 ; SMARTRA immobilizer serial (ASC0) interrupt and transmit phases.
-; 0xA8536-0xA85F0  (186 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  SMARTRA_asc0_rx_isr, SMARTRA_tx_len_8570, SMARTRA_tx_payload, SMARTRA_tx_payload_last, SMARTRA_tx_sync
 EXTERN  SMARTRA_isr_epilogue:NEAR
 
-S_A8536 SECTION CODE AT 0A8536H
+S_SYS_TX SECTION CODE
 
 ; ======== SMARTRA_asc0_rx_isr  (@0xa8536) ========
         ; ------------------------------------------------------------
@@ -126,5 +125,5 @@ L_A85E8:                 ; 0xa85e8
         MOV smartra_byte_timer,ZEROS
         JMPA cc_UC,SMARTRA_isr_epilogue
 
-S_A8536 ENDS
+S_SYS_TX ENDS
         END

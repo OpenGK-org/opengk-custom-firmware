@@ -1,6 +1,5 @@
 ; asw/comm/comm_cmd01.a66
 ; KWP flash-reprogramming service dispatcher and command 0x01 (session check).
-; 0xCB6CC-0xCB850  (388 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  KWP_Flash_Cmd01_SessionChk, KWP_Flash_Svc_Dispatch, KWP_Init_Resp
 EXTERN  KWP_Flash_Svc_Default:NEAR, L_CC708:NEAR
 
-S_CB6CC SECTION CODE AT 0CB6CCH
+S_COMM_CMD01 SECTION CODE
 
 ; ======== KWP_Init_Resp  (@0xcb6cc) ========
         ; ------------------------------------------------------------
@@ -174,5 +173,5 @@ L_CB848:                 ; 0xcb848
         MOVB kwp_c36b,ZEROS
         JMPA cc_UC,L_CC708
 
-S_CB6CC ENDS
+S_COMM_CMD01 ENDS
         END

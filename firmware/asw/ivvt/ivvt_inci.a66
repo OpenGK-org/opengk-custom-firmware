@@ -1,6 +1,5 @@
 ; asw/ivvt/ivvt_inci.a66
 ; IVVT cam-difference diagnosis and IVVT DTCs.
-; 0xC133A-0xC14C2  (392 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -17,7 +16,7 @@ c_abc_max_tooth_off_ivvt             EQU  090100H
 PUBLIC  Diag_DTC_dd5f4, Diag_IVVT_CamDif_Inci, Diag_IVVT_SetDTC_d602, Diag_IVVT_SetDTC_d61e
 EXTERN  DTC_Update_Debounced:NEAR, DTC_Update_Debounced_OBD:NEAR, DTC_Update_Immediate:NEAR
 
-S_C133A SECTION CODE AT 0C133AH
+S_IVVT_INCI SECTION CODE
 
 ; ======== Diag_IVVT_CamDif_Inci  (@0xc133a) ========
         ; ------------------------------------------------------------
@@ -179,5 +178,5 @@ L_C14BA:                 ; 0xc14ba
         MOV R6,[R0+]
         RETS
 
-S_C133A ENDS
+S_IVVT_INCI ENDS
         END

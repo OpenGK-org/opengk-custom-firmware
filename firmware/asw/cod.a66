@@ -1,7 +1,6 @@
 ; asw/cod.a66
 ; OBD readiness drive-cycle counter, fault-table init and MAF/TPS variant-coding
 ; plausibility.
-; 0xDB24E-0xDB4DA  (652 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -13,7 +12,7 @@ c_sum_dc_ready                       EQU  09030DH
 PUBLIC  Calc_Ready_DC_Ctr, Diag_Coding_MAF_TPS_Plaus, Init_Fault_Table_1, Init_Fault_Table_2
 EXTERN  Get_Diag_Status_Bits:NEAR, OBD_Build_DTC_List:NEAR
 
-S_DB24E SECTION CODE AT 0DB24EH
+S_COD SECTION CODE
 
 ; ======== Init_Fault_Table_1  (@0xdb24e) ========
         ; ------------------------------------------------------------
@@ -251,5 +250,5 @@ L_DB4D6:                 ; 0xdb4d6
         MOV R6,[R0+]
         RETS
 
-S_DB24E ENDS
+S_COD ENDS
         END

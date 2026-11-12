@@ -1,6 +1,5 @@
 ; asw/ti/ti_maf.a66
 ; KWP application handlers.
-; 0xE4644-0xE4E38  (2036 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -15,7 +14,7 @@ PUBLIC  KWP_App_Handler_0e4644, KWP_App_Handler_0e46bc, KWP_App_Handler_0e4d00
 EXTERN  Calc_VS:NEAR, Reset_lv_conf_mis_59c:NEAR, Reset_lv_conf_mis_69a:NEAR, Sat_Add_U8:NEAR
 EXTERN  sub_r12_13_ret_r4:NEAR
 
-S_E4644 SECTION CODE AT 0E4644H
+S_TI_MAF SECTION CODE
 
 ; ======== KWP_App_Handler_0e4644  (@0xe4644) ========
 KWP_App_Handler_0e4644:
@@ -781,5 +780,5 @@ L_E4E2E:                 ; 0xe4e2e
         ADD R0,#02H
         RETS
 
-S_E4644 ENDS
+S_TI_MAF ENDS
         END

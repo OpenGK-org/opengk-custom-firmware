@@ -1,6 +1,5 @@
 ; asw/gr.a66
 ; Drive train engaged / gear shift detection and gear ratio detection.
-; 0xBF3F8-0xBFA10  (1560 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -43,7 +42,7 @@ EXTERN  Abs_S16:NEAR, Abs_S16_Simple:NEAR, Add_r12_r13_Return_r4:NEAR, Div_Frac_
 EXTERN  Get_Byte_2D_Table_DWord_YWord:NEAR, Get_IP_Word_2D_Table_DWord_YByte:NEAR, Get_IP_Word_3D_Table_DWord_XByte_YByte:NEAR, Get_IP_Word_3D_Table_DWord_XByte_YWord:NEAR
 EXTERN  Get_Word_3D_Table_DWord_XByte_YByte:NEAR, Interp_U16:NEAR, Sat_Sub_S16:NEAR
 
-S_BF3F8 SECTION CODE AT 0BF3F8H
+S_GR SECTION CODE
 
 ; ======== DriveTrain_Engaged  (@0xbf3f8) ========
         ; ------------------------------------------------------------
@@ -616,5 +615,5 @@ L_BFA0C:                 ; 0xbfa0c
         MOV R9,[R0+]
         RETS
 
-S_BF3F8 ENDS
+S_GR ENDS
         END

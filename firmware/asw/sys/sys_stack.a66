@@ -1,7 +1,6 @@
 ; asw/sys/sys_stack.a66
 ; Lambda / canister-purge variant coding, roughness ignition-difference diagnosis and system
 ; stack push.
-; 0xCFDC8-0xD0000  (568 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -31,7 +30,7 @@ EXTERN  Reset_Adaptive_LearnedValues:NEAR, Reset_CC10IC_514:NEAR, Reset_CC26IC_f
 EXTERN  Reset_cppwm_ad_mem_ee0:NEAR, Reset_ctr_cold_st_b96:NEAR, Reset_iga_er_ad_mem_142:NEAR, Set_lv_err_com_resp_imob:NEAR
 EXTERN  Set_maf_fac_alti_mmv_7a6:NEAR, Tail_f0c400c_918:NEAR
 
-S_CFDC8 SECTION CODE AT 0CFDC8H
+S_SYS_STACK SECTION CODE
 
 ; ======== Calc_Conf_Lam  (@0xcfdc8) ========
 Calc_Conf_Lam:
@@ -290,5 +289,5 @@ Push_To_System_Stack:
         PUSH R4
         RETS
 
-S_CFDC8 ENDS
+S_SYS_STACK ENDS
         END

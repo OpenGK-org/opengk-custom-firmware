@@ -1,6 +1,5 @@
 ; asw/stuck/stuck_tco.a66
 ; Coolant temperature stuck rate-based monitor (IUMPR).
-; 0xC9032-0xC90E2  (176 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  Calc_RBM_TCO_Stuck, ClrBits_state_rbm_tco_stuck_054, Reset_state_rbm_tco_stuck_04a, Set_lv_n_max_isa_err_c903
 EXTERN  Div_U32_U16_Round32:NEAR
 
-S_C9032 SECTION CODE AT 0C9032H
+S_STUCK_TCO SECTION CODE
 
 ; ======== Set_lv_n_max_isa_err_c903  (@0xc9032) ========
         ; ------------------------------------------------------------
@@ -101,5 +100,5 @@ L_C90DC:                 ; 0xc90dc
         MOV R9,[R0+]
         RETS
 
-S_C9032 ENDS
+S_STUCK_TCO ENDS
         END

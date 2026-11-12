@@ -1,6 +1,5 @@
 ; asw/sys/sys_s0.a66
 ; Serial ASC0 interrupt-control resets, CC14 interrupt and CC24 output setup.
-; 0xA6E34-0xA8080  (4684 bytes, 7 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -10,7 +9,7 @@ PUBLIC  L_A7370, L_A7A3A
 PUBLIC  CC14INT_handler, CallVia_368, Reset_S0EIC_e4e, Reset_S0TBIC_e40, Reset_S0TIC_e34, Set_Output_CC24
 PUBLIC  Set_lv_err_com_resp_imob_a800
 
-S_A6E34 SECTION CODE AT 0A6E34H
+S_SYS_S0 SECTION CODE
 
 ; ======== Reset_S0TIC_e34  (@0xa6e34) ========
 Reset_S0TIC_e34:
@@ -502,7 +501,7 @@ CallVia_368:
 L_A7370:                 ; 0xa7370  (pointer target)
         CMP ZEROS,crank_tim_21
         JMPR cc_EQ,L_A73D4
-        MOV R4,#DATA16 SOF L_A73AA
+        MOV R4,#SOF L_A73AA
         BFLDL 0FF26H,#0FH,#00H
         EXTR #01H
         BFLDL 0F170H,#080H,#00H
@@ -529,14 +528,14 @@ L_A73AA:                 ; 0xa73aa
         MOV T7,#DATA16 01000H
         MOV CC24,#DATA16 01001H
         BFLDL 0FF26H,#0FH,#05H
-        MOV R4,#DATA16 SOF L_A73D4
+        MOV R4,#SOF L_A73D4
         JMPA cc_UC,L_A806E
 L_A73D4:                 ; 0xa73d4
         BSET ccp_engine_flags.06H
         BSET ccp_engine_flags.02H
         BSET T5CON.06H
         MOV R9,CC15_FE9E
-        MOV R4,#DATA16 SOF L_A73EA
+        MOV R4,#SOF L_A73EA
         SUB CC24,0FF1EH
         JMPA cc_UC,L_A806E
 L_A73EA:                 ; 0xa73ea  (pointer target)
@@ -563,7 +562,7 @@ L_A7420:                 ; 0xa7420
         MOV R3,R5
         MOV R1,R5
         MOVBZ R2,crank_tim_8
-        MOV R4,#DATA16 SOF L_A74BC
+        MOV R4,#SOF L_A74BC
         SUB CC24,0FF1EH
         BSET can_sched_flags2.0EH
         BOR can_sched_flags1.0EH,can_sched_flags0.0EH
@@ -575,7 +574,7 @@ L_A744C:                 ; 0xa744c
         BCLR T78CON.06H
         BCLR lv_err_com_resp_imob.0DH
         MOVB crank_tim_7,ZEROS
-        MOV R4,#DATA16 SOF L_A73EA
+        MOV R4,#SOF L_A73EA
         MOV CC24,#DATA16 01002H
         EXTR #01H
         MOV T7,#DATA16 01001H
@@ -665,7 +664,7 @@ L_A7548:                 ; 0xa7548
         JMPR cc_NE,L_A756A
         MOVB crk_tooth_det,ONES
         MOVB run_eng,ONES
-        MOV R4,#DATA16 SOF L_A7656
+        MOV R4,#SOF L_A7656
         MOV R8,CC15_FE9E
         BCLR lv_err_com_resp_imob.0CH
         CMP R5,#DATA16 00177H
@@ -688,7 +687,7 @@ L_A7580:                 ; 0xa7580
         BCLR T78CON.06H
         BCLR lv_err_com_resp_imob.0DH
         MOVB crank_tim_7,ZEROS
-        MOV R4,#DATA16 SOF L_A73EA
+        MOV R4,#SOF L_A73EA
         MOV CC24,#DATA16 01002H
         EXTR #01H
         MOV T7,#DATA16 01001H
@@ -703,7 +702,7 @@ L_A75B6:                 ; 0xa75b6
         BCLR T78CON.06H
         BCLR lv_err_com_resp_imob.0DH
         MOVB crank_tim_7,ZEROS
-        MOV R4,#DATA16 SOF L_A73EA
+        MOV R4,#SOF L_A73EA
         MOV CC24,#DATA16 01002H
         EXTR #01H
         MOV T7,#DATA16 01001H
@@ -718,7 +717,7 @@ L_A75E0:                 ; 0xa75e0
         BCLR T78CON.06H
         BCLR lv_err_com_resp_imob.0DH
         MOVB crank_tim_7,ZEROS
-        MOV R4,#DATA16 SOF L_A73EA
+        MOV R4,#SOF L_A73EA
         MOV CC24,#DATA16 01002H
         EXTR #01H
         MOV T7,#DATA16 01001H
@@ -1058,7 +1057,7 @@ L_A799A:                 ; 0xa799a
         BCLR T78CON.06H
         BCLR lv_err_com_resp_imob.0DH
         MOVB crank_tim_7,ZEROS
-        MOV R4,#DATA16 SOF L_A73EA
+        MOV R4,#SOF L_A73EA
         MOV CC24,#DATA16 01002H
         EXTR #01H
         MOV T7,#DATA16 01001H
@@ -1096,7 +1095,7 @@ L_A7A08:                 ; 0xa7a08
         BCLR T78CON.06H
         BCLR lv_err_com_resp_imob.0DH
         MOVB crank_tim_7,ZEROS
-        MOV R4,#DATA16 SOF L_A73EA
+        MOV R4,#SOF L_A73EA
         MOV CC24,#DATA16 01002H
         EXTR #01H
         MOV T7,#DATA16 01001H
@@ -1730,5 +1729,5 @@ L_A807C:                 ; 0xa807c
         POP CP
         RETI
 
-S_A6E34 ENDS
+S_SYS_S0 ENDS
         END

@@ -1,6 +1,5 @@
 ; asw/cp/cp_crc16.a66
 ; Flash CRC-16 calculation; canister-purge active flag.
-; 0xCC9A4-0xCCA56  (178 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -8,7 +7,7 @@ $INCLUDE (zone_syms.inc)
 
 PUBLIC  Calc_CRC16_Flash, CanPurge_SetAct_2
 
-S_CC9A4 SECTION CODE AT 0CC9A4H
+S_CP_CRC16 SECTION CODE
 
 ; ======== CanPurge_SetAct_2  (@0xcc9a4) ========
         ; ------------------------------------------------------------
@@ -105,5 +104,5 @@ L_CCA4C:                 ; 0xcca4c
         MOV R6,[R0+]
         RETS
 
-S_CC9A4 ENDS
+S_CP_CRC16 ENDS
         END

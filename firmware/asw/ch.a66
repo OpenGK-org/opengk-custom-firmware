@@ -1,6 +1,5 @@
 ; asw/ch.a66
 ; Catalyst heating: coordination, heating state and MAF integral during heating.
-; 0xBF294-0xBF3F8  (356 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -20,7 +19,7 @@ id_t_cat_ti__tco_st                  EQU  091DB4H
 PUBLIC  Calc_CatHeat_State_2, Calc_MAF_Int_CH, CatHeat_Coord, Log_Event_f96a, Reset_lv_ch_294
 EXTERN  Add_r12_r13_Return_r4:NEAR, Get_Byte_Y_Axis:NEAR, Read_Word_Far:NEAR
 
-S_BF294 SECTION CODE AT 0BF294H
+S_CH SECTION CODE
 
 ; ======== Reset_lv_ch_294  (@0xbf294) ========
 Reset_lv_ch_294:
@@ -175,5 +174,5 @@ Calc_MAF_Int_CH:
 L_BF3F6:                 ; 0xbf3f6
         RETS
 
-S_BF294 ENDS
+S_CH ENDS
         END

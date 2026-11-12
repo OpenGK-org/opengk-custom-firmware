@@ -1,6 +1,5 @@
 ; asw/ivvt/ivvt_meas.a66
 ; IVVT cam-phaser response measurement sub-states.
-; 0xB53BA-0xB5552  (408 bytes, 7 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -14,7 +13,7 @@ PUBLIC  IVVT_CamMeas_St0_Init, IVVT_CamMeas_St1_WaitMove, IVVT_CamMeas_St2_WaitS
 PUBLIC  IVVT_CamMeas_Trip, L_B54CE
 EXTERN  Sat_Add_U8:NEAR, Set_IVVT_Trip_Avl:NEAR, sub_r12_13_ret_r4:NEAR
 
-S_B53BA SECTION CODE AT 0B53BAH
+S_IVVT_MEAS SECTION CODE
 
 ; ======== IVVT_CamMeas_St0_Init  (@0xb53ba) ========
         ; ------------------------------------------------------------
@@ -211,5 +210,5 @@ L_B5548:                 ; 0xb5548
         MOV R9,[R0+]
         RETS
 
-S_B53BA ENDS
+S_IVVT_MEAS ENDS
         END

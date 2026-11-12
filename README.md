@@ -20,11 +20,14 @@ make                                     # -> build/out/opengk01.bin + .a2l + .h
 |---|---|
 | `make` / `make build` | assemble and link everything, fix checksums, write the image |
 | `make check` | `build`, then validate the A2L with a2ltool (see below) |
+| `make reloc` | list numeric references into movable code (should say `open: none`) |
 | `make seedkey` | build the CCP seed & key DLLs (needs MinGW-w64) |
 | `make clean` | remove `build/out/` |
 | `python3 tools/build.py -v` | build, printing every assembler warning |
 | `python3 tools/checksum.py <image> [--fix]` | check (or fix) the checksums of any image |
 | `python3 tools/gen_a2l.py [-o file]` | regenerate only the A2L |
+| `python3 tools/build.py --layout F -o out.bin` | build with another module layout |
+| `python3 tools/layout_shuffle.py` | write a scrambled layout (relocation test) |
 
 ## Releases
 
@@ -75,6 +78,7 @@ firmware/
     opengk01.dat      0x90000  calibration image, 64 KB
     cal.inc                    every calibration label + description + ;@a2l annotation
   custom/                      new modules (linked with asw)
+  layout.txt                   where each application module goes (the linker script)
   inc/
     REG167.INC                 C167 SFRs (from openc166, MIT)
     zone_syms.inc              shared RAM/SFR/bit names for asw (+ ;@a2l measurements)
@@ -83,6 +87,9 @@ a2l/
   ccp.aml                      CCP A2ML interface description (ASAM CCP 2.1)
 tools/
   build.py  checksum.py
+  layout.py                    module placement (layout.txt) + near-reference check
+  reloc_scan.py                finds numeric references into movable code
+  layout_shuffle.py            scrambled layout for relocation tests
   gen_a2l.py                   A2L generator (reads the ;@a2l annotations)
 build/                         outputs (not committed)
 ```
@@ -102,11 +109,14 @@ how the linker laid the code out). Many file names are still placeholders
 | 0x03E00-0x03FFF | 0x03E00 | boot info, Boot checksum table | `bsw/boot_info.a66` |
 | 0x88000-0x8FFFF | 0x08000 | bootloader | `bsw/bootloader.a66` |
 | 0x90000-0x9FFFF | 0x10000 | calibration | `cal/opengk01.dat` |
-| 0xA0000-0xE5E0B | 0x20000 | application | `asw/**` |
-| 0xE5E0C-0xFE1FF | 0x65E0C | **erased (0xFF), about 97 KB free** | `custom/**` lands here |
-| 0xFE200-0xFFF33 | 0x7E200 | runtime library | `asw/rt/` |
+| 0xA0000-0xA3F19 | 0x20000 | header, vector trampolines, constant tables (fixed) | `asw/**` |
+| 0xA3F1A-0xE5E0B | 0x23F1A | application modules, per `layout.txt` | `asw/**` |
+| 0xE5E0C-0xFE1FF | 0x65E0C | **erased (0xFF), about 97 KB free** | `custom/**` lands here (`*`) |
+| 0xFE200-0xFFF33 | 0x7E200 | runtime library | `asw/rt/`, `asw/sys/` |
 
-There is also about 27 KB erased at the end of calibration (0x996CE-0x9FFFF).
+The application addresses are those of the stock layout; edits move code around
+(see [Module layout](#module-layout)). There is also a 6 KB erased hole in segment A
+(0xAC168-0xAD8FF) and about 27 KB erased at the end of calibration (0x996CE-0x9FFFF).
 
 ## How the build works
 
@@ -115,24 +125,30 @@ There is also about 27 KB erased at the end of calibration (0x996CE-0x9FFFF).
 1. **bsw**: each `firmware/bsw/*.a66` is assembled on its own.
 2. **asw**: every `firmware/asw/**/*.a66` plus `firmware/custom/**/*.a66` is linked
    in one openc166 run. `EXTERN` names resolve to `PUBLIC` ones across files, as with
-   Keil's L166. Sections without `AT` are placed in the free flash from 0xE5E0C on.
+   Keil's L166. Each module's address comes from `firmware/layout.txt`; then every
+   near call/jump is checked to stay in its 64 KB segment.
 3. **cal**: `opengk01.dat` is copied to 0x90000.
 
-Bytes nobody writes stay 0xFF. The build fails if two units write the same byte, or
-if two sections inside a unit overlap (openc166 warning OC1, which is how a module
-that grew past its slot shows up). Then the three region checksums are recomputed
-(`tools/checksum.py`):
+Bytes nobody writes stay 0xFF. The build fails if two units write the same byte, if
+two sections overlap (openc166 warning OC1), if a layout region overflows, or if a
+near reference crosses a segment. It writes `build/out/opengk01.map` (module
+addresses). Then the Program checksum zones are set from the layout (one per 64 KB
+segment, from its first to its last non-erased application byte) and the three
+region checksums are recomputed (`tools/checksum.py`):
 
 | Region | Table | CRC init | Zones |
 |---|---|---|---|
 | Boot | 0x3EEC | 0x3FE4 | 0x00000-0x02085, 0x88000-0x8F467 |
 | Calibration | 0x97EE0 | 0x9000C | 0x90000-0x96BE9, 0x98000-0x996CD |
-| Program | 0xA0010 | 0xA0052 | 0xA0210-0xE5E0B, 0xFE200-0xFFF33 (6 zones) |
+| Program | 0xA0010 | 0xA0052 | one per segment, from the layout (stock: 0xA0210-0xE5E0B, 0xFE200-0xFFF33, 6 zones; room for 7) |
 
 The CRC is CRC-16 with polynomial 0x8005, reflected, and no final XOR. Each zone
 continues from the previous zone's CRC. The stored value is little-endian. This is the
 same scheme as gkflasher's "4mbit (FL2)". The CRC init values sit inside the ID
 strings, so changing an ID changes the checksum too; the build takes care of it.
+
+Module sizes are cached in `build/cache/` (keyed by source and include files), so a
+build assembles the application once.
 
 openc166 emits some warnings the inherited code triggers (for example `RETS`/`RETI`
 outside a `PROC`, or SFR accesses around `EXTR`). The build only counts them.
@@ -231,10 +247,12 @@ PUBLIC  Calc_IVVT_HPWM_Base, Ctl_IVVT_OCV_PWM, ...    ; its functions
 EXTERN  Get_IP_Byte_2D_Table:NEAR, Sat_Add_S16:NEAR   ; what it uses from other modules
 ; calibration labels used here (documented in cal/cal.inc)
 c_t_sum_if_min_ivvt                  EQU  09072CH
-S_AF1FE SECTION CODE AT 0AF1FEH                       ; pinned at its address
+S_IVVT_PWM SECTION CODE                               ; placed by layout.txt
 ```
 
-New modules go in `firmware/custom/`. A section without `AT` lands in the free flash:
+Code is relocatable: edit any module freely, add or remove instructions, and the
+build moves whatever follows. New modules go in `firmware/custom/` (or anywhere under
+`asw/`); unlisted modules land at the `*` entry of `layout.txt`, in the free flash:
 
 ```asm
 $MOD167
@@ -245,29 +263,47 @@ $INCLUDE (cal.inc)                ; calibration labels: c_*, ip_*, ...
 PUBLIC  My_Feature
 EXTERN  Calc_IVVT_Delay:NEAR
 
-MY_CODE SECTION CODE              ; no AT: goes into free flash
+S_MY_FEATURE SECTION CODE         ; one code section per module
 My_Feature:
         CALLS   SEG Calc_IVVT_Delay, SOF Calc_IVVT_Delay
         RETS
-MY_CODE ENDS
+S_MY_FEATURE ENDS
         END
 ```
 
-### Rules while modules are pinned
+### Module layout
 
-Every application module is still pinned at its address (`SECTION ... AT`), and the
-code still contains raw addresses (jump tables, pointer tables, some immediates). So:
+`firmware/layout.txt` lists the modules per 64 KB segment (regions A-F, RT) in
+placement order; the build packs them back to back. `@0xADDR` jumps forward (the
+stock layout has two such gaps), `*` is where unlisted modules go. If a module grows
+and its region overflows, the build says by how much: move a module to another region
+(F is empty). Two things tie modules to a segment:
 
-- **Don't change the size of existing code** in the middle of a module: everything
-  after the edit would move, and raw addresses pointing at it would go stale. It
-  assembles fine and crashes on the car.
-- **To change behaviour, branch out:** replace an instruction with a `CALLS`/`JMPS`
-  to new code in `custom/`, padding with `NOP`s to keep the size, or rewrite a routine
-  in place with the same or a smaller size.
-- **A module can't grow past its slot.** If it does, the build fails with OC1.
-- **`#DATA16`** forces the 4-byte immediate form where a 2-byte one would fit. The
-  inherited code uses it everywhere to keep its size, and so every address,
-  unchanged. Leave it alone in old code; in new code it isn't needed.
+- **Near calls and jumps** (`CALLA`, `JMPA`, `JMPR`, jump tables, offset-only
+  pointers such as the interrupt handlers' resume addresses) reach only inside the
+  current segment. 18 small groups of modules are joined this way (the comm/flash
+  dispatcher and its commands, the EVAP diagnosis states, ...) and must share a
+  segment. The build checks every near reference after linking (openc166 itself
+  doesn't check this across modules).
+- **Page 28h** (0xA0000-0xA3FFF) is reached through DPP1 with plain 16-bit addresses,
+  so the modules there (header, vector trampolines, constant/jump tables, a few
+  drivers) keep a fixed `AT` and aren't in `layout.txt`.
+
+`make reloc` (`tools/reloc_scan.py`) lists numeric operands and data that point into
+movable code: far pointers in data, segment/page immediates paired with an offset,
+`JMPI` dispatches without a symbolic table, numeric pages. Everything has been made
+symbolic (`SOF`/`SEG`/`POF`/`PAG` and labels); the few look-alikes that are really
+constants carry `;@reloc-ok <why>`. Keep it at `open: none`: a numeric address into
+code assembles fine and crashes on the car once the code moves.
+
+`tools/layout_shuffle.py` writes a scrambled layout (every region reversed, some
+modules moved to segment F) for testing that a build really relocates:
+`python3 tools/build.py --layout build/test/layout_shuffled.txt -o build/test/opengk01_reloc.bin`.
+
+- **`#DATA16`** forces the 4-byte immediate form where a 2-byte one would fit; the
+  inherited code uses it everywhere because that kept its size. It no longer matters
+  for addresses; new code doesn't need it. Use `#SOF label` (not `#DATA16 SOF label`)
+  for a code offset: openc166 rejects `DATA16` with a relocatable label.
 
 Other things to know:
 
@@ -282,10 +318,10 @@ Other things to know:
           MOV R12,#DATA16 POF ip_maf_tps_diag_x   ; axis object
           MOV R13,#DATA16 PAG ip_maf_tps_diag_x
           MOVBZ R14,n_32                          ; axis input
-          CALLS 00FH,Get_IP_Byte_Y_Axis
+          CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
           MOV R12,#DATA16 POF ip_maf_tps_diag     ; curve / map data
           MOV R13,#DATA16 PAG ip_maf_tps_diag
-          CALLS 00FH,Get_IP_Word_2D_Table
+          CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
   ```
   An axis object is `[length N][N breakpoints]`. Axis labels are `<map>_x` / `<map>_y`
   when one map uses the axis (x/y in DAMOS input order `ip_<map>__<first>__<second>`),
@@ -301,20 +337,13 @@ Other things to know:
   a label `My_Feature`.
 - **`%` starts an MPL macro call**, even inside a comment. Write `pct`.
 - **Use `CALLS`/`JMPS` with `SEG x, SOF x`** to reach code in another 64 KB segment.
-  `CALLA`/`JMPA` only work within the same segment.
-- **Checksums:** the free area is outside the Program checksum zones, so code placed
-  there isn't covered by the ECU's self-test, and the build prints a note. Covering
-  it means extending the zone table at 0xA0010 (in `asw/asw_header.a66`).
+  `CALLA`/`JMPA` only work within the same segment (the build checks).
+- **Checksums:** the Program zones follow the layout, so code anywhere in the
+  application, including `custom/`, is covered by the ECU's checksum.
 
 ## Roadmap
 
-- **Fully symbolic references.** Still numeric: paged operands without a resolved
-  target, unnamed RAM, struct bases, `#` immediates that are really addresses, and
-  the jump and pointer tables (raw `DB`). All of these must become labels before code
-  can move.
-- **Relocatable modules.** Then drop `AT` (and `#DATA16`) so code can grow in place,
-  with no branch-out patches.
-- Extend the Program checksum zones automatically to cover custom code.
 - Custom calibration parameters in the free calibration space.
 - CCP DAQ lists (event channels, ODT sizes) and checksum in the A2L.
 - Choose real file names; KWP/comm is probably split too finely (43 modules).
+- Name the remaining placeholder labels (`L_xxxxx`, `T_xxxxx` jump tables).

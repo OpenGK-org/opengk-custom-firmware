@@ -1,6 +1,5 @@
 ; asw/comm/comm_flash_6.a66
 ; KWP flash-reprogramming commands 0x14-0x16.
-; 0xCC130-0xCC380  (592 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  KWP_Flash_Cmd20_arm, KWP_Flash_Cmd21_arm, KWP_Flash_Cmd22_arm
 EXTERN  Advance_Buffer_Ptr:NEAR, Find_FlashCmd_Index:NEAR, L_CC708:NEAR, Resolve_Paged_Addr:NEAR
 
-S_CC130 SECTION CODE AT 0CC130H
+S_COMM_FLASH_6 SECTION CODE
 
 ; ======== KWP_Flash_Cmd20_arm  (@0xcc130) ========
         ; ------------------------------------------------------------
@@ -248,5 +247,5 @@ L_CC374:                 ; 0xcc374
         MOVB kwp_nrc_D78B,RL4
         JMPA cc_UC,L_CC708
 
-S_CC130 ENDS
+S_COMM_FLASH_6 ENDS
         END

@@ -1,6 +1,5 @@
 ; asw/opg.a66
 ; Idle air actuator opening at start.
-; 0xB97DC-0xB9874  (152 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -10,7 +9,7 @@ PUBLIC  Calc_ISA_Opening_Start, Set_opg_sp_st_isa_7dc
 EXTERN  Add_r12_r13_Return_r4:NEAR, Get_IP_Byte_2D_Table_DWord_YByte:NEAR, Get_IP_Byte_3D_Table_DWord_XWord_YWord:NEAR, Get_IP_Word_2D_Table_DWord_YByte:NEAR
 EXTERN  Get_IP_Word_3D_Table_DWord_XByte_YWord:NEAR, Get_IP_Word_3D_Table_DWord_XWord_YWord:NEAR, Mul_Frac_Sat_x2:NEAR
 
-S_B97DC SECTION CODE AT 0B97DCH
+S_OPG SECTION CODE
 
 ; ======== Set_opg_sp_st_isa_7dc  (@0xb97dc) ========
 Set_opg_sp_st_isa_7dc:
@@ -72,5 +71,5 @@ L_B9870:                 ; 0xb9870
         MOV R9,[R0+]
         RETS
 
-S_B97DC ENDS
+S_OPG ENDS
         END

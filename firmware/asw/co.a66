@@ -1,6 +1,5 @@
 ; asw/co.a66
 ; Idle CO trim of injection time and its NVM save.
-; 0xB9BDA-0xB9C42  (104 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  Calc_TI_CO_IS, NVM_Save_s63e, Reset_Dc97a_c38
 EXTERN  Elevated_Write_Routine_prg_zone_wrapper:NEAR
 
-S_B9BDA SECTION CODE AT 0B9BDAH
+S_CO SECTION CODE
 
 ; ======== Calc_TI_CO_IS  (@0xb9bda) ========
         ; ------------------------------------------------------------
@@ -63,5 +62,5 @@ Reset_Dc97a_c38:
         MOV ti_co_is,ZEROS
         RETS
 
-S_B9BDA ENDS
+S_CO ENDS
         END

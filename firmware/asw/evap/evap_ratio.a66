@@ -1,6 +1,5 @@
 ; asw/evap/evap_ratio.a66
 ; EVAP rate-based monitor enable conditions.
-; 0xD124E-0xD12C2  (116 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -17,7 +16,7 @@ c_t_ast_evap_rbm                     EQU  0906C8H
 PUBLIC  Calc_Evap_RBM_Cond, Reset_lv_err_maf_tps_ratio_2_24e
 EXTERN  Sat_Add_U8:NEAR
 
-S_D124E SECTION CODE AT 0D124EH
+S_EVAP_RATIO SECTION CODE
 
 ; ======== Reset_lv_err_maf_tps_ratio_2_24e  (@0xd124e) ========
 Reset_lv_err_maf_tps_ratio_2_24e:
@@ -69,5 +68,5 @@ L_D128E:                 ; 0xd128e
 L_D12C0:                 ; 0xd12c0
         RETS
 
-S_D124E ENDS
+S_EVAP_RATIO ENDS
         END

@@ -1,7 +1,6 @@
 ; asw/rbm/rbm_soft.a66
 ; Rate-based monitoring (IUMPR) core: reset, ignition-cycle and denominator counters, drive
 ; conditions.
-; 0xB317C-0xB34E0  (868 bytes, 6 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -21,7 +20,7 @@ c_vs_thd_rbm                         EQU  090838H
 PUBLIC  Calc_RBM_DriveCond, Calc_RBM_State, RBM_Inc_CDN_Ctr, RBM_Inc_IgnCyc_Ctr, Reset_RBM_Full, Reset_RBM_Soft
 EXTERN  NVM_Restore_s5dc:NEAR, Set_Cat_Diag_Inh:NEAR, Set_Cat_Diag_Inh_2:NEAR, Snapshot_RBM_States:NEAR
 
-S_B317C SECTION CODE AT 0B317CH
+S_RBM_SOFT SECTION CODE
 
 ; ======== Reset_RBM_Full  (@0xb317c) ========
         ; ------------------------------------------------------------
@@ -401,5 +400,5 @@ L_B34CC:                 ; 0xb34cc
         MOV R9,[R0+]
         RETS
 
-S_B317C ENDS
+S_RBM_SOFT ENDS
         END

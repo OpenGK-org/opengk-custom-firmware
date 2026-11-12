@@ -1,6 +1,5 @@
 ; asw/hi/hi_req.a66
 ; CAN init task and fuel pump request output.
-; 0xDA6A0-0xDA842  (418 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -28,7 +27,7 @@ EXTERN  Reset_tqi_req_slow_2d6:NEAR, Set_TQI_N_Max:NEAR, Set_eff_tot_bas_21e:NEA
 EXTERN  Set_iga_bas_cor_a10:NEAR, Set_iga_ref_cor_f66:NEAR, Set_iga_sp_e36:NEAR, Set_lv_cps_err:NEAR
 EXTERN  Set_lv_maf_puls:NEAR, Set_tqi_av_ems_7dc:NEAR, Tail_f0b28ec_99e:NEAR, Tail_f0c5ec6_f48:NEAR
 
-S_DA6A0 SECTION CODE AT 0DA6A0H
+S_HI_REQ SECTION CODE
 
 ; ======== CAN_Init_Task  (@0xda6a0) ========
         ; ------------------------------------------------------------
@@ -163,5 +162,5 @@ L_DA834:                 ; 0xda834
         CALLS SEG Diag_MAF_TPS_Ratio_d1be, SOF Diag_MAF_TPS_Ratio_d1be
         RETS
 
-S_DA6A0 ENDS
+S_HI_REQ ENDS
         END

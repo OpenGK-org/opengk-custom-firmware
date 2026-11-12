@@ -1,6 +1,5 @@
 ; asw/comm/comm_sid18.a66
 ; KWP SID 0x18 read DTCs by status.
-; 0xDF41E-0xDF638  (538 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  KWP_GetDTCRecordByStatus, KWP_SID18_ReadDTCByStatus
 EXTERN  DTC_Status_Proc_4:NEAR, Get_DTC_Record_1:NEAR
 
-S_DF41E SECTION CODE AT 0DF41EH
+S_COMM_SID18 SECTION CODE
 
 ; ======== KWP_SID18_ReadDTCByStatus  (@0xdf41e) ========
 KWP_SID18_ReadDTCByStatus:
@@ -260,5 +259,5 @@ L_DF62A:                 ; 0xdf62a
         ADD R0,#02H
         RETS
 
-S_DF41E ENDS
+S_COMM_SID18 ENDS
         END

@@ -1,6 +1,5 @@
 ; asw/comm/comm_flash_3.a66
 ; KWP flash-reprogramming commands 0x09, 0x0C, 0x0D.
-; 0xCBD4A-0xCBE36  (236 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  KWP_Flash_Cmd09_arm, KWP_Flash_Cmd12_arm, KWP_Flash_Cmd13_arm
 EXTERN  L_CC708:NEAR, RetC_90000_160:NEAR
 
-S_CBD4A SECTION CODE AT 0CBD4AH
+S_COMM_FLASH_3 SECTION CODE
 
 ; ======== KWP_Flash_Cmd09_arm  (@0xcbd4a) ========
         ; ------------------------------------------------------------
@@ -114,5 +113,5 @@ L_CBE2A:                 ; 0xcbe2a
         MOVB kwp_nrc_D78B,RL4
         JMPA cc_UC,L_CC708
 
-S_CBD4A ENDS
+S_COMM_FLASH_3 ENDS
         END

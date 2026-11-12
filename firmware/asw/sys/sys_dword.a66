@@ -1,6 +1,5 @@
 ; asw/sys/sys_dword.a66
 ; Runtime: 2D/3D table reads with 32-bit table pointers.
-; 0xFFBEA-0xFFDEE  (516 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -8,7 +7,7 @@ $INCLUDE (zone_syms.inc)
 
 PUBLIC  Get_Byte_2D_Table_DWord_YByte, Get_Byte_2D_Table_DWord_YWord, Get_IP_Byte_3D_Table_DWord_XWord_YWord, Get_Word_2D_Table_DWord_YByte, Get_Word_2D_Table_DWord_YWord
 
-S_FFBEA SECTION CODE AT 0FFBEAH
+S_SYS_DWORD SECTION CODE
 
 ; ======== Get_IP_Byte_3D_Table_DWord_XWord_YWord  (@0xffbea) ========
 Get_IP_Byte_3D_Table_DWord_XWord_YWord:
@@ -258,5 +257,5 @@ L_FFDE4:                 ; 0xffde4
         MOV DPP0,#DATA16 00024H
         RETS
 
-S_FFBEA ENDS
+S_SYS_DWORD ENDS
         END

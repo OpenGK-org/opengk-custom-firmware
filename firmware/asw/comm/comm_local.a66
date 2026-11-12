@@ -1,6 +1,5 @@
 ; asw/comm/comm_local.a66
 ; KWP local-identifier services: SID 0x21 read, 0x2C dynamically define, 0x3B write.
-; 0xDF638-0xDFB62  (1322 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  KWP_SID21_ReadDataByLocalId, KWP_SID2C_DynamicallyDefineLocalId, KWP_SID3B_WriteDataByLocalId
 EXTERN  KWP_SID21_ResolveLID_Descriptor:NEAR, KWP_SID3B_WriteBlock90:NEAR, Push_To_System_Stack:NEAR
 
-S_DF638 SECTION CODE AT 0DF638H
+S_COMM_LOCAL SECTION CODE
 
 ; ======== KWP_SID21_ReadDataByLocalId  (@0xdf638) ========
 KWP_SID21_ReadDataByLocalId:
@@ -520,5 +519,5 @@ L_DFB5E:                 ; 0xdfb5e
         BCLR kwp_comms_flags.0FH
         RETS
 
-S_DF638 ENDS
+S_COMM_LOCAL ENDS
         END

@@ -1,7 +1,6 @@
 ; asw/cam/cam_edge.a66
 ; Crank tooth-pattern / revolution detection, cam edge counter snapshot, a DTC setter and
 ; fuel-pump output.
-; 0xC7F72-0xC840C  (1178 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -23,7 +22,7 @@ PUBLIC  Calc_Crank_Tooth_Pattern, Diag_DTC_dd124, Set_Out_FuelReq, Snapshot_Cam_
 EXTERN  Abs_S16_Simple:NEAR, Add_r12_r13_Return_r4:NEAR, DTC_Update_Immediate:NEAR, Sat_Add_U8:NEAR
 EXTERN  Sat_Sub_S16:NEAR, sub_r12_13_ret_r4:NEAR
 
-S_C7F72 SECTION CODE AT 0C7F72H
+S_CAM_EDGE SECTION CODE
 
 ; ======== Diag_DTC_dd124  (@0xc7f72) ========
         ; ------------------------------------------------------------
@@ -457,5 +456,5 @@ L_C8402:                 ; 0xc8402
 L_C840A:                 ; 0xc840a
         RETS
 
-S_C7F72 ENDS
+S_CAM_EDGE ENDS
         END

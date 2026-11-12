@@ -1,6 +1,5 @@
 ; asw/ivvt/ivvt_transition.a66
 ; IVVT state transition manager and inhibit; idle speed adaptation enable conditions.
-; 0xAE40A-0xAE6B6  (684 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -22,7 +21,7 @@ PUBLIC  IVVT_Set_Inhibit, IVVT_State_Transition, IdleSpeedAdapt_Cond, Reset_stat
 EXTERN  Get_Byte_2D_Table_DWord_YByte:NEAR, Get_IP_Byte_2D_Table_DWord_YByte:NEAR, sub_r12_13_ret_r4:NEAR
 PUBLIC  L_AE6B2
 
-S_AE40A SECTION CODE AT 0AE40AH
+S_IVVT_TRANSITION SECTION CODE
 
 ; ======== IdleSpeedAdapt_Cond  (@0xae40a) ========
         ; ------------------------------------------------------------
@@ -309,5 +308,5 @@ L_AE6B2:                 ; 0xae6b2  (pointer target)
         BSET lv_ct.0DH
         RETS
 
-S_AE40A ENDS
+S_IVVT_TRANSITION ENDS
         END

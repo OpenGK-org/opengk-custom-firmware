@@ -1,6 +1,5 @@
 ; asw/comm/comm_callfar.a66
 ; KWP transmit setup and comms tick, plus far-call trampolines.
-; 0xDED22-0xDEE52  (304 bytes, 9 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  KWP_Comms_Tick, KWP_Tx_Setup, Reset_kwp_req_ptr_e34, Tail_rt_callfar_via_r5r4_d22, Tail_rt_callfar_via_r5r4_d36, Tail_rt_callfar_via_r5r4_d4c
 PUBLIC  Tail_rt_callfar_via_r5r4_d7a, Tail_rt_callfar_via_r5r4_e06, Tail_rt_callfar_via_r5r4_e1a
 
-S_DED22 SECTION CODE AT 0DED22H
+S_COMM_CALLFAR SECTION CODE
 
 ; ======== Tail_rt_callfar_via_r5r4_d22  (@0xded22) ========
 Tail_rt_callfar_via_r5r4_d22:
@@ -145,5 +144,5 @@ Reset_kwp_req_ptr_e34:
         MOV bl_prog_comm_flags,ZEROS
         RETS
 
-S_DED22 ENDS
+S_COMM_CALLFAR ENDS
         END

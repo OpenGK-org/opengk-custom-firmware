@@ -1,7 +1,6 @@
 ; asw/vs/vs_seq.a66
 ; Engine speed limit coordination, wheel-based vehicle speed, TPS detection and per-cylinder
 ; sequencing.
-; 0xC849E-0xC8E2E  (2448 bytes, 12 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -59,7 +58,7 @@ EXTERN  Div_Frac_U16_Q16:NEAR, Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_Y_Axis:NEA
 EXTERN  Get_IP_Word_Y_Axis:NEAR, Inc_Ctr_Wup_DTC_Clr:NEAR, Interp_U16:NEAR, Mul_Shift_U16_Sat32:NEAR
 EXTERN  Set_lv_act_aj:NEAR, Tail_f0ae180_90e:NEAR
 
-S_C849E SECTION CODE AT 0C849EH
+S_VS_SEQ SECTION CODE
 
 ; ======== Reset_n_max_thd_49e  (@0xc849e) ========
 Reset_n_max_thd_49e:
@@ -1058,5 +1057,5 @@ L_C8E2A:                 ; 0xc8e2a
 L_C8E2C:                 ; 0xc8e2c
         RETS
 
-S_C849E ENDS
+S_VS_SEQ ENDS
         END

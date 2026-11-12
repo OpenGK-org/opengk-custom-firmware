@@ -1,6 +1,5 @@
 ; asw/crk.a66
 ; Crank/cam signal errors: tooth error flag, cam error, segment counter and DTC.
-; 0xC7B74-0xC7D86  (530 bytes, 6 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -17,7 +16,7 @@ PUBLIC  Dec_Dc346_SegCtr, Diag_DTC_dd116, Reset_Df627_d54, Reset_Dfaae_b84, Set_
 EXTERN  Calc_Crank_Tooth_Pattern:NEAR, DTC_Update_Immediate:NEAR, Diag_DTC_dd124:NEAR, Sat_Add_U8:NEAR
 EXTERN  Snapshot_Cam_Edge_Ctr:NEAR, sub_r12_13_ret_r4:NEAR
 
-S_C7B74 SECTION CODE AT 0C7B74H
+S_CRK SECTION CODE
 
 ; ======== Set_Dc341_CamErr  (@0xc7b74) ========
         ; ------------------------------------------------------------
@@ -242,5 +241,5 @@ Reset_Df627_d54:
         MOVB cam_rise_av_z,RL3
         RETS
 
-S_C7B74 ENDS
+S_CRK ENDS
         END

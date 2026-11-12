@@ -1,6 +1,5 @@
 ; asw/crank.a66
 ; Engine speed gradient (n_grd) and segment timing.
-; 0xB7BC8-0xB7D82  (442 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -10,7 +9,7 @@ PUBLIC  Calc_N_Grd, Calc_Seg_Timing, Tail_f0b7bc8_bf8
 EXTERN  Add_r12_r13_Return_r4:NEAR, Clamp_S16:NEAR, Div_U32_U16_Round:NEAR, Lsr_U32:NEAR
 EXTERN  Lsr_U32_Ovf:NEAR, MulDiv_Round_S16:NEAR, Sat_Sub_S16_v2:NEAR, mul32:NEAR
 
-S_B7BC8 SECTION CODE AT 0B7BC8H
+S_CRANK SECTION CODE
 
 ; ======== Calc_N_Grd  (@0xb7bc8) ========
         ; ------------------------------------------------------------
@@ -175,5 +174,5 @@ L_B7CD8:                 ; 0xb7cd8
         MOV R9,[R0+]
         RETS
 
-S_B7BC8 ENDS
+S_CRANK ENDS
         END

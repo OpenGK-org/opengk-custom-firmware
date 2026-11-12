@@ -1,6 +1,5 @@
 ; asw/diag/diag_trt.a66
 ; Total run time counter and NVM restore of blocks 0x00C and 0x56A.
-; 0xDA842-0xDAB06  (708 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -19,7 +18,7 @@ EXTERN  Restore_Cam_Ad_NVM:NEAR, Restore_ER_Adapt:NEAR, Restore_Evap_Ctrs:NEAR, 
 EXTERN  Restore_OBD_Stat:NEAR, Restore_TAM_NVM:NEAR, Restore_TPS_AdMmv_IS:NEAR, Restore_TQ_Dif_IS_Ad:NEAR
 EXTERN  Set_Conf_VS:NEAR, Set_Dc341_CamErr:NEAR, Set_opg_sp_st_isa_7dc:NEAR, xor_routine:NEAR
 
-S_DA842 SECTION CODE AT 0DA842H
+S_DIAG_TRT SECTION CODE
 
 ; ======== Calc_TRT_Word  (@0xda842) ========
         ; ------------------------------------------------------------
@@ -284,5 +283,5 @@ L_DAAFC:                 ; 0xdaafc
         MOVB lv_ti_f4a6,ZEROS
         RETS
 
-S_DA842 ENDS
+S_DIAG_TRT ENDS
         END

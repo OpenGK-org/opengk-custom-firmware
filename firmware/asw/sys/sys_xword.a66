@@ -1,6 +1,5 @@
 ; asw/sys/sys_xword.a66
 ; Runtime: 3D byte-table read, word X / word Y axes, 32-bit table pointer.
-; 0xFFECA-0xFFF34  (106 bytes, 1 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -8,7 +7,7 @@ $INCLUDE (zone_syms.inc)
 
 PUBLIC  Get_Byte_3D_Table_DWord_XWord_YWord
 
-S_FFECA SECTION CODE AT 0FFECAH
+S_SYS_XWORD SECTION CODE
 
 ; ======== Get_Byte_3D_Table_DWord_XWord_YWord  (@0xffeca) ========
 Get_Byte_3D_Table_DWord_XWord_YWord:
@@ -62,5 +61,5 @@ L_FFF2A:                 ; 0xfff2a
         MOV DPP0,#DATA16 00024H
         RETS
 
-S_FFECA ENDS
+S_SYS_XWORD ENDS
         END

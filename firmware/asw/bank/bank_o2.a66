@@ -1,6 +1,5 @@
 ; asw/bank/bank_o2.a66
 ; OBD-II Mode 01 PIDs 0x13-0x19: O2 sensors present and per-sensor voltage / trim.
-; 0xE044A-0xE04D6  (140 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  OBD_M01_PID13_O2SensorsPresent, OBD_M01_PID14_O2_B1S1_V_STFT, OBD_M01_PID15_O2_B1S2_V, OBD_M01_PID18_O2_B2S1_Unsupported, OBD_M01_PID19_O2_B2S2_Unsupported
 EXTERN  L_E0940:NEAR, Mul_U16_SatByte:NEAR, OBD_Scale_FuelTrim:NEAR
 
-S_E044A SECTION CODE AT 0E044AH
+S_BANK_O2 SECTION CODE
 
 ; ======== OBD_M01_PID13_O2SensorsPresent  (@0xe044a) ========
         ; ------------------------------------------------------------
@@ -96,5 +95,5 @@ OBD_M01_PID19_O2_B2S2_Unsupported:
         MOVB RL7,#DATA16 000FEH
         JMPA cc_UC,L_E0940
 
-S_E044A ENDS
+S_BANK_O2 ENDS
         END

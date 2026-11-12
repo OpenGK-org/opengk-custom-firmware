@@ -1,7 +1,6 @@
 ; asw/sub.a66
 ; Coolant temperature substitute value: intermittent-failure state machine and rationality
 ; diagnosis.
-; 0xC97C2-0xC9C58  (1174 bytes, 9 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -24,7 +23,7 @@ EXTERN  Abs_Diff_U16:NEAR, Add_r12_r13_Return_r4:NEAR, DTC_Update_Imm_V2:NEAR, D
 EXTERN  Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_3D_Table_DWord_XWord_YWord:NEAR, Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_2D_Table:NEAR
 EXTERN  Get_IP_Word_2D_Table_DWord_YWord:NEAR, Read_MulDiv_MD:NEAR, sub_r12_r13_rets_r4:NEAR
 
-S_C97C2 SECTION CODE AT 0C97C2H
+S_SUB SECTION CODE
 
 ; ======== tco_sub_St0_Idle  (@0xc97c2) ========
         ; ------------------------------------------------------------
@@ -490,5 +489,5 @@ L_C9C50:                 ; 0xc9c50
         MOV R9,[R0+]
         RET
 
-S_C97C2 ENDS
+S_SUB ENDS
         END

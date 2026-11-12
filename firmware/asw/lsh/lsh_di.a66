@@ -1,6 +1,5 @@
 ; asw/lsh/lsh_di.a66
 ; Cam adaptation diagnosis-inhibit flags.
-; 0xB6464-0xB673C  (728 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -36,7 +35,7 @@ EXTERN  Get_IP_Word_2D_Table:NEAR, Get_IP_Word_Y_Axis:NEAR, Mul_Q15_Sat:NEAR, Sa
 EXTERN  Sat_Add_U8:NEAR, Sat_Sub_S16_v2:NEAR, sub_r12_13_ret_r4:NEAR, subtract_r12_r13_negate_if_not_rets_r4:NEAR
 PUBLIC  L_B64D4, L_B6500
 
-S_B6464 SECTION CODE AT 0B6464H
+S_LSH_DI SECTION CODE
 
 ; ======== Set_lv_cam_ad_di_ivvt  (@0xb6464) ========
         ; ------------------------------------------------------------
@@ -324,5 +323,5 @@ L_B6730:                 ; 0xb6730
         MOV R9,[R0+]
         RETS
 
-S_B6464 ENDS
+S_LSH_DI ENDS
         END

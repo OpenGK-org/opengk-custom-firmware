@@ -1,6 +1,5 @@
 ; asw/comm/comm_lsh_2.a66
 ; Front O2 heater OBD temperature diagnosis and its rate-based monitor.
-; 0xD466C-0xD4900  (660 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -25,7 +24,7 @@ PUBLIC  Calc_LSH_Up_OBD2_Temp, Calc_RBM_LSH_Up_OBD2, ClrBits_state_rbm_lsh_up_ob
 EXTERN  Add_r12_r13_Return_r4:NEAR, Diag_DTC_dd266:NEAR, Div_U32_U16_Round32:NEAR, Get_IP_Byte_2D_Table:NEAR
 EXTERN  Get_IP_Word_Y_Axis:NEAR, Mul_Frac_U16_Sat:NEAR, sub_r12_r13_rets_r4:NEAR
 
-S_D466C SECTION CODE AT 0D466CH
+S_COMM_LSH_2 SECTION CODE
 
 ; ======== Reset_temp_dif_lsh_up_obd2_66c  (@0xd466c) ========
 Reset_temp_dif_lsh_up_obd2_66c:
@@ -287,5 +286,5 @@ L_D48F8:                 ; 0xd48f8
         MOV R9,[R0+]
         RETS
 
-S_D466C ENDS
+S_COMM_LSH_2 ENDS
         END

@@ -1,6 +1,5 @@
 ; asw/rng.a66
 ; Coolant temperature stuck-in-range rate-based monitor (IUMPR).
-; 0xC90E2-0xC916E  (140 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  Calc_RBM_TCO_Stuck_Rng, ClrBits_state_rbm_tco_stuck_rng_0ec, Reset_state_rbm_tco_stuck_rng_0e2
 EXTERN  Div_U32_U16_Round32:NEAR
 
-S_C90E2 SECTION CODE AT 0C90E2H
+S_RNG SECTION CODE
 
 ; ======== Reset_state_rbm_tco_stuck_rng_0e2  (@0xc90e2) ========
 Reset_state_rbm_tco_stuck_rng_0e2:
@@ -81,5 +80,5 @@ L_C9168:                 ; 0xc9168
         MOV R9,[R0+]
         RETS
 
-S_C90E2 ENDS
+S_RNG ENDS
         END

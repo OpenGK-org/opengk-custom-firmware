@@ -1,6 +1,5 @@
 ; asw/sys/sys_t4.a66
 ; Ignition capture/compare interrupts (CC6, CC7, CC9, CC27) and timer T4.
-; 0xAA49E-0xAB32C  (3726 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -13,7 +12,7 @@ PUBLIC  L_AAC6A, L_AAD0E, L_AADDE, L_AAEFA, L_AB00E, L_AB0C4
 PUBLIC  L_AB0EE, L_AB164, L_AB1DA, L_AB1DE, L_AB206, L_AB210
 PUBLIC  L_AB23C, L_AB25C
 
-S_AA49E SECTION CODE AT 0AA49EH
+S_SYS_T4 SECTION CODE
 
 ; ======== CC6INT_handler  (@0xaa49e) ========
 CC6INT_handler:
@@ -1480,5 +1479,5 @@ L_AB328:                 ; 0xab328
         POP CP
         RETI
 
-S_AA49E ENDS
+S_SYS_T4 ENDS
         END

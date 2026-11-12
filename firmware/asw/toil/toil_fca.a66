@@ -1,6 +1,5 @@
 ; asw/toil/toil_fca.a66
 ; Oil temperature acquisition and sensor diagnosis.
-; 0xB9F4A-0xBA37E  (1076 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -35,7 +34,7 @@ PUBLIC  Acq_TOIL_2, Diag_TOIL, Reset_state_rbm_toil_stuck_374, Reset_toil_mes_ma
 EXTERN  DTC_Update_Debounced:NEAR, DTC_Update_Debounced_OBD:NEAR, DTC_Update_Immediate:NEAR, Get_IP_Byte_2D_Table:NEAR
 EXTERN  Get_IP_Byte_2D_Table_DWord_YByte:NEAR, Get_IP_Word_Y_Axis:NEAR, Ramp_Toward_U16:NEAR, sub_r12_13_ret_r4:NEAR
 
-S_B9F4A SECTION CODE AT 0B9F4AH
+S_TOIL_FCA SECTION CODE
 
 ; ======== Acq_TOIL_2  (@0xb9f4a) ========
         ; ------------------------------------------------------------
@@ -397,5 +396,5 @@ Reset_state_rbm_toil_stuck_374:
         MOV rate_rbm_toil_stuck,ONES
         RETS
 
-S_B9F4A ENDS
+S_TOIL_FCA ENDS
         END

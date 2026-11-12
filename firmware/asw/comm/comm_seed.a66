@@ -1,6 +1,5 @@
 ; asw/comm/comm_seed.a66
 ; CCP GET_SEED (0x12) and UNLOCK (0x13).
-; 0xA5822-0xA58DC  (186 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  CCP_GetSeed_0x12, CCP_Unlock_0x13
 EXTERN  Move_xFF_items__from_PTR_R12_to_PTR_R13:NEAR
 
-S_A5822 SECTION CODE AT 0A5822H
+S_COMM_SEED SECTION CODE
 
 ; ======== CCP_GetSeed_0x12  (@0xa5822) ========
         ; CCP GET_SEED (0x12) handler. Dispatched from CCP_Svc_Conn_Security when connected
@@ -112,5 +111,5 @@ L_A58D2:                 ; 0xa58d2
         MOV R9,[R0+]
         RETS
 
-S_A5822 ENDS
+S_COMM_SEED ENDS
         END

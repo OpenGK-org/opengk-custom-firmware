@@ -1,6 +1,5 @@
 ; asw/comm/comm_objects.a66
 ; CCP connect: arms and rebuilds the CAN DAQ/transmit message objects.
-; 0xA56DE-0xA5822  (324 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  CAN_wipe_recurring_msg_obj_from_buffer_, CCP_Connect_ArmCanObjects, CCP_Rebuild_CanDaqObjects
 EXTERN  Move_xFF_items__from_PTR_R12_to_PTR_R13:NEAR
 
-S_A56DE SECTION CODE AT 0A56DEH
+S_COMM_OBJECTS SECTION CODE
 
 ; ======== CCP_Connect_ArmCanObjects  (@0xa56de) ========
         ; CCP_Connect_ArmCanObjects: CCP CONNECT arming. Rebuilds all CAN DAQ/transmit message objects
@@ -160,5 +159,5 @@ CAN_wipe_recurring_msg_obj_from_buffer_:
         MOVB [R12+#02H],RL4
         RETS
 
-S_A56DE ENDS
+S_COMM_OBJECTS ENDS
         END

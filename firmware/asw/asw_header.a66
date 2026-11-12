@@ -9,15 +9,22 @@ $INCLUDE (zone_syms.inc)
 
 S_A0000 SECTION CODE AT 0A0000H
 
-        ; ------------------------------------------------------------
-        ; BL CRC: ECU-region descriptor (block count@+0x12, exp crc@+0x16, start/end@+0x14)
-        ; ------------------------------------------------------------
-        ; data @0xa0000 (78 bytes)
+        ; application header magic, checked by the bootloader (0x4890, 0x4224)
         DB      090H,048H,024H,042H,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
-        DB      0EDH,0BBH,006H,000H,010H,002H,00AH,000H,0FFH,0FFH,00AH,000H,000H,000H,00BH,000H
-        DB      0FBH,0FFH,00BH,000H,000H,000H,00CH,000H,0FFH,0FFH,00CH,000H,000H,000H,00DH,000H
-        DB      0BBH,0FFH,00DH,000H,000H,000H,00EH,000H,00BH,05EH,00EH,000H,000H,0E2H,00FH,000H
-        DB      033H,0FFH,00FH,000H,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,000H,0FFH
+
+        ; Program checksum table (0xA0010): CRC word, zone count, 0, then (first, last)
+        ; linear address per zone, room for 7 zones.  tools/build.py writes the zones
+        ; (one per 64 KB segment, from the module layout) and the CRC; the values here
+        ; are the stock layout's and get overwritten.
+        DB      0EDH,0BBH,006H,000H                                        ;@reloc-ok written by tools/build.py
+        DB      010H,002H,00AH,000H,0FFH,0FFH,00AH,000H                    ;@reloc-ok written by tools/build.py
+        DB      000H,000H,00BH,000H,0FBH,0FFH,00BH,000H                    ;@reloc-ok written by tools/build.py
+        DB      000H,000H,00CH,000H,0FFH,0FFH,00CH,000H                    ;@reloc-ok written by tools/build.py
+        DB      000H,000H,00DH,000H,0BBH,0FFH,00DH,000H                    ;@reloc-ok written by tools/build.py
+        DB      000H,000H,00EH,000H,00BH,05EH,00EH,000H                    ;@reloc-ok written by tools/build.py
+        DB      000H,0E2H,00FH,000H,033H,0FFH,00FH,000H                    ;@reloc-ok written by tools/build.py
+        DB      0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH                    ; (7th zone)
+        DB      000H,0FFH
 
         ; ------------------------------------------------------------
         ; ECU identification block: calibration/program part numbers, 'KR' region, Hyundai VIN template

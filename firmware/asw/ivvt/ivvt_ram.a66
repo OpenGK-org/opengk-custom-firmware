@@ -1,6 +1,5 @@
 ; asw/ivvt/ivvt_ram.a66
 ; IVVT RAM pointers, cam adaptation state and table index.
-; 0xB46D4-0xB4874  (416 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -14,7 +13,7 @@ ldpm_tmag_ivvt_1_ivvt                        EQU  09814DH
 PUBLIC  IVVT_CamAd_State, IVVT_Set_RamPtr_1, IVVT_Set_RamPtr_2, Nop_b4872, Set_Idx_Cam_Ad
 EXTERN  Clamp_U16:NEAR, Get_IP_Byte_Y_Axis:NEAR, Sat_Add_S16_v2:NEAR
 
-S_B46D4 SECTION CODE AT 0B46D4H
+S_IVVT_RAM SECTION CODE
 
 ; ======== IVVT_Set_RamPtr_1  (@0xb46d4) ========
         ; ------------------------------------------------------------
@@ -188,5 +187,5 @@ L_B4850:                 ; 0xb4850
 Nop_b4872:
         RETS
 
-S_B46D4 ENDS
+S_IVVT_RAM ENDS
         END

@@ -1,6 +1,5 @@
 ; asw/dtc/dtc_adaptive.a66
 ; Periodic DTC status maintenance, DTC count and freeze-frame read; adaptive value reset.
-; 0xDA226-0xDA41C  (502 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -14,7 +13,7 @@ EXTERN  ClrBits_state_rbm_tco_stuck_rng_0ec:NEAR, ClrBits_state_rbm_th_det_750:N
 EXTERN  ClrBits_state_rbm_vls_down_plaus_f94:NEAR, ClrBits_state_rbm_vls_up_frq_5c6:NEAR, ClrBits_state_rbm_vls_up_plaus_5b2:NEAR, Push_To_System_Stack:NEAR
 EXTERN  Reset_OBD_Readiness_Group:NEAR, Reset_OBD_Stat:NEAR, Reset__ctr_km_mil_on_166:NEAR, Set_RBM_Cat_Diag_State_2:NEAR
 
-S_DA226 SECTION CODE AT 0DA226H
+S_DTC_ADAPTIVE SECTION CODE
 
 ; ======== Reset_Adaptive_LearnedValues  (@0xda226) ========
 Reset_Adaptive_LearnedValues:
@@ -228,5 +227,5 @@ L_DA416:                 ; 0xda416
         MOV R6,[R0+]
         RETS
 
-S_DA226 ENDS
+S_DTC_ADAPTIVE ENDS
         END

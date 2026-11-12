@@ -1,6 +1,5 @@
 ; asw/sys/sys_index.a66
 ; Flash command index lookup and paged address resolution.
-; 0xCCA56-0xCCACC  (118 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -8,7 +7,7 @@ $INCLUDE (zone_syms.inc)
 
 PUBLIC  Find_FlashCmd_Index, Nop_ccac2, Resolve_Paged_Addr
 
-S_CCA56 SECTION CODE AT 0CCA56H
+S_SYS_INDEX SECTION CODE
 
 ; ======== Find_FlashCmd_Index  (@0xcca56) ========
         ; ------------------------------------------------------------
@@ -78,5 +77,5 @@ Nop_ccac2:
         MOV [R12],R15
         RETS
 
-S_CCA56 ENDS
+S_SYS_INDEX ENDS
         END

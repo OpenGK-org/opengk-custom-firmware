@@ -1,6 +1,5 @@
 ; asw/mode.a66
 ; KWP CAN comms-object pending handling and a 32-bit normalize helper.
-; 0xDFB62-0xDFC04  (162 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -8,7 +7,7 @@ $INCLUDE (zone_syms.inc)
 
 PUBLIC  KWP_CommObj_SetPending, Nop_dfc02, Normalize_S32
 
-S_DFB62 SECTION CODE AT 0DFB62H
+S_MODE SECTION CODE
 
 ; ======== Normalize_S32  (@0xdfb62) ========
         ; ------------------------------------------------------------
@@ -105,5 +104,5 @@ L_DFBFE:                 ; 0xdfbfe
 Nop_dfc02:
         RETS
 
-S_DFB62 ENDS
+S_MODE ENDS
         END

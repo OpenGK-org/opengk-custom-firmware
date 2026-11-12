@@ -1,6 +1,5 @@
 ; asw/rt/rt_ybyte.a66
 ; Runtime: 2D byte-table interpolation, byte axis.
-; 0xFF414-0xFF49E  (138 bytes, 1 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -8,7 +7,7 @@ $INCLUDE (zone_syms.inc)
 
 PUBLIC  Get_IP_Byte_2D_Table_DWord_YByte
 
-S_FF414 SECTION CODE AT 0FF414H
+S_RT_YBYTE SECTION CODE
 
 ; ======== Get_IP_Byte_2D_Table_DWord_YByte  (@0xff414) ========
 Get_IP_Byte_2D_Table_DWord_YByte:
@@ -71,5 +70,5 @@ L_FF490:                 ; 0xff490
         MOV DPP0,#DATA16 00024H
         RETS
 
-S_FF414 ENDS
+S_RT_YBYTE ENDS
         END

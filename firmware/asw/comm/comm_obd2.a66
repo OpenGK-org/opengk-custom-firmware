@@ -1,6 +1,5 @@
 ; asw/comm/comm_obd2.a66
 ; Front O2 sensor OBD switching frequency / cycle count diagnosis.
-; 0xD444E-0xD450E  (192 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  Calc_LS_Up_OBD2_CycNr, Calc_LS_Up_OBD2_Freq, LS_Up_OBD2_Freq_Gated
 EXTERN  Mul_U16_Hi:NEAR
 
-S_D444E SECTION CODE AT 0D444EH
+S_COMM_OBD2 SECTION CODE
 
 ; ======== Calc_LS_Up_OBD2_CycNr  (@0xd444e) ========
         ; ------------------------------------------------------------
@@ -88,5 +87,5 @@ LS_Up_OBD2_Freq_Gated:
 L_D450C:                 ; 0xd450c
         RETS
 
-S_D444E ENDS
+S_COMM_OBD2 ENDS
         END

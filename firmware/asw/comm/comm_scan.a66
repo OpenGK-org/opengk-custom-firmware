@@ -1,7 +1,6 @@
 ; asw/comm/comm_scan.a66
 ; Flash/calibration block scanner and validator, block copy and elevated flash/EEPROM write
 ; routines.
-; 0xDE73A-0xDED22  (1512 bytes, 12 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -12,7 +11,7 @@ PUBLIC  KWP_Set_Buffer, Nop_dec94, Reset_kwp_req_ptr_c98, Scan_Block_Bit0_Set, S
 EXTERN  Push_To_System_Stack:NEAR, xor_routine:NEAR
 PUBLIC  L_DEC96
 
-S_DE73A SECTION CODE AT 0DE73AH
+S_COMM_SCAN SECTION CODE
 
 ; ======== Scan_Block_NotErased  (@0xde73a) ========
 Scan_Block_NotErased_E73A:
@@ -678,5 +677,5 @@ L_DED1A:                 ; 0xded1a
         MOV R7,[R0+]
         RETS
 
-S_DE73A ENDS
+S_COMM_SCAN ENDS
         END

@@ -1,7 +1,6 @@
 ; asw/tps/tps_vs.a66
 ; Throttle sensor diagnosis; vehicle speed acquisition and source learning, NVM save (block
 ; 0x641).
-; 0xCA0DE-0xCA984  (2214 bytes, 6 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -55,7 +54,7 @@ EXTERN  Get_IP_Word_Y_Axis:NEAR, Mul_U16_Hi:NEAR, Mul_U16_Sat16:NEAR, Reset_CC13
 EXTERN  Reset_CC30IC_24e:NEAR, Reset_ODP2_262:NEAR, Reset_ODP7_230:NEAR, Sat_Sub_S16_v2:NEAR
 EXTERN  multipied_r12_r13_UGT_r14_rets_r4:NEAR, sub_r12_r13_rets_r4:NEAR, subtract_r12_r13_negate_if_not_rets_r4:NEAR
 
-S_CA0DE SECTION CODE AT 0CA0DEH
+S_TPS_VS SECTION CODE
 
 ; ======== Acq_TPS_Mes_Mon  (@0xca0de) ========
         ; ------------------------------------------------------------
@@ -885,5 +884,5 @@ L_CA974:                 ; 0xca974
         MOV R9,[R0+]
         RET
 
-S_CA0DE ENDS
+S_TPS_VS ENDS
         END

@@ -1,6 +1,5 @@
 ; asw/imob/imob_sdr.a66
 ; KWP application services 0x12, 0x15, 0x1A, 0x20.
-; 0xE4F38-0xE51CA  (658 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -12,7 +11,7 @@ c_dly_lock_imob                      EQU  090196H
 PUBLIC  KWP_App_SID_12_case, KWP_App_SID_15_case, KWP_App_SID_1A_case, KWP_App_SID_20_case
 EXTERN  Imob_Update_WarnLamp:NEAR, L_E5A72:NEAR, SMARTRA_disable:NEAR
 
-S_E4F38 SECTION CODE AT 0E4F38H
+S_IMOB_SDR SECTION CODE
 
 ; ======== KWP_App_SID_12_case  (@0xe4f38) ========
 KWP_App_SID_12_case:
@@ -258,5 +257,5 @@ L_E51BC:                 ; 0xe51bc
         MOVB kwp_nrc,RL4
         JMPA cc_UC,L_E5A72
 
-S_E4F38 ENDS
+S_IMOB_SDR ENDS
         END

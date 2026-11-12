@@ -1,6 +1,5 @@
 ; asw/sys/sys_call.a66
 ; XP2 interrupt handler, call-through helpers, SSC interrupt bits and MAF base air mass.
-; 0xAB494-0xABBF2  (1886 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -12,7 +11,7 @@ PUBLIC  L_AB6B4, L_AB6E8, L_AB72A, L_AB73A, L_AB75C, L_AB77E
 PUBLIC  L_ABA32, L_ABA4E, L_ABA7E, L_ABAA0, L_ABAD0, L_ABB00
 PUBLIC  L_ABB18, L_ABB34, L_ABB64, L_ABB86, L_ABBB6, L_ABBE6
 
-S_AB494 SECTION CODE AT 0AB494H
+S_SYS_CALL SECTION CODE
 
 ; ======== XP2INT_handler  (@0xab494) ========
 XP2INT_handler:
@@ -748,5 +747,5 @@ L_ABBEE:                 ; 0xabbee
         POP CP
         RETI
 
-S_AB494 ENDS
+S_SYS_CALL ENDS
         END

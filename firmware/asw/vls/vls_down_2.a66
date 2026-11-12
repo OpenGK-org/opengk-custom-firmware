@@ -1,6 +1,5 @@
 ; asw/vls/vls_down_2.a66
 ; Rear O2 sensor based catalyst and fuel-system diagnosis, power-up check and DTC.
-; 0xB89EE-0xB8EF0  (1282 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -32,7 +31,7 @@ EXTERN  Add_r12_r13_Return_r4:NEAR, DTC_Update_Imm_V2:NEAR, DTC_Update_Immediate
 EXTERN  Diag_Cat_Eff_Ena:NEAR, Diag_Cat_Eff_SetDTC:NEAR, Div_Frac_U16_Q16:NEAR, Div_Ratio_U8_Sat:NEAR
 EXTERN  Get_IP_Byte_2D_Table:NEAR, Get_IP_Word_Y_Axis:NEAR, Mul_U16_Hi:NEAR, Read_MulDiv_MD:NEAR
 
-S_B89EE SECTION CODE AT 0B89EEH
+S_VLS_DOWN_2 SECTION CODE
 
 ; ======== Diag_Cat_Eff_VlsDown  (@0xb89ee) ========
         ; ------------------------------------------------------------
@@ -529,5 +528,5 @@ L_B8EC4:                 ; 0xb8ec4
 L_B8EEE:                 ; 0xb8eee
         RETS
 
-S_B89EE ENDS
+S_VLS_DOWN_2 ENDS
         END

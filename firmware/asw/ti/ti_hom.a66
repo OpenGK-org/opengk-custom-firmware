@@ -1,7 +1,6 @@
 ; asw/ti/ti_hom.a66
 ; Per-cylinder injection: base quantity, start/end of injection, wall film and battery dead-
 ; time compensation.
-; 0xDCE40-0xDD6BA  (2170 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -55,7 +54,7 @@ EXTERN  Get_IP_Word_2D_Table:NEAR, Get_IP_Word_X_Axis:NEAR, MulDiv_Round_S16:NEA
 EXTERN  Mul_S16_Q9_Sat:NEAR, Mul_Shift_U16_Sat32:NEAR, Read_MulDiv_MD:NEAR, Read_Word_Far:NEAR
 EXTERN  Sat_Add_S16_v2:NEAR, WallFilm_VO_Comp:NEAR, sub_r12_r13_rets_r4:NEAR
 
-S_DCE40 SECTION CODE AT 0DCE40H
+S_TI_HOM SECTION CODE
 
 ; ======== Calc_TI_Hom_Base  (@0xdce40) ========
         ; ------------------------------------------------------------
@@ -825,5 +824,5 @@ L_DD6B4:                 ; 0xdd6b4
         MOV ti_inj_ext,ONES
         RETS
 
-S_DCE40 ENDS
+S_TI_HOM ENDS
         END

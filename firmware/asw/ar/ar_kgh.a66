@@ -1,6 +1,5 @@
 ; asw/ar/ar_kgh.a66
 ; MAF scaling: mass-flow factor, hot-bridge raw value and MAF-based torque reference.
-; 0xD0744-0xD0896  (338 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -15,7 +14,7 @@ EXTERN  Add_Clamp_U8:NEAR, Add_r12_r13_Return_r4:NEAR, Detect_MAF_Puls:NEAR, Div
 EXTERN  Get_IP_Byte_2D_Table_DWord_YWord:NEAR, Get_IP_Byte_3D_Table_DWord_XWord_YWord:NEAR, MulDiv_S16_PSW:NEAR, Mul_S16_S32:NEAR
 EXTERN  Sat_Sub_S16_v2:NEAR, sub_r12_r13_rets_r4:NEAR
 
-S_D0744 SECTION CODE AT 0D0744H
+S_AR_KGH SECTION CODE
 
 ; ======== Set_lv_cp_set_close_d074  (@0xd0744) ========
         ; ------------------------------------------------------------
@@ -164,5 +163,5 @@ L_D0890:                 ; 0xd0890
         BMOV lv_amp_ad_rst.07H,lv_pl.00H
         RETS
 
-S_D0744 ENDS
+S_AR_KGH ENDS
         END

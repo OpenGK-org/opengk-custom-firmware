@@ -1,6 +1,5 @@
 ; asw/rt/rt_xword_2.a66
 ; Runtime: 3D byte-table interpolation, word X / byte Y axes.
-; 0xFF49E-0xFF5C6  (296 bytes, 1 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -8,7 +7,7 @@ $INCLUDE (zone_syms.inc)
 
 PUBLIC  Get_IP_Byte_3D_Table_DWord_XWord_YByte
 
-S_FF49E SECTION CODE AT 0FF49EH
+S_RT_XWORD_2 SECTION CODE
 
 ; ======== Get_IP_Byte_3D_Table_DWord_XWord_YByte  (@0xff49e) ========
 Get_IP_Byte_3D_Table_DWord_XWord_YByte:
@@ -144,5 +143,5 @@ L_FF5C0:                 ; 0xff5c0
         MOVB RL4,[R1]
         RETS
 
-S_FF49E ENDS
+S_RT_XWORD_2 ENDS
         END

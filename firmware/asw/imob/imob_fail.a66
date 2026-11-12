@@ -1,6 +1,5 @@
 ; asw/imob/imob_fail.a66
 ; Immobilizer control data, state tick and command-failure / warning lamp handling.
-; 0xBC6A0-0xBC8E8  (584 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -14,7 +13,7 @@ PUBLIC  Diag_DTC_dd506, Imob_CmdFail_WarnLamp, Imob_Ctl_Data, Imob_State_Tick, L
 EXTERN  Diag_DTC_dd506bbbbbb:NEAR, Imob_DTC_Fmy:NEAR, Imob_Update_WarnLamp:NEAR, L_BCB50:NEAR
 EXTERN  L_BCC10:NEAR, SMARTRA_runtime_cmd_sm:NEAR, xor_routine:NEAR
 
-S_BC6A0 SECTION CODE AT 0BC6A0H
+S_IMOB_FAIL SECTION CODE
 
 ; ======== Imob_Ctl_Data  (@0xbc6a0) ========
         ; ------------------------------------------------------------
@@ -249,5 +248,5 @@ L_BC8D2:                 ; 0xbc8d2
         MOV R4,[R4]
         JMPI cc_UC,[R4]
 
-S_BC6A0 ENDS
+S_IMOB_FAIL ENDS
         END

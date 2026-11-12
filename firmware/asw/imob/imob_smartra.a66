@@ -1,6 +1,5 @@
 ; asw/imob/imob_smartra.a66
 ; Immobilizer lock/limp-home state, SMARTRA run-time command state machine and DTCs.
-; 0xBC8E8-0xBCCAC  (964 bytes, 11 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -28,7 +27,7 @@ PUBLIC  SMARTRA_runtime_cmd_sm
 EXTERN  Imob_Update_WarnLamp:NEAR, L_BCF10:NEAR, L_BCF16:NEAR, SMARTRA_clear_comms_timeout_flags:NEAR
 EXTERN  SMARTRA_flush_RX_buffers:NEAR, SMARTRA_runtime_auth_sm:NEAR
 
-S_BC8E8 SECTION CODE AT 0BC8E8H
+S_IMOB_SMARTRA SECTION CODE
 
 ; ======== Diag_DTC_dd506b  (@0xbc8e8) ========
         ; ------------------------------------------------------------
@@ -448,5 +447,5 @@ SMARTRA_cmd_RuntimeAuth:
         CALLS SEG SMARTRA_runtime_auth_sm, SOF SMARTRA_runtime_auth_sm      ; -> SMARTRA_runtime_auth_sm (run-time immobilizer auth dispatched from here)
         JMPA cc_UC,L_BCF16
 
-S_BC8E8 ENDS
+S_IMOB_SMARTRA ENDS
         END

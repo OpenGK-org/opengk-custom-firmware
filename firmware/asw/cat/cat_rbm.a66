@@ -1,6 +1,5 @@
 ; asw/cat/cat_rbm.a66
 ; Catalyst diagnosis rate-based monitor (IUMPR) state.
-; 0xB8404-0xB84D0  (204 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -13,7 +12,7 @@ c_temp_min_ls_up                     EQU  09077AH
 PUBLIC  Calc_RBM_Cat_Diag, Set_RBM_Cat_Diag_State, Set_RBM_Cat_Diag_State_2
 EXTERN  Div_U32_U16_Round32:NEAR
 
-S_B8404 SECTION CODE AT 0B8404H
+S_CAT_RBM SECTION CODE
 
 ; ======== Set_RBM_Cat_Diag_State  (@0xb8404) ========
         ; ------------------------------------------------------------
@@ -114,5 +113,5 @@ L_B84C8:                 ; 0xb84c8
         MOV R9,[R0+]
         RETS
 
-S_B8404 ENDS
+S_CAT_RBM ENDS
         END

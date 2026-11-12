@@ -1,7 +1,6 @@
 ; asw/maf/maf_dif.a66
 ; MAF difference diagnosis during catalyst heating and its monitor, MAF/TPS ratio diagnosis,
 ; cooling-fan torque loss.
-; 0xD7D78-0xD8410  (1688 bytes, 7 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -41,7 +40,7 @@ EXTERN  Reset_ti_ch_9f0:NEAR, Reset_ti_er_ad_f4a:NEAR, Reset_tq_msr_int_306:NEAR
 EXTERN  Sat_Sub_S16:NEAR, Sat_Sub_S16_Min:NEAR, Sat_Sub_S16_v2:NEAR, Set__t_ast_obd_ee2:NEAR
 EXTERN  Set_lv_maf_puls:NEAR, Tail_f0b7bc8_bf8:NEAR, multipied_r12_r13_UGT_r14_rets_r4:NEAR
 
-S_D7D78 SECTION CODE AT 0D7D78H
+S_MAF_DIF SECTION CODE
 
 ; ======== Calc_TQ_Loss_ECF  (@0xd7d78) ========
         ; ------------------------------------------------------------
@@ -644,5 +643,5 @@ L_D83E2:                 ; 0xd83e2
         CALLS SEG Set__t_ast_obd_ee2, SOF Set__t_ast_obd_ee2
         RETS
 
-S_D7D78 ENDS
+S_MAF_DIF ENDS
         END

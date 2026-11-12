@@ -1,6 +1,5 @@
 ; asw/sys/sys_far.a66
 ; Runtime: far (paged) byte/word table reads and byte axis lookup.
-; 0xFF16C-0xFF1D8  (108 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -8,7 +7,7 @@ $INCLUDE (zone_syms.inc)
 
 PUBLIC  Get_Byte_Y_Axis, Read_Byte_Far, Read_Byte_Far_Scaled, Read_Word_Far
 
-S_FF16C SECTION CODE AT 0FF16CH
+S_SYS_FAR SECTION CODE
 
 ; ======== Read_Byte_Far  (@0xff16c) ========
         ; ubyte Read_Byte_Far(short off, u16 page): read byte at (DAT_00f516 + off) within 0x4000 page 'page'
@@ -74,5 +73,5 @@ L_FF1CC:                 ; 0xff1cc
         MOV DPP0,#DATA16 00024H
         RETS
 
-S_FF16C ENDS
+S_SYS_FAR ENDS
         END

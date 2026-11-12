@@ -1,7 +1,6 @@
 ; asw/tooth/tooth_ac_2.a66
 ; A/C compressor pressure cut-off, start conditions, delay reset; gear-shift delay; output
 ; latch.
-; 0xC790A-0xC7A88  (382 bytes, 6 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -21,7 +20,7 @@ c_t_gs_act_dly                       EQU  0906EAH
 PUBLIC  AcComp_AccIn_Reset, AcComp_PressureCutoff, AcComp_StartCond, Calc_GS_Act_Delay, Clr_Out_AJ, Set_Out_AJ
 EXTERN  AccInDelay_SetIfLonger:NEAR, Sat_Add_U8:NEAR, sub_r12_13_ret_r4:NEAR
 
-S_C790A SECTION CODE AT 0C790AH
+S_TOOTH_AC_2 SECTION CODE
 
 ; ======== AcComp_PressureCutoff  (@0xc790a) ========
         ; ------------------------------------------------------------
@@ -218,5 +217,5 @@ L_C7A82:                 ; 0xc7a82
         CALLS SEG AcComp_AccIn_Reset, SOF AcComp_AccIn_Reset
         RETS
 
-S_C790A ENDS
+S_TOOTH_AC_2 ENDS
         END

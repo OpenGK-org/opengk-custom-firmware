@@ -1,6 +1,5 @@
 ; asw/vls/vls_down.a66
 ; Rear O2 sensor: init, signal voltage and readiness.
-; 0xB6050-0xB6384  (820 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -22,7 +21,7 @@ PUBLIC  Calc_LS_Down_Sig, Init_LS_Down, LS_Down_ReadyCheck, Nop_b60cc, Reset_Dfd
 EXTERN  Abs_Diff_U16:NEAR, Abs_S16_Simple:NEAR, Add_r12_r13_Return_r4:NEAR, Clamp_U16:NEAR
 EXTERN  Interp_U16:NEAR, Read_MulDiv_MD:NEAR, Sat_Sub_S16_v2:NEAR, sub_r12_r13_rets_r4:NEAR
 
-S_B6050 SECTION CODE AT 0B6050H
+S_VLS_DOWN SECTION CODE
 
 ; ======== Reset_Dfd68_050  (@0xb6050) ========
 Reset_Dfd68_050:
@@ -344,5 +343,5 @@ L_B637C:                 ; 0xb637c
         MOV g_f960,R4
         RETS
 
-S_B6050 ENDS
+S_VLS_DOWN ENDS
         END

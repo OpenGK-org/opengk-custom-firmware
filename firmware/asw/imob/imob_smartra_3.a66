@@ -1,6 +1,5 @@
 ; asw/imob/imob_smartra_3.a66
 ; SMARTRA protocol steps (key write), cipher step and comms error DTC.
-; 0xBD3C8-0xBD732  (874 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  Imob_CommErr_DTC_V2, L_BD656, Log_Event_f93c_Imob, SMARTRA_Cipher_Step, SMARTRA_auth_step7_WriteKey_arm, SMARTRA_proto_step_arm
 EXTERN  DTC_Update_Immediate:NEAR, SMARTRA_cipher_clock_bit:NEAR, SMARTRA_disable:NEAR
 
-S_BD3C8 SECTION CODE AT 0BD3C8H
+S_IMOB_SMARTRA_3 SECTION CODE
 
 ; ======== SMARTRA_auth_step7_WriteKey_arm  (@0xbd3c8) ========
 SMARTRA_auth_step7_WriteKey_arm:
@@ -334,5 +333,5 @@ L_BD724:                 ; 0xbd724
         MOV R6,[R0+]
         RETS
 
-S_BD3C8 ENDS
+S_IMOB_SMARTRA_3 ENDS
         END

@@ -1,7 +1,6 @@
 ; asw/sys/sys_output.a66
 ; Capture/compare output setup and interrupt-control resets (CC5, CC13, CC29, CC30, ports
 ; 2/7).
-; 0xA5230-0xA53A0  (368 bytes, 12 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -10,7 +9,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  Compare_Buffers_Eq, Diag_Output_Stage, Init_CC5_Output, Nop_a535e, Output_CC5_P2_5_Enable, Reset_CC13IC_27e
 PUBLIC  Reset_CC29IC_2b4, Reset_CC30IC_24e, Reset_Dfd62_338, Reset_ODP2_262, Reset_ODP7_230, Set_Output_CC29
 
-S_A5230 SECTION CODE AT 0A5230H
+S_SYS_OUTPUT SECTION CODE
 
 ; ======== Reset_ODP7_230  (@0xa5230) ========
 Reset_ODP7_230:
@@ -209,5 +208,5 @@ L_A539C:                 ; 0xa539c
         BSET PSW.06H
         RETS
 
-S_A5230 ENDS
+S_SYS_OUTPUT ENDS
         END

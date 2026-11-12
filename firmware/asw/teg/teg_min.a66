@@ -1,6 +1,5 @@
 ; asw/teg/teg_min.a66
 ; Exhaust temperature hysteresis and minimum ignition angle for exhaust protection.
-; 0xC06DC-0xC077A  (158 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -13,7 +12,7 @@ c_teg_max_iga_hys                    EQU  090766H
 PUBLIC  Calc_IGA_Min_TEG, Calc_TEG_Dyn_Hys, Reset_iga_min_teg_6dc
 EXTERN  Get_IP_Byte_2D_Table_DWord_YWord:NEAR, Get_IP_Word_2D_Table_DWord_YByte:NEAR, sub_r12_13_ret_r4:NEAR
 
-S_C06DC SECTION CODE AT 0C06DCH
+S_TEG_MIN SECTION CODE
 
 ; ======== Reset_iga_min_teg_6dc  (@0xc06dc) ========
 Reset_iga_min_teg_6dc:
@@ -81,5 +80,5 @@ L_C0756:                 ; 0xc0756
 L_C0778:                 ; 0xc0778
         RETS
 
-S_C06DC ENDS
+S_TEG_MIN ENDS
         END

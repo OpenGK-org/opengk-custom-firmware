@@ -1,6 +1,5 @@
 ; asw/is/is_ti.a66
 ; Idle injection time correction (ti_is).
-; 0xB9A78-0xB9BDA  (354 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -16,7 +15,7 @@ c_ti_is_pos                          EQU  090978H
 PUBLIC  Calc_TI_IS, Reset_TI_IS
 EXTERN  Abs_S16_Safe:NEAR, Get_IP_Byte_3D_Table_DWord_XWord_YWord:NEAR, Interp_S16:NEAR
 
-S_B9A78 SECTION CODE AT 0B9A78H
+S_IS_TI SECTION CODE
 
 ; ======== Reset_TI_IS  (@0xb9a78) ========
         ; ------------------------------------------------------------
@@ -145,5 +144,5 @@ L_B9BD4:                 ; 0xb9bd4
         MOVB ti_is_mmv,ZEROS
         RETS
 
-S_B9A78 ENDS
+S_IS_TI ENDS
         END

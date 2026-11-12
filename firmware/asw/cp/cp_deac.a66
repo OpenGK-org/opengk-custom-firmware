@@ -1,6 +1,5 @@
 ; asw/cp/cp_deac.a66
 ; Canister purge: deactivation state machine and transitions.
-; 0xB1D1A-0xB1E56  (316 bytes, 7 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -14,7 +13,7 @@ PUBLIC  Reset_cp_norm_deac_state_d74
 EXTERN  CanPurge_Calc_RelFlow:NEAR, CanPurge_Control_SM:NEAR, CanPurge_Reset:NEAR, CanPurge_SetAct_3:NEAR
 EXTERN  L_B1FEE:NEAR, Set_cp_state_fe8:NEAR
 
-S_B1D1A SECTION CODE AT 0B1D1AH
+S_CP_DEAC SECTION CODE
 
 ; ======== CanPurge_Deac_State  (@0xb1d1a) ========
         ; ------------------------------------------------------------
@@ -173,5 +172,5 @@ L_B1E48:                 ; 0xb1e48
         MOV cp_tra_state,R5
         RET
 
-S_B1D1A ENDS
+S_CP_DEAC ENDS
         END

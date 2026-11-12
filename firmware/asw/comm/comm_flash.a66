@@ -1,6 +1,5 @@
 ; asw/comm/comm_flash.a66
 ; KWP flash-reprogramming commands 0x02-0x05 (incl. download address).
-; 0xCB850-0xCBB06  (694 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  KWP_Flash_Cmd02_SetDownloadAddr, KWP_Flash_Cmd03_arm, KWP_Flash_Cmd04_arm, KWP_Flash_Cmd05_arm
 EXTERN  CanPurge_SetAct_2:NEAR, Interp_Scale_Buffer:NEAR, L_CC708:NEAR, Nop_ccac2:NEAR
 
-S_CB850 SECTION CODE AT 0CB850H
+S_COMM_FLASH SECTION CODE
 
 ; ======== KWP_Flash_Cmd02_SetDownloadAddr  (@0xcb850) ========
         ; ------------------------------------------------------------
@@ -278,5 +277,5 @@ KWP_Flash_Cmd05_arm:
         MOVB kwp_resp_status,RL4
         JMPA cc_UC,L_CC708
 
-S_CB850 ENDS
+S_COMM_FLASH ENDS
         END

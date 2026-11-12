@@ -1,6 +1,5 @@
 ; asw/vo.a66
 ; Volumetric efficiency set point and ambient-pressure ignition correction.
-; 0xB373A-0xB38F2  (440 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -20,7 +19,7 @@ PUBLIC  Calc_VO_Sp, Calc_iga_bas_amp_cor, Set_iga_bas_amp_cor_73a
 EXTERN  Div_S32_S16_Round:NEAR, Get_IP_Byte_3D_Table:NEAR, Get_IP_Byte_3D_Table_DWord_XByte_YByte:NEAR, Get_IP_Byte_3D_Table_DWord_XWord_YByte:NEAR
 EXTERN  Get_IP_Word_2D_Table_DWord_YByte:NEAR, Get_IP_Word_X_Axis:NEAR, Get_IP_Word_Y_Axis:NEAR, MulDiv_S16_Sat_v2:NEAR
 
-S_B373A SECTION CODE AT 0B373AH
+S_VO SECTION CODE
 
 ; ======== Set_iga_bas_amp_cor_73a  (@0xb373a) ========
 Set_iga_bas_amp_cor_73a:
@@ -188,5 +187,5 @@ L_B38EE:                 ; 0xb38ee
         MOV R9,[R0+]
         RETS
 
-S_B373A ENDS
+S_VO ENDS
         END

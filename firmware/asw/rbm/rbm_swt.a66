@@ -1,6 +1,5 @@
 ; asw/rbm/rbm_swt.a66
 ; Rear O2 switching and voltage plausibility rate-based monitors (IUMPR).
-; 0xB8EF0-0xB901E  (302 bytes, 6 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -12,7 +11,7 @@ c_sum_vls_down_diag_min              EQU  09030EH
 PUBLIC  Calc_RBM_LS_Down_Swt, Calc_RBM_VLS_Down_Plaus, ClrBits_state_rbm_ls_down_swt_efa, ClrBits_state_rbm_vls_down_plaus_f94, Reset_state_rbm_ls_down_swt_ef0, Reset_state_rbm_vls_down_plaus_f8a
 EXTERN  Div_U32_U16_Round32:NEAR
 
-S_B8EF0 SECTION CODE AT 0B8EF0H
+S_RBM_SWT SECTION CODE
 
 ; ======== Reset_state_rbm_ls_down_swt_ef0  (@0xb8ef0) ========
 Reset_state_rbm_ls_down_swt_ef0:
@@ -162,5 +161,5 @@ L_B9016:                 ; 0xb9016
         MOV R9,[R0+]
         RETS
 
-S_B8EF0 ENDS
+S_RBM_SWT ENDS
         END

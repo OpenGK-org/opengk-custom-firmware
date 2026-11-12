@@ -1,6 +1,5 @@
 ; asw/tq/tq_fcut.a66
 ; Fast fuel cut request, start torque and canister-purge fuel flow adaptation.
-; 0xB1810-0xB18B2  (162 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -14,7 +13,7 @@ c_tq_st_crlc                         EQU  0903F6H
 PUBLIC  Calc_Fcut_Fast, Calc_FuelFlow_Add_CP, Calc_TQ_St
 EXTERN  Get_IP_Word_3D_Table_DWord_XByte_YWord:NEAR, Interp_S16:NEAR, L_B19C6:NEAR, Reset_fuel_flow_add_ad_cp_9e0:NEAR
 
-S_B1810 SECTION CODE AT 0B1810H
+S_TQ_FCUT SECTION CODE
 
 ; ======== Calc_Fcut_Fast  (@0xb1810) ========
         ; ------------------------------------------------------------
@@ -93,5 +92,5 @@ L_B189C:                 ; 0xb189c
         MOV R4,[R4]
         JMPI cc_UC,[R4]
 
-S_B1810 ENDS
+S_TQ_FCUT ENDS
         END

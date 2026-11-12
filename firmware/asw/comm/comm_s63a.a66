@@ -1,6 +1,5 @@
 ; asw/comm/comm_s63a.a66
 ; NVM restore/save of adaptation block 0x63A.
-; 0xBF160-0xBF294  (308 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  NVM_Restore_s63a, NVM_Save_s63a, RetC_90000_160
 EXTERN  Elevated_Write_Routine_prg_zone_wrapper:NEAR, xor_routine:NEAR
 
-S_BF160 SECTION CODE AT 0BF160H
+S_COMM_S63A SECTION CODE
 
 ; ======== RetC_90000_160  (@0xbf160) ========
 RetC_90000_160:
@@ -148,5 +147,5 @@ NVM_Save_s63a:
         ADD R0,#02H
         RETS
 
-S_BF160 ENDS
+S_COMM_S63A ENDS
         END

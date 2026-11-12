@@ -1,6 +1,5 @@
 ; asw/alti.a66
 ; Altitude correction factor for the MAF signal.
-; 0xC36E0-0xC3746  (102 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  Calc_MAF_Alti_Cor, Calc_maf_fac_alti_mmv
 EXTERN  Div_U32_U16_Round:NEAR
 
-S_C36E0 SECTION CODE AT 0C36E0H
+S_ALTI SECTION CODE
 
 ; ======== Calc_maf_fac_alti_mmv  (@0xc36e0) ========
         ; ------------------------------------------------------------
@@ -58,5 +57,5 @@ L_C373C:                 ; 0xc373c
         MOVB maf_alti_cor,RL4
         RETS
 
-S_C36E0 ENDS
+S_ALTI ENDS
         END

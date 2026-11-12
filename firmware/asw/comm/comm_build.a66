@@ -1,7 +1,6 @@
 ; asw/comm/comm_build.a66
 ; CCP DAQ DTO builder, comms-object state init, KWP negative response builder and checksum
 ; gate.
-; 0xA65B8-0xA68D2  (794 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -11,7 +10,7 @@ PUBLIC  CCP_Check_Checksum, CCP_DAQ_BuildDTO, Init_CommObj_States, KWP_Build_Neg
 EXTERN  CCP_Calc_Checksum:NEAR, CCP_Set_EngineFlags:NEAR, CCP_Svc_Prog_DAQ:NEAR
 PUBLIC  L_A65BE, L_A6626, L_A6632, L_A663A, L_A6642, L_A664A
 
-S_A65B8 SECTION CODE AT 0A65B8H
+S_COMM_BUILD SECTION CODE
 
 ; ======== Tail_f0a6818_5b8  (@0xa65b8) ========
 Tail_f0a6818_5b8:
@@ -334,5 +333,5 @@ CCP_Check_Checksum:
 L_A68D0:                 ; 0xa68d0
         RETS
 
-S_A65B8 ENDS
+S_COMM_BUILD ENDS
         END

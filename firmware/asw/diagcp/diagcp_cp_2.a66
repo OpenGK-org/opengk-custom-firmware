@@ -1,6 +1,5 @@
 ; asw/diagcp/diagcp_cp_2.a66
 ; EVAP leak diagnosis: tank pressure scaling, leak volume and closed-loop model value.
-; 0xD3690-0xD391C  (652 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -27,7 +26,7 @@ EXTERN  Get_IP_Word_2D_Table:NEAR, Get_IP_Word_X_Axis:NEAR, Get_IP_Word_Y_Axis:N
 EXTERN  Mul_Frac_Sat_x2:NEAR, Mul_S16_S32:NEAR, Mul_Shift_U16_Sat32:NEAR, Sat_Add_S32:NEAR
 EXTERN  Sat_Sub_S16_v2:NEAR, mul32:NEAR, multipied_r12_r13_UGT_r14_rets_r4:NEAR
 
-S_D3690 SECTION CODE AT 0D3690H
+S_DIAGCP_CP_2 SECTION CODE
 
 ; ======== Calc_DiagCP_Dtp  (@0xd3690) ========
         ; ------------------------------------------------------------
@@ -314,5 +313,5 @@ L_D3918:                 ; 0xd3918
         MOV R9,[R0+]
         RET
 
-S_D3690 ENDS
+S_DIAGCP_CP_2 ENDS
         END

@@ -1,7 +1,6 @@
 ; asw/comm/comm_flash_8.a66
 ; KWP flash-reprogramming commands 0x21-0x23 (program/erase routine control) and default
 ; handler.
-; 0xCC42C-0xCC7E2  (950 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -11,7 +10,7 @@ PUBLIC  KWP_Flash_Cmd33_RoutineCtrl_ProgErase, KWP_Flash_Cmd34_arm, KWP_Flash_Cm
 EXTERN  CanPurge_SetAct_2:NEAR, Flash_Compare_Block:NEAR, Interp_Scale_Buffer:NEAR, Is_BL_Prog_Session:NEAR
 EXTERN  call_to_RSW_from_prog_zone:NEAR
 
-S_CC42C SECTION CODE AT 0CC42CH
+S_COMM_FLASH_8 SECTION CODE
 
 ; ======== KWP_Flash_Cmd33_RoutineCtrl_ProgErase  (@0xcc42c) ========
         ; ------------------------------------------------------------
@@ -341,5 +340,5 @@ L_CC7A6:                 ; 0xcc7a6
 L_CC7E0:                 ; 0xcc7e0
         RETS
 
-S_CC42C ENDS
+S_COMM_FLASH_8 ENDS
         END

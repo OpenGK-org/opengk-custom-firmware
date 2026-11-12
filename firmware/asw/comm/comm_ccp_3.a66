@@ -1,6 +1,5 @@
 ; asw/comm/comm_ccp_3.a66
 ; CCP command entry, main command state machine and command parsing.
-; 0xA5F16-0xA651A  (1540 bytes, 8 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -13,7 +12,7 @@ EXTERN  CCP_Svc_Prog_DAQ:NEAR, Check_Threshold_a6580:NEAR, Init_CommObj_States:N
 EXTERN  KWP_Build_NegResponse:NEAR, Push_To_System_Stack:NEAR, Tail_f0a6818_5b8:NEAR
 PUBLIC  L_A64C6
 
-S_A5F16 SECTION CODE AT 0A5F16H
+S_COMM_CCP_3 SECTION CODE
 
 ; ======== Move_xFF_items?_from_PTR_R12_to_PTR_R13  (@0xa5f16) ========
 Move_xFF_items__from_PTR_R12_to_PTR_R13:
@@ -624,5 +623,5 @@ CCP_Submit_Cmd:
         MOV R6,[R0+]
         RETS
 
-S_A5F16 ENDS
+S_COMM_CCP_3 ENDS
         END

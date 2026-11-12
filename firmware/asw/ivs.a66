@@ -1,6 +1,5 @@
 ; asw/ivs.a66
 ; Air path set point (throttle reduced area set point).
-; 0xB0B9C-0xB0D2E  (402 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -17,7 +16,7 @@ EXTERN  Get_IP_Word_2D_Table_DWord_YWord:NEAR, Get_IP_Word_3D_Table_DWord_XWord_
 EXTERN  Mul_U16_Hi:NEAR, Read_Word_Far:NEAR, Sat_Add_S16_v2:NEAR, Sub_Floor0_S16:NEAR
 EXTERN  multipied_r12_r13_UGT_r14_rets_r4:NEAR, sub_r12_r13_rets_r4:NEAR
 
-S_B0B9C SECTION CODE AT 0B0B9CH
+S_IVS SECTION CODE
 
 ; ======== Reset_Dc5dc_b9c  (@0xb0b9c) ========
 Reset_Dc5dc_b9c:
@@ -152,5 +151,5 @@ L_B0D26:                 ; 0xb0d26
         MOV R9,[R0+]
         RETS
 
-S_B0B9C ENDS
+S_IVS ENDS
         END

@@ -1,6 +1,5 @@
 ; asw/knks.a66
 ; Knock sensor diagnosis: enable conditions, dynamic value check and DTC.
-; 0xC30F0-0xC3330  (576 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -20,7 +19,7 @@ c_v_int_knks_diag                    EQU  0907D4H
 PUBLIC  Diag_Knks_Cond, Diag_Knks_Dyw, Diag_Knks_SetDTC, Set_Knks_Err_Dyw
 EXTERN  Abs_Diff_U16:NEAR, DTC_Update_Debounced:NEAR
 
-S_C30F0 SECTION CODE AT 0C30F0H
+S_KNKS SECTION CODE
 
 ; ======== Diag_Knks_Cond  (@0xc30f0) ========
         ; ------------------------------------------------------------
@@ -277,5 +276,5 @@ L_C332C:                 ; 0xc332c
 L_C332E:                 ; 0xc332e
         RETS
 
-S_C30F0 ENDS
+S_KNKS ENDS
         END

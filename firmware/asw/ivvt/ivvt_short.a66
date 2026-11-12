@@ -1,6 +1,5 @@
 ; asw/ivvt/ivvt_short.a66
 ; IVVT short-trip forced diagnosis.
-; 0xC14C2-0xC1650  (398 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -24,7 +23,7 @@ ip_n_min_diag_cam_dif_ivvt           EQU  0994DBH
 PUBLIC  Diag_IVVT_ShortTrip, Set_IVVT_Trip_Avl
 EXTERN  Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_Y_Axis:NEAR, sub_r12_13_ret_r4:NEAR
 
-S_C14C2 SECTION CODE AT 0C14C2H
+S_IVVT_SHORT SECTION CODE
 
 ; ======== Set_IVVT_Trip_Avl  (@0xc14c2) ========
         ; ------------------------------------------------------------
@@ -188,5 +187,5 @@ L_C164C:                 ; 0xc164c
         BSET lv_diag_trip_avl_ivvt.08H
         RETS
 
-S_C14C2 ENDS
+S_IVVT_SHORT ENDS
         END

@@ -1,6 +1,5 @@
 ; asw/comm/comm_kline.a66
 ; K-line protocol init, KWP session setup, P3 timeout and security-access grant.
-; 0xDEE52-0xDF052  (512 bytes, 6 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  App_SecAccess_GrantFromFlashFlags, BL_KLine_ProtoInit, KWP_P3_Timeout_Check, KWP_Session_Setup, KWP_Set_CommsFlags, Tail_rt_callfar_via_r5r4_f0e
 EXTERN  KWP_Set_Buffer:NEAR, Reset_kwp_req_ptr_c98:NEAR, Reset_kwp_req_ptr_e34:NEAR
 
-S_DEE52 SECTION CODE AT 0DEE52H
+S_COMM_KLINE SECTION CODE
 
 ; ======== BL_KLine_ProtoInit  (@0xdee52) ========
         ; ------------------------------------------------------------
@@ -223,5 +222,5 @@ L_DF03C:                 ; 0xdf03c
 L_DF050:                 ; 0xdf050
         RETS
 
-S_DEE52 ENDS
+S_COMM_KLINE ENDS
         END

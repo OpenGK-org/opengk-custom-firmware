@@ -1,6 +1,5 @@
 ; asw/noise.a66
 ; EVAP tank-pressure noise rate-based monitor (IUMPR).
-; 0xD12C2-0xD134C  (138 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  Calc_RBM_DTP_Noise, ClrBits_state_rbm_dtp_noise_2c8, Set_state_rbm_dtp_noise_2c2
 EXTERN  Div_U32_U16_Round32:NEAR
 
-S_D12C2 SECTION CODE AT 0D12C2H
+S_NOISE SECTION CODE
 
 ; ======== Set_state_rbm_dtp_noise_2c2  (@0xd12c2) ========
 Set_state_rbm_dtp_noise_2c2:
@@ -79,5 +78,5 @@ L_D1346:                 ; 0xd1346
         MOV R9,[R0+]
         RETS
 
-S_D12C2 ENDS
+S_NOISE ENDS
         END

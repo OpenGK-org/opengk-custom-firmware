@@ -1,6 +1,5 @@
 ; asw/plaus/plaus_tps.a66
 ; MAF/TPS plausibility monitors and EVAP diagnosis task group.
-; 0xD0E24-0xD1110  (748 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -21,7 +20,7 @@ PUBLIC  DiagCP_Task_Group, Diag_MAF_TPS_Plaus_1, Diag_MAF_TPS_Plaus_2, Log_Event
 EXTERN  Add_r12_r13_Return_r4:NEAR, DTC_Update_Immediate:NEAR, DiagCP_Acq_Dtp:NEAR, DiagCP_CDN_Check:NEAR
 EXTERN  DiagCP_Calc_ClMmv:NEAR, DiagCP_State_Dispatch:NEAR
 
-S_D0E24 SECTION CODE AT 0D0E24H
+S_PLAUS_TPS SECTION CODE
 
 ; ======== Diag_MAF_TPS_Plaus_1  (@0xd0e24) ========
         ; ------------------------------------------------------------
@@ -301,5 +300,5 @@ Log_Event_f94a:
 L_D110E:                 ; 0xd110e
         RETS
 
-S_D0E24 ENDS
+S_PLAUS_TPS ENDS
         END

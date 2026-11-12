@@ -1,6 +1,5 @@
 ; asw/scc/scc_eff.a66
 ; Torque pattern efficiency (eff_scc): reset, base and average.
-; 0xC73D8-0xC7612  (570 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -35,7 +34,7 @@ EXTERN  Add_r12_r13_Return_r4:NEAR, Calc_Fcut_Fast:NEAR, Calc_Inj_Pattern:NEAR, 
 EXTERN  Get_Byte_2D_Table_DWord_YWord:NEAR, Mul_Q15_Sat:NEAR, Mul_Q15_Sat_Signed:NEAR, Ramp_Down_U16:NEAR
 EXTERN  sub_r12_r13_rets_r4:NEAR
 
-S_C73D8 SECTION CODE AT 0C73D8H
+S_SCC_EFF SECTION CODE
 
 ; ======== Reset_Eff_SCC  (@0xc73d8) ========
         ; ------------------------------------------------------------
@@ -250,5 +249,5 @@ L_C75FA:                 ; 0xc75fa
         MOV R9,[R0+]
         RETS
 
-S_C73D8 ENDS
+S_SCC_EFF ENDS
         END

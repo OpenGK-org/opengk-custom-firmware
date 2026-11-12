@@ -1,6 +1,5 @@
 ; asw/cur.a66
 ; Current-type O2 sensors (front and rear): signal calculation and response-time diagnosis.
-; 0xB6B7A-0xB773E  (3012 bytes, 6 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -60,7 +59,7 @@ EXTERN  Get_IP_Word_Y_Axis:NEAR, Interp_S16:NEAR, MulDiv_Round_S16:NEAR, Mul_Fra
 EXTERN  Mul_Frac_U16_Sat:NEAR, Mul_Shift_U16_Sat32:NEAR, Read_MD_Signed:NEAR, Read_MulDiv_MD:NEAR
 EXTERN  multipied_r12_r13_UGT_r14_rets_r4:NEAR, sub_r12_r13_rets_r4:NEAR
 
-S_B6B7A SECTION CODE AT 0B6B7AH
+S_CUR SECTION CODE
 
 ; ======== Diag_LS_Up_Response  (@0xb6b7a) ========
         ; ------------------------------------------------------------
@@ -1134,5 +1133,5 @@ Calc_LS_Cur_Down_2:
         MOV lam_bank_1_ls_cur_struct_r_down_ls,ONES
         RETS
 
-S_B6B7A ENDS
+S_CUR ENDS
         END

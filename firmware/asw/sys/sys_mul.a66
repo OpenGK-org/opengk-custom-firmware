@@ -1,6 +1,5 @@
 ; asw/sys/sys_mul.a66
 ; Runtime: fixed-point multiply/divide, clamp, min/max, ramp and filter primitives.
-; 0xFE592-0xFED82  (2032 bytes, 70 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -19,7 +18,7 @@ PUBLIC  Sat_S8, Sat_Sel_S16, Sat_Sub_S16, Sat_Sub_S16_Min, Sat_Sub_S16_v2, Sat_S
 PUBLIC  Sat_Sub_S8, Sat_U16_IfOvf, Sel_Ovf_U16, Shl3_Sat_S16, Shl6_Sat_S16, SignByBit7_fe0f
 PUBLIC  Sub_Floor0_S16, sub_r12_13_ret_r4, sub_r12_r13_rets_r4, subtract_r12_r13_negate_if_not_rets_r4
 
-S_FE592 SECTION CODE AT 0FE592H
+S_SYS_MUL SECTION CODE
 
 ; ======== MulDiv_S16_c  (@0xfe592) ========
         ; ------------------------------------------------------------
@@ -1366,5 +1365,5 @@ L_FED7C:                 ; 0xfed7c
         MOV R4,#DATA16 08000H
         RETS
 
-S_FE592 ENDS
+S_SYS_MUL ENDS
         END

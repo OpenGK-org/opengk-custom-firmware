@@ -1,6 +1,5 @@
 ; asw/ivvt/ivvt_elec.a66
 ; IVVT oil-control valve electrical DTCs and cam-phaser response measurement.
-; 0xB507E-0xB53BA  (828 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -19,7 +18,7 @@ EXTERN  Diag_IVVT_SetDTC_d602:NEAR, Diag_IVVT_SetDTC_d61e:NEAR, Get_IP_Word_3D_T
 EXTERN  L_B54CE:NEAR, Max0_S16:NEAR, MulDiv_S16_Sat:NEAR, Mul_Shift_U16_Sat32:NEAR
 EXTERN  Sat_Add_U8:NEAR, sub_r12_13_ret_r4:NEAR, subtract_r12_r13_negate_if_not_rets_r4:NEAR
 
-S_B507E SECTION CODE AT 0B507EH
+S_IVVT_ELEC SECTION CODE
 
 ; ======== Set_cam_dif_int_save_ivvt_in_1_07e  (@0xb507e) ========
 Set_cam_dif_int_save_ivvt_in_1_07e:
@@ -335,5 +334,5 @@ L_B53A6:                 ; 0xb53a6
         MOV R4,[R4]
         JMPI cc_UC,[R4]
 
-S_B507E ENDS
+S_IVVT_ELEC ENDS
         END

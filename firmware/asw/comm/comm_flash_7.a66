@@ -1,6 +1,5 @@
 ; asw/comm/comm_flash_7.a66
 ; KWP flash-reprogramming commands 0x17-0x19, 0x1B, 0x20.
-; 0xCC380-0xCC42C  (172 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  KWP_Flash_Cmd23_arm, KWP_Flash_Cmd24_arm, KWP_Flash_Cmd25_arm, KWP_Flash_Cmd27_arm, KWP_Flash_Cmd32_arm
 EXTERN  Flash_Compare_Block:NEAR, L_CC708:NEAR
 
-S_CC380 SECTION CODE AT 0CC380H
+S_COMM_FLASH_7 SECTION CODE
 
 ; ======== KWP_Flash_Cmd23_arm  (@0xcc380) ========
         ; ------------------------------------------------------------
@@ -96,5 +95,5 @@ KWP_Flash_Cmd32_arm:
         MOVB kwp_nrc_D78B,RL4
         JMPA cc_UC,L_CC708
 
-S_CC380 ENDS
+S_COMM_FLASH_7 ENDS
         END

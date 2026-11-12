@@ -1,6 +1,5 @@
 ; asw/dtp/dtp_st6.a66
 ; EVAP leak diagnosis states 4-6.
-; 0xD2222-0xD2454  (562 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -24,7 +23,7 @@ EXTERN  Calc_DiagCP_Dtp:NEAR, Calc_DiagCP_Scale:NEAR, DTC_Update_Immediate:NEAR,
 EXTERN  DiagCP_Calc_DtpDyw:NEAR, DiagCP_SetFaultState:NEAR, Get_IP_Word_3D_Table_DWord_XByte_YWord:NEAR, L_D3586:NEAR
 EXTERN  Sat_Add_U8:NEAR, Sat_Sub_S16:NEAR
 
-S_D2222 SECTION CODE AT 0D2222H
+S_DTP_ST6 SECTION CODE
 
 ; ======== DiagCP_St4  (@0xd2222) ========
         ; ------------------------------------------------------------
@@ -217,5 +216,5 @@ L_D2442:                 ; 0xd2442
         MOVB state_diagcp,RL4
         JMPA cc_UC,L_D3586
 
-S_D2222 ENDS
+S_DTP_ST6 ENDS
         END

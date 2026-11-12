@@ -1,6 +1,5 @@
 ; asw/mwss/mwss_sample.a66
 ; Pressure sensor (MWSS) plausibility diagnosis.
-; 0xB9318-0xB943A  (290 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -17,7 +16,7 @@ c_t_mwss_min_cnl                     EQU  09071CH
 PUBLIC  Diag_MWSS, Reset_Df380_408
 EXTERN  Diag_DTC_dd140:NEAR, sub_r12_13_ret_r4:NEAR
 
-S_B9318 SECTION CODE AT 0B9318H
+S_MWSS_SAMPLE SECTION CODE
 
 ; ======== Diag_MWSS  (@0xb9318) ========
         ; ------------------------------------------------------------
@@ -128,5 +127,5 @@ Reset_Df380_408:
         MOV diag_f6d8,R4
         RETS
 
-S_B9318 ENDS
+S_MWSS_SAMPLE ENDS
         END

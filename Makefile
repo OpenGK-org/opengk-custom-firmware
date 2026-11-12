@@ -1,6 +1,6 @@
 PYTHON ?= python3
 
-.PHONY: all build check tools seedkey clean
+.PHONY: all build check reloc tools seedkey clean
 
 all: build
 
@@ -10,6 +10,10 @@ build:
 # validate the A2L with a2ltool (fetched on first use, pinned + hash-checked)
 check: build tools
 	$(PYTHON) tools/check_a2l.py build/out/opengk01.a2l
+
+# numeric references into movable code (should report 'open: none')
+reloc:
+	$(PYTHON) tools/reloc_scan.py
 
 tools:
 	tools/fetch_a2ltool.sh

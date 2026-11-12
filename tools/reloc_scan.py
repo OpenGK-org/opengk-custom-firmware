@@ -37,7 +37,6 @@ import openc166
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FW = os.path.join(REPO, "firmware")
 INC = [os.path.join(FW, "inc"), os.path.join(FW, "cal")]
-ASW_ORIGIN = 0xE5E0C
 PIN_END = 0xA3F1A           # header, trampolines, page-28h constant tables stay put
 ASW_END = 0x100000
 DPP1_PAGE = 0x28            # DPP1 = page 28h (0xA0000) throughout the application
@@ -51,11 +50,12 @@ def movable(a):
 
 
 def link():
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import layout
     files = sorted(glob.glob(os.path.join(FW, "asw", "**", "*.a66"), recursive=True))
     files += sorted(glob.glob(os.path.join(FW, "custom", "**", "*.a66"), recursive=True))
-    r = openc166.assemble_many([(f, open(f, "rb").read()) for f in files],
-                               include_dirs=INC, origin=ASW_ORIGIN)
-    if not r.ok:
+    r, addr, _ = layout.link(files, INC, os.path.join(FW, "layout.txt"), FW)
+    if not r.ok or addr is None:
         sys.exit("asw link failed")
     return r
 
@@ -195,10 +195,10 @@ def main():
                 off, hi = w[j], w[j + 1]
                 if 0xA <= hi <= 0xF and movable(hi << 16 | off) and (hi << 16 | off) in insn:
                     t = hi << 16 | off
-                    add("data", mod, line, addr + 2 * j, src[:60],
+                    add("data", mod, line, addr + 2 * j, src,
                         "far ptr -> 0x%05X %s" % (t, labels.get(t, [""])[0]))
                 elif 0x29 <= hi <= 0x3F and off < 0x4000 and (hi * 0x4000 + off) in labels:
-                    add("data", mod, line, addr + 2 * j, src[:60],
+                    add("data", mod, line, addr + 2 * j, src,
                         "page ptr -> %s" % labels[hi * 0x4000 + off][0])
 
         # JMPI through a jump table: the table must be symbolic

@@ -1,6 +1,5 @@
 ; asw/teg/teg_cold.a66
 ; Exhaust gas temperature model and cold start counter.
-; 0xC53BC-0xC5914  (1368 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -24,7 +23,7 @@ EXTERN  Get_IP_Word_3D_Table_DWord_XWord_YWord:NEAR, Get_Word_2D_Table_DWord_YWo
 EXTERN  Mul_Frac_U16_Sat:NEAR, Mul_S16_Q15_Round:NEAR, Mul_Shift_U16_Sat32:NEAR, Mul_U16_Hi:NEAR
 EXTERN  Sat_Add_S16_v2:NEAR, Sat_Sub_S16_v2:NEAR, sub_r12_r13_rets_r4:NEAR
 
-S_C53BC SECTION CODE AT 0C53BCH
+S_TEG_COLD SECTION CODE
 
 ; ======== Set_ctr_cold_st_3bc  (@0xc53bc) ========
 Set_ctr_cold_st_3bc:
@@ -510,5 +509,5 @@ Tail_f0ae180_90e:
         CALLS SEG Lookup_Dc20c_Tco, SOF Lookup_Dc20c_Tco
         RETS
 
-S_C53BC ENDS
+S_TEG_COLD ENDS
         END

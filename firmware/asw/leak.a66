@@ -1,6 +1,5 @@
 ; asw/leak.a66
 ; EVAP small and large leak rate-based monitors (IUMPR).
-; 0xD13D0-0xD150C  (316 bytes, 6 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  Calc_RBM_Leak_Large, Calc_RBM_Leak_Small, ClrBits_state_rbm_leak_large_474, ClrBits_state_rbm_leak_small_3d6, Set_state_rbm_leak_large_46e, Set_state_rbm_leak_small_3d0
 EXTERN  Div_U32_U16_Round32:NEAR
 
-S_D13D0 SECTION CODE AT 0D13D0H
+S_LEAK SECTION CODE
 
 ; ======== Set_state_rbm_leak_small_3d0  (@0xd13d0) ========
 Set_state_rbm_leak_small_3d0:
@@ -166,5 +165,5 @@ L_D1506:                 ; 0xd1506
         MOV R9,[R0+]
         RETS
 
-S_D13D0 ENDS
+S_LEAK ENDS
         END

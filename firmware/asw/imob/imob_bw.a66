@@ -1,6 +1,5 @@
 ; asw/imob/imob_bw.a66
 ; Immobilizer init, security speed check and status word.
-; 0xBC2F0-0xBC6A0  (944 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -14,7 +13,7 @@ c_vs_secu_1_imob                     EQU  090446H
 PUBLIC  Imob_BW_Update, Imob_BW_Update_2, Imob_Init, Imob_SecuritySpeedCheck, Imob_SetFmy
 EXTERN  Imob_DTC_update_comms:NEAR, Read_DPP_Reg:NEAR, SMARTRA_disable:NEAR, xor_routine:NEAR
 
-S_BC2F0 SECTION CODE AT 0BC2F0H
+S_IMOB_BW SECTION CODE
 
 ; ======== Imob_Init  (@0xbc2f0) ========
         ; ------------------------------------------------------------
@@ -392,5 +391,5 @@ L_BC68E:                 ; 0xbc68e
         MOV R9,[R0+]
         RETS
 
-S_BC2F0 ENDS
+S_IMOB_BW ENDS
         END

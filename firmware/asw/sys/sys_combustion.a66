@@ -1,6 +1,5 @@
 ; asw/sys/sys_combustion.a66
 ; Injector/combustion diagnosis, programming session manager and CC12 output disable.
-; 0xA4E22-0xA5230  (1038 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -23,7 +22,7 @@ EXTERN  Set_FuelPump_RunOn:NEAR, Set_Out_FuelReq_4:NEAR, Tail_f0a52cc_b26:NEAR, 
 EXTERN  c_t_max_ecu_sub:NEAR, vb_sub:NEAR, write_eeprom_ti_co_is:NEAR
 PUBLIC  L_A4FC6, L_A500C, L_A50B2, L_A513E, L_A519A, L_A51DA
 
-S_A4E22 SECTION CODE AT 0A4E22H
+S_SYS_COMBUSTION SECTION CODE
 
 ; ======== Reset_CC28IC_e22  (@0xa4e22) ========
 Reset_CC28IC_e22:
@@ -468,5 +467,5 @@ Output_CC12_P2_12_Disable:
         BCLR P2.0CH
         RETS
 
-S_A4E22 ENDS
+S_SYS_COMBUSTION ENDS
         END

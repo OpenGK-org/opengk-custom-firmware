@@ -1,6 +1,5 @@
 ; asw/diag/diag_by.a66
 ; DTC search and count by status.
-; 0xCB400-0xCB588  (392 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -8,7 +7,7 @@ $INCLUDE (zone_syms.inc)
 
 PUBLIC  Count_DTC_By_Status, Find_DTC_By_Status
 
-S_CB400 SECTION CODE AT 0CB400H
+S_DIAG_BY SECTION CODE
 
 ; ======== Find_DTC_By_Status  (@0xcb400) ========
         ; ------------------------------------------------------------
@@ -191,5 +190,5 @@ L_CB584:                 ; 0xcb584
         MOV R6,[R0+]
         RETS
 
-S_CB400 ENDS
+S_DIAG_BY ENDS
         END

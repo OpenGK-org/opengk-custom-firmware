@@ -1,7 +1,6 @@
 ; asw/tcu/tcu_default.a66
 ; CAN1 default values for TCU / TCS torque requests and wheel speeds when frames are
 ; missing.
-; 0xD77E0-0xD791A  (314 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -13,7 +12,7 @@ lv_maf_9014a                         EQU  09014AH
 PUBLIC  CAN1_SetDefault_TcsSignals, CAN1_SetDefault_TcuSignals, CAN1_SetDefault_WheelSpeeds, Calc_MAF_Dif_CH_Upd
 EXTERN  multipied_r12_r13_UGT_r14_rets_r4:NEAR
 
-S_D77E0 SECTION CODE AT 0D77E0H
+S_TCU_DEFAULT SECTION CODE
 
 ; ======== CAN1_SetDefault_TcuSignals  (@0xd77e0) ========
         ; Defaults RECEIVED CAN torque-request signals from the TCU/gearbox: tqi_tcu_can, tqi_gs_req
@@ -151,5 +150,5 @@ L_D7916:                 ; 0xd7916
 L_D7918:                 ; 0xd7918
         RETS
 
-S_D77E0 ENDS
+S_TCU_DEFAULT ENDS
         END

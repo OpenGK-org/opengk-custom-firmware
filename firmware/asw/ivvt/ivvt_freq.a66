@@ -1,6 +1,5 @@
 ; asw/ivvt/ivvt_freq.a66
 ; IVVT oil-control valve PWM and hold-PWM frequency from battery voltage.
-; 0xB01BA-0xB05D6  (1052 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -19,7 +18,7 @@ EXTERN  Div_S32_Signed:NEAR, Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_2D_Table_DWo
 EXTERN  Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_2D_Table:NEAR, Get_IP_Word_3D_Table:NEAR, Mul_S16_Q7_Sat:NEAR
 EXTERN  Sat_Add_S16_v2:NEAR, sub_r12_13_ret_r4:NEAR
 
-S_B01BA SECTION CODE AT 0B01BAH
+S_IVVT_FREQ SECTION CODE
 
 ; ======== Calc_IVVT_PWM_Freq  (@0xb01ba) ========
         ; ------------------------------------------------------------
@@ -403,5 +402,5 @@ Calc_IVVT_PWM_Freq_2:
         MOV R9,[R0+]
         RETS
 
-S_B01BA ENDS
+S_IVVT_FREQ ENDS
         END

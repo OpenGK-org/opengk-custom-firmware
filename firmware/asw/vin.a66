@@ -1,6 +1,5 @@
 ; asw/vin.a66
 ; VIN diagnosis variant coding and crank-tooth error reset.
-; 0xC7EB0-0xC7F72  (194 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -13,7 +12,7 @@ c_conf_vin_diag                      EQU  090156H
 PUBLIC  Reset_Dcdc2_eb0, Reset_lv_crk_tooth_err_ece, Set_Conf_VIN_Diag, Set_Dc341_ec8
 EXTERN  DTC_Update_Immediate:NEAR, Find_DTC_By_Status:NEAR, Find_Fmy_Slot:NEAR
 
-S_C7EB0 SECTION CODE AT 0C7EB0H
+S_VIN SECTION CODE
 
 ; ======== Reset_Dcdc2_eb0  (@0xc7eb0) ========
 Reset_Dcdc2_eb0:
@@ -96,5 +95,5 @@ L_C7F6E:                 ; 0xc7f6e
         MOV R6,[R0+]
         RETS
 
-S_C7EB0 ENDS
+S_VIN ENDS
         END

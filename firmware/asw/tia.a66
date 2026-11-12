@@ -1,6 +1,5 @@
 ; asw/tia.a66
 ; Intake air and coolant temperature acquisition.
-; 0xC9216-0xC97C2  (1452 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -47,7 +46,7 @@ EXTERN  Div_Ratio_U8_Sat:NEAR, Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_2D_Table_D
 EXTERN  Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_2D_Table_DWord_YByte:NEAR, Get_IP_Word_2D_Table_DWord_YWord:NEAR, Get_IP_Word_Y_Axis:NEAR
 EXTERN  L_C99C8:NEAR, Read_MulDiv_MD:NEAR, Reset_TCO_Diag:NEAR, subtract_r12_r13_negate_if_not_rets_r4:NEAR
 
-S_C9216 SECTION CODE AT 0C9216H
+S_TIA SECTION CODE
 
 ; ======== Acq_TIA_Mes  (@0xc9216) ========
         ; ------------------------------------------------------------
@@ -553,5 +552,5 @@ L_C97AC:                 ; 0xc97ac
         MOV R4,[R4]
         JMPI cc_UC,[R4]
 
-S_C9216 ENDS
+S_TIA ENDS
         END

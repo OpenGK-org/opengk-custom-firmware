@@ -1,6 +1,5 @@
 ; asw/avl.a66
 ; Reduced-area / MAF min-max availability limits used by the ambient-pressure acquisition.
-; 0xB773E-0xB78D2  (404 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -11,7 +10,7 @@ EXTERN  Add_r12_r13_Return_r4:NEAR, Div_Frac_U16_Q16:NEAR, Get_IP_Word_3D_Table_
 EXTERN  Mul_Q15_Sat:NEAR, Mul_U16_Hi:NEAR, Sat_Add_S16_v2:NEAR, multipied_r12_r13_UGT_r14_rets_r4:NEAR
 EXTERN  sub_r12_r13_rets_r4:NEAR
 
-S_B773E SECTION CODE AT 0B773EH
+S_AVL SECTION CODE
 
 ; ======== Calc_AR_Red_Avl  (@0xb773e) ========
         ; ------------------------------------------------------------
@@ -147,5 +146,5 @@ Reset_uVar1_89c:
         MOV R9,[R0+]
         RETS
 
-S_B773E ENDS
+S_AVL ENDS
         END

@@ -1,6 +1,5 @@
 ; asw/diagcp/diagcp_nok.a66
 ; EVAP leak diagnosis configuration, preconditions and tank-pressure sampling.
-; 0xD1110-0xD124E  (318 bytes, 7 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -17,7 +16,7 @@ PUBLIC  Reset_lv_err_maf_tps_ratio_2_110
 EXTERN  Acq_DiagCP_Pressure:NEAR, Delay_Dc397:NEAR, DiagCP_Acq_Dtp:NEAR, Log_Event_f94a:NEAR
 EXTERN  Log_Event_f97a:NEAR
 
-S_D1110 SECTION CODE AT 0D1110H
+S_DIAGCP_NOK SECTION CODE
 
 ; ======== Reset_lv_err_maf_tps_ratio_2_110  (@0xd1110) ========
 Reset_lv_err_maf_tps_ratio_2_110:
@@ -169,5 +168,5 @@ DiagCP_Collect_Reset:
         MOVB diag_c39f,ZEROS
         RETS
 
-S_D1110 ENDS
+S_DIAGCP_NOK ENDS
         END

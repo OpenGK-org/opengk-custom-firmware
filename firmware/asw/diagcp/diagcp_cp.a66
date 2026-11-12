@@ -1,6 +1,5 @@
 ; asw/diagcp/diagcp_cp.a66
 ; EVAP leak diagnosis states 0-3.
-; 0xD1F96-0xD2222  (652 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -23,7 +22,7 @@ EXTERN  Abs_S16_Simple:NEAR, DiagCP_Calc_DtpDyw:NEAR, DiagCP_Noise_Abort:NEAR, D
 EXTERN  Div_S16_Round_Sat:NEAR, Div_S32_S16_Round:NEAR, L_D3586:NEAR, Sat_Sub_S16:NEAR
 EXTERN  sub_r12_r13_rets_r4:NEAR
 
-S_D1F96 SECTION CODE AT 0D1F96H
+S_DIAGCP_CP SECTION CODE
 
 ; ======== DiagCP_St0_Precond  (@0xd1f96) ========
         ; ------------------------------------------------------------
@@ -266,5 +265,5 @@ L_D2212:                 ; 0xd2212
         CALLA cc_UC,DiagCP_SetFaultState
         JMPA cc_UC,L_D3586
 
-S_D1F96 ENDS
+S_DIAGCP_CP ENDS
         END

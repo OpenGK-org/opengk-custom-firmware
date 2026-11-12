@@ -1,6 +1,5 @@
 ; asw/comm/comm_function.a66
 ; KWP SID 0x30 input/output control by local ID: sub-function dispatcher.
-; 0xE4E38-0xE4F38  (256 bytes, 9 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -11,7 +10,7 @@ PUBLIC  KWP_App_SubFn_reject_NRC12, KWP_App_SubFunction_Dispatcher, KWP_SID31_St
 EXTERN  Calc_Inh_IV_AS:NEAR, ClrBits_kwp_comms_flags_a80:NEAR, KWP_App_Handler_0e4644:NEAR, KWP_App_Handler_0e46bc:NEAR
 EXTERN  KWP_App_Handler_0e4d00:NEAR, KWP_App_IOControl_By_LocalId:NEAR, KWP_App_SID_reject_NRC11:NEAR, KWP_io_adaptive_values_adjustment:NEAR
 
-S_E4E38 SECTION CODE AT 0E4E38H
+S_COMM_FUNCTION SECTION CODE
 
 ; ======== KWP_App_SubFunction_Dispatcher  (@0xe4e38) ========
         ; KWP2000 SID 0x30 InputOutputControlByLocalId. req[1]=sub-function via table @0x0A2126: 0=FUN_0e3ba8,
@@ -140,5 +139,5 @@ L_E4F1E:                 ; 0xe4f1e
         MOV R4,[R4]
         JMPI cc_UC,[R4]
 
-S_E4E38 ENDS
+S_COMM_FUNCTION ENDS
         END

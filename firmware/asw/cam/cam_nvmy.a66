@@ -1,6 +1,5 @@
 ; asw/cam/cam_nvmy.a66
 ; Cam phase difference, cam reference edges and cam adaptation NVM restore.
-; 0xC186A-0xC1B8C  (802 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -17,7 +16,7 @@ PUBLIC  Calc_Cam_Dif, Calc_Cam_Ref_Edges, Restore_Cam_Ad_NVM, Set_lv_cam_ad_avl_
 EXTERN  Add_r12_r13_Return_r4:NEAR, IVVT_Save_CamDif:NEAR, Sat_Sub_S16:NEAR, subtract_r12_r13_negate_if_not_rets_r4:NEAR
 EXTERN  xor_routine:NEAR
 
-S_C186A SECTION CODE AT 0C186AH
+S_CAM_NVMY SECTION CODE
 
 ; ======== Calc_Cam_Dif  (@0xc186a) ========
         ; ------------------------------------------------------------
@@ -319,5 +318,5 @@ L_C1B68:                 ; 0xc1b68
         MOV R6,[R0+]
         RETS
 
-S_C186A ENDS
+S_CAM_NVMY ENDS
         END

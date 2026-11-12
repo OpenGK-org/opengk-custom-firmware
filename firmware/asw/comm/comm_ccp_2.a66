@@ -1,6 +1,5 @@
 ; asw/comm/comm_ccp_2.a66
 ; CCP DAQ list setup / start-stop, connect and security state handler, programming state.
-; 0xA5B7C-0xA5F16  (922 bytes, 7 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -12,7 +11,7 @@ EXTERN  CAN_wipe_recurring_msg_obj_from_buffer_:NEAR, CCP_Connect_ArmCanObjects:
 EXTERN  CCP_Rebuild_CanDaqObjects:NEAR, CCP_Resp_Dispatch:NEAR, CCP_Svc_Prog_DAQ:NEAR, CCP_Unlock_0x13:NEAR
 EXTERN  Move_xFF_items__from_PTR_R12_to_PTR_R13:NEAR
 
-S_A5B7C SECTION CODE AT 0A5B7CH
+S_COMM_CCP_2 SECTION CODE
 
 ; ======== CCP_Lookup_DaqObject_Idx  (@0xa5b7c) ========
 CCP_Lookup_DaqObject_Idx:
@@ -429,5 +428,5 @@ L_A5EFE:                 ; 0xa5efe
         MOV R6,[R0+]
         RETS
 
-S_A5B7C ENDS
+S_COMM_CCP_2 ENDS
         END

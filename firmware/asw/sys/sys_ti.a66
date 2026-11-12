@@ -1,6 +1,5 @@
 ; asw/sys/sys_ti.a66
 ; Injector capture/compare interrupts (CC0-CC3).
-; 0xA86F0-0xA9236  (2886 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -14,7 +13,7 @@ PUBLIC  L_A8D8A, L_A8E74, L_A8EBC, L_A8EC8, L_A8ECC, L_A8F60
 PUBLIC  L_A8F7A, L_A9014, L_A905A, L_A9144, L_A918C, L_A9198
 PUBLIC  L_A919C, L_A9232
 
-S_A86F0 SECTION CODE AT 0A86F0H
+S_SYS_TI SECTION CODE
 
 ; ======== CC0INT_Handler  (@0xa86f0) ========
         ; ------------------------------------------------------------
@@ -1125,5 +1124,5 @@ L_A9232:                 ; 0xa9232
         POP CP
         RETI
 
-S_A86F0 ENDS
+S_SYS_TI ENDS
         END

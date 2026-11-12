@@ -1,7 +1,6 @@
 ; asw/driv.a66
 ; IVVT solenoid magnet temperature model, TPS/MAF torque-request factors and indicated
 ; torque limits.
-; 0xB0D2E-0xB0FE4  (694 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -27,7 +26,7 @@ EXTERN  Get_IP_Word_3D_Table_DWord_XWord_YByte:NEAR, Get_IP_Word_3D_Table_DWord_
 EXTERN  Min_U16:NEAR, Mul_Q15_Sat:NEAR, Mul_Q15_Sat_Signed:NEAR, Sat_Add_S16:NEAR
 EXTERN  Sat_Sub_S16:NEAR, multipied_r12_r13_UGT_r14_rets_r4:NEAR, sub_r12_r13_rets_r4:NEAR
 
-S_B0D2E SECTION CODE AT 0B0D2EH
+S_DRIV SECTION CODE
 
 ; ======== Calc_TMag_IVVT  (@0xb0d2e) ========
         ; ------------------------------------------------------------
@@ -290,5 +289,5 @@ Calc_TQI_Max:
         MOV tqi_bas_max,R4
         RETS
 
-S_B0D2E ENDS
+S_DRIV ENDS
         END

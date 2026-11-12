@@ -1,6 +1,5 @@
 ; asw/diag/diag_dur.a66
 ; Ignition coil duration limits and related DTCs.
-; 0xD51BA-0xD5E2A  (3184 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -46,7 +45,7 @@ c_temp_cat_min_lsh_diag              EQU  090770H
 PUBLIC  Clamp_IGC_Dur_Min, Clamp_IGC_Dur_Min_2, Diag_DTC_dd2d6, Diag_DTC_dd426, Reset_Df4c3_e20
 EXTERN  DTC_Update_Debounced:NEAR, Get_IP_Word_2D_Table_DWord_YByte:NEAR
 
-S_D51BA SECTION CODE AT 0D51BAH
+S_DIAG_DUR SECTION CODE
 
 ; ======== Clamp_IGC_Dur_Min  (@0xd51ba) ========
         ; ------------------------------------------------------------
@@ -1186,5 +1185,5 @@ Reset_Df4c3_e20:
         MOVB g_f4c4,ZEROS
         RETS
 
-S_D51BA ENDS
+S_DIAG_DUR ENDS
         END

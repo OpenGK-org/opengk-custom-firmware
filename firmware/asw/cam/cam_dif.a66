@@ -1,6 +1,5 @@
 ; asw/cam/cam_dif.a66
 ; IVVT intake cam-difference rate-based monitor (IUMPR).
-; 0xC1650-0xC16E6  (150 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  Calc_RBM_CamDif_IVVT, ClrBits_state_rbm_cam_dif_ivvt_in_65e, Nop_c1650, Nop_c1652, Reset_state_rbm_cam_dif_ivvt_in_654
 EXTERN  Div_U32_U16_Round32:NEAR
 
-S_C1650 SECTION CODE AT 0C1650H
+S_CAM_DIF SECTION CODE
 
 ; ======== Nop_c1650  (@0xc1650) ========
 Nop_c1650:
@@ -91,5 +90,5 @@ L_C16E0:                 ; 0xc16e0
         MOV R9,[R0+]
         RETS
 
-S_C1650 ENDS
+S_CAM_DIF ENDS
         END

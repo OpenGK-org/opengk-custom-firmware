@@ -1,6 +1,5 @@
 ; asw/th/th_thermostat.a66
 ; Thermostat (coolant warm-up) diagnosis.
-; 0xB943A-0xB9702  (712 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -27,7 +26,7 @@ PUBLIC  Calc_Thermostat_Diag_State, Diag_Thermostat
 EXTERN  Diag_Lam_Lim_d1cc:NEAR, Div_Ratio_U8_Sat:NEAR, Get_IP_Byte_2D_Table_DWord_YByte:NEAR, Sat_HiByte_ff:NEAR
 EXTERN  sub_r12_r13_rets_r4:NEAR
 
-S_B943A SECTION CODE AT 0B943AH
+S_TH_THERMOSTAT SECTION CODE
 
 ; ======== Diag_Thermostat  (@0xb943a) ========
         ; ------------------------------------------------------------
@@ -284,5 +283,5 @@ Calc_Thermostat_Diag_State:
 L_B9700:                 ; 0xb9700
         RETS
 
-S_B943A ENDS
+S_TH_THERMOSTAT ENDS
         END

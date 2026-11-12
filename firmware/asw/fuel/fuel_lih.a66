@@ -1,6 +1,5 @@
 ; asw/fuel/fuel_lih.a66
 ; Crank-error request and fuel pump output latch.
-; 0xE5C38-0xE5D36  (254 bytes, 6 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -13,7 +12,7 @@ c_t_efp_igk                          EQU  090338H
 PUBLIC  Calc_Crank_Err_LIH, Nop_e5d32, Nop_e5d34, Set_FuelPump_Latch_2, Set_Out_FuelReq_4, Tail_f0c7b8c_d2c
 EXTERN  DTC_Update_Status_MIL:NEAR, Diag_DTC_dd116:NEAR, Diag_DTC_dd23c:NEAR, Init_CC5_Output:NEAR
 
-S_E5C38 SECTION CODE AT 0E5C38H
+S_FUEL_LIH SECTION CODE
 
 ; ======== Set_FuelPump_Latch_2  (@0xe5c38) ========
         ; ------------------------------------------------------------
@@ -133,5 +132,5 @@ Nop_e5d32:
 Nop_e5d34:
         RETS
 
-S_E5C38 ENDS
+S_FUEL_LIH ENDS
         END

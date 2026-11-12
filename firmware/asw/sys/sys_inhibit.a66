@@ -1,6 +1,5 @@
 ; asw/sys/sys_inhibit.a66
 ; Catalyst diagnosis inhibit conditions and NVM restore of block 0x5DC.
-; 0xCCEF6-0xCD772  (2172 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -12,7 +11,7 @@ lc_inh_dc_rbm                        EQU  09046BH
 PUBLIC  Calc_Cat_Diag_Inhibit, Calc_Cat_Diag_Inhibit_2, NVM_Restore_s5dc, Set_Cat_Diag_Inh
 EXTERN  xor_routine:NEAR
 
-S_CCEF6 SECTION CODE AT 0CCEF6H
+S_SYS_INHIBIT SECTION CODE
 
 ; ======== Calc_Cat_Diag_Inhibit  (@0xccef6) ========
         ; ------------------------------------------------------------
@@ -830,5 +829,5 @@ L_CD76E:                 ; 0xcd76e
         BCLR lv_cat_diag_inh_1.0EH
         RETS
 
-S_CCEF6 ENDS
+S_SYS_INHIBIT ENDS
         END

@@ -1,7 +1,6 @@
 ; asw/knk/knk_iga_2.a66
 ; Knock adaptation (after-start switch, global retard), NVM storage and environment
 ; snapshot.
-; 0xC3330-0xC3522  (498 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -14,7 +13,7 @@ c_t_knk_ad_ast                       EQU  09033AH
 PUBLIC  Calc_IGA_Ad2_Knk, Calc_Knk_Ad_Ast, Env_IGA_Adj_Knk, Store_IGA_Knk_Ad_NVM
 EXTERN  Clamp_IGA_Knk_Maps:NEAR, Elevated_Write_Routine_prg_zone_wrapper:NEAR, Init_IGA_Knk_Adapt:NEAR, xor_routine:NEAR
 
-S_C3330 SECTION CODE AT 0C3330H
+S_KNK_IGA_2 SECTION CODE
 
 ; ======== Calc_Knk_Ad_Ast  (@0xc3330) ========
         ; ------------------------------------------------------------
@@ -233,5 +232,5 @@ Env_IGA_Adj_Knk:
         MOVB lv_knk_f486,RL1
         RETS
 
-S_C3330 ENDS
+S_KNK_IGA_2 ENDS
         END

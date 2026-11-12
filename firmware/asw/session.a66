@@ -1,6 +1,5 @@
 ; asw/session.a66
 ; RSW call (external memory on CS2), timer delta and arithmetic helpers.
-; 0xDFD70-0xDFEE4  (372 bytes, 6 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  Abs_S16_Simple, Add32_Carry, Calc_Timer_Delta, Read_DPP_Reg, call_to_RSW_from_prog_zone, mul32
 EXTERN  FuelPump_Out_Init:NEAR
 
-S_DFD70 SECTION CODE AT 0DFD70H
+S_SESSION SECTION CODE
 
 ; ======== call_to_RSW_from_prog_zone  (@0xdfd70) ========
 call_to_RSW_from_prog_zone:
@@ -210,5 +209,5 @@ L_DFED8:                 ; 0xdfed8
         MOV R4,0FE0EH
         RETS
 
-S_DFD70 ENDS
+S_SESSION ENDS
         END

@@ -1,6 +1,5 @@
 ; asw/tqi/tqi_tq.a66
 ; Torque reserve coordination and transition torque.
-; 0xB132E-0xB1642  (788 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -24,7 +23,7 @@ EXTERN  Div_Frac_U16_Q16:NEAR, Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_2D_Table:NEA
 EXTERN  Get_IP_Word_Y_Axis:NEAR, Max0_S16:NEAR, MulDiv_Round_S16:NEAR, Mul_Shift_U16_Sat32:NEAR
 EXTERN  Sat_Add_S16:NEAR, Sat_Sub_S16:NEAR, multipied_r12_r13_UGT_r14_rets_r4:NEAR
 
-S_B132E SECTION CODE AT 0B132EH
+S_TQI_TQ SECTION CODE
 
 ; ======== Calc_TQ_Add_Coord  (@0xb132e) ========
         ; ------------------------------------------------------------
@@ -348,5 +347,5 @@ L_B163E:                 ; 0xb163e
         MOV R9,[R0+]
         RETS
 
-S_B132E ENDS
+S_TQI_TQ ENDS
         END

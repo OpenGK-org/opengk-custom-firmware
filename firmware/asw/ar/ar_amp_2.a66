@@ -1,7 +1,6 @@
 ; asw/ar/ar_amp_2.a66
 ; Air path: reduced area (ar_red) and its adaptation, ambient-pressure adaptation and
 ; manifold-pressure model PI controller.
-; 0xC4082-0xC47AE  (1836 bytes, 8 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -79,7 +78,7 @@ EXTERN  Mul_Shift_S16:NEAR, Mul_U16_Hi:NEAR, Ramp_Toward_S16:NEAR, Read_MD_Signe
 EXTERN  Sat_Add_S16:NEAR, Sat_Add_S16_v2:NEAR, Sat_Sub_S16:NEAR, Shl3_Sat_S16:NEAR
 EXTERN  multipied_r12_r13_UGT_r14_rets_r4:NEAR, sub_r12_r13_rets_r4:NEAR
 
-S_C4082 SECTION CODE AT 0C4082H
+S_AR_AMP_2 SECTION CODE
 
 ; ======== Reset_uVar1_082  (@0xc4082) ========
 Reset_uVar1_082:
@@ -727,5 +726,5 @@ L_C47A2:                 ; 0xc47a2
         ADD R0,#02H
         RET
 
-S_C4082 ENDS
+S_AR_AMP_2 ENDS
         END

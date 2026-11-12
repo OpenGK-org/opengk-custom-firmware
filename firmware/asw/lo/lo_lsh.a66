@@ -1,6 +1,5 @@
 ; asw/lo/lo_lsh.a66
 ; Rear O2 sensor heater: start, PWM and closed-loop control.
-; 0xB6384-0xB6464  (224 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -8,7 +7,7 @@ $INCLUDE (zone_syms.inc)
 
 PUBLIC  Calc_LSH_Down_Ctl, Calc_LSH_Down_PWM, LSH_Down_Heater_Start, Log_Event_f62c
 
-S_B6384 SECTION CODE AT 0B6384H
+S_LO_LSH SECTION CODE
 
 ; ======== Log_Event_f62c  (@0xb6384) ========
         ; ------------------------------------------------------------
@@ -107,5 +106,5 @@ Calc_LSH_Down_Ctl:
         MOV lv_ivvt_f9c8,R4
         RETS
 
-S_B6384 ENDS
+S_LO_LSH ENDS
         END

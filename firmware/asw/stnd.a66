@@ -1,6 +1,5 @@
 ; asw/stnd.a66
 ; Standardized torque ratios (base / max) and NVM save (block 0x5D8).
-; 0xC6584-0xC67E2  (606 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -23,7 +22,7 @@ EXTERN  Add_r12_r13_Return_r4:NEAR, Clamp_U16_v2:NEAR, Div_U32_U16_Round:NEAR, E
 EXTERN  Get_IP_Word_2D_Table_DWord_YByte:NEAR, Interp_U16:NEAR, Mul_Q15_Sat:NEAR, sub_r12_13_ret_r4:NEAR
 EXTERN  xor_routine:NEAR
 
-S_C6584 SECTION CODE AT 0C6584H
+S_STND SECTION CODE
 
 ; ======== Calc_Ratio_TQI_Bas_Stnd  (@0xc6584) ========
         ; ------------------------------------------------------------
@@ -276,5 +275,5 @@ Set_tqi_av_ems_7dc:
         MOV tqi_av_ems,ZEROS
         RETS
 
-S_C6584 ENDS
+S_STND ENDS
         END

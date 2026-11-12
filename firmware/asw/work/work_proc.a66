@@ -1,6 +1,5 @@
 ; asw/work/work_proc.a66
 ; DTC status-word processing and misfire rate from faults.
-; 0xDBCA4-0xDC25E  (1466 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  Calc_Mis_Rate_FromFault, DTC_Status_Proc_1, DTC_Status_Proc_2, DTC_Status_Proc_3, Eval_DTC_Status
 EXTERN  DTC_Process_StatusByte:NEAR, Get_DTC_StatusBits:NEAR, OBD_Readiness_Grp2:NEAR
 
-S_DBCA4 SECTION CODE AT 0DBCA4H
+S_WORK_PROC SECTION CODE
 
 ; ======== DTC_Status_Proc_1  (@0xdbca4) ========
         ; ------------------------------------------------------------
@@ -649,5 +648,5 @@ L_DC258:                 ; 0xdc258
         ADD R0,#02H
         RETS
 
-S_DBCA4 ENDS
+S_WORK_PROC ENDS
         END

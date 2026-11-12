@@ -1,6 +1,5 @@
 ; asw/can1.a66
 ; CAN1 (powertrain CAN, 0xEF00) message-object receive and transmit.
-; 0xD76B4-0xD77E0  (300 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -8,7 +7,7 @@ $INCLUDE (zone_syms.inc)
 
 PUBLIC  CAN1_Rx_ReadObject, CAN1_Tx_SendObject, Reset_Df4dd_6b4, Set_Df4de_6be
 
-S_D76B4 SECTION CODE AT 0D76B4H
+S_CAN1 SECTION CODE
 
 ; ======== Reset_Df4dd_6b4  (@0xd76b4) ========
 Reset_Df4dd_6b4:
@@ -158,5 +157,5 @@ L_D77BE:                 ; 0xd77be
         MOV R7,[R0+]
         RETS
 
-S_D76B4 ENDS
+S_CAN1 ENDS
         END

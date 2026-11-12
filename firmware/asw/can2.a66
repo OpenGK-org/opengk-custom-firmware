@@ -1,6 +1,5 @@
 ; asw/can2.a66
 ; CAN2 controller (0xEE00) frame receive for CCP / bootloader and message-object status.
-; 0xA58DC-0xA5B7C  (672 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -10,7 +9,7 @@ PUBLIC  BL_CAN2_RxFrame, CCP_GetCalPageStatus_0x1c
 EXTERN  CCP_Rebuild_CanDaqObjects:NEAR, Move_xFF_items__from_PTR_R12_to_PTR_R13:NEAR
 PUBLIC  L_A58FA, L_A5990, L_A5A5A
 
-S_A58DC SECTION CODE AT 0A58DCH
+S_CAN2 SECTION CODE
 
 ; ======== CCP_GetCalPageStatus_0x1c  (@0xa58dc) ========
 CCP_GetCalPageStatus_0x1c:
@@ -316,5 +315,5 @@ L_A5B76:                 ; 0xa5b76
         MOV R9,[R0+]
         RETS
 
-S_A58DC ENDS
+S_CAN2 ENDS
         END

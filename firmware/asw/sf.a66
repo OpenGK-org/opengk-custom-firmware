@@ -1,6 +1,5 @@
 ; asw/sf.a66
 ; DTC status byte processing and diagnosis status bits.
-; 0xDCC8E-0xDCE40  (434 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  DTC_Process_StatusByte, Get_Diag_Status_Bits, Sort3_Bytes
 EXTERN  Mul_S16_Q7_Sat:NEAR, Sat_Add_U8:NEAR, sub_r12_13_ret_r4:NEAR
 
-S_DCC8E SECTION CODE AT 0DCC8EH
+S_SF SECTION CODE
 
 ; ======== Sort3_Bytes  (@0xdcc8e) ========
         ; ------------------------------------------------------------
@@ -210,5 +209,5 @@ L_DCE3A:                 ; 0xdce3a
         MOV R6,[R0+]
         RETS
 
-S_DCC8E ENDS
+S_SF ENDS
         END

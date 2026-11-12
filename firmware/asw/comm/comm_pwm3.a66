@@ -1,6 +1,5 @@
 ; asw/comm/comm_pwm3.a66
 ; Capture/compare (CCx) interrupt handlers.
-; 0xABBF2-0xAC168  (1398 bytes, 14 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -11,7 +10,7 @@ PUBLIC  CC29INT_handler, CC30INT_handler, CC4INT_handler, CC5INT_handler, Ctl_PW
 PUBLIC  Inc_Dfbb2_bf8, Reset_CC28IC_f26
 PUBLIC  L_ABE46, L_ABEA8, L_ABEE2
 
-S_ABBF2 SECTION CODE AT 0ABBF2H
+S_COMM_PWM3 SECTION CODE
 
 ; ======== Inc_Dfbb0_bf2  (@0xabbf2) ========
 Inc_Dfbb0_bf2:
@@ -593,5 +592,5 @@ L_AC164:                 ; 0xac164
         POP CP
         RETI
 
-S_ABBF2 ENDS
+S_COMM_PWM3 ENDS
         END

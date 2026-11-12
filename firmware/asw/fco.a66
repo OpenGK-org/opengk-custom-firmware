@@ -1,6 +1,5 @@
 ; asw/fco.a66
 ; Fuel cut-off, refuel injection time, MAF trim flag and altitude-correction lookup.
-; 0xDD6BA-0xDD862  (424 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -18,7 +17,7 @@ EXTERN  Calc_CtrlModule_Voltage:NEAR, Div_U32_U16_Round32:NEAR, Get_IP_Byte_2D_T
 EXTERN  Get_IP_Word_2D_Table:NEAR, Get_IP_Word_Y_Axis:NEAR, MulAdd_U32_Sat:NEAR, Sat_Add_U32:NEAR
 EXTERN  Set_Output_CC29:NEAR, sub_r12_r13_rets_r4:NEAR
 
-S_DD6BA SECTION CODE AT 0DD6BAH
+S_FCO SECTION CODE
 
 ; ======== Reset_tco_rest_6ba  (@0xdd6ba) ========
 Reset_tco_rest_6ba:
@@ -201,5 +200,5 @@ Calc_TI_RFU:
         MOV ti_rfu,R4
         RETS
 
-S_DD6BA ENDS
+S_FCO ENDS
         END

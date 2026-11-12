@@ -1,6 +1,5 @@
 ; asw/vs/vs_max.a66
 ; Cam / max-speed diagnosis, coolant substitute init and DTCs.
-; 0xC8E2E-0xC8F28  (250 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -18,7 +17,7 @@ c_t_tia_tco_diag                     EQU  090744H
 PUBLIC  Diag_Cam_N_Max_d194, Diag_DTC_dd1a2, Init_TCO_Sub, SetBits_lv_n_max_isa_err_e54, Set_lv_n_max_isa_err
 EXTERN  DTC_Update_Imm_V2:NEAR, DTC_Update_Immediate:NEAR
 
-S_C8E2E SECTION CODE AT 0C8E2EH
+S_VS_MAX SECTION CODE
 
 ; ======== Diag_Cam_N_Max_d194  (@0xc8e2e) ========
         ; ------------------------------------------------------------
@@ -133,5 +132,5 @@ L_C8F24:                 ; 0xc8f24
 L_C8F26:                 ; 0xc8f26
         RETS
 
-S_C8E2E ENDS
+S_VS_MAX ENDS
         END

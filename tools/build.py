@@ -5,10 +5,10 @@ Link units (each is its own program, as the OEM built them separately):
 
   bsw   every firmware/bsw/*.a66, each assembled on its own
         (vectors + runtime helpers, boot info block, seg-8 bootloader)
-  asw   firmware/asw/**/*.a66 + firmware/custom/**/*.a66, linked together in
-        one openc166 run (EXTERN/PUBLIC resolved across files, like L166).
-        Sections without AT (new code) are placed from ASW_ORIGIN on, i.e. in
-        the erased flash after the application.
+  asw   firmware/asw/**/*.a66 + firmware/custom/**/*.a66, linked together
+        (EXTERN/PUBLIC resolved across files, like L166).  Module addresses come
+        from firmware/layout.txt (tools/layout.py); every near call/jump is then
+        checked to stay inside its 64 KB segment.
   cal   firmware/cal/opengk01.dat, copied to 0x90000 (file 0x10000)
 
 Every byte lands at file offset `addr & 0x7FFFF`; two units writing the same
@@ -19,6 +19,7 @@ Usage:
   python3 tools/build.py                 build -> build/out/opengk01.bin
   python3 tools/build.py --no-checksum   leave stored checksums as assembled
   python3 tools/build.py --no-a2l        skip the A2L (tools/gen_a2l.py, from the ;@a2l annotations)
+  python3 tools/build.py --layout F      place the modules per F instead of firmware/layout.txt
 """
 import argparse
 import collections
@@ -33,13 +34,14 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import checksum  # noqa: E402
 import intel_hex  # noqa: E402
+import layout  # noqa: E402
 
 REPO = os.path.dirname(HERE)
 FW_DIR = os.path.join(REPO, "firmware")
 INC = [os.path.join(FW_DIR, "inc"), os.path.join(FW_DIR, "cal")]
 FLASH = 0x80000
 CAL_FILE, CAL_AT = os.path.join(FW_DIR, "cal", "opengk01.dat"), 0x10000
-ASW_ORIGIN = 0xE5E0C        # first erased byte after the application code
+LAYOUT = os.path.join(FW_DIR, "layout.txt")
 # openc166 warnings the inherited code triggers (Keil-style lint, not errors):
 # far/interrupt returns outside PROC, EXTR-window SFR checks, JMPS offset
 # truncation, odd-address DPP arithmetic.  Counted, not printed.
@@ -49,9 +51,11 @@ ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
 ap.add_argument("-o", "--output", default=os.path.join(REPO, "build", "out", "opengk01.bin"))
 ap.add_argument("--no-checksum", action="store_true")
 ap.add_argument("--no-a2l", action="store_true", help="don't generate the A2L next to the image")
+ap.add_argument("--layout", default=None, help="module layout (default firmware/layout.txt)")
 ap.add_argument("-v", "--verbose", action="store_true", help="print every warning")
 args = ap.parse_args()
 output_base = os.path.splitext(args.output)[0]
+LAYOUT = os.path.abspath(args.layout) if args.layout else LAYOUT
 bin_file = output_base + ".bin"
 cpu_bin = output_base + "_8mbit.bin"
 hex_file = output_base + "_8mbit.hex"
@@ -84,7 +88,7 @@ def report(unit, r):
             warn[d.code] += 1
         else:
             print("  %s:%s: warning %s %s" % (os.path.relpath(_file(d), REPO), d.line, d.code, d.message))
-    # OC1 = two sections overlap: a pinned module grew into its neighbour
+    # OC1 = two sections overlap (a module with a fixed AT grew into its neighbour)
     if not r.ok or any(d.code == "OC1" for d in r.warnings):
         fail = True
     return warn
@@ -115,15 +119,42 @@ for f in sorted(glob.glob(os.path.join(FW_DIR, "bsw", "*.a66"))):
 # ---- asw (+ custom) --------------------------------------------------------------------
 asw = sorted(glob.glob(os.path.join(FW_DIR, "asw", "**", "*.a66"), recursive=True))
 custom = sorted(glob.glob(os.path.join(FW_DIR, "custom", "**", "*.a66"), recursive=True))
-r, n, w = link("asw", asw + custom, origin=ASW_ORIGIN)
-asw_symbols = {sym.name: sym.value for sym in r.all_symbols} if r.ok else {}
-print("asw   %d modules + %d custom    %6d bytes%s%s" % (
-    len(asw), len(custom), n, "" if r.ok else "  FAILED",
-    ("   (%s)" % ", ".join("%s x%d" % kv for kv in sorted(w.items()))) if w else ""))
-if r.ok and custom:
-    for s in r.sections.values():
-        if s.placement != "at" and s.size:
-            print("      custom section %-16s at 0x%06X, %d bytes" % (s.name, s.address, s.size))
+asw_symbols = {}
+try:
+    r, addr, usage = layout.link(asw + custom, INC, LAYOUT, FW_DIR,
+                                 cache=os.path.join(REPO, "build", "cache", "sizes.json"))
+except layout.LayoutError as e:
+    print("  layout: %s" % e)
+    r, addr, usage, fail = None, None, None, True
+if r is not None:
+    w = report("asw", r)
+    n = 0
+    if r.ok and addr is not None:
+        for ch in r.chunks:
+            place("asw", ch.address, ch.data)
+            n += len(ch.data)
+        asw_symbols = {sym.name: sym.value for sym in r.all_symbols}
+        lines = layout.listing_lines(r)
+        for mod, line, msg, _ in layout.check_near(r, lines):
+            print("  %s:%d: error %s" % (os.path.relpath(mod, REPO), line, msg))
+            fail = True
+    else:
+        fail = True
+    print("asw   %d modules + %d custom    %6d bytes%s%s" % (
+        len(asw), len(custom), n, "" if r.ok and addr is not None else "  FAILED",
+        ("   (%s)" % ", ".join("%s x%d" % kv for kv in sorted(w.items()))) if w else ""))
+    if usage:
+        print("      " + "  ".join("%s %d%%" % (nm, 100 * (u - s0) // (e - s0)) for nm, s0, u, e in usage)
+              + "   (region fill)")
+    if addr:
+        for m in sorted(addr):
+            if not m.startswith("asw/"):
+                print("      %-36s at 0x%05X" % (m, addr[m]))
+        os.makedirs(os.path.dirname(os.path.abspath(args.output)), exist_ok=True)
+        with open(output_base + ".map", "w") as mf:
+            mf.write("# module placement (firmware/layout.txt), address order\n")
+            for m, a in sorted(addr.items(), key=lambda kv: kv[1]):
+                mf.write("0x%05X  %s\n" % (a, m))
 
 # ---- cal ------------------------------------------------------------------------------
 cal = open(CAL_FILE, "rb").read()
@@ -136,6 +167,27 @@ else:
 
 if fail:
     sys.exit("build FAILED")
+
+# ---- Program checksum zones -----------------------------------------------------------
+# One zone per 64 KB segment, from the first to the last non-erased application byte
+# (the header with the table itself, 0xA0000-0xA020F, is left out), so the ECU's
+# checksum covers wherever the layout put the code.  Table at 0xA0010: CRC word,
+# zone count, 0, then (first, last) linear addresses; room for 7 zones.
+PROG_TABLE, PROG_SKIP, PROG_MAX = 0x20010, (0x20000, 0x20210), 7
+zones = []
+for seg in range(0xA, 0x10):
+    lo = (seg << 16) & (FLASH - 1)
+    used = [o for o in range(lo, lo + 0x10000)
+            if owner[o] == "asw" and img[o] != 0xFF and not PROG_SKIP[0] <= o < PROG_SKIP[1]]
+    if used:
+        zones.append((seg << 16 | (used[0] & 0xFFFF), seg << 16 | (used[-1] & 0xFFFF)))
+if len(zones) > PROG_MAX:
+    sys.exit("build FAILED: %d Program checksum zones, the table holds %d" % (len(zones), PROG_MAX))
+img[PROG_TABLE + 2] = len(zones)
+img[PROG_TABLE + 3] = 0
+for z, (first, last) in enumerate(zones):
+    p = PROG_TABLE + 4 + 8 * z
+    img[p:p + 8] = first.to_bytes(4, "little") + last.to_bytes(4, "little")
 
 # ---- checksums ----------------------------------------------------------------------
 if not args.no_checksum:

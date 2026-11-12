@@ -1,6 +1,5 @@
 ; asw/comm/comm_status.a66
 ; KWP SID 0x17 read status of DTC, DTC counting and status-word processing.
-; 0xDF0EC-0xDF41E  (818 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  DTC_Status_Proc_4, KWP_CountDTCByStatus, KWP_SID17_ReadStatusOfDTC
 EXTERN  Count_DTC_By_Status:NEAR, Count_DTC_By_Status_2:NEAR, Get_DTC_Record_1:NEAR
 
-S_DF0EC SECTION CODE AT 0DF0ECH
+S_COMM_STATUS SECTION CODE
 
 ; ======== KWP_SID17_ReadStatusOfDTC  (@0xdf0ec) ========
 KWP_SID17_ReadStatusOfDTC:
@@ -343,5 +342,5 @@ L_DF418:                 ; 0xdf418
         MOV R6,[R0+]
         RETS
 
-S_DF0EC ENDS
+S_COMM_STATUS ENDS
         END

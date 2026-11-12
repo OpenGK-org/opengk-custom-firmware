@@ -1,6 +1,5 @@
 ; asw/comm/comm_ccp_4.a66
 ; CCP session control and flag helpers, key buffer init.
-; 0xA651A-0xA65B8  (158 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  CCP_Session_Ctl, CCP_Session_Ctl_2, CCP_Set_Flags_2, Check_Threshold_a6580, Init_KeyBuf_c508
 EXTERN  CCP_Parse_Cmd:NEAR, CCP_Resp_Dispatch:NEAR, CCP_Submit_Cmd:NEAR
 
-S_A651A SECTION CODE AT 0A651AH
+S_COMM_CCP_4 SECTION CODE
 
 ; ======== Init_KeyBuf_c508  (@0xa651a) ========
         ; ------------------------------------------------------------
@@ -97,5 +96,5 @@ CCP_Set_Flags_2:
         CALLS SEG CCP_Parse_Cmd, SOF CCP_Parse_Cmd
         RETS
 
-S_A651A ENDS
+S_COMM_CCP_4 ENDS
         END

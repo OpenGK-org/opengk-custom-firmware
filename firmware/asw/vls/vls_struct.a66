@@ -1,6 +1,5 @@
 ; asw/vls/vls_struct.a66
 ; O2 sensor and purge solenoid DTC setters.
-; 0xCE6CA-0xCF682  (4024 bytes, 10 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -55,7 +54,7 @@ EXTERN  Check_N_Window:NEAR, DTC_Status_Proc_3:NEAR, DTC_Update_Debounced:NEAR, 
 EXTERN  DTC_Update_Immediate:NEAR, Div_U32_U16_Round:NEAR, Eval_DTC_Status:NEAR, Sat_Add_S16:NEAR
 EXTERN  sub_r12_r13_rets_r4:NEAR
 
-S_CE6CA SECTION CODE AT 0CE6CAH
+S_VLS_STRUCT SECTION CODE
 
 ; ======== Set_lv_cps_err  (@0xce6ca) ========
         ; ------------------------------------------------------------
@@ -1439,5 +1438,5 @@ L_CF67E:                 ; 0xcf67e
         MOV R9,[R0+]
         RETS
 
-S_CE6CA ENDS
+S_VLS_STRUCT ENDS
         END

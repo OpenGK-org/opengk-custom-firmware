@@ -1,6 +1,5 @@
 ; asw/tps/tps_mmv.a66
 ; Throttle idle position adaptation and NVM restore/save (block 0x1B0).
-; 0xC9EBE-0xCA0DE  (544 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -17,7 +16,7 @@ PUBLIC  Calc_TPS_AD_MMV_IS, Learn_TPS_AdMmv_IS, NVM_Save_s1b0, Restore_TPS_AdMmv
 EXTERN  Add_r12_r13_Return_r4:NEAR, Elevated_Write_Routine_prg_zone_wrapper:NEAR, Interp_U16:NEAR, Sat_Add_U8:NEAR
 EXTERN  xor_routine:NEAR
 
-S_C9EBE SECTION CODE AT 0C9EBEH
+S_TPS_MMV SECTION CODE
 
 ; ======== Learn_TPS_AdMmv_IS  (@0xc9ebe) ========
         ; ------------------------------------------------------------
@@ -240,5 +239,5 @@ NVM_Save_s1b0:
         ADD R0,#02H
         RETS
 
-S_C9EBE ENDS
+S_TPS_MMV ENDS
         END

@@ -1,7 +1,6 @@
 ; asw/vap.a66
 ; EVAP diagnosis: vapour generation check, noise abort, tank-pressure dynamics and fault
 ; state.
-; 0xD3154-0xD3690  (1340 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -34,7 +33,7 @@ EXTERN  Abs_S16:NEAR, Add_r12_r13_Return_r4:NEAR, DTC_Update_Immediate:NEAR, Div
 EXTERN  Div_Q16_Round:NEAR, Get_IP_Word_2D_Table_DWord_YByte:NEAR, Get_IP_Word_3D_Table_DWord_XByte_YByte:NEAR, Interp_U16:NEAR
 EXTERN  Mul_S16_Hi:NEAR, Sat_Add_U16:NEAR, Sat_Sub_S16:NEAR, sub_r12_r13_rets_r4:NEAR
 
-S_D3154 SECTION CODE AT 0D3154H
+S_VAP SECTION CODE
 
 ; ======== DiagCP_VapCheck  (@0xd3154) ========
         ; ------------------------------------------------------------
@@ -530,5 +529,5 @@ L_D365C:                 ; 0xd365c
 L_D368E:                 ; 0xd368e
         RET
 
-S_D3154 ENDS
+S_VAP ENDS
         END

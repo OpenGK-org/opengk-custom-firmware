@@ -1,6 +1,5 @@
 ; asw/aj/aj_anti.a66
 ; Anti-jerk controller: reference speed filter and torque intervention.
-; 0xC6A9A-0xC6EF0  (1110 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -33,7 +32,7 @@ EXTERN  Asr_S32:NEAR, Get_Byte_Y_Axis:NEAR, Get_IP_Word_3D_Table_DWord_XByte_YBy
 EXTERN  MulDiv_S16_Sat:NEAR, MulDiv_S16_Sat_v2:NEAR, Read_Word_Far:NEAR, Sat_Add_S16:NEAR
 EXTERN  Sat_Add_S32:NEAR, Sat_Sub_S16:NEAR, Sat_Sub_S16_Min:NEAR, mul32:NEAR
 
-S_C6A9A SECTION CODE AT 0C6A9AH
+S_AJ_ANTI SECTION CODE
 
 ; ======== Calc_AntiJerk_Filt  (@0xc6a9a) ========
         ; ------------------------------------------------------------
@@ -444,5 +443,5 @@ L_C6EEC:                 ; 0xc6eec
         MOV R6,[R0+]
         RETS
 
-S_C6A9A ENDS
+S_AJ_ANTI ENDS
         END

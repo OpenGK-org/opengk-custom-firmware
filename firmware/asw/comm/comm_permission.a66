@@ -1,6 +1,5 @@
 ; asw/comm/comm_permission.a66
 ; KWP service permission gate and response buffer copy.
-; 0xDFC04-0xDFCD4  (208 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -8,7 +7,7 @@ $INCLUDE (zone_syms.inc)
 
 PUBLIC  KWP_Copy_Resp_Buffer, KWP_Svc_Permission_Gate, Nop_dfc04, Tail_rt_callfar_via_r5r4_c98
 
-S_DFC04 SECTION CODE AT 0DFC04H
+S_COMM_PERMISSION SECTION CODE
 
 ; ======== Nop_dfc04  (@0xdfc04) ========
 Nop_dfc04:
@@ -123,5 +122,5 @@ L_DFCD0:                 ; 0xdfcd0
         MOV R9,[R0+]
         RETS
 
-S_DFC04 ENDS
+S_COMM_PERMISSION ENDS
         END

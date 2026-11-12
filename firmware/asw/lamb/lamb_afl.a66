@@ -1,7 +1,6 @@
 ; asw/lamb/lamb_afl.a66
 ; Lambda efficiency, coolant-temperature lambda enrichment and cam set point during after-
 ; start.
-; 0xB05D6-0xB073A  (356 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -21,7 +20,7 @@ PUBLIC  Calc_Cam_Sp_AFL, Calc_Eff_Lamb, Calc_Lamb_Ref_Add_TCO, Reset_Eff_Lamb
 EXTERN  Get_IP_Byte_X_Axis:NEAR, Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_2D_Table:NEAR, Get_IP_Word_3D_Table:NEAR
 EXTERN  Get_IP_Word_Y_Axis:NEAR, Sat_Add_S16_v2:NEAR, Sat_Sub_S16_v2:NEAR
 
-S_B05D6 SECTION CODE AT 0B05D6H
+S_LAMB_AFL SECTION CODE
 
 ; ======== Calc_Cam_Sp_AFL  (@0xb05d6) ========
         ; ------------------------------------------------------------
@@ -151,5 +150,5 @@ Calc_Lamb_Ref_Add_TCO:
         MOV lamb_ref_add_tco,R4
         RETS
 
-S_B05D6 ENDS
+S_LAMB_AFL ENDS
         END

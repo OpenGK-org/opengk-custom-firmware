@@ -1,6 +1,5 @@
 ; asw/diag/diag_s5c6.a66
 ; NVM restore/save of blocks 0x5C6 and 0x1FA; fuel-cut state; MIL-on distance reset.
-; 0xB2EEA-0xB317C  (658 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  Calc_Fcut_State, NVM_Restore_s5c6, NVM_Save_s1fa, NVM_Save_s5c6, Reset__ctr_km_mil_on_166
 EXTERN  Div_U32_U16_Round32:NEAR, Elevated_Write_Routine_prg_zone_wrapper:NEAR, Sat_Add_U32:NEAR, xor_routine:NEAR
 
-S_B2EEA SECTION CODE AT 0B2EEAH
+S_DIAG_S5C6 SECTION CODE
 
 ; ======== NVM_Save_s1fa  (@0xb2eea) ========
         ; ------------------------------------------------------------
@@ -287,5 +286,5 @@ Reset__ctr_km_mil_on_166:
         BCLR lv_fcut_fast.0FH
         RETS
 
-S_B2EEA ENDS
+S_DIAG_S5C6 ENDS
         END

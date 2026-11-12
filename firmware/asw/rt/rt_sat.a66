@@ -1,6 +1,5 @@
 ; asw/rt/rt_sat.a66
 ; Runtime: saturating add/sub and clamping primitives.
-; 0xFE200-0xFE38E  (398 bytes, 14 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -10,7 +9,7 @@ PUBLIC  Add_Clamp_U8, Add_r12_r13_Return_r4, Interp_Lin_S32, Interp_Lin_U32, Int
 PUBLIC  Sat_Add3_U16, Sat_Add_S16, Sat_Add_S16_v2, Sat_Add_S32, Sat_Add_S8, Sat_Add_U16
 PUBLIC  Sat_Add_U32, Sat_Add_U8
 
-S_FE200 SECTION CODE AT 0FE200H
+S_RT_SAT SECTION CODE
 
 ; ======== Sat_Add_S32  (@0xfe200) ========
         ; ------------------------------------------------------------
@@ -266,5 +265,5 @@ L_FE388:                 ; 0xfe388
         MOV R4,#DATA16 08000H
         RETS
 
-S_FE200 ENDS
+S_RT_SAT ENDS
         END

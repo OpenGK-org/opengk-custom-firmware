@@ -1,6 +1,5 @@
 ; asw/misc/misc_div.a66
 ; 32-bit division helpers and control module (battery) voltage.
-; 0xDFEE4-0xDFFBC  (216 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -8,7 +7,7 @@ $INCLUDE (zone_syms.inc)
 
 PUBLIC  Calc_CtrlModule_Voltage, Div_S32_S16_b, Div_S32_Signed
 
-S_DFEE4 SECTION CODE AT 0DFEE4H
+S_MISC_DIV SECTION CODE
 
 ; ======== Div_S32_Signed  (@0xdfee4) ========
         ; Div_S32_Signed(): compiler runtime. Signed 32/32 divide, dividend r5:r4, divisor r11:r10; magnitude
@@ -117,5 +116,5 @@ L_DFFB6:                 ; 0xdffb6
         ADD R0,#04H
         RETS
 
-S_DFEE4 ENDS
+S_MISC_DIV ENDS
         END

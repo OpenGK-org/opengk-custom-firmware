@@ -1,6 +1,5 @@
 ; asw/rt/rt_axis.a66
 ; Runtime: axis lookup (byte and word axes).
-; 0xFED82-0xFEE94  (274 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -8,7 +7,7 @@ $INCLUDE (zone_syms.inc)
 
 PUBLIC  Get_IP_Byte_X_Axis, Get_IP_Byte_Y_Axis, Get_IP_Word_X_Axis
 
-S_FED82 SECTION CODE AT 0FED82H
+S_RT_AXIS SECTION CODE
 
 ; ======== Get_IP_Byte_X_Axis  (@0xfed82) ========
 Get_IP_Byte_X_Axis:
@@ -131,5 +130,5 @@ L_FEE7E:                 ; 0xfee7e
         MOV DPP0,#DATA16 00024H
         RETS
 
-S_FED82 ENDS
+S_RT_AXIS ENDS
         END

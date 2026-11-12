@@ -1,6 +1,5 @@
 ; asw/slv/slv_mec.a66
 ; Injection firing pattern and IVVT electrical / mechanical / short-trip diagnosis.
-; 0xC1090-0xC133A  (682 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -20,7 +19,7 @@ lc_ocv_diag_es                       EQU  090486H
 PUBLIC  Calc_Inj_Pattern, Diag_DTC_dd62c, Diag_IVVT_Elec_Slv, Diag_IVVT_Mec_Eval, Diag_IVVT_Trip_d62c
 EXTERN  DTC_Update_Debounced:NEAR
 
-S_C1090 SECTION CODE AT 0C1090H
+S_SLV_MEC SECTION CODE
 
 ; ======== Calc_Inj_Pattern  (@0xc1090) ========
         ; ------------------------------------------------------------
@@ -328,5 +327,5 @@ L_C1336:                 ; 0xc1336
         BCLR lv_diag_trip_avl_ivvt.01H
         RETS
 
-S_C1090 ENDS
+S_SLV_MEC ENDS
         END

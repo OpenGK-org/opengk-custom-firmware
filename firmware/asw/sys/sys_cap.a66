@@ -1,7 +1,6 @@
 ; asw/sys/sys_cap.a66
 ; Injector capture/compare channel drivers (CC0-CC3), engine output scheduler and CC8/CC25
 ; interrupts.
-; 0xA9236-0xAA49E  (4712 bytes, 7 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -14,7 +13,7 @@ PUBLIC  L_A9722, L_A974A, L_A97A6, L_A97D8, L_A982E, L_A9880
 PUBLIC  L_A9894, L_A98BC, L_A9918, L_A994A, L_A99A0, L_A99F2
 PUBLIC  L_A9A08, L_A9A30, L_A9A8C, L_A9ABE, L_A9B14, L_A9B66
 
-S_A9236 SECTION CODE AT 0A9236H
+S_SYS_CAP SECTION CODE
 
 ; ======== CC25INT_handler  (@0xa9236) ========
 CC25INT_handler:
@@ -110,7 +109,7 @@ L_A92FC:                 ; 0xa92fc
         MOVB prev_state_iv,RL2
         BCLR state_mtv.07H
 L_A930E:                 ; 0xa930e
-        MOV R3,#DATA16 SOF CapCom_CC1_Ch1_Drv
+        MOV R3,#SOF CapCom_CC1_Ch1_Drv
         JMPA cc_UC,L_A958E
 
 ; ======== CapCom_CC1_Ch1_Drv  (@0xa9316) ========
@@ -194,7 +193,7 @@ L_A93D2:                 ; 0xa93d2
         MOVB prev_state_iv,RL2
         BCLR state_mtv.0AH
 L_A93E4:                 ; 0xa93e4
-        MOV R3,#DATA16 SOF CapCom_CC2_Ch2_Drv
+        MOV R3,#SOF CapCom_CC2_Ch2_Drv
         JMPA cc_UC,L_A958E
 
 ; ======== CapCom_CC2_Ch2_Drv  (@0xa93ec) ========
@@ -278,7 +277,7 @@ L_A94A4:                 ; 0xa94a4
         MOVB prev_state_iv,RL2
         BCLR state_mtv.0DH
 L_A94B6:                 ; 0xa94b6
-        MOV R3,#DATA16 SOF CapCom_CC3_Ch3_Drv_ImobGated
+        MOV R3,#SOF CapCom_CC3_Ch3_Drv_ImobGated
         JMPR cc_UC,L_A958E
 
 ; ======== CapCom_CC3_Ch3_Drv_ImobGated  (@0xa94bc) ========
@@ -366,7 +365,7 @@ L_A9578:                 ; 0xa9578
         MOVB prev_state_iv,RL2
         BCLR smartra_comms_status.00H
 L_A958A:                 ; 0xa958a
-        MOV R3,#DATA16 SOF CapCom_CC0_Ch0_Drv
+        MOV R3,#SOF CapCom_CC0_Ch0_Drv
 L_A958E:                 ; 0xa958e
         POP CP
         RETI
@@ -1170,11 +1169,11 @@ L_A9DDC:                 ; 0xa9ddc
         CMP T7,#DATA16 0003CH
         JMPR cc_UGT,L_A9DEE
         MOV CC25,#DATA16 00014H
-        MOV R3,#DATA16 SOF CapCom_CC1_Ch1_Drv
+        MOV R3,#SOF CapCom_CC1_Ch1_Drv
         JMPR cc_UC,L_A9DF6
 L_A9DEE:                 ; 0xa9dee
         MOV CC25,#DATA16 00050H
-        MOV R3,#DATA16 SOF CapCom_CC3_Ch3_Drv_ImobGated
+        MOV R3,#SOF CapCom_CC3_Ch3_Drv_ImobGated
 L_A9DF6:                 ; 0xa9df6
         EXTR #01H
         CMP T0,CC25_FE72
@@ -1855,5 +1854,5 @@ L_AA494:                 ; 0xaa494
         POP CP
         RETI
 
-S_A9236 ENDS
+S_SYS_CAP ENDS
         END

@@ -630,7 +630,8 @@ S_A0500 SECTION CODE AT 0A0500H
         DW      POF ldp_n_dif_st_tq_st, PAG ldp_n_dif_st_tq_st          ; 0xA068A
         DW      POF ldp_tco_tq_st, PAG ldp_tco_tq_st          ; 0xA068E
 
-; jump table, dispatched from asw/tq/tq_fcut.a66:94 (entries are offsets in segment Bh)
+; jump table of Calc_FuelFlow_Add_CP (asw/tq/tq_fcut.a66): entries are offsets in its 64 KB segment
+;@jumptable Calc_FuelFlow_Add_CP
 T_A0692:
         DW      SOF Calc_FuelFlow_Add_CP_v2          ; 0xA0692
         DW      SOF Calc_FuelFlow_Add_CP_v2          ; 0xA0694
@@ -641,7 +642,8 @@ T_A0692:
         DW      POF ip_acp__v_acp_mes, PAG ip_acp__v_acp_mes          ; 0xA069E
         DW      POF ldp_v_acp_mes, PAG ldp_v_acp_mes          ; 0xA06A2
 
-; jump table, dispatched from asw/cp/cp_deac.a66:74 (entries are offsets in segment Bh)
+; jump table of CanPurge_Lookup_State (asw/cp/cp_deac.a66): entries are offsets in its 64 KB segment
+;@jumptable CanPurge_Lookup_State
 T_A06A6:
         DW      SOF Reset_cp_norm_deac_state_d74          ; 0xA06A6
         DW      SOF CanPurge_Trans_Deac          ; 0xA06A8
@@ -651,7 +653,8 @@ T_A06A6:
         DW      SOF CanPurge_State_Upd          ; 0xA06B0
         DW      SOF CanPurge_State_Upd_2          ; 0xA06B2
 
-; jump table, dispatched from asw/di.a66:202 (entries are offsets in segment Bh)
+; jump table of CanPurge_Calc_RelFlow (asw/di.a66): entries are offsets in its 64 KB segment
+;@jumptable CanPurge_Calc_RelFlow
 T_A06B4:
         DW      SOF CanPurge_Calc_Flow_4          ; 0xA06B4
         DW      SOF CanPurge_Calc_Flow_3          ; 0xA06B6
@@ -696,7 +699,8 @@ T_A06B4:
         DW      POF ldpm_toil_2_ivvt, PAG ldpm_toil_2_ivvt          ; 0xA0774
         DB      02EH,001H,031H,001H,0D5H,003H
 
-; jump table, dispatched from asw/ivvt/ivvt_cam.a66:91 (entries are offsets in segment Bh)
+; jump table of Calc_IVVT_CamAd_Pos (asw/ivvt/ivvt_cam.a66): entries are offsets in its 64 KB segment
+;@jumptable Calc_IVVT_CamAd_Pos
 T_A077E:
         DW      SOF IVVT_CamAd_Arm_3          ; 0xA077E
         DW      SOF IVVT_CamAd_Arm_1          ; 0xA0780
@@ -708,7 +712,8 @@ T_A077E:
         DW      POF ldpm_toil_3_ivvt, PAG ldpm_toil_3_ivvt          ; 0xA0790
         DB      02EH,001H,01CH,001H,036H,001H,0C0H,006H,035H,001H
 
-; jump table, dispatched from asw/ivvt/ivvt_elec.a66:336 (entries are offsets in segment Bh)
+; jump table of IVVT_CamMeas_Dispatch (asw/ivvt/ivvt_elec.a66): entries are offsets in its 64 KB segment
+;@jumptable IVVT_CamMeas_Dispatch
 T_A079E:
         DW      SOF IVVT_CamMeas_St0_Init          ; 0xA079E
         DW      SOF IVVT_CamMeas_St1_WaitMove          ; 0xA07A0
@@ -722,7 +727,8 @@ T_A079E:
         DW      POF id_pv_av_fl_ivvt, PAG id_pv_av_fl_ivvt          ; 0xA07B6
         DW      POF ldpm_n_1_ivvt, PAG ldpm_n_1_ivvt          ; 0xA07BA
 
-; jump table, dispatched from asw/lsh/lsh_di.a66:73 (entries are offsets in segment Bh)
+; jump table of Set_lv_cam_ad_di_ivvt_6464 (asw/lsh/lsh_di.a66): entries are offsets in its 64 KB segment
+;@jumptable Set_lv_cam_ad_di_ivvt_6464
 T_A07BE:
         DW      SOF Set_lv_cam_ad_di_ivvt_b64a          ; 0xA07BE
         DW      SOF L_B64D4          ; 0xA07C0
@@ -730,7 +736,8 @@ T_A07BE:
         DW      SOF L_B6500          ; 0xA07C4
         DW      SOF Set_lv_cam_ad_di_ivvt_b64b          ; 0xA07C6
 
-; jump table, dispatched from asw/lsh/lsh_dur.a66:68 (entries are offsets in segment Bh)
+; jump table of Calc_LSH_Up_Loop (asw/lsh/lsh_dur.a66): entries are offsets in its 64 KB segment
+;@jumptable Calc_LSH_Up_Loop
 T_A07C8:
         DW      SOF L_B68E2          ; 0xA07C8
         DW      SOF IGC_Dur_Arm_1          ; 0xA07CA
@@ -738,7 +745,8 @@ T_A07C8:
         DW      SOF L_B6956          ; 0xA07CE
         DW      SOF IGC_Dur_Arm_0          ; 0xA07D0
 
-; jump table, dispatched from asw/lsh/lsh_dur.a66:146 (entries are offsets in segment Bh)
+; jump table of IGC_Dur_Arm_2 (asw/lsh/lsh_dur.a66): entries are offsets in its 64 KB segment
+;@jumptable IGC_Dur_Arm_2
 T_A07D2:
         DW      SOF IGC_Dur_Arm_4          ; 0xA07D2
         DW      SOF L_B69AC          ; 0xA07D4
@@ -809,7 +817,8 @@ T_A07D2:
         DB      001H,000H,000H,001H,001H,001H,001H,000H,000H,001H,001H,000H,001H,000H,000H,001H
         DB      001H,000H,000H,001H,000H,001H,001H,000H
 
-; jump table, dispatched from asw/imob/imob_bw.a66:340 (entries are offsets in segment Bh)
+; jump table of Imob_Init (asw/imob/imob_bw.a66): entries are offsets in its 64 KB segment
+;@jumptable Imob_Init
 T_A08F8:
         DW      SOF Imob_BW_Update          ; 0xA08F8
         DW      SOF Imob_SecuritySpeedCheck          ; 0xA08FA
@@ -817,7 +826,8 @@ T_A08F8:
         DW      SOF Imob_BW_Update          ; 0xA08FE
         DW      SOF Imob_BW_Update          ; 0xA0900
 
-; jump table, dispatched from asw/imob/imob_fail.a66:216 (entries are offsets in segment Bh)
+; jump table of Imob_CmdFail_WarnLamp (asw/imob/imob_fail.a66): entries are offsets in its 64 KB segment
+;@jumptable Imob_CmdFail_WarnLamp
 T_A0902:
         DW      SOF Reset_lv_fmy_imob_f86          ; 0xA0902
         DW      SOF Diag_DTC_dd506          ; 0xA0904
@@ -825,7 +835,8 @@ T_A0902:
         DW      SOF Diag_DTC_dd506          ; 0xA0908
         DW      SOF Diag_DTC_dd506          ; 0xA090A
 
-; jump table, dispatched from asw/imob/imob_fail.a66:250 (entries are offsets in segment Bh)
+; jump table of Diag_DTC_dd506 (asw/imob/imob_fail.a66): entries are offsets in its 64 KB segment
+;@jumptable Diag_DTC_dd506
 T_A090C:
         DW      SOF Diag_DTC_dd506b          ; 0xA090C
         DW      SOF Diag_DTC_dd506bb          ; 0xA090E
@@ -834,7 +845,8 @@ T_A090C:
         DW      SOF Diag_DTC_dd506bbb          ; 0xA0914
         DW      SOF Imob_LockState          ; 0xA0916
 
-; jump table, dispatched from asw/imob/imob_smartra.a66:416 (entries are offsets in segment Bh)
+; jump table of SMARTRA_runtime_cmd_sm (asw/imob/imob_smartra.a66): entries are offsets in its 64 KB segment
+;@jumptable SMARTRA_runtime_cmd_sm
 T_A0918:
         DW      SOF L_BCF16          ; 0xA0918
         DW      SOF SMARTRA_cmd_Init          ; 0xA091A
@@ -845,7 +857,8 @@ T_A0918:
         DW      SOF Diag_DTC_dd522          ; 0xA0924
         DW      SOF Imob_CommErr_DTC          ; 0xA0926
 
-; jump table, dispatched from asw/imob/imob_fmy.a66:259 (entries are offsets in segment Bh)
+; jump table of SMARTRA_auth_protocol_sm (asw/imob/imob_fmy.a66): entries are offsets in its 64 KB segment
+;@jumptable SMARTRA_auth_protocol_sm
 T_A0928:
         DW      SOF SMARTRA_auth_step1_Init_arm          ; 0xA0928
         DW      SOF Imob_BuildResponse          ; 0xA092A
@@ -857,7 +870,8 @@ T_A0928:
         DW      SOF Imob_CommErr_DTC_V2          ; 0xA0936
         DW      SOF L_BD656          ; 0xA0938
 
-; jump table, dispatched from asw/imob/imob_smartra_5.a66:43 (entries are offsets in segment Bh)
+; jump table of SMARTRA_runtime_auth_sm (asw/imob/imob_smartra_5.a66): entries are offsets in its 64 KB segment
+;@jumptable SMARTRA_runtime_auth_sm
 T_A093A:
         DW      SOF Imob_Handle_FrameR          ; 0xA093A
         DW      SOF Imob_CheckKeySignature          ; 0xA093C
@@ -1072,7 +1086,8 @@ T_A093A:
         DW      POF ip_t_is_diag__tia_st, PAG ip_t_is_diag__tia_st          ; 0xA0C76
         DW      POF ldp_tia_st_t_is_diag, PAG ldp_tia_st_t_is_diag          ; 0xA0C7A
 
-; jump table, dispatched from asw/vs/vs_seq.a66:832 (entries are offsets in segment Ch)
+; jump table of Diag_TPS_Det (asw/vs/vs_seq.a66): entries are offsets in its 64 KB segment
+;@jumptable Diag_TPS_Det
 T_A0C7E:
         DW      SOF Sched_TempDiag_Task          ; 0xA0C7E
         DW      SOF CylSeq_Cyl1          ; 0xA0C80
@@ -1080,7 +1095,8 @@ T_A0C7E:
         DW      SOF CylSeq_Cyl3          ; 0xA0C84
         DW      SOF CylSeq_Cyl4          ; 0xA0C86
 
-; jump table, dispatched from asw/tia.a66:554 (entries are offsets in segment Ch)
+; jump table of Acq_TCO_Mes (asw/tia.a66): entries are offsets in its 64 KB segment
+;@jumptable Acq_TCO_Mes
 T_A0C88:
         DW      SOF tco_sub_St0_Idle          ; 0xA0C88
         DW      SOF tco_sub_St1_IS1_Deb          ; 0xA0C8A
@@ -1144,7 +1160,8 @@ T_A0C88:
         DB      080H,000H,00CH,0E5H,030H,000H,0B6H,0E1H,004H,000H,0BAH,0E1H,002H,000H,000H,000H
         DB      000H,000H,001H,002H,003H,004H,01EH,01FH
 
-; jump table, dispatched from asw/comm/comm_cmd01.a66:153 (entries are offsets in segment Ch)
+; jump table of KWP_Flash_Svc_Dispatch (asw/comm/comm_cmd01.a66): entries are offsets in its 64 KB segment
+;@jumptable KWP_Flash_Svc_Dispatch
 T_A0FA8:
         DW      SOF KWP_Flash_Cmd01_SessionChk          ; 0xA0FA8
         DW      SOF KWP_Flash_Cmd02_SetDownloadAddr          ; 0xA0FAA
@@ -1210,7 +1227,8 @@ T_A0FA8:
         DW      POF ldp_n_32_ip_cl_crlc_ramp_open, PAG ldp_n_32_ip_cl_crlc_ramp_open          ; 0xA1056
         DW      POF ldp_maf_ip_cl_crlc_ramp_open, PAG ldp_maf_ip_cl_crlc_ramp_open          ; 0xA105A
 
-; jump table, dispatched from asw/diagcp/diagcp_intr.a66:512 (entries are offsets in segment Dh)
+; jump table of DiagCP_State_Dispatch (asw/diagcp/diagcp_intr.a66): entries are offsets in its 64 KB segment
+;@jumptable DiagCP_State_Dispatch
 T_A105E:
         DW      SOF DiagCP_St0_Precond          ; 0xA105E
         DW      SOF DiagCP_St1          ; 0xA1060
@@ -1279,7 +1297,8 @@ T_A105E:
         DW      POF ldp_tco_state_cfa_acp_h, PAG ldp_tco_state_cfa_acp_h          ; 0xA11F0
         DW      POF ldp_vs_state_state_cfa_acp_h, PAG ldp_vs_state_state_cfa_acp_h          ; 0xA11F4
 
-; jump table, dispatched from asw/cfa.a66:405 (entries are offsets in segment Dh)
+; jump table of Calc_VS_STATE_CFA (asw/cfa.a66): entries are offsets in its 64 KB segment
+;@jumptable Calc_VS_STATE_CFA
 T_A11F8:
         DW      SOF Set_Out_Latch_Clr          ; 0xA11F8
         DW      SOF Set_Out_Latch_B2          ; 0xA11FA
@@ -1605,7 +1624,8 @@ T_A11F8:
         DW      SOF Nop_da69e, SEG Nop_da69e          ; 0xA1AEC
         DB      044H,002H,047H,048H,049H,04AH,024H,017H,01FH,024H,047H,048H,049H,04AH
 
-; jump table, dispatched from asw/comm/comm_m01.a66:51 (entries are offsets in segment Eh)
+; jump table of KWP_OBD_Svc01_ReadPID (asw/comm/comm_m01.a66): entries are offsets in its 64 KB segment
+;@jumptable KWP_OBD_Svc01_ReadPID
 T_A1AFE:
         DW      SOF OBD_M01_PID00_SupportedPID_01_20          ; 0xA1AFE
         DW      SOF OBD_M01_PID01_MonitorStatus_SinceClear          ; 0xA1B00
@@ -1687,7 +1707,8 @@ T_A1AFE:
         DW      SOF OBD_M01_PID4D_TimeMILOn          ; 0xA1B98
         DW      SOF OBD_M01_PID4E_TimeSinceDTCClear          ; 0xA1B9A
 
-; jump table, dispatched from asw/comm/comm_m01_2.a66:3514 (entries are offsets in segment Eh)
+; jump table of KWP_OBD_Svc09_VehicleInfo (asw/comm/comm_m01_2.a66): entries are offsets in its 64 KB segment
+;@jumptable KWP_OBD_Svc09_VehicleInfo
 T_A1B9C:
         DW      SOF RetC_5_4ba          ; 0xA1B9C
         DW      SOF RetC_fe_85e          ; 0xA1B9E
@@ -1806,7 +1827,8 @@ T_A1B9C:
         DB      09AH,060H
         DB      024H,03AH,02FH,02DH,040H,018H,01EH,011H,0A1H,067H,028H,0FFH
 
-; jump table, dispatched from asw/int.a66:30 (entries are offsets in segment Eh)
+; jump table of KWP_io_adaptive_values_adjustment (asw/int.a66): entries are offsets in its 64 KB segment
+;@jumptable KWP_io_adaptive_values_adjustment
 T_A210C:
         ; KWP local-identifier jump table (near 0x610c), used by KWP_io_adaptive_values_adjustment @ 0e44e8.
         ; Index = localId-0x50 (local IDs 0x50..0x5C) for the routine/IO-control (SID 0x30/0x31)
@@ -1825,7 +1847,8 @@ T_A210C:
         DW      SOF KWP_Reset_ER_Adapt          ; 0xA2122
         DW      SOF KWP_Reset_Cam_Edges          ; 0xA2124
 
-; jump table, dispatched from asw/comm/comm_function.a66:35 (entries are offsets in segment Eh)
+; jump table of KWP_App_SubFunction_Dispatcher (asw/comm/comm_function.a66): entries are offsets in its 64 KB segment
+;@jumptable KWP_App_SubFunction_Dispatcher
 T_A2126:
         ; KWP app sub-function jump table (near 0x6126), used by the sub-dispatcher @ 0e4e38. Index 0..8.
         ; Near entries: 0->0e4e62 1->0e4e80 2->0e4ef8 3->0e4ef8 4->0e4eaa 5->0e4ef8 6->0e4ec8 7->0e4ed8
@@ -1840,7 +1863,8 @@ T_A2126:
         DW      SOF KWP_App_SubFn_7_case          ; 0xA2134
         DW      SOF KWP_App_SubFn_8_case          ; 0xA2136
 
-; jump table, dispatched from asw/comm/comm_function.a66:141 (entries are offsets in segment Eh)
+; jump table of KWP_SID31_StartRoutineByLocalId (asw/comm/comm_function.a66): entries are offsets in its 64 KB segment
+;@jumptable KWP_SID31_StartRoutineByLocalId
 T_A2138:
         ; KWP app SID jump table (near 0x6138), used by KWP_App_Service_Dispatcher @ 0e4f0e. Index = SID-0x12
         ; (SIDs 0x12..0x21).
@@ -1865,7 +1889,8 @@ T_A2138:
         DW      SOF KWP_App_SID_20_case          ; 0xA2154
         DW      SOF KWP_App_SID_21_case          ; 0xA2156
 
-; jump table, dispatched from asw/sys/sys_smartra.a66:85 (entries are offsets in segment Ah)
+; jump table of SMARTRA_comms_timeout_monitor (asw/sys/sys_smartra.a66): entries are offsets in its 64 KB segment
+;@jumptable SMARTRA_comms_timeout_monitor
 T_A2158:
         ; SMARTRA immobilizer comms-phase jump table (near 0x6158). Index = DAT_00f5b8 - 1 (phases 1..6), used
         ; by the ASC0/SMARTRA
@@ -1997,7 +2022,8 @@ T_A2158:
         DB      0DEH,095H,008H,000H,0E4H,095H,008H,000H,032H,096H,008H,000H
         DB      080H,096H,008H,000H,002H,000H,008H,000H,020H,000H,080H,000H
 
-; jump table, dispatched from asw/sys/sys_combustion.a66:240 (entries are offsets in segment Ah)
+; jump table of g_a4ef8 (asw/sys/sys_combustion.a66): entries are offsets in its 64 KB segment
+;@jumptable g_a4ef8
 T_A234C:
         DW      SOF L_A500C          ; 0xA234C
         DW      SOF L_A50B2          ; 0xA234E
@@ -2040,7 +2066,8 @@ T_A234C:
         DB      07EH,07DH,00DH,00CH,00AH,004H,001H,000H,008H,007H,003H,00EH,00BH,006H,000H,00FH
         DB      000H,007H,003H,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H,000H
 
-; jump table, dispatched from asw/sys/sys_tx.a66:51 (entries are offsets in segment Ah)
+; jump table of SMARTRA_asc0_rx_isr (asw/sys/sys_tx.a66): entries are offsets in its 64 KB segment
+;@jumptable SMARTRA_asc0_rx_isr
 T_A24BE:
         DW      SOF SMARTRA_tx_sync          ; 0xA24BE
         DW      SOF SMARTRA_tx_len_8570          ; 0xA24C0
@@ -2055,7 +2082,8 @@ T_A24BE:
         DW      SOF SMARTRA_rx_error          ; 0xA24D2
         DB      0EAH,086H
 
-; jump table, dispatched from asw/sys/sys_ti.a66:25 (entries are offsets in segment Ah)
+; jump table of CC0INT_Handler (asw/sys/sys_ti.a66): entries are offsets in its 64 KB segment
+;@jumptable CC0INT_Handler
 T_A24D6:
         DW      SOF L_A8706          ; 0xA24D6
         DW      SOF L_A87A0          ; 0xA24D8
@@ -2068,7 +2096,8 @@ T_A24D6:
         DW      SOF L_A8918          ; 0xA24E6
         DW      SOF L_A89BE          ; 0xA24E8
 
-; jump table, dispatched from asw/sys/sys_ti.a66:295 (entries are offsets in segment Ah)
+; jump table of CC1INT_Handler (asw/sys/sys_ti.a66): entries are offsets in its 64 KB segment
+;@jumptable CC1INT_Handler
 T_A24EA:
         DW      SOF L_A89D8          ; 0xA24EA
         DW      SOF L_A8A72          ; 0xA24EC
@@ -2081,7 +2110,8 @@ T_A24EA:
         DW      SOF L_A8BEA          ; 0xA24FA
         DW      SOF L_A8C90          ; 0xA24FC
 
-; jump table, dispatched from asw/sys/sys_ti.a66:565 (entries are offsets in segment Ah)
+; jump table of CC2INT_Handler (asw/sys/sys_ti.a66): entries are offsets in its 64 KB segment
+;@jumptable CC2INT_Handler
 T_A24FE:
         DW      SOF L_A8CAA          ; 0xA24FE
         DW      SOF L_A8D44          ; 0xA2500
@@ -2094,7 +2124,8 @@ T_A24FE:
         DW      SOF L_A8EBC          ; 0xA250E
         DW      SOF L_A8F60          ; 0xA2510
 
-; jump table, dispatched from asw/sys/sys_ti.a66:835 (entries are offsets in segment Ah)
+; jump table of CC3INT_Handler (asw/sys/sys_ti.a66): entries are offsets in its 64 KB segment
+;@jumptable CC3INT_Handler
 T_A2512:
         DW      SOF L_A8F7A          ; 0xA2512
         DW      SOF L_A9014          ; 0xA2514
@@ -2107,7 +2138,8 @@ T_A2512:
         DW      SOF L_A918C          ; 0xA2522
         DW      SOF L_A9232          ; 0xA2524
 
-; jump table, dispatched from asw/sys/sys_cap.a66:387 (entries are offsets in segment Ah)
+; jump table of EngOut_Scheduler (asw/sys/sys_cap.a66): entries are offsets in its 64 KB segment
+;@jumptable EngOut_Scheduler
 T_A2526:
         DW      SOF L_A970E          ; 0xA2526
         DW      SOF L_A95D8          ; 0xA2528
@@ -2120,7 +2152,8 @@ T_A2526:
         DW      SOF L_A970E          ; 0xA2536
         DW      SOF L_A95B0          ; 0xA2538
 
-; jump table, dispatched from asw/sys/sys_cap.a66:516 (entries are offsets in segment Ah)
+; jump table of EngOut_Scheduler (asw/sys/sys_cap.a66): entries are offsets in its 64 KB segment
+;@jumptable EngOut_Scheduler
 T_A253A:
         DW      SOF L_A9880          ; 0xA253A
         DW      SOF L_A974A          ; 0xA253C
@@ -2133,7 +2166,8 @@ T_A253A:
         DW      SOF L_A9880          ; 0xA254A
         DW      SOF L_A9722          ; 0xA254C
 
-; jump table, dispatched from asw/sys/sys_cap.a66:645 (entries are offsets in segment Ah)
+; jump table of EngOut_Scheduler (asw/sys/sys_cap.a66): entries are offsets in its 64 KB segment
+;@jumptable EngOut_Scheduler
 T_A254E:
         DW      SOF L_A99F2          ; 0xA254E
         DW      SOF L_A98BC          ; 0xA2550
@@ -2146,7 +2180,8 @@ T_A254E:
         DW      SOF L_A99F2          ; 0xA255E
         DW      SOF L_A9894          ; 0xA2560
 
-; jump table, dispatched from asw/sys/sys_cap.a66:774 (entries are offsets in segment Ah)
+; jump table of EngOut_Scheduler (asw/sys/sys_cap.a66): entries are offsets in its 64 KB segment
+;@jumptable EngOut_Scheduler
 T_A2562:
         DW      SOF L_A9B66          ; 0xA2562
         DW      SOF L_A9A30          ; 0xA2564
@@ -2159,7 +2194,8 @@ T_A2562:
         DW      SOF L_A9B66          ; 0xA2572
         DW      SOF L_A9A08          ; 0xA2574
 
-; jump table, dispatched from asw/sys/sys_t4.a66:43 (entries are offsets in segment Ah)
+; jump table of CC6INT_handler (asw/sys/sys_t4.a66): entries are offsets in its 64 KB segment
+;@jumptable CC6INT_handler
 T_A2576:
         DW      SOF L_AA4F6          ; 0xA2576
         DW      SOF L_AA668          ; 0xA2578
@@ -2173,7 +2209,8 @@ T_A2576:
         DW      SOF L_AAB34          ; 0xA2588
         DW      SOF L_AAB38          ; 0xA258A
 
-; jump table, dispatched from asw/sys/sys_t4.a66:706 (entries are offsets in segment Ah)
+; jump table of CC7INT_Handler (asw/sys/sys_t4.a66): entries are offsets in its 64 KB segment
+;@jumptable CC7INT_Handler
 T_A258C:
         DW      SOF L_AAB9C          ; 0xA258C
         DW      SOF L_AAD0E          ; 0xA258E
@@ -2187,45 +2224,52 @@ T_A258C:
         DW      SOF L_AB1DA          ; 0xA259E
         DW      SOF L_AB1DE          ; 0xA25A0
 
-; jump table, dispatched from asw/sys/sys_t4.a66:1344 (entries are offsets in segment Ah)
+; jump table of CC9INT_handler (asw/sys/sys_t4.a66): entries are offsets in its 64 KB segment
+;@jumptable CC9INT_handler
 T_A25A2:
         DW      SOF L_AB206          ; 0xA25A2
         DW      SOF L_AB210          ; 0xA25A4
         DB      000H,001H,000H,001H
 
-; jump table, dispatched from asw/sys/sys_t4.a66:1369 (entries are offsets in segment Ah)
+; jump table of CC27INT_handler (asw/sys/sys_t4.a66): entries are offsets in its 64 KB segment
+;@jumptable CC27INT_handler
 T_A25AA:
         DW      SOF L_AB23C          ; 0xA25AA
         DW      SOF L_AB25C          ; 0xA25AC
 
-; jump table, dispatched from asw/sys/sys_ivvt.a66:24 (entries are offsets in segment Ah)
+; jump table of CC16INT_handler (asw/sys/sys_ivvt.a66): entries are offsets in its 64 KB segment
+;@jumptable CC16INT_handler
 T_A25AE:
         DW      SOF L_AB34C          ; 0xA25AE
         DW      SOF L_AB39A          ; 0xA25B0
         DW      SOF L_AB406          ; 0xA25B2
 
-; jump table, dispatched from asw/sys/sys_call.a66:25 (entries are offsets in segment Ah)
+; jump table of XP2INT_handler (asw/sys/sys_call.a66): entries are offsets in its 64 KB segment
+;@jumptable XP2INT_handler
 T_A25B4:
         DW      SOF L_AB4B8          ; 0xA25B4
         DW      SOF L_AB4F4          ; 0xA25B6
         DW      SOF L_AB57C          ; 0xA25B8
         DW      SOF L_AB5E6          ; 0xA25BA
 
-; jump table, dispatched from asw/sys/sys_call.a66:160 (entries are offsets in segment Ah)
+; jump table of CallVia_62e (asw/sys/sys_call.a66): entries are offsets in its 64 KB segment
+;@jumptable CallVia_62e
 T_A25BC:
         DW      SOF L_AB63A          ; 0xA25BC
         DW      SOF L_AB660          ; 0xA25BE
         DW      SOF L_AB6B4          ; 0xA25C0
         DW      SOF L_AB6E8          ; 0xA25C2
 
-; jump table, dispatched from asw/sys/sys_call.a66:262 (entries are offsets in segment Ah)
+; jump table of CallVia_71e (asw/sys/sys_call.a66): entries are offsets in its 64 KB segment
+;@jumptable CallVia_71e
 T_A25C4:
         DW      SOF L_AB72A          ; 0xA25C4
         DW      SOF L_AB73A          ; 0xA25C6
         DW      SOF L_AB75C          ; 0xA25C8
         DW      SOF L_AB77E          ; 0xA25CA
 
-; jump table, dispatched from asw/sys/sys_call.a66:561 (entries are offsets in segment Ah)
+; jump table of Calc_MAF_Base (asw/sys/sys_call.a66): entries are offsets in its 64 KB segment
+;@jumptable Calc_MAF_Base
 T_A25CC:
         DW      SOF L_ABA32          ; 0xA25CC
         DW      SOF L_ABA4E          ; 0xA25CE
@@ -2234,7 +2278,8 @@ T_A25CC:
         DW      SOF L_ABAD0          ; 0xA25D4
         DW      SOF L_ABB00          ; 0xA25D6
 
-; jump table, dispatched from asw/sys/sys_call.a66:643 (entries are offsets in segment Ah)
+; jump table of Calc_MAF_Base (asw/sys/sys_call.a66): entries are offsets in its 64 KB segment
+;@jumptable Calc_MAF_Base
 T_A25D8:
         DW      SOF L_ABB18          ; 0xA25D8
         DW      SOF L_ABB34          ; 0xA25DA
@@ -2243,7 +2288,8 @@ T_A25D8:
         DW      SOF L_ABBB6          ; 0xA25E0
         DW      SOF L_ABBE6          ; 0xA25E2
 
-; jump table, dispatched from asw/comm/comm_pwm3.a66:246 (entries are offsets in segment Ah)
+; jump table of CC19INT_handler (asw/comm/comm_pwm3.a66): entries are offsets in its 64 KB segment
+;@jumptable CC19INT_handler
 T_A25E4:
         DW      SOF L_ABE46          ; 0xA25E4
         DW      SOF L_ABEA8          ; 0xA25E6

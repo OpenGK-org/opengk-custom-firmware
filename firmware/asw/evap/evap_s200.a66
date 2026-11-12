@@ -1,6 +1,5 @@
 ; asw/evap/evap_s200.a66
 ; EVAP IUMPR counters and their NVM restore/save (block 0x200).
-; 0xD150C-0xD1AD0  (1476 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -17,7 +16,7 @@ c_t_min_diagcp                       EQU  090708H
 PUBLIC  DiagCP_Evap_Counters, NVM_Save_s200, Restore_Evap_Ctrs
 EXTERN  Elevated_Write_Routine_prg_zone_wrapper:NEAR, xor_routine:NEAR
 
-S_D150C SECTION CODE AT 0D150CH
+S_EVAP_S200 SECTION CODE
 
 ; ======== Restore_Evap_Ctrs  (@0xd150c) ========
         ; ------------------------------------------------------------
@@ -558,5 +557,5 @@ L_D1AC6:                 ; 0xd1ac6
         MOV lv_cp_d030,R4
         RETS
 
-S_D150C ENDS
+S_EVAP_S200 ENDS
         END

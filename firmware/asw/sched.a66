@@ -1,6 +1,5 @@
 ; asw/sched.a66
 ; Fuel pump output, SMARTRA phase sync, idle CO EEPROM write and battery-voltage helper.
-; 0xE5D36-0xE5E0C  (214 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -19,7 +18,7 @@ EXTERN  Read_Coding_Nibble:NEAR, Reset_Dc5dc_b9c:NEAR, Reset_ISA:NEAR, Reset_TI_
 EXTERN  Reset_ar_red_bas_thr_ivs_522:NEAR, SMARTRA_auth_begin:NEAR, SMARTRA_auth_post_update:NEAR, SMARTRA_tx_begin:NEAR
 EXTERN  Set_TCO_Stop:NEAR, Set_TOIL_Stop:NEAR, Set_lv_cps_err:NEAR
 
-S_E5D36 SECTION CODE AT 0E5D36H
+S_SCHED SECTION CODE
 
 ; ======== FuelPump_Out_6  (@0xe5d36) ========
         ; ------------------------------------------------------------
@@ -119,5 +118,5 @@ L_E5E06:                 ; 0xe5e06
         CALLS SEG BL_Set_ExecMagic_Full_2, SOF BL_Set_ExecMagic_Full_2
         RETS
 
-S_E5D36 ENDS
+S_SCHED ENDS
         END

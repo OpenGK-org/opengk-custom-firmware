@@ -1,6 +1,5 @@
 ; asw/imob/imob_fmy.a66
 ; Immobilizer comms error DTC, learn flag and SMARTRA teach/learn protocol state machine.
-; 0xBCDF2-0xBD034  (578 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  Imob_CommErr_DTC, Imob_DTC_Fmy, L_BCF10, L_BCF16, Reset_lv_fmy_imob_f86, SMARTRA_auth_protocol_sm
 EXTERN  DTC_Update_Immediate:NEAR, Imob_DTC_update_comms:NEAR, SMARTRA_proto_step_arm:NEAR
 
-S_BCDF2 SECTION CODE AT 0BCDF2H
+S_IMOB_FMY SECTION CODE
 
 ; ======== Imob_CommErr_DTC  (@0xbcdf2) ========
         ; ------------------------------------------------------------
@@ -258,5 +257,5 @@ L_BD01A:                 ; 0xbd01a
         MOV R4,[R4]
         JMPI cc_UC,[R4]
 
-S_BCDF2 ENDS
+S_IMOB_FMY ENDS
         END

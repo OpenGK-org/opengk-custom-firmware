@@ -1,7 +1,6 @@
 ; asw/maf/maf_pu.a66
 ; Trailing-throttle engine state, MAF-difference conditions, power-up timers and part-load
 ; state.
-; 0xD8410-0xD8A98  (1672 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -64,7 +63,7 @@ EXTERN  Set_state_rbm_cps_mecha_34c:NEAR, Set_state_rbm_dtp_noise_2c2:NEAR, Set_
 EXTERN  Set_state_rbm_maf_dif_ch_204:NEAR, Set_ti_er_ad_f5c:NEAR, Tail_Calc_N_SP_Add_Cat_b92:NEAR, UpdBits_lv_iga_tra_knk_ce6:NEAR
 EXTERN  exhaust_gas_sub:NEAR, sub_r12_r13_rets_r4:NEAR
 
-S_D8410 SECTION CODE AT 0D8410H
+S_MAF_PU SECTION CODE
 
 ; ======== EngState_TrailThrottle  (@0xd8410) ========
         ; ------------------------------------------------------------
@@ -658,5 +657,5 @@ L_D8A86:                 ; 0xd8a86
         MOV t_min_pu,R4
         RETS
 
-S_D8410 ENDS
+S_MAF_PU ENDS
         END

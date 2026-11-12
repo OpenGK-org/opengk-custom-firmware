@@ -1,6 +1,5 @@
 ; asw/mecha.a66
 ; Canister purge solenoid mechanical rate-based monitor (IUMPR).
-; 0xD134C-0xD13D0  (132 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  Calc_RBM_CPS_Mecha, ClrBits_state_rbm_cps_mecha_352, Set_state_rbm_cps_mecha_34c
 EXTERN  Div_U32_U16_Round32:NEAR
 
-S_D134C SECTION CODE AT 0D134CH
+S_MECHA SECTION CODE
 
 ; ======== Set_state_rbm_cps_mecha_34c  (@0xd134c) ========
 Set_state_rbm_cps_mecha_34c:
@@ -77,5 +76,5 @@ L_D13CA:                 ; 0xd13ca
         MOV R9,[R0+]
         RETS
 
-S_D134C ENDS
+S_MECHA ENDS
         END

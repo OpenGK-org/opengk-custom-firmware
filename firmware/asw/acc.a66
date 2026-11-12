@@ -1,7 +1,6 @@
 ; asw/acc.a66
 ; Available engine torque (tqi_av_ems) and acceleration torque loss (tq_loss_acc) for ASR /
 ; anti-jerk.
-; 0xC67E2-0xC6A9A  (696 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -30,7 +29,7 @@ EXTERN  Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_3D_Table:NEAR, Get_IP_Byte_X_Axis
 EXTERN  Get_IP_Word_3D_Table:NEAR, Max_S16:NEAR, Min_S16:NEAR, Mul_Q15_Sat_Signed:NEAR
 EXTERN  Mul_S16_Q23:NEAR, Ramp_Toward_S16:NEAR, Sat_Add_S16:NEAR
 
-S_C67E2 SECTION CODE AT 0C67E2H
+S_ACC SECTION CODE
 
 ; ======== Calc_TQI_AV_EMS  (@0xc67e2) ========
         ; ------------------------------------------------------------
@@ -281,5 +280,5 @@ L_C6A92:                 ; 0xc6a92
         MOV R9,[R0+]
         RETS
 
-S_C67E2 ENDS
+S_ACC ENDS
         END

@@ -1,6 +1,5 @@
 ; asw/lam/lam_close.a66
 ; Lambda closed-loop control: regulation, limits and injection-time adaptation.
-; 0xCDC6C-0xCE6CA  (2654 bytes, 8 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -76,7 +75,7 @@ EXTERN  MulDiv_Round_S16:NEAR, Mul_S16_Hi:NEAR, Read_Byte_Far:NEAR, Read_MD_Sign
 EXTERN  Sat_Add_S16:NEAR, Sat_Add_S16_v2:NEAR, Sat_Add_U16:NEAR, Sat_Sub_S16:NEAR
 EXTERN  Sat_Sub_S16_Min:NEAR, Sat_U16_IfOvf:NEAR
 
-S_CDC6C SECTION CODE AT 0CDC6CH
+S_LAM_CLOSE SECTION CODE
 
 ; ======== Reset_lam_bank_1_lam_up_ti_ad_ad_c6c  (@0xcdc6c) ========
 Reset_lam_bank_1_lam_up_ti_ad_ad_c6c:
@@ -1041,5 +1040,5 @@ L_CE6C6:                 ; 0xce6c6
         BCLR state_lam_ctl.08H
         RET
 
-S_CDC6C ENDS
+S_LAM_CLOSE ENDS
         END

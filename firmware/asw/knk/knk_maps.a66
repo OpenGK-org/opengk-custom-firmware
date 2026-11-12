@@ -1,6 +1,5 @@
 ; asw/knk/knk_maps.a66
 ; Knock maximum-retard factor, adaptation map clamping and sensor gain NVM storage.
-; 0xC2F9E-0xC30F0  (338 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -16,7 +15,7 @@ ip_fac_iga_max_knk__tco              EQU  09562DH
 PUBLIC  Calc_Fac_IGA_Max_Knk, Clamp_IGA_Knk_Maps, Store_Knks_Gain_NVM
 EXTERN  Elevated_Write_Routine_prg_zone_wrapper:NEAR, Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_Y_Axis:NEAR, xor_routine:NEAR
 
-S_C2F9E SECTION CODE AT 0C2F9EH
+S_KNK_MAPS SECTION CODE
 
 ; ======== Calc_Fac_IGA_Max_Knk  (@0xc2f9e) ========
         ; ------------------------------------------------------------
@@ -160,5 +159,5 @@ Store_Knks_Gain_NVM:
         ADD R0,#02H
         RETS
 
-S_C2F9E ENDS
+S_KNK_MAPS ENDS
         END

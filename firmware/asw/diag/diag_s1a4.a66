@@ -1,6 +1,5 @@
 ; asw/diag/diag_s1a4.a66
 ; NVM restore/save of block 0x1A4 (MAF altitude factor).
-; 0xC3746-0xC3832  (236 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  NVM_Restore_s1a4, NVM_Save_s1a4, Set_maf_fac_alti_mmv_7a6
 EXTERN  Elevated_Write_Routine_prg_zone_wrapper:NEAR, xor_routine:NEAR
 
-S_C3746 SECTION CODE AT 0C3746H
+S_DIAG_S1A4 SECTION CODE
 
 ; ======== NVM_Restore_s1a4  (@0xc3746) ========
         ; ------------------------------------------------------------
@@ -118,5 +117,5 @@ NVM_Save_s1a4:
         ADD R0,#02H
         RETS
 
-S_C3746 ENDS
+S_DIAG_S1A4 ENDS
         END

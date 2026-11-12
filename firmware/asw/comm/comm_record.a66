@@ -1,6 +1,5 @@
 ; asw/comm/comm_record.a66
 ; DTC record and freeze-frame read helpers.
-; 0xDA41C-0xDA6A0  (644 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -8,7 +7,7 @@ $INCLUDE (zone_syms.inc)
 
 PUBLIC  Delay_Loop_da664, Get_DTC_Record_1, Get_DTC_Record_2, Nop_da69e, Read_FreezeFrame_2
 
-S_DA41C SECTION CODE AT 0DA41CH
+S_COMM_RECORD SECTION CODE
 
 ; ======== Get_DTC_Record_1  (@0xda41c) ========
         ; ------------------------------------------------------------
@@ -311,5 +310,5 @@ L_DA686:                 ; 0xda686
 Nop_da69e:
         RETS
 
-S_DA41C ENDS
+S_COMM_RECORD ENDS
         END

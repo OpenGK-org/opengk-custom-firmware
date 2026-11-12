@@ -1,6 +1,5 @@
 ; asw/sys/sys_div.a66
 ; Runtime: fixed-point division helpers (rounding, saturating).
-; 0xFE38E-0xFE592  (516 bytes, 8 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  Div_Frac_U16_Q16, Div_Q16_Round, Div_Ratio_U8_Sat, Div_S16_Round_Sat, Div_S32_S16_Round, Div_U32_U16_Round
 PUBLIC  MulDiv_U16, multipied_r12_r13_UGT_r14_rets_r4
 
-S_FE38E SECTION CODE AT 0FE38EH
+S_SYS_DIV SECTION CODE
 
 ; ======== MulDiv_U16  (@0xfe38e) ========
         ; ------------------------------------------------------------
@@ -299,5 +298,5 @@ L_FE58C:                 ; 0xfe58c
         MOV R4,#DATA16 0FFFFH
         RETS
 
-S_FE38E ENDS
+S_SYS_DIV ENDS
         END

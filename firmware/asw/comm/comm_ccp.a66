@@ -1,6 +1,5 @@
 ; asw/comm/comm_ccp.a66
 ; CCP slave init, response (DTO) dispatcher and program / DAQ service handler.
-; 0xA53A0-0xA56DE  (830 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -11,7 +10,7 @@ EXTERN  CCP_Cmd_StateMachine:NEAR, CCP_DAQ_Security:NEAR, CCP_Prog_State:NEAR, C
 EXTERN  CCP_Set_EngineFlags:NEAR, CCP_Svc_Conn_Security:NEAR, Move_xFF_items__from_PTR_R12_to_PTR_R13:NEAR
 PUBLIC  L_A53AE
 
-S_A53A0 SECTION CODE AT 0A53A0H
+S_COMM_CCP SECTION CODE
 
 ; ======== CCP_Init  (@0xa53a0) ========
         ; CCP_Init(): CCP slave init - calls flush helpers (0a5efa, 0a5eaa) then CCP_Reset_State.
@@ -329,5 +328,5 @@ L_A56D4:                 ; 0xa56d4
         MOV R9,[R0+]
         RETS
 
-S_A53A0 ENDS
+S_COMM_CCP ENDS
         END

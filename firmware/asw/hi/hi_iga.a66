@@ -1,7 +1,6 @@
 ; asw/hi/hi_iga.a66
 ; Periodic task wrappers (injection reset, component protection, idle/gear), DAQ signal list
 ; and diagnosis conditions.
-; 0xD5E2A-0xD648A  (1632 bytes, 14 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -48,7 +47,7 @@ EXTERN  Reset_Df748_14e:NEAR, Reset_lv_crk_tooth_err_ece:NEAR, Reset_pv_av_h_9d8
 EXTERN  SeqFuelCut_CylSel:NEAR, Set_lv_diag_trip_avl_ivvt:NEAR, Set_lv_er_carb_b4:NEAR, Set_lv_inh_fsd_cp:NEAR
 EXTERN  Set_lv_n_max_isa_err_c903:NEAR, Set_state_iv:NEAR
 
-S_D5E2A SECTION CODE AT 0D5E2AH
+S_HI_IGA SECTION CODE
 
 ; ======== Build_DAQ_SignalList  (@0xd5e2a) ========
         ; ------------------------------------------------------------
@@ -649,5 +648,5 @@ Task_SpeedLimit_Loss:
         CALLS SEG Set_lv_n_max_isa_err_c903, SOF Set_lv_n_max_isa_err_c903
         RETS
 
-S_D5E2A ENDS
+S_HI_IGA ENDS
         END

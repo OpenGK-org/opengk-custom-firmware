@@ -1,6 +1,5 @@
 ; asw/sys/sys_adcint.a66
 ; ADC and capture/compare (CC10, CC17, CC22) interrupt handlers.
-; 0xA8368-0xA8536  (462 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -8,7 +7,7 @@ $INCLUDE (zone_syms.inc)
 
 PUBLIC  ADCINT_handler, CC10INT_handler, CC17INT_handler, CC22INT_handler
 
-S_A8368 SECTION CODE AT 0A8368H
+S_SYS_ADCINT SECTION CODE
 
 ; ======== ADCINT_handler  (@0xa8368) ========
 ADCINT_handler:
@@ -197,5 +196,5 @@ L_A8532:                 ; 0xa8532
         POP CP
         RETI
 
-S_A8368 ENDS
+S_SYS_ADCINT ENDS
         END

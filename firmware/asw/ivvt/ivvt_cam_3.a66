@@ -1,6 +1,5 @@
 ; asw/ivvt/ivvt_cam_3.a66
 ; IVVT task groups: cam set point, diagnosis and measurement ticks.
-; 0xC1DEC-0xC2026  (570 bytes, 9 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -27,7 +26,7 @@ EXTERN  Reset_sVar1_874:NEAR, Reset_state_ivvt_4c0:NEAR, Reset_uVar1_4a2:NEAR, S
 EXTERN  Set_Idx_Cam_Ad:NEAR, Set_cam_dif_int_save_ivvt_in_1_07e:NEAR, Set_ctr_cyc_cle_slv_ivvt_f22:NEAR, Set_lv_cam_ad_avl_nvmy_ivvt:NEAR
 EXTERN  Snapshot_MAF_IVVT:NEAR
 
-S_C1DEC SECTION CODE AT 0C1DECH
+S_IVVT_CAM_3 SECTION CODE
 
 ; ======== IVVT_Task_Group_1  (@0xc1dec) ========
         ; ------------------------------------------------------------
@@ -253,5 +252,5 @@ IVVT_MesStep_Start:
 L_C2024:                 ; 0xc2024
         RETS
 
-S_C1DEC ENDS
+S_IVVT_CAM_3 ENDS
         END

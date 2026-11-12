@@ -1,6 +1,5 @@
 ; asw/fuel/fuel_flow.a66
 ; Canister-purge fuel flow additive adaptation.
-; 0xB18B2-0xB1A64  (434 bytes, 6 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -17,7 +16,7 @@ PUBLIC  Reset_uVar1_980
 EXTERN  Add_r12_r13_Return_r4:NEAR, Get_IP_Word_2D_Table:NEAR, Get_IP_Word_Y_Axis:NEAR, Mul_Shift_U16_Sat32:NEAR
 EXTERN  Mul_U16_Hi:NEAR, multipied_r12_r13_UGT_r14_rets_r4:NEAR, sub_r12_r13_rets_r4:NEAR
 
-S_B18B2 SECTION CODE AT 0B18B2H
+S_FUEL_FLOW SECTION CODE
 
 ; ======== Calc_FuelFlow_Add_CP_v2  (@0xb18b2) ========
         ; ------------------------------------------------------------
@@ -204,5 +203,5 @@ L_B1A5A:                 ; 0xb1a5a
         MOV R9,[R0+]
         RET
 
-S_B18B2 ENDS
+S_FUEL_FLOW ENDS
         END

@@ -1,7 +1,6 @@
 ; asw/imob/imob_smartra_5.a66
 ; SMARTRA run-time authentication: frame handling, key signature / validation, challenge
 ; generator.
-; 0xBDB38-0xBDF20  (1000 bytes, 8 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -11,7 +10,7 @@ PUBLIC  Imob_CheckKeySignature, Imob_Handle_FrameR, Imob_ValidateKey, SMARTRA_Se
 PUBLIC  SMARTRA_rt_VerifyResp, SMARTRA_runtime_auth_sm
 EXTERN  SMARTRA_flush_RX_buffers:NEAR, SMARTRA_load_response_compare:NEAR, mul32:NEAR
 
-S_BDB38 SECTION CODE AT 0BDB38H
+S_IMOB_SMARTRA_5 SECTION CODE
 
 ; ======== SMARTRA_runtime_auth_sm  (@0xbdb38) ========
         ; SMARTRA run-time immobilizer authentication state machine (state = DAT_00c29b, 1..5). Shares the
@@ -418,5 +417,5 @@ SMARTRA_gen_challenge_lcg:
         MOV smartra_lcg_const,R5
         RETS
 
-S_BDB38 ENDS
+S_IMOB_SMARTRA_5 ENDS
         END

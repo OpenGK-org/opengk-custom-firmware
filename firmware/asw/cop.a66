@@ -1,7 +1,6 @@
 ; asw/cop.a66
 ; Component protection (ignition / injection), ECU self-diagnosis status flags and
 ; diagnostic task scheduling.
-; 0xD648A-0xD6824  (922 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -49,7 +48,7 @@ EXTERN  Set_Conf_Ad_Rst:NEAR, Set_Conf_MIL_FMY:NEAR, Set_Conf_MTV:NEAR, Set_Conf
 EXTERN  Set_PL_Flags:NEAR, Set_lv_conf_mis:NEAR, Set_lv_maf_trim_e2d7:NEAR, Set_lv_maf_trim_e31a:NEAR
 EXTERN  Set_lv_pl:NEAR, sub_r12_13_ret_r4:NEAR, sub_r12_r13_rets_r4:NEAR
 
-S_D648A SECTION CODE AT 0D648AH
+S_COP SECTION CODE
 
 ; ======== Sched_Diag_Tasks  (@0xd648a) ========
         ; ------------------------------------------------------------
@@ -368,5 +367,5 @@ L_D6802:                 ; 0xd6802
         CALLS SEG Set_Conf_Ad_Rst, SOF Set_Conf_Ad_Rst
         RETS
 
-S_D648A ENDS
+S_COP ENDS
         END

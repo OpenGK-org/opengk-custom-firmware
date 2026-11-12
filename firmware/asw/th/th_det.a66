@@ -1,6 +1,5 @@
 ; asw/th/th_det.a66
 ; Thermostat detection rate-based monitor (IUMPR).
-; 0xB9702-0xB97DC  (218 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -12,7 +11,7 @@ c_tco_th_open                        EQU  0903A2H
 PUBLIC  Calc_RBM_Th_Det, ClrBits_state_rbm_th_det_750, Log_Event_f97e, Reset_state_rbm_th_det_746, Set_Df97e_702
 EXTERN  Div_U32_U16_Round32:NEAR
 
-S_B9702 SECTION CODE AT 0B9702H
+S_TH_DET SECTION CODE
 
 ; ======== Set_Df97e_702  (@0xb9702) ========
 Set_Df97e_702:
@@ -117,5 +116,5 @@ L_B97D6:                 ; 0xb97d6
         MOV R9,[R0+]
         RETS
 
-S_B9702 ENDS
+S_TH_DET ENDS
         END

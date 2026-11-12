@@ -1,7 +1,6 @@
 ; asw/sys/sys_programmed.a66
 ; VIN programmed check, erased-block check, KWP SID 0x3B block write and bootloader exec
 ; magic.
-; 0xA6D32-0xA6E34  (258 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -10,7 +9,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  BL_Set_ExecMagic_Full_2, Check_VIN_Programmed, Is_Block_Erased, KWP_SID3B_WriteBlock90
 EXTERN  CC26INT_Imob_Reset:NEAR, Push_To_System_Stack:NEAR, Reset_ADCIC_4da:NEAR
 
-S_A6D32 SECTION CODE AT 0A6D32H
+S_SYS_PROGRAMMED SECTION CODE
 
 ; ======== Check_VIN_Programmed  (@0xa6d32) ========
         ; ------------------------------------------------------------
@@ -129,5 +128,5 @@ L_A6E30:                 ; 0xa6e30
 L_A6E32:                 ; 0xa6e32
         RETS
 
-S_A6D32 ENDS
+S_SYS_PROGRAMMED ENDS
         END

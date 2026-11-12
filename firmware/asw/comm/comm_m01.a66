@@ -1,6 +1,5 @@
 ; asw/comm/comm_m01.a66
 ; OBD-II Mode 01 PID reader / dispatcher and PIDs 0x00-0x12.
-; 0xE0000-0xE044A  (1098 bytes, 15 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -18,7 +17,7 @@ EXTERN  L_E0940:NEAR, OBD_Scale_FuelSys:NEAR, OBD_Scale_FuelTrim:NEAR, OBD_Scale
 EXTERN  OBD_Scale_Temp:NEAR, Read_MulDiv_MD:NEAR, RetC_fe_936:NEAR, RetC_ff_93c:NEAR
 EXTERN  Ret_Const_fe0f:NEAR, Tail_Div_Ratio_U8_Sat_89e:NEAR, sub_r12_r13_rets_r4:NEAR
 
-S_E0000 SECTION CODE AT 0E0000H
+S_COMM_M01 SECTION CODE
 
 ; ======== KWP_OBD_Svc01_ReadPID  (@0xe0000) ========
         ; ------------------------------------------------------------
@@ -556,5 +555,5 @@ OBD_M01_PID11_ThrottlePos:
         MOVB RL7,#01H
         JMPA cc_UC,L_E0940
 
-S_E0000 ENDS
+S_COMM_M01 ENDS
         END

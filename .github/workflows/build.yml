@@ -39,6 +39,9 @@ jobs:
       - name: Verify checksums
         run: python3 tools/checksum.py build/out/opengk01.bin
 
+      - name: No numeric references into movable code
+        run: make reloc
+
       - name: Validate A2L (a2ltool, pinned + hash-checked)
         run: |
           tools/fetch_a2ltool.sh

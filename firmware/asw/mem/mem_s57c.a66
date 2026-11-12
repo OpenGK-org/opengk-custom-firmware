@@ -1,6 +1,5 @@
 ; asw/mem/mem_s57c.a66
 ; Roughness adaptation update and NVM save (block 0x57C).
-; 0xBC0C4-0xBC21E  (346 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  Calc_ER_Adapt_Upd, NVM_Save_s57c, Reset_iga_er_ad_mem_142
 EXTERN  Elevated_Write_Routine_prg_zone_wrapper:NEAR, xor_routine:NEAR
 
-S_BC0C4 SECTION CODE AT 0BC0C4H
+S_MEM_S57C SECTION CODE
 
 ; ======== Calc_ER_Adapt_Upd  (@0xbc0c4) ========
         ; ------------------------------------------------------------
@@ -158,5 +157,5 @@ NVM_Save_s57c:
         ADD R0,#02H
         RETS
 
-S_BC0C4 ENDS
+S_MEM_S57C ENDS
         END

@@ -1,6 +1,5 @@
 ; asw/diagcp/diagcp_intr.a66
 ; EVAP leak diagnosis state dispatcher, abort handling and condition check.
-; 0xD1AD0-0xD1F96  (1222 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -27,7 +26,7 @@ c_dtp_min_diagcp                     EQU  090874H
 PUBLIC  DiagCP_CDN_Check, DiagCP_IntrState, DiagCP_State_Dispatch, Log_Event_f97a
 EXTERN  DiagCP_SetFaultState:NEAR, L_D3586:NEAR, sub_r12_r13_rets_r4:NEAR
 
-S_D1AD0 SECTION CODE AT 0D1AD0H
+S_DIAGCP_INTR SECTION CODE
 
 ; ======== Log_Event_f97a  (@0xd1ad0) ========
         ; ------------------------------------------------------------
@@ -511,5 +510,5 @@ L_D1F7C:                 ; 0xd1f7c
         MOV R4,[R4]
         JMPI cc_UC,[R4]
 
-S_D1AD0 ENDS
+S_DIAGCP_INTR ENDS
         END

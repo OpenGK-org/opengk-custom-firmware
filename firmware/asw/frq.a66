@@ -1,6 +1,5 @@
 ; asw/frq.a66
 ; Front O2 switching frequency rate-based monitor (IUMPR).
-; 0xD45BC-0xD466C  (176 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  Calc_RBM_VLS_Up_Frq, ClrBits_state_rbm_vls_up_frq_5c6, Reset_state_rbm_vls_up_frq_5bc
 EXTERN  Div_U32_U16_Round32:NEAR
 
-S_D45BC SECTION CODE AT 0D45BCH
+S_FRQ SECTION CODE
 
 ; ======== Reset_state_rbm_vls_up_frq_5bc  (@0xd45bc) ========
 Reset_state_rbm_vls_up_frq_5bc:
@@ -92,5 +91,5 @@ L_D4666:                 ; 0xd4666
         MOV R9,[R0+]
         RETS
 
-S_D45BC ENDS
+S_FRQ ENDS
         END

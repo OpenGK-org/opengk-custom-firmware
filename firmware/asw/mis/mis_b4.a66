@@ -1,6 +1,5 @@
 ; asw/mis/mis_b4.a66
 ; Misfire catalyst-damage flag and NVM restore/save (block 0x578).
-; 0xBEC7C-0xBEDA0  (292 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  ClrBits_lv_er_carb_b4_c7c, NVM_Restore_s578, NVM_Save_s578, Set_lv_er_carb_b4
 EXTERN  Elevated_Write_Routine_prg_zone_wrapper:NEAR, xor_routine:NEAR
 
-S_BEC7C SECTION CODE AT 0BEC7CH
+S_MIS_B4 SECTION CODE
 
 ; ======== ClrBits_lv_er_carb_b4_c7c  (@0xbec7c) ========
 ClrBits_lv_er_carb_b4_c7c:
@@ -146,5 +145,5 @@ NVM_Save_s578:
         ADD R0,#04H
         RETS
 
-S_BEC7C ENDS
+S_MIS_B4 ENDS
         END

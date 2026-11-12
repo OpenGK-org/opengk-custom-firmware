@@ -1,6 +1,5 @@
 ; asw/comm/comm_readiness.a66
 ; OBD monitor readiness groups and fault slot / DTC status helpers.
-; 0xDAE6A-0xDB24E  (996 bytes, 7 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -17,7 +16,7 @@ PUBLIC  Reset_OBD_Readiness_Group
 EXTERN  Calc_Ready_DC_Ctr:NEAR, Div_Ratio_U8_Sat:NEAR, Div_U32_U16_Round32:NEAR, Init_Fault_Table_1:NEAR
 EXTERN  Init_Fault_Table_2:NEAR, Sel_Ovf_U16:NEAR
 
-S_DAE6A SECTION CODE AT 0DAE6AH
+S_COMM_READINESS SECTION CODE
 
 ; ======== Reset_OBD_Readiness_Group  (@0xdae6a) ========
         ; ------------------------------------------------------------
@@ -442,5 +441,5 @@ L_DB234:                 ; 0xdb234
 L_DB24C:                 ; 0xdb24c
         RETS
 
-S_DAE6A ENDS
+S_COMM_READINESS ENDS
         END

@@ -1,6 +1,5 @@
 ; asw/mwss/mwss_vdif.a66
 ; MWSS sensor voltage-difference diagnosis, DTC and NVM save (block 0x642).
-; 0xBEDA0-0xBEE6E  (206 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -13,7 +12,7 @@ c_abc_max_mwss                       EQU  0900EBH
 PUBLIC  Calc_MWSS_Vdif, Calc_MWSS_Vdif_2, Diag_DTC_dd140, NVM_Save_s642
 EXTERN  DTC_Update_Debounced_OBD:NEAR, DTC_Update_Immediate:NEAR, Elevated_Write_Routine_prg_zone_wrapper:NEAR, Reset_Df380_408:NEAR
 
-S_BEDA0 SECTION CODE AT 0BEDA0H
+S_MWSS_VDIF SECTION CODE
 
 ; ======== Diag_DTC_dd140  (@0xbeda0) ========
         ; ------------------------------------------------------------
@@ -112,5 +111,5 @@ L_BEE68:                 ; 0xbee68
         MOVB v_dif_max_mwss_diag,ZEROS
         RETS
 
-S_BEDA0 ENDS
+S_MWSS_VDIF ENDS
         END

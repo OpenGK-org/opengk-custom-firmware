@@ -1,6 +1,5 @@
 ; asw/dtc/dtc_activation.a66
 ; DTC activation and MIL request; immediate (non-debounced) fault update.
-; 0xD9436-0xD9BE8  (1970 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  DTC_Calc_Activation, DTC_Calc_Activation_MIL, DTC_Update_Immediate
 EXTERN  DTC_Capture_FreezeFrame:NEAR, DTC_Update_Status_MIL:NEAR
 
-S_D9436 SECTION CODE AT 0D9436H
+S_DTC_ACTIVATION SECTION CODE
 
 ; ======== DTC_Update_Immediate  (@0xd9436) ========
         ; DTC_Update_Immediate(recordPtr, cfgPtr): immediate (non-debounced) fault set/heal. Same record/cfg
@@ -711,5 +710,5 @@ L_D9BE4:                 ; 0xd9be4
         MOV R9,[R0+]
         RETS
 
-S_D9436 ENDS
+S_DTC_ACTIVATION ENDS
         END

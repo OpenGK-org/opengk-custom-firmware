@@ -1,6 +1,5 @@
 ; asw/aj/aj_cyl.a66
 ; Anti-jerk active flag and per-cylinder-group calculation helpers.
-; 0xC5914-0xC598A  (118 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -17,7 +16,7 @@ EXTERN  Calc_Fac_IGA_Max_Knk:NEAR, Calc_IGA_TempFac:NEAR, Calc_Lamb_Ref_Add_TCO:
 EXTERN  Calc_WallFilm_Seg_2:NEAR, Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_Y_Axis:NEAR, Lookup_Dc3b5_TqAddCh:NEAR
 EXTERN  Lookup_Df389_Tia:NEAR, Reset_cVar1_bb2:NEAR, Reset_sVar1_7f6:NEAR, sub_r12_13_ret_r4:NEAR
 
-S_C5914 SECTION CODE AT 0C5914H
+S_AJ_CYL SECTION CODE
 
 ; ======== CylCalc_Group_1  (@0xc5914) ========
         ; ------------------------------------------------------------
@@ -80,5 +79,5 @@ CylCalc_Group_3:
         MOVB lv_cyl_f393,RL4
         RETS
 
-S_C5914 ENDS
+S_AJ_CYL ENDS
         END

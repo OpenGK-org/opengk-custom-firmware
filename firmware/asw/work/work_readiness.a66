@@ -1,6 +1,5 @@
 ; asw/work/work_readiness.a66
 ; OBD readiness: DTC coupling and readiness group 4.
-; 0xDB4DA-0xDBCA4  (1994 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  OBD_Readiness_DTC, OBD_Readiness_Grp4
 EXTERN  Diag_DTC_dd4a4:NEAR, Get_DTC_StatusBits:NEAR, Nop_db00c:NEAR, Sort3_Bytes:NEAR
 
-S_DB4DA SECTION CODE AT 0DB4DAH
+S_WORK_READINESS SECTION CODE
 
 ; ======== OBD_Readiness_DTC  (@0xdb4da) ========
         ; ------------------------------------------------------------
@@ -810,5 +809,5 @@ L_DBC84:                 ; 0xdbc84
         MOV R6,[R0+]
         RETS
 
-S_DB4DA ENDS
+S_WORK_READINESS ENDS
         END

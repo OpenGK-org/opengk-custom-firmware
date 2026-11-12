@@ -1,7 +1,6 @@
 ; asw/isapwm.a66
 ; Idle air actuator during catalyst heating, ignition duration diagnosis and purge-valve
 ; close request.
-; 0xCD8EA-0xCDC6C  (898 bytes, 4 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -34,7 +33,7 @@ PUBLIC  Calc_IGC_Dur_Fault, Calc_ISA_CatHeat, CanPurge_Set_Close, Diag_IGC_Dur
 EXTERN  Add_r12_r13_Return_r4:NEAR, DTC_Update_Debounced:NEAR, sub_r12_r13_rets_r4:NEAR
 PUBLIC  L_CD90C
 
-S_CD8EA SECTION CODE AT 0CD8EAH
+S_ISAPWM SECTION CODE
 
 ; ======== Calc_IGC_Dur_Fault  (@0xcd8ea) ========
         ; ------------------------------------------------------------
@@ -360,5 +359,5 @@ L_CDC68:                 ; 0xcdc68
         BCLR lv_cp_set_close.00H
         RETS
 
-S_CD8EA ENDS
+S_ISAPWM ENDS
         END

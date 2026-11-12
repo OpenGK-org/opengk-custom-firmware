@@ -1,6 +1,5 @@
 ; asw/imob/imob_cipher.a66
 ; SMARTRA cipher (shift register clock, output S-box) and response compare.
-; 0xBDF20-0xBE20C  (748 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -8,7 +7,7 @@ $INCLUDE (zone_syms.inc)
 
 PUBLIC  SMARTRA_cipher_clock_bit, SMARTRA_cipher_output_sbox, SMARTRA_load_response_compare
 
-S_BDF20 SECTION CODE AT 0BDF20H
+S_IMOB_CIPHER SECTION CODE
 
 ; ======== SMARTRA_load_response_compare  (@0xbdf20) ========
         ; Loads expected challenge/response compare bytes from the RAM mirror @0x90000 (offsets from
@@ -318,5 +317,5 @@ L_BE1FE:                 ; 0xbe1fe
         MOV R7,[R0+]
         RETS
 
-S_BDF20 ENDS
+S_IMOB_CIPHER ENDS
         END

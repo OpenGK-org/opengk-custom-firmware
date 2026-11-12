@@ -1,6 +1,5 @@
 ; asw/iga/iga_window.a66
 ; Engine speed window check and combustion task.
-; 0xC840C-0xC849E  (146 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  Check_N_Window, Reset_trt_word_40c, Task_IV_Combustion
 EXTERN  Diag_IV_Combustion:NEAR, ProgSession_StateMachine_VbGated:NEAR, SpinHalt_a3d48:NEAR
 
-S_C840C SECTION CODE AT 0C840CH
+S_IGA_WINDOW SECTION CODE
 
 ; ======== Reset_trt_word_40c  (@0xc840c) ========
 Reset_trt_word_40c:
@@ -77,5 +76,5 @@ L_C8494:                 ; 0xc8494
         CALLS SEG ProgSession_StateMachine_VbGated, SOF ProgSession_StateMachine_VbGated
         RETS
 
-S_C840C ENDS
+S_IGA_WINDOW ENDS
         END

@@ -1,6 +1,5 @@
 ; asw/imob/imob_warn.a66
 ; Immobilizer comms DTC, authentication start / bookkeeping and warning lamp.
-; 0xBD732-0xBDA48  (790 bytes, 7 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -20,7 +19,7 @@ PUBLIC  Imob_DTC_update_comms, Imob_Ign_Delay, Imob_SetFmy_2, Imob_Update_WarnLa
 PUBLIC  SMARTRA_auth_post_update
 EXTERN  DTC_Update_Immediate:NEAR
 
-S_BD732 SECTION CODE AT 0BD732H
+S_IMOB_WARN SECTION CODE
 
 ; ======== Imob_DTC_update_comms  (@0xbd732) ========
         ; Immobilizer comms DTC updater. Derives dtc_test_result from lv_fmy_imob / imob_bw fault bits
@@ -363,5 +362,5 @@ L_BDA32:                 ; 0xbda32
 L_BDA46:                 ; 0xbda46
         RETS
 
-S_BD732 ENDS
+S_IMOB_WARN ENDS
         END

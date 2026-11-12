@@ -1,6 +1,5 @@
 ; asw/mem/mem_cppwm.a66
 ; Canister purge flow adaptation memory.
-; 0xB2E68-0xB2EEA  (130 bytes, 2 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  CanPurge_Adapt_Flow, Reset_cppwm_ad_mem_ee0
 EXTERN  xor_routine:NEAR
 
-S_B2E68 SECTION CODE AT 0B2E68H
+S_MEM_CPPWM SECTION CODE
 
 ; ======== CanPurge_Adapt_Flow  (@0xb2e68) ========
         ; ------------------------------------------------------------
@@ -69,5 +68,5 @@ Reset_cppwm_ad_mem_ee0:
         MOV flow_cor_cps_old,ZEROS
         RETS
 
-S_B2E68 ENDS
+S_MEM_CPPWM ENDS
         END

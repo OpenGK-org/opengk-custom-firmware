@@ -1,6 +1,5 @@
 ; asw/plaus/plaus_vls.a66
 ; Front O2 voltage plausibility rate-based monitor (IUMPR).
-; 0xD450E-0xD45BC  (174 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  Calc_RBM_VLS_Up_Plaus, ClrBits_state_rbm_vls_up_plaus_5b2, Reset_state_rbm_vls_up_plaus_50e
 EXTERN  Div_U32_U16_Round32:NEAR
 
-S_D450E SECTION CODE AT 0D450EH
+S_PLAUS_VLS SECTION CODE
 
 ; ======== Reset_state_rbm_vls_up_plaus_50e  (@0xd450e) ========
 Reset_state_rbm_vls_up_plaus_50e:
@@ -91,5 +90,5 @@ ClrBits_state_rbm_vls_up_plaus_5b2:
         ANDB state_rbm_vls_up_plaus,RL4
         RETS
 
-S_D450E ENDS
+S_PLAUS_VLS ENDS
         END

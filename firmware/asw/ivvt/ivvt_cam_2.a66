@@ -1,6 +1,5 @@
 ; asw/ivvt/ivvt_cam_2.a66
 ; IVVT additive cam set point.
-; 0xB5552-0xB564C  (250 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -16,7 +15,7 @@ PUBLIC  Calc_Cam_Sp_Add, Calc_Cam_Sp_Add_2, Calc_IVVT_CamSp_Add
 EXTERN  Get_Byte_2D_Table_DWord_YWord:NEAR, Get_IP_Byte_3D_Table_DWord_XWord_YWord:NEAR, Get_IP_Byte_Y_Axis:NEAR, Get_IP_Word_2D_Table:NEAR
 EXTERN  Read_MD_Signed:NEAR
 
-S_B5552 SECTION CODE AT 0B5552H
+S_IVVT_CAM_2 SECTION CODE
 
 ; ======== Calc_Cam_Sp_Add  (@0xb5552) ========
         ; ------------------------------------------------------------
@@ -121,5 +120,5 @@ L_B5648:                 ; 0xb5648
         MOV R6,[R0+]
         RETS
 
-S_B5552 ENDS
+S_IVVT_CAM_2 ENDS
         END

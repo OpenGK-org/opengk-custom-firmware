@@ -1,6 +1,5 @@
 ; asw/tcu/tcu_s5aa.a66
 ; NVM restore/save of blocks 0x5AA and 0x5AE; ASR/ABS CAN timeout reset.
-; 0xD74AA-0xD76B4  (522 bytes, 7 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -10,7 +9,7 @@ PUBLIC  NVM_Restore_s5aa, NVM_Restore_s5ae, NVM_Save_s5aa, NVM_Save_s5ae, Reset_
 PUBLIC  Reset_lv_conf_mis_69a
 EXTERN  Elevated_Write_Routine_prg_zone_wrapper:NEAR, xor_routine:NEAR
 
-S_D74AA SECTION CODE AT 0D74AAH
+S_TCU_S5AA SECTION CODE
 
 ; ======== NVM_Restore_s5aa  (@0xd74aa) ========
         ; ------------------------------------------------------------
@@ -263,5 +262,5 @@ Reset_CAN_AsrAbs:
         MOVB ctr_can_tcu_to,ZEROS
         RETS
 
-S_D74AA ENDS
+S_TCU_S5AA ENDS
         END

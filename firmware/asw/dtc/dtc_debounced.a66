@@ -1,6 +1,5 @@
 ; asw/dtc/dtc_debounced.a66
 ; Debounced DTC updates (normal and OBD) and drive-cycle / MIL status.
-; 0xD8A98-0xD9436  (2462 bytes, 5 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -9,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 PUBLIC  DTC_Debounce_Core, DTC_Update_Debounced, DTC_Update_Debounced_OBD, DTC_Update_Imm_V2, DTC_Update_Status_MIL
 EXTERN  DTC_Capture_FreezeFrame:NEAR, OBD_Readiness_Grp2:NEAR, Sat_Add_U8:NEAR
 
-S_D8A98 SECTION CODE AT 0D8A98H
+S_DTC_DEBOUNCED SECTION CODE
 
 ; ======== DTC_Update_Status_MIL  (@0xd8a98) ========
         ; DTC_Update_Status_MIL(recordPtr, cfgPtr): updates record flags field[0xa] with drive-cycle fail bits
@@ -962,5 +961,5 @@ L_D942E:                 ; 0xd942e
         MOV R9,[R0+]
         RETS
 
-S_D8A98 ENDS
+S_DTC_DEBOUNCED ENDS
         END

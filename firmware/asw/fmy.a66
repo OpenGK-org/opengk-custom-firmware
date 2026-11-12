@@ -1,6 +1,5 @@
 ; asw/fmy.a66
 ; Fault memory: entry count, slot search, freeze-frame capture and NVM restore/save.
-; 0xD9BE8-0xDA226  (1598 bytes, 6 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -13,7 +12,7 @@ PUBLIC  Calc_Fmy_Count, DTC_Capture_FreezeFrame, Find_Fmy_Slot, NVM_Restore_s210
 EXTERN  Clear_Fault_Slot:NEAR, Delay_Loop_da664:NEAR, Elevated_Write_Routine_prg_zone_wrapper:NEAR, OBD_Readiness_Grp4:NEAR
 EXTERN  Read_FreezeFrame_1:NEAR, Read_FreezeFrame_2:NEAR, Sat_HiByte_ff:NEAR, xor_routine:NEAR
 
-S_D9BE8 SECTION CODE AT 0D9BE8H
+S_FMY SECTION CODE
 
 ; ======== Calc_Fmy_Count  (@0xd9be8) ========
         ; ------------------------------------------------------------
@@ -684,5 +683,5 @@ L_DA21A:                 ; 0xda21a
         MOV R9,[R0+]
         RETS
 
-S_D9BE8 ENDS
+S_FMY ENDS
         END

@@ -1,7 +1,6 @@
 ; asw/seg/seg_er.a66
 ; Roughness threshold and segment adaptation, segment counter and misfire fade-out
 ; conditions.
-; 0xD4900-0xD4AD6  (470 bytes, 7 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -20,7 +19,7 @@ EXTERN  Calc_CtrlModule_Voltage:NEAR, Calc_ER_Av_Seg:NEAR, Calc_ER_Thd_Adapt_2:N
 EXTERN  Calc_Mis_Detect_Cond:NEAR, Calc_Mis_Rate_Err:NEAR, Diag_DTC_dd496:NEAR, Diag_IV_Misfire:NEAR
 EXTERN  Get_IP_Byte_2D_Table:NEAR, Get_IP_Byte_3D_Table_DWord_XWord_YByte:NEAR, Get_IP_Byte_Y_Axis:NEAR
 
-S_D4900 SECTION CODE AT 0D4900H
+S_SEG_ER SECTION CODE
 
 ; ======== Calc_ER_Thd_Adapt  (@0xd4900) ========
         ; ------------------------------------------------------------
@@ -234,5 +233,5 @@ L_D4A86:                 ; 0xd4a86
         MOV R6,[R0+]
         RETS
 
-S_D4900 ENDS
+S_SEG_ER ENDS
         END

@@ -1,7 +1,6 @@
 ; asw/comm/comm_can1.a66
 ; CAN1 init and periodic handler (bus-off recovery); also after-start injection time per
 ; cylinder.
-; 0xD6824-0xD74AA  (3206 bytes, 3 functions)
 $MOD167
 $SEGMENTED
 $INCLUDE (REG167.INC)
@@ -41,7 +40,7 @@ EXTERN  CAN1_SetDefault_WheelSpeeds:NEAR, CAN1_Tx_SendObject:NEAR, Clamp_U16_v2:
 EXTERN  DTC_Update_Immediate:NEAR, Div_Ratio_U8_Sat:NEAR, OBD_Readiness_Grp2:NEAR, multipied_r12_r13_UGT_r14_rets_r4:NEAR
 EXTERN  sub_r12_13_ret_r4:NEAR
 
-S_D6824 SECTION CODE AT 0D6824H
+S_COMM_CAN1 SECTION CODE
 
 ; ======== Calc_TI_AS  (@0xd6824) ========
         ; ------------------------------------------------------------
@@ -1179,5 +1178,5 @@ L_D74A4:                 ; 0xd74a4
         MOV R9,[R0+]
         RETS
 
-S_D6824 ENDS
+S_COMM_CAN1 ENDS
         END
