@@ -1,4 +1,5 @@
 ; asw/sf.a66
+; DTC status byte processing and diagnosis status bits.
 ; 0xDCC8E-0xDCE40  (434 bytes, 3 functions)
 $MOD167
 $SEGMENTED

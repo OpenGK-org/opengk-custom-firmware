@@ -1,4 +1,5 @@
 ; asw/imob/imob_dd506bbbbbbb.a66
+; SMARTRA command arming and immobilizer DTCs.
 ; 0xBCCAC-0xBCDF2  (326 bytes, 4 functions)
 $MOD167
 $SEGMENTED

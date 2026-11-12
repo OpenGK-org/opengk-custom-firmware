@@ -1,4 +1,5 @@
 ; asw/tq/tq_t1.a66
+; CCP main task, CPU load measurement and timer T1 helpers.
 ; 0xA3F1A-0xA4B22  (3080 bytes, 7 functions)
 $MOD167
 $SEGMENTED

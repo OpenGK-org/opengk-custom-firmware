@@ -1,4 +1,5 @@
 ; asw/comm/comm_ccp_4.a66
+; CCP session control and flag helpers, key buffer init.
 ; 0xA651A-0xA65B8  (158 bytes, 5 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/sys/sys_smartra.a66
+; SMARTRA immobilizer serial (ASC0) init, transmit start and comms timeout.
 ; 0xA3554-0xA3660  (268 bytes, 4 functions)
 $MOD167
 $SEGMENTED

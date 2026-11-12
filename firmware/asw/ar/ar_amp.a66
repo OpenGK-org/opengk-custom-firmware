@@ -1,4 +1,5 @@
 ; asw/ar/ar_amp.a66
+; Reset/init helpers for ambient-pressure and reduced-area adaptation values.
 ; 0xC400C-0xC4082  (118 bytes, 5 functions)
 $MOD167
 $SEGMENTED

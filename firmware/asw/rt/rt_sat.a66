@@ -1,4 +1,5 @@
 ; asw/rt/rt_sat.a66
+; Runtime: saturating add/sub and clamping primitives.
 ; 0xFE200-0xFE38E  (398 bytes, 14 functions)
 $MOD167
 $SEGMENTED

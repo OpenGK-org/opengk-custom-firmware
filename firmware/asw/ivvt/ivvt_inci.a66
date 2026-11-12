@@ -1,4 +1,5 @@
 ; asw/ivvt/ivvt_inci.a66
+; IVVT cam-difference diagnosis and IVVT DTCs.
 ; 0xC133A-0xC14C2  (392 bytes, 4 functions)
 $MOD167
 $SEGMENTED

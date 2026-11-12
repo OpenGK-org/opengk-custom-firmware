@@ -1,4 +1,5 @@
 ; asw/cp/cp_hb.a66
+; Vehicle-speed / purge condition gating and hot-bridge MAF set point.
 ; 0xCB588-0xCB6CC  (324 bytes, 7 functions)
 $MOD167
 $SEGMENTED

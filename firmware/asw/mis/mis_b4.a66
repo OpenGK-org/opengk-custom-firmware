@@ -1,4 +1,5 @@
 ; asw/mis/mis_b4.a66
+; Misfire catalyst-damage flag and NVM restore/save (block 0x578).
 ; 0xBEC7C-0xBEDA0  (292 bytes, 4 functions)
 $MOD167
 $SEGMENTED

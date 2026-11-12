@@ -1,4 +1,5 @@
 ; asw/dtc/dtc_fsd.a66
+; DTC setters for catalyst efficiency, canister purge / fuel system and related faults.
 ; 0xCF682-0xCF900  (638 bytes, 9 functions)
 $MOD167
 $SEGMENTED

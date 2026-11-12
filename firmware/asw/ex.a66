@@ -1,4 +1,5 @@
 ; asw/ex.a66
+; Exhaust pressure, measured segment time and injection-valve state.
 ; 0xC47AE-0xC48A2  (244 bytes, 4 functions)
 $MOD167
 $SEGMENTED

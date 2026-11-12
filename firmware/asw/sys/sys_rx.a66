@@ -1,4 +1,5 @@
 ; asw/sys/sys_rx.a66
+; SMARTRA immobilizer serial (ASC0) receive phases.
 ; 0xA85F0-0xA86F0  (256 bytes, 8 functions)
 $MOD167
 $SEGMENTED

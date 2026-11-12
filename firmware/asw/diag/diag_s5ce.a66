@@ -1,4 +1,5 @@
 ; asw/diag/diag_s5ce.a66
+; NVM restore/save of block 0x5CE (ambient-pressure adaptation reset flag).
 ; 0xD0CFE-0xD0E24  (294 bytes, 3 functions)
 $MOD167
 $SEGMENTED

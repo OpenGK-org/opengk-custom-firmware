@@ -1,4 +1,5 @@
 ; asw/ivvt/ivvt_cam.a66
+; IVVT cam position adaptation.
 ; 0xB48DE-0xB507E  (1952 bytes, 8 functions)
 $MOD167
 $SEGMENTED

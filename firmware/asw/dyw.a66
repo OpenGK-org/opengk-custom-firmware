@@ -1,4 +1,5 @@
 ; asw/dyw.a66
+; Steady-state detection (dynamic watch) and lambda controller delay / correction.
 ; 0xB592E-0xB5BF8  (714 bytes, 5 functions)
 $MOD167
 $SEGMENTED

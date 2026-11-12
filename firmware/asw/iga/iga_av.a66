@@ -1,4 +1,5 @@
 ; asw/iga/iga_av.a66
+; Per-cylinder ignition angle and ignition efficiency.
 ; 0xC0000-0xC06DC  (1756 bytes, 6 functions)
 $MOD167
 $SEGMENTED

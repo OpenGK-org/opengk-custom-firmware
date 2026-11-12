@@ -1,4 +1,5 @@
 ; asw/crank.a66
+; Engine speed gradient (n_grd) and segment timing.
 ; 0xB7BC8-0xB7D82  (442 bytes, 3 functions)
 $MOD167
 $SEGMENTED

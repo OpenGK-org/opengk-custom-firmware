@@ -1,4 +1,6 @@
 ; asw/conf/conf_m01.a66
+; OBD-II Mode 01 PIDs 0x1C-0x2F (OBD standard, run time, distance with MIL, purge, fuel
+; level).
 ; 0xE04D6-0xE05AC  (214 bytes, 6 functions)
 $MOD167
 $SEGMENTED

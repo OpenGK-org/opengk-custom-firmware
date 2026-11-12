@@ -1,4 +1,5 @@
 ; asw/tq/tq_fcut.a66
+; Fast fuel cut request, start torque and canister-purge fuel flow adaptation.
 ; 0xB1810-0xB18B2  (162 bytes, 3 functions)
 $MOD167
 $SEGMENTED

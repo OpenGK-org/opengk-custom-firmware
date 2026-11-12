@@ -1,4 +1,5 @@
 ; asw/ivs.a66
+; Air path set point (throttle reduced area set point).
 ; 0xB0B9C-0xB0D2E  (402 bytes, 2 functions)
 $MOD167
 $SEGMENTED

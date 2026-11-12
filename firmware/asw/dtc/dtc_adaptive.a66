@@ -1,4 +1,5 @@
 ; asw/dtc/dtc_adaptive.a66
+; Periodic DTC status maintenance, DTC count and freeze-frame read; adaptive value reset.
 ; 0xDA226-0xDA41C  (502 bytes, 4 functions)
 $MOD167
 $SEGMENTED

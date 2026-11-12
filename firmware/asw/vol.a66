@@ -1,4 +1,5 @@
 ; asw/vol.a66
+; Upstream-throttle pressure model and purge-valve close flags.
 ; 0xD0508-0xD0744  (572 bytes, 5 functions)
 $MOD167
 $SEGMENTED

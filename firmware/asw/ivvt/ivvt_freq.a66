@@ -1,4 +1,5 @@
 ; asw/ivvt/ivvt_freq.a66
+; IVVT oil-control valve PWM and hold-PWM frequency from battery voltage.
 ; 0xB01BA-0xB05D6  (1052 bytes, 4 functions)
 $MOD167
 $SEGMENTED

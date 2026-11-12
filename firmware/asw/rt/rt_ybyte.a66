@@ -1,4 +1,5 @@
 ; asw/rt/rt_ybyte.a66
+; Runtime: 2D byte-table interpolation, byte axis.
 ; 0xFF414-0xFF49E  (138 bytes, 1 functions)
 $MOD167
 $SEGMENTED

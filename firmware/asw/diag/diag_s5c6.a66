@@ -1,4 +1,5 @@
 ; asw/diag/diag_s5c6.a66
+; NVM restore/save of blocks 0x5C6 and 0x1FA; fuel-cut state; MIL-on distance reset.
 ; 0xB2EEA-0xB317C  (658 bytes, 5 functions)
 $MOD167
 $SEGMENTED

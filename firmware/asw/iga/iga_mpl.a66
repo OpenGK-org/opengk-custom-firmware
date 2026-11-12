@@ -1,4 +1,5 @@
 ; asw/iga/iga_mpl.a66
+; Ignition inhibit, knock transition, set-point ignition efficiency and ignition set point.
 ; 0xBFC7E-0xBFF28  (682 bytes, 7 functions)
 $MOD167
 $SEGMENTED

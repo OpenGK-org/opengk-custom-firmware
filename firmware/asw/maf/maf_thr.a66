@@ -1,4 +1,5 @@
 ; asw/maf/maf_thr.a66
+; MAF sensor acquisition, pulsation detection and reduced-area base threshold.
 ; 0xC3522-0xC36E0  (446 bytes, 6 functions)
 $MOD167
 $SEGMENTED

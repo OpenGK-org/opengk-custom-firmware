@@ -1,4 +1,5 @@
 ; asw/igc.a66
+; Ignition coil diagnosis: current duration and misfire.
 ; 0xC077A-0xC0BD2  (1112 bytes, 2 functions)
 $MOD167
 $SEGMENTED

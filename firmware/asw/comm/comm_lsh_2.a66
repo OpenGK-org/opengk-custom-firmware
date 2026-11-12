@@ -1,4 +1,5 @@
 ; asw/comm/comm_lsh_2.a66
+; Front O2 heater OBD temperature diagnosis and its rate-based monitor.
 ; 0xD466C-0xD4900  (660 bytes, 5 functions)
 $MOD167
 $SEGMENTED

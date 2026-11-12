@@ -1,4 +1,6 @@
 ; asw/seg/seg_er.a66
+; Roughness threshold and segment adaptation, segment counter and misfire fade-out
+; conditions.
 ; 0xD4900-0xD4AD6  (470 bytes, 7 functions)
 $MOD167
 $SEGMENTED

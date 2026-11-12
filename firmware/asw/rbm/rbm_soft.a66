@@ -1,4 +1,6 @@
 ; asw/rbm/rbm_soft.a66
+; Rate-based monitoring (IUMPR) core: reset, ignition-cycle and denominator counters, drive
+; conditions.
 ; 0xB317C-0xB34E0  (868 bytes, 6 functions)
 $MOD167
 $SEGMENTED

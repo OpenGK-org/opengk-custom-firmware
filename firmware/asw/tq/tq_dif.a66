@@ -1,4 +1,5 @@
 ; asw/tq/tq_dif.a66
+; Idle torque adaptation.
 ; 0xAE28C-0xAE40A  (382 bytes, 2 functions)
 $MOD167
 $SEGMENTED

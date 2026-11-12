@@ -1,4 +1,5 @@
 ; asw/mem/mem_s57c.a66
+; Roughness adaptation update and NVM save (block 0x57C).
 ; 0xBC0C4-0xBC21E  (346 bytes, 3 functions)
 $MOD167
 $SEGMENTED

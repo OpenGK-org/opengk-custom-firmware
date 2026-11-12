@@ -1,4 +1,5 @@
 ; asw/comm/comm_s63a.a66
+; NVM restore/save of adaptation block 0x63A.
 ; 0xBF160-0xBF294  (308 bytes, 3 functions)
 $MOD167
 $SEGMENTED

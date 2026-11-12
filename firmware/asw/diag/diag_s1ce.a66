@@ -1,4 +1,5 @@
 ; asw/diag/diag_s1ce.a66
+; NVM restore/save of the misfire counters (block 0x1CE); rear O2 OBD switching ratio.
 ; 0xE28F6-0xE2D72  (1148 bytes, 3 functions)
 $MOD167
 $SEGMENTED

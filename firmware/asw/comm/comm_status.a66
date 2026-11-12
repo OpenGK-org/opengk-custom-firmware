@@ -1,4 +1,5 @@
 ; asw/comm/comm_status.a66
+; KWP SID 0x17 read status of DTC, DTC counting and status-word processing.
 ; 0xDF0EC-0xDF41E  (818 bytes, 3 functions)
 $MOD167
 $SEGMENTED

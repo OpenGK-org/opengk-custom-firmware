@@ -1,4 +1,5 @@
 ; asw/evap/evap_s200.a66
+; EVAP IUMPR counters and their NVM restore/save (block 0x200).
 ; 0xD150C-0xD1AD0  (1476 bytes, 3 functions)
 $MOD167
 $SEGMENTED

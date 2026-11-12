@@ -1,4 +1,5 @@
 ; asw/cp/cp_purge.a66
+; Canister purge: lambda disturbance sum, transition flow and state update.
 ; 0xB1E56-0xB1FF0  (410 bytes, 5 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/rng.a66
+; Coolant temperature stuck-in-range rate-based monitor (IUMPR).
 ; 0xC90E2-0xC916E  (140 bytes, 3 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/sys/data_0xa0210.a66
+; Constant data at 0xA0210.
 ; 0xA0210-0xA0214  (4 bytes, 0 functions)
 $MOD167
 $SEGMENTED

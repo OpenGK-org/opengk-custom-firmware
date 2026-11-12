@@ -1,4 +1,6 @@
 ; asw/tam.a66
+; Ambient air temperature acquisition and NVM storage; exhaust temperature model correction;
+; EVAP temperature gate.
 ; 0xB9874-0xB9A78  (516 bytes, 9 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/diag/diag_dur.a66
+; Ignition coil duration limits and related DTCs.
 ; 0xD51BA-0xD5E2A  (3184 bytes, 5 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/comm/comm_ccp.a66
+; CCP slave init, response (DTO) dispatcher and program / DAQ service handler.
 ; 0xA53A0-0xA56DE  (830 bytes, 3 functions)
 $MOD167
 $SEGMENTED

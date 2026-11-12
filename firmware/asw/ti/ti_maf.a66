@@ -1,4 +1,5 @@
 ; asw/ti/ti_maf.a66
+; KWP application handlers.
 ; 0xE4644-0xE4E38  (2036 bytes, 3 functions)
 $MOD167
 $SEGMENTED

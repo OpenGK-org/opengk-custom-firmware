@@ -1,4 +1,5 @@
 ; asw/tipr/tipr_rest.a66
+; Injection timing for engine restart and cam-phase injection correction.
 ; 0xB9C42-0xB9E66  (548 bytes, 2 functions)
 $MOD167
 $SEGMENTED

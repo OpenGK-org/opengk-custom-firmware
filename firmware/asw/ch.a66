@@ -1,4 +1,5 @@
 ; asw/ch.a66
+; Catalyst heating: coordination, heating state and MAF integral during heating.
 ; 0xBF294-0xBF3F8  (356 bytes, 5 functions)
 $MOD167
 $SEGMENTED

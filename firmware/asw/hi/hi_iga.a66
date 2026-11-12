@@ -1,4 +1,6 @@
 ; asw/hi/hi_iga.a66
+; Periodic task wrappers (injection reset, component protection, idle/gear), DAQ signal list
+; and diagnosis conditions.
 ; 0xD5E2A-0xD648A  (1632 bytes, 14 functions)
 $MOD167
 $SEGMENTED

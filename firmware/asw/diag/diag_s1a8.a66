@@ -1,4 +1,5 @@
 ; asw/diag/diag_s1a8.a66
+; NVM restore/save of block 0x1A8.
 ; 0xD0896-0xD09F0  (346 bytes, 3 functions)
 $MOD167
 $SEGMENTED

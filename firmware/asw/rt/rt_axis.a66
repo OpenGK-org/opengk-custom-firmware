@@ -1,4 +1,5 @@
 ; asw/rt/rt_axis.a66
+; Runtime: axis lookup (byte and word axes).
 ; 0xFED82-0xFEE94  (274 bytes, 3 functions)
 $MOD167
 $SEGMENTED

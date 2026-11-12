@@ -1,4 +1,5 @@
 ; asw/accin/accin_ac.a66
+; A/C compressor request input delay (accin delay 5 state and timer tick).
 ; 0xC7A88-0xC7AF8  (112 bytes, 2 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/lo/lo_lsh.a66
+; Rear O2 sensor heater: start, PWM and closed-loop control.
 ; 0xB6384-0xB6464  (224 bytes, 4 functions)
 $MOD167
 $SEGMENTED

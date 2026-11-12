@@ -1,4 +1,5 @@
 ; asw/diagcp/diagcp_cp.a66
+; EVAP leak diagnosis states 0-3.
 ; 0xD1F96-0xD2222  (652 bytes, 4 functions)
 $MOD167
 $SEGMENTED

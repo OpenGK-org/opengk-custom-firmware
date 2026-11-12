@@ -1,4 +1,5 @@
 ; asw/ivvt/ivvt_cam_3.a66
+; IVVT task groups: cam set point, diagnosis and measurement ticks.
 ; 0xC1DEC-0xC2026  (570 bytes, 9 functions)
 $MOD167
 $SEGMENTED

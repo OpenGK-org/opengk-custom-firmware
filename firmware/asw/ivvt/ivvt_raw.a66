@@ -1,4 +1,5 @@
 ; asw/ivvt/ivvt_raw.a66
+; Raw cam position capture, MAF snapshot for IVVT and VVT factor.
 ; 0xC16E6-0xC186A  (388 bytes, 3 functions)
 $MOD167
 $SEGMENTED

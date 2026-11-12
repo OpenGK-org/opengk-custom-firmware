@@ -1,4 +1,5 @@
 ; asw/tq/tq_gs.a66
+; Minimum clutch torque, driver torque request and gear-shift torque reduction.
 ; 0xC5F96-0xC622C  (662 bytes, 6 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/mem/mem_cppwm.a66
+; Canister purge flow adaptation memory.
 ; 0xB2E68-0xB2EEA  (130 bytes, 2 functions)
 $MOD167
 $SEGMENTED

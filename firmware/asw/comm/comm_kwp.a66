@@ -1,4 +1,5 @@
 ; asw/comm/comm_kwp.a66
+; KWP application services 0x14, 0x1B-0x1E.
 ; 0xE51CA-0xE57D2  (1544 bytes, 5 functions)
 $MOD167
 $SEGMENTED

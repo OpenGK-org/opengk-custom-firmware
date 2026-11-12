@@ -1,4 +1,5 @@
 ; asw/diagcp/diagcp_st7.a66
+; EVAP leak diagnosis states 7-9 (evacuation leak measurement, model evaluation).
 ; 0xD2454-0xD3154  (3328 bytes, 3 functions)
 $MOD167
 $SEGMENTED

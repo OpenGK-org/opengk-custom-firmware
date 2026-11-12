@@ -1,4 +1,5 @@
 ; asw/sw/sw_pump_2.a66
+; Fuel pump output latches, run-on timer and trailing-throttle fuel cut entry.
 ; 0xE5B2C-0xE5C38  (268 bytes, 7 functions)
 $MOD167
 $SEGMENTED

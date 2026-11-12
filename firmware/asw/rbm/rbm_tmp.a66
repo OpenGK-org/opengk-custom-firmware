@@ -1,4 +1,5 @@
 ; asw/rbm/rbm_tmp.a66
+; Rate-based monitor temperature-bin ratios, counter reset and OBD Mode 09 item count.
 ; 0xB34E0-0xB373A  (602 bytes, 3 functions)
 $MOD167
 $SEGMENTED

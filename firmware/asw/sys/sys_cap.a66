@@ -1,4 +1,6 @@
 ; asw/sys/sys_cap.a66
+; Injector capture/compare channel drivers (CC0-CC3), engine output scheduler and CC8/CC25
+; interrupts.
 ; 0xA9236-0xAA49E  (4712 bytes, 7 functions)
 $MOD167
 $SEGMENTED

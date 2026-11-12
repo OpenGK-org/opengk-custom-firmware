@@ -1,4 +1,5 @@
 ; asw/sys/sys_ivvt.a66
+; CC16 interrupt handler (IVVT).
 ; 0xAB32C-0xAB494  (360 bytes, 1 functions)
 $MOD167
 $SEGMENTED

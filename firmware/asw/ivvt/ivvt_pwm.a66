@@ -1,4 +1,5 @@
 ; asw/ivvt/ivvt_pwm.a66
+; IVVT oil-control valve PWM duty control and hold-PWM base.
 ; 0xAF1FE-0xAFF22  (3364 bytes, 4 functions)
 $MOD167
 $SEGMENTED

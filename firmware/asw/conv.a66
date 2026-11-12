@@ -1,4 +1,5 @@
 ; asw/conv.a66
+; Automatic transmission torque converter and catalyst-heating additive torque.
 ; 0xC6EF0-0xC73D8  (1256 bytes, 4 functions)
 $MOD167
 $SEGMENTED

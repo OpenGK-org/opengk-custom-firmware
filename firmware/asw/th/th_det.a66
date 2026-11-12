@@ -1,4 +1,5 @@
 ; asw/th/th_det.a66
+; Thermostat detection rate-based monitor (IUMPR).
 ; 0xB9702-0xB97DC  (218 bytes, 5 functions)
 $MOD167
 $SEGMENTED

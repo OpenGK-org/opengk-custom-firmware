@@ -1,4 +1,5 @@
 ; asw/stnd.a66
+; Standardized torque ratios (base / max) and NVM save (block 0x5D8).
 ; 0xC6584-0xC67E2  (606 bytes, 5 functions)
 $MOD167
 $SEGMENTED

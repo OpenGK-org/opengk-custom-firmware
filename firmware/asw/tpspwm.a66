@@ -1,4 +1,5 @@
 ; asw/tpspwm.a66
+; Throttle actuator PWM output and transient torque loss.
 ; 0xC5EC6-0xC5F96  (208 bytes, 3 functions)
 $MOD167
 $SEGMENTED

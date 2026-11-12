@@ -1,4 +1,5 @@
 ; asw/sys/sys_adjust.a66
+; IVVT hold-current adjustment, fuel pump output init and CC26 interrupt.
 ; 0xA4B22-0xA4E22  (768 bytes, 5 functions)
 $MOD167
 $SEGMENTED

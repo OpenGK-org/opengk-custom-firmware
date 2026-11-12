@@ -1,4 +1,5 @@
 ; asw/fco.a66
+; Fuel cut-off, refuel injection time, MAF trim flag and altitude-correction lookup.
 ; 0xDD6BA-0xDD862  (424 bytes, 5 functions)
 $MOD167
 $SEGMENTED

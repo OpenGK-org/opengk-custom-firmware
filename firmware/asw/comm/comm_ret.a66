@@ -1,4 +1,6 @@
 ; asw/comm/comm_ret.a66
+; CAN bus-off and lambda-limit diagnosis, catalyst heating state, CCP-active check and small
+; return-constant helpers.
 ; 0xBEE6E-0xBF160  (754 bytes, 9 functions)
 $MOD167
 $SEGMENTED

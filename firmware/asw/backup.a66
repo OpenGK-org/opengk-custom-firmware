@@ -1,4 +1,6 @@
 ; asw/backup.a66
+; NVM backup of adaptations: misfire roughness adaptation per segment and the DTC shadow
+; table.
 ; 0xCABF2-0xCB400  (2062 bytes, 4 functions)
 $MOD167
 $SEGMENTED

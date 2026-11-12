@@ -1,4 +1,6 @@
 ; asw/ar/ar_amp_2.a66
+; Air path: reduced area (ar_red) and its adaptation, ambient-pressure adaptation and
+; manifold-pressure model PI controller.
 ; 0xC4082-0xC47AE  (1836 bytes, 8 functions)
 $MOD167
 $SEGMENTED

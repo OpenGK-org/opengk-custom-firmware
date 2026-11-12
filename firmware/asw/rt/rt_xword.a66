@@ -1,4 +1,5 @@
 ; asw/rt/rt_xword.a66
+; Runtime: 3D word-table interpolation, word X / word Y axes.
 ; 0xFF1D8-0xFF2F0  (280 bytes, 1 functions)
 $MOD167
 $SEGMENTED

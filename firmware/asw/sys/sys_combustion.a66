@@ -1,4 +1,5 @@
 ; asw/sys/sys_combustion.a66
+; Injector/combustion diagnosis, programming session manager and CC12 output disable.
 ; 0xA4E22-0xA5230  (1038 bytes, 4 functions)
 $MOD167
 $SEGMENTED

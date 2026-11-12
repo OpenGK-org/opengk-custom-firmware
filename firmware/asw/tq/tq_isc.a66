@@ -1,4 +1,5 @@
 ; asw/tq/tq_isc.a66
+; Idle speed controller: P-D and I terms, state requests and low-speed torque reserve.
 ; 0xB3DF4-0xB46D4  (2272 bytes, 6 functions)
 $MOD167
 $SEGMENTED

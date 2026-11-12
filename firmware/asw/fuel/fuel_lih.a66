@@ -1,4 +1,5 @@
 ; asw/fuel/fuel_lih.a66
+; Crank-error request and fuel pump output latch.
 ; 0xE5C38-0xE5D36  (254 bytes, 6 functions)
 $MOD167
 $SEGMENTED

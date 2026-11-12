@@ -1,4 +1,5 @@
 ; asw/sys/sys_ign.a66
+; Engine start/stop: arms and disables ignition outputs (CC6/CC7).
 ; 0xA38EE-0xA3A7C  (398 bytes, 4 functions)
 $MOD167
 $SEGMENTED

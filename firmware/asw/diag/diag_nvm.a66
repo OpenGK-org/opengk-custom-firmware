@@ -1,4 +1,6 @@
 ; asw/diag/diag_nvm.a66
+; Total run time and ECU diagnosis flags NVM storage, power-latch flags, adaptation-reset
+; coding, serial parsing.
 ; 0xDAB06-0xDAE6A  (868 bytes, 8 functions)
 $MOD167
 $SEGMENTED

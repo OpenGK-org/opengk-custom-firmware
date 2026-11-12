@@ -1,4 +1,5 @@
 ; asw/maf/maf_tps.a66
+; MAF sensor diagnosis and MAF/TPS ratio plausibility.
 ; 0xD09F0-0xD0CFE  (782 bytes, 3 functions)
 $MOD167
 $SEGMENTED

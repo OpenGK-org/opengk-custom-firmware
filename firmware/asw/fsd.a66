@@ -1,4 +1,5 @@
 ; asw/fsd.a66
+; Fuel system diagnosis: inhibition, stop counter and OBD completion ratio.
 ; 0xB84D0-0xB87E0  (784 bytes, 4 functions)
 $MOD167
 $SEGMENTED

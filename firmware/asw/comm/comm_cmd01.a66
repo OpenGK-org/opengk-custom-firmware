@@ -1,4 +1,5 @@
 ; asw/comm/comm_cmd01.a66
+; KWP flash-reprogramming service dispatcher and command 0x01 (session check).
 ; 0xCB6CC-0xCB850  (388 bytes, 3 functions)
 $MOD167
 $SEGMENTED

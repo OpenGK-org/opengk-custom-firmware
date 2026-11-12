@@ -1,4 +1,5 @@
 ; asw/imob/imob_smartra_3.a66
+; SMARTRA protocol steps (key write), cipher step and comms error DTC.
 ; 0xBD3C8-0xBD732  (874 bytes, 5 functions)
 $MOD167
 $SEGMENTED

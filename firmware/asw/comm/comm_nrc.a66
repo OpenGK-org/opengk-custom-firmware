@@ -1,4 +1,5 @@
 ; asw/comm/comm_nrc.a66
+; KWP negative response code and SID 0x14 clear diagnostic information.
 ; 0xDF052-0xDF0EC  (154 bytes, 4 functions)
 $MOD167
 $SEGMENTED

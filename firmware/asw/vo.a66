@@ -1,4 +1,5 @@
 ; asw/vo.a66
+; Volumetric efficiency set point and ambient-pressure ignition correction.
 ; 0xB373A-0xB38F2  (440 bytes, 3 functions)
 $MOD167
 $SEGMENTED

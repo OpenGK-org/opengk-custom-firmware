@@ -1,4 +1,5 @@
 ; asw/frq.a66
+; Front O2 switching frequency rate-based monitor (IUMPR).
 ; 0xD45BC-0xD466C  (176 bytes, 3 functions)
 $MOD167
 $SEGMENTED

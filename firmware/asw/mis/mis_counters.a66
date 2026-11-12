@@ -1,4 +1,5 @@
 ; asw/mis/mis_counters.a66
+; Misfire rate determination, error management, injector inhibit and misfire DTCs.
 ; 0xBE20C-0xBEC7C  (2672 bytes, 5 functions)
 $MOD167
 $SEGMENTED

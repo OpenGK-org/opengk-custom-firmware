@@ -1,4 +1,5 @@
 ; asw/rt/rt_yword.a66
+; Runtime: 2D word-table interpolation, word axis.
 ; 0xFF806-0xFF888  (130 bytes, 1 functions)
 $MOD167
 $SEGMENTED

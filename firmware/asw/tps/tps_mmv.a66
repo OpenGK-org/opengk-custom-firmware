@@ -1,4 +1,5 @@
 ; asw/tps/tps_mmv.a66
+; Throttle idle position adaptation and NVM restore/save (block 0x1B0).
 ; 0xC9EBE-0xCA0DE  (544 bytes, 4 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/diag/diag_output.a66
+; Output-stage diagnosis (EGR and secondary air outputs).
 ; 0xA3750-0xA38EE  (414 bytes, 4 functions)
 $MOD167
 $SEGMENTED

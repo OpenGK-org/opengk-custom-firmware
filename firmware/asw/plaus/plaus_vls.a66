@@ -1,4 +1,5 @@
 ; asw/plaus/plaus_vls.a66
+; Front O2 voltage plausibility rate-based monitor (IUMPR).
 ; 0xD450E-0xD45BC  (174 bytes, 3 functions)
 $MOD167
 $SEGMENTED

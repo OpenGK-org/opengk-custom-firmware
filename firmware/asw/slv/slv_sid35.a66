@@ -1,4 +1,6 @@
 ; asw/slv/slv_sid35.a66
+; Start ignition angle, MAF/lambda set points, IVVT trip flag and KWP SID 0x35 (not
+; supported).
 ; 0xBFF28-0xC0000  (216 bytes, 6 functions)
 $MOD167
 $SEGMENTED

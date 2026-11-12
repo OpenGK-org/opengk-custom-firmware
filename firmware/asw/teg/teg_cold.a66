@@ -1,4 +1,5 @@
 ; asw/teg/teg_cold.a66
+; Exhaust gas temperature model and cold start counter.
 ; 0xC53BC-0xC5914  (1368 bytes, 5 functions)
 $MOD167
 $SEGMENTED

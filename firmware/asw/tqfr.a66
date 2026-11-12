@@ -1,4 +1,5 @@
 ; asw/tqfr.a66
+; Torque losses, start friction torque and canister-purge torque reserve.
 ; 0xB1642-0xB1810  (462 bytes, 6 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/lsh/lsh_di.a66
+; Cam adaptation diagnosis-inhibit flags.
 ; 0xB6464-0xB673C  (728 bytes, 4 functions)
 $MOD167
 $SEGMENTED

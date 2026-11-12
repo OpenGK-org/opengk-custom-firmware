@@ -1,4 +1,5 @@
 ; asw/evac.a66
+; EVAP diagnosis tank-pressure evacuation slope.
 ; 0xD391C-0xD39E8  (204 bytes, 2 functions)
 $MOD167
 $SEGMENTED

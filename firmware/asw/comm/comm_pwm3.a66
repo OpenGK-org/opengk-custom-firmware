@@ -1,4 +1,5 @@
 ; asw/comm/comm_pwm3.a66
+; Capture/compare (CCx) interrupt handlers.
 ; 0xABBF2-0xAC168  (1398 bytes, 14 functions)
 $MOD167
 $SEGMENTED

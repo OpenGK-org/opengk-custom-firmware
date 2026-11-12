@@ -1,4 +1,5 @@
 ; asw/evap/evap_ratio.a66
+; EVAP rate-based monitor enable conditions.
 ; 0xD124E-0xD12C2  (116 bytes, 2 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,6 @@
 ; asw/tooth/tooth_ac_2.a66
+; A/C compressor pressure cut-off, start conditions, delay reset; gear-shift delay; output
+; latch.
 ; 0xC790A-0xC7A88  (382 bytes, 6 functions)
 $MOD167
 $SEGMENTED

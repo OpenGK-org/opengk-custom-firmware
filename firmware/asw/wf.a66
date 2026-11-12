@@ -1,4 +1,5 @@
 ; asw/wf.a66
+; Wall-film injection correction.
 ; 0xBB18C-0xBB95A  (1998 bytes, 5 functions)
 $MOD167
 $SEGMENTED

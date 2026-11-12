@@ -1,4 +1,5 @@
 ; asw/session.a66
+; RSW call (external memory on CS2), timer delta and arithmetic helpers.
 ; 0xDFD70-0xDFEE4  (372 bytes, 6 functions)
 $MOD167
 $SEGMENTED

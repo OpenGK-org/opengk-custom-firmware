@@ -1,4 +1,5 @@
 ; asw/knks.a66
+; Knock sensor diagnosis: enable conditions, dynamic value check and DTC.
 ; 0xC30F0-0xC3330  (576 bytes, 4 functions)
 $MOD167
 $SEGMENTED

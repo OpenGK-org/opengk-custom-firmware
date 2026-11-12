@@ -1,4 +1,5 @@
 ; asw/comm/comm_ccp_3.a66
+; CCP command entry, main command state machine and command parsing.
 ; 0xA5F16-0xA651A  (1540 bytes, 8 functions)
 $MOD167
 $SEGMENTED

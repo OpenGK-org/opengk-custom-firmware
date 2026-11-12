@@ -1,4 +1,6 @@
 ; asw/iga/iga_er.a66
+; Ignition roughness adaptation, roughness standard deviation and clutch torque-request
+; hysteresis.
 ; 0xAD900-0xADDAC  (1196 bytes, 6 functions)
 $MOD167
 $SEGMENTED

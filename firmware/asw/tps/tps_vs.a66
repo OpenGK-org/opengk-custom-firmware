@@ -1,4 +1,6 @@
 ; asw/tps/tps_vs.a66
+; Throttle sensor diagnosis; vehicle speed acquisition and source learning, NVM save (block
+; 0x641).
 ; 0xCA0DE-0xCA984  (2214 bytes, 6 functions)
 $MOD167
 $SEGMENTED

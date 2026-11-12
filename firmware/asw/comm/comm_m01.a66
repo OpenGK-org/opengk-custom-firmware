@@ -1,4 +1,5 @@
 ; asw/comm/comm_m01.a66
+; OBD-II Mode 01 PID reader / dispatcher and PIDs 0x00-0x12.
 ; 0xE0000-0xE044A  (1098 bytes, 15 functions)
 $MOD167
 $SEGMENTED

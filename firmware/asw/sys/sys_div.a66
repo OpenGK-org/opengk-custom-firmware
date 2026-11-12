@@ -1,4 +1,5 @@
 ; asw/sys/sys_div.a66
+; Runtime: fixed-point division helpers (rounding, saturating).
 ; 0xFE38E-0xFE592  (516 bytes, 8 functions)
 $MOD167
 $SEGMENTED

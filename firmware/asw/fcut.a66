@@ -1,4 +1,5 @@
 ; asw/fcut.a66
+; Engine speed limiter: max torque and predicted speed limit.
 ; 0xB073A-0xB09F0  (694 bytes, 3 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/ivvt/ivvt_ocv.a66
+; IVVT delay and oil-control valve measurement steps.
 ; 0xB0000-0xB01BA  (442 bytes, 4 functions)
 $MOD167
 $SEGMENTED

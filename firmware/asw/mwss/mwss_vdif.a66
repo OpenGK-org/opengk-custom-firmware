@@ -1,4 +1,5 @@
 ; asw/mwss/mwss_vdif.a66
+; MWSS sensor voltage-difference diagnosis, DTC and NVM save (block 0x642).
 ; 0xBEDA0-0xBEE6E  (206 bytes, 4 functions)
 $MOD167
 $SEGMENTED

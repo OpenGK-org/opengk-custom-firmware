@@ -1,4 +1,5 @@
 ; asw/sys/sys_s0.a66
+; Serial ASC0 interrupt-control resets, CC14 interrupt and CC24 output setup.
 ; 0xA6E34-0xA8080  (4684 bytes, 7 functions)
 $MOD167
 $SEGMENTED

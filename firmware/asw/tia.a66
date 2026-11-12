@@ -1,4 +1,5 @@
 ; asw/tia.a66
+; Intake air and coolant temperature acquisition.
 ; 0xC9216-0xC97C2  (1452 bytes, 2 functions)
 $MOD167
 $SEGMENTED

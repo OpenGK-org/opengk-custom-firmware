@@ -1,4 +1,5 @@
 ; asw/misc/misc_spin.a66
+; Halt stubs (endless loops) used as unused interrupt / fault targets.
 ; 0xA0214-0xA040C  (504 bytes, 120 functions)
 $MOD167
 $SEGMENTED

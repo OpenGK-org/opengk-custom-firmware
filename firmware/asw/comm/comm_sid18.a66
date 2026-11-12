@@ -1,4 +1,5 @@
 ; asw/comm/comm_sid18.a66
+; KWP SID 0x18 read DTCs by status.
 ; 0xDF41E-0xDF638  (538 bytes, 2 functions)
 $MOD167
 $SEGMENTED

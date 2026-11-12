@@ -1,4 +1,5 @@
 ; asw/ivvt/ivvt_meas.a66
+; IVVT cam-phaser response measurement sub-states.
 ; 0xB53BA-0xB5552  (408 bytes, 7 functions)
 $MOD167
 $SEGMENTED

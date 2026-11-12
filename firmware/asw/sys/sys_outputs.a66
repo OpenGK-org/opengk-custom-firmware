@@ -1,4 +1,5 @@
 ; asw/sys/sys_outputs.a66
+; Engine start/stop: arms and disables fuel injection outputs.
 ; 0xA3A7C-0xA3BBC  (320 bytes, 2 functions)
 $MOD167
 $SEGMENTED

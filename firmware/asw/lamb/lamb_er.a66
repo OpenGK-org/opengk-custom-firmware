@@ -1,4 +1,5 @@
 ; asw/lamb/lamb_er.a66
+; Lambda roughness adaptation.
 ; 0xADDAC-0xADF66  (442 bytes, 4 functions)
 $MOD167
 $SEGMENTED

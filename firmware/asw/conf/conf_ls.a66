@@ -1,4 +1,5 @@
 ; asw/conf/conf_ls.a66
+; Lambda-sensor state reset groups.
 ; 0xB5FA2-0xB6050  (174 bytes, 5 functions)
 $MOD167
 $SEGMENTED

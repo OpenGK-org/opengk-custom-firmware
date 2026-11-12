@@ -1,4 +1,5 @@
 ; asw/imob/imob_smartra.a66
+; Immobilizer lock/limp-home state, SMARTRA run-time command state machine and DTCs.
 ; 0xBC8E8-0xBCCAC  (964 bytes, 11 functions)
 $MOD167
 $SEGMENTED

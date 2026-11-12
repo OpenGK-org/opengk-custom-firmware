@@ -1,4 +1,5 @@
 ; asw/red.a66
+; Catalyst-heating torque reduction factor and DTC.
 ; 0xBAFD6-0xBB18C  (438 bytes, 3 functions)
 $MOD167
 $SEGMENTED

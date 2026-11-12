@@ -1,4 +1,5 @@
 ; asw/comm/comm_kline.a66
+; K-line protocol init, KWP session setup, P3 timeout and security-access grant.
 ; 0xDEE52-0xDF052  (512 bytes, 6 functions)
 $MOD167
 $SEGMENTED

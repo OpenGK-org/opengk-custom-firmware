@@ -1,4 +1,5 @@
 ; asw/ivvt/ivvt_ptrs.a66
+; IVVT per-bank RAM structure pointers.
 ; 0xB4874-0xB48DE  (106 bytes, 2 functions)
 $MOD167
 $SEGMENTED

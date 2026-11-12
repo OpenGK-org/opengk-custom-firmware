@@ -1,4 +1,7 @@
 ; SIMK43 seg-8 bootloader (phys 0x88000-0x8FFFF), symbolicated from Ghidra.
+; Reset entry (cstart, RAM tests), decides between starting the
+; application and staying in download mode, and holds the flash programming routines.
+;
 ; '#DATA16 n' keeps the 4-byte immediate form where a short form would fit:
 ; it keeps code size, and so every address, unchanged (see README).
 $MOD167

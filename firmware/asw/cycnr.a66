@@ -1,4 +1,5 @@
 ; asw/cycnr.a66
+; EVAP (canister purge) diagnosis active flags.
 ; 0xD3F04-0xD444E  (1354 bytes, 3 functions)
 $MOD167
 $SEGMENTED

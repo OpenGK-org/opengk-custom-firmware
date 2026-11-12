@@ -1,4 +1,5 @@
 ; asw/toil/toil_fca.a66
+; Oil temperature acquisition and sensor diagnosis.
 ; 0xB9F4A-0xBA37E  (1076 bytes, 4 functions)
 $MOD167
 $SEGMENTED

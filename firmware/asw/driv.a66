@@ -1,4 +1,6 @@
 ; asw/driv.a66
+; IVVT solenoid magnet temperature model, TPS/MAF torque-request factors and indicated
+; torque limits.
 ; 0xB0D2E-0xB0FE4  (694 bytes, 4 functions)
 $MOD167
 $SEGMENTED

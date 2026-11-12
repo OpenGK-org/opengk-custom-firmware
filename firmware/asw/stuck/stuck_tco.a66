@@ -1,4 +1,5 @@
 ; asw/stuck/stuck_tco.a66
+; Coolant temperature stuck rate-based monitor (IUMPR).
 ; 0xC9032-0xC90E2  (176 bytes, 4 functions)
 $MOD167
 $SEGMENTED

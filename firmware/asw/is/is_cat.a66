@@ -1,4 +1,6 @@
 ; asw/is/is_cat.a66
+; Idle speed set point: base, selection, catalyst-heating additions, corrections and speed
+; difference.
 ; 0xC4AB0-0xC53BC  (2316 bytes, 7 functions)
 $MOD167
 $SEGMENTED

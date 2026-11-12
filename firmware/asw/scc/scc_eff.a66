@@ -1,4 +1,5 @@
 ; asw/scc/scc_eff.a66
+; Torque pattern efficiency (eff_scc): reset, base and average.
 ; 0xC73D8-0xC7612  (570 bytes, 3 functions)
 $MOD167
 $SEGMENTED

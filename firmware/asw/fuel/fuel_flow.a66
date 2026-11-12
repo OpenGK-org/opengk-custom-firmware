@@ -1,4 +1,5 @@
 ; asw/fuel/fuel_flow.a66
+; Canister-purge fuel flow additive adaptation.
 ; 0xB18B2-0xB1A64  (434 bytes, 6 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,6 @@
 ; asw/cp/cp_purge_3.a66
+; Canister purge: activation control, duration state machine, timing state and fuel/flow
+; limits.
 ; 0xCCACC-0xCCEF6  (1066 bytes, 7 functions)
 $MOD167
 $SEGMENTED

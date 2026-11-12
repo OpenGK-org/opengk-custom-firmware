@@ -1,4 +1,5 @@
 ; asw/imob/imob_fail.a66
+; Immobilizer control data, state tick and command-failure / warning lamp handling.
 ; 0xBC6A0-0xBC8E8  (584 bytes, 5 functions)
 $MOD167
 $SEGMENTED

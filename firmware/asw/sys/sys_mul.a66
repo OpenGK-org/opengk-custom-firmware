@@ -1,4 +1,5 @@
 ; asw/sys/sys_mul.a66
+; Runtime: fixed-point multiply/divide, clamp, min/max, ramp and filter primitives.
 ; 0xFE592-0xFED82  (2032 bytes, 70 functions)
 $MOD167
 $SEGMENTED

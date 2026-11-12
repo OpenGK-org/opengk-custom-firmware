@@ -1,4 +1,5 @@
 ; asw/misc/misc_div.a66
+; 32-bit division helpers and control module (battery) voltage.
 ; 0xDFEE4-0xDFFBC  (216 bytes, 3 functions)
 $MOD167
 $SEGMENTED

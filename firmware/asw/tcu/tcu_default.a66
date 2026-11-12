@@ -1,4 +1,6 @@
 ; asw/tcu/tcu_default.a66
+; CAN1 default values for TCU / TCS torque requests and wheel speeds when frames are
+; missing.
 ; 0xD77E0-0xD791A  (314 bytes, 4 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/vin.a66
+; VIN diagnosis variant coding and crank-tooth error reset.
 ; 0xC7EB0-0xC7F72  (194 bytes, 4 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,6 @@
 ; asw/vs/vs_seq.a66
+; Engine speed limit coordination, wheel-based vehicle speed, TPS detection and per-cylinder
+; sequencing.
 ; 0xC849E-0xC8E2E  (2448 bytes, 12 functions)
 $MOD167
 $SEGMENTED

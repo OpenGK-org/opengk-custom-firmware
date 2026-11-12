@@ -1,4 +1,6 @@
 ; asw/lamb/lamb_afl.a66
+; Lambda efficiency, coolant-temperature lambda enrichment and cam set point during after-
+; start.
 ; 0xB05D6-0xB073A  (356 bytes, 4 functions)
 $MOD167
 $SEGMENTED

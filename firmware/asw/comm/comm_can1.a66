@@ -1,4 +1,6 @@
 ; asw/comm/comm_can1.a66
+; CAN1 init and periodic handler (bus-off recovery); also after-start injection time per
+; cylinder.
 ; 0xD6824-0xD74AA  (3206 bytes, 3 functions)
 $MOD167
 $SEGMENTED

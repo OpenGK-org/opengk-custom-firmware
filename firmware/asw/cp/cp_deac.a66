@@ -1,4 +1,5 @@
 ; asw/cp/cp_deac.a66
+; Canister purge: deactivation state machine and transitions.
 ; 0xB1D1A-0xB1E56  (316 bytes, 7 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,6 @@
 ; asw/maf/maf_dif.a66
+; MAF difference diagnosis during catalyst heating and its monitor, MAF/TPS ratio diagnosis,
+; cooling-fan torque loss.
 ; 0xD7D78-0xD8410  (1688 bytes, 7 functions)
 $MOD167
 $SEGMENTED

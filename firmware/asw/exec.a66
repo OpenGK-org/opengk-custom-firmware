@@ -1,4 +1,6 @@
 ; asw/exec.a66
+; CCP program validation and bootloader execution magic / parameters (flash-back of the CS2
+; RAM page).
 ; 0xA6A44-0xA6D32  (750 bytes, 3 functions)
 $MOD167
 $SEGMENTED

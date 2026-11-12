@@ -1,4 +1,5 @@
 ; asw/vs/vs_max.a66
+; Cam / max-speed diagnosis, coolant substitute init and DTCs.
 ; 0xC8E2E-0xC8F28  (250 bytes, 5 functions)
 $MOD167
 $SEGMENTED

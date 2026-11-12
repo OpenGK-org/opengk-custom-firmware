@@ -1,4 +1,6 @@
 ; asw/sys/data_0xa0500.a66
+; Constant data at 0xA0500: jump / pointer tables, CAN message-object templates and other
+; ROM tables.
 ; 0xA0500-0xA2A66  (9574 bytes, 0 functions)
 $MOD167
 $SEGMENTED

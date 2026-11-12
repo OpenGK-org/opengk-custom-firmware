@@ -1,4 +1,5 @@
 ; asw/sys/sys_index.a66
+; Flash command index lookup and paged address resolution.
 ; 0xCCA56-0xCCACC  (118 bytes, 3 functions)
 $MOD167
 $SEGMENTED

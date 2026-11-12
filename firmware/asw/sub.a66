@@ -1,4 +1,6 @@
 ; asw/sub.a66
+; Coolant temperature substitute value: intermittent-failure state machine and rationality
+; diagnosis.
 ; 0xC97C2-0xC9C58  (1174 bytes, 9 functions)
 $MOD167
 $SEGMENTED

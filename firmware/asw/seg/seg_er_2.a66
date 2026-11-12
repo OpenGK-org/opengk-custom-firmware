@@ -1,4 +1,6 @@
 ; asw/seg/seg_er_2.a66
+; Engine roughness from segment times, misfire detection conditions and combustion
+; diagnosis.
 ; 0xD4AD6-0xD51BA  (1764 bytes, 8 functions)
 $MOD167
 $SEGMENTED

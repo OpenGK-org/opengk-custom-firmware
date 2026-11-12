@@ -1,4 +1,6 @@
 ; asw/tps/tps_sam.a66
+; Throttle position acquisition, averaging, per-segment value, gradient and error
+; substitution.
 ; 0xC9C58-0xC9EBE  (614 bytes, 5 functions)
 $MOD167
 $SEGMENTED

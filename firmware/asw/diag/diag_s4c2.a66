@@ -1,4 +1,5 @@
 ; asw/diag/diag_s4c2.a66
+; NVM restore/save of OBD blocks 0x4C2, 0x210B and 0x5DC.
 ; 0xDC25E-0xDCA7E  (2080 bytes, 3 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/crk.a66
+; Crank/cam signal errors: tooth error flag, cam error, segment counter and DTC.
 ; 0xC7B74-0xC7D86  (530 bytes, 6 functions)
 $MOD167
 $SEGMENTED

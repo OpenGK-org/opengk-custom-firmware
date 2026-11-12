@@ -1,4 +1,5 @@
 ; asw/fmy.a66
+; Fault memory: entry count, slot search, freeze-frame capture and NVM restore/save.
 ; 0xD9BE8-0xDA226  (1598 bytes, 6 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/sys/sys_far.a66
+; Runtime: far (paged) byte/word table reads and byte axis lookup.
 ; 0xFF16C-0xFF1D8  (108 bytes, 4 functions)
 $MOD167
 $SEGMENTED

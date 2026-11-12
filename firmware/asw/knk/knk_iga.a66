@@ -1,4 +1,6 @@
 ; asw/knk/knk_iga.a66
+; Knock control: ignition retard per cylinder, knock adaptation init and sensor gain
+; restore.
 ; 0xC2026-0xC2F9E  (3960 bytes, 5 functions)
 $MOD167
 $SEGMENTED

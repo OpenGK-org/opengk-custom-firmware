@@ -1,4 +1,5 @@
 ; asw/lsh/lsh_dur.a66
+; Front O2 heater loop and ignition-duration case handlers.
 ; 0xB6880-0xB6A9A  (538 bytes, 8 functions)
 $MOD167
 $SEGMENTED

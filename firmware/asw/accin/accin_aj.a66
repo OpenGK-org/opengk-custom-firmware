@@ -1,4 +1,6 @@
 ; asw/accin/accin_aj.a66
+; A/C compressor switch-off delay, accin delay setter, anti-jerk active flag and an output-
+; latch driver.
 ; 0xC7AF8-0xC7B74  (124 bytes, 4 functions)
 $MOD167
 $SEGMENTED

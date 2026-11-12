@@ -1,4 +1,6 @@
 ; asw/knk/knk_iga_2.a66
+; Knock adaptation (after-start switch, global retard), NVM storage and environment
+; snapshot.
 ; 0xC3330-0xC3522  (498 bytes, 4 functions)
 $MOD167
 $SEGMENTED

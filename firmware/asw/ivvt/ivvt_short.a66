@@ -1,4 +1,5 @@
 ; asw/ivvt/ivvt_short.a66
+; IVVT short-trip forced diagnosis.
 ; 0xC14C2-0xC1650  (398 bytes, 2 functions)
 $MOD167
 $SEGMENTED

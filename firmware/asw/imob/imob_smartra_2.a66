@@ -1,4 +1,5 @@
 ; asw/imob/imob_smartra_2.a66
+; SMARTRA authentication steps, challenge-response frame and key validation.
 ; 0xBD034-0xBD3C8  (916 bytes, 11 functions)
 $MOD167
 $SEGMENTED

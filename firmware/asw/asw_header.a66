@@ -1,4 +1,5 @@
 ; asw/asw_header.a66
+; ASW header at 0xA0000: application identification block and Program-zone checksum table.
 ; 0xA0000-0xA00AA  (170 bytes, 0 functions)
 $MOD167
 $SEGMENTED

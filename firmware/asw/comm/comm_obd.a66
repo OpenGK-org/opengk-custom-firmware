@@ -1,4 +1,6 @@
 ; asw/comm/comm_obd.a66
+; OBD DTC list builder and statistical data (time / distance since clear, MIL) restore,
+; reset and NVM save.
 ; 0xE2D72-0xE3220  (1198 bytes, 10 functions)
 $MOD167
 $SEGMENTED

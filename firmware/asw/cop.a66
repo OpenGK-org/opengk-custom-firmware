@@ -1,4 +1,6 @@
 ; asw/cop.a66
+; Component protection (ignition / injection), ECU self-diagnosis status flags and
+; diagnostic task scheduling.
 ; 0xD648A-0xD6824  (922 bytes, 4 functions)
 $MOD167
 $SEGMENTED

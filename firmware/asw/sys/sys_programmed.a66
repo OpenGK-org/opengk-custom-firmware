@@ -1,4 +1,6 @@
 ; asw/sys/sys_programmed.a66
+; VIN programmed check, erased-block check, KWP SID 0x3B block write and bootloader exec
+; magic.
 ; 0xA6D32-0xA6E34  (258 bytes, 4 functions)
 $MOD167
 $SEGMENTED

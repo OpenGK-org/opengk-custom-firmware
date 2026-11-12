@@ -1,4 +1,5 @@
 ; asw/comm/comm_readiness.a66
+; OBD monitor readiness groups and fault slot / DTC status helpers.
 ; 0xDAE6A-0xDB24E  (996 bytes, 7 functions)
 $MOD167
 $SEGMENTED

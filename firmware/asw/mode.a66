@@ -1,4 +1,5 @@
 ; asw/mode.a66
+; KWP CAN comms-object pending handling and a 32-bit normalize helper.
 ; 0xDFB62-0xDFC04  (162 bytes, 3 functions)
 $MOD167
 $SEGMENTED

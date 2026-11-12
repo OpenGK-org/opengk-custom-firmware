@@ -1,4 +1,5 @@
 ; asw/ivvt/ivvt_transition.a66
+; IVVT state transition manager and inhibit; idle speed adaptation enable conditions.
 ; 0xAE40A-0xAE6B6  (684 bytes, 5 functions)
 $MOD167
 $SEGMENTED

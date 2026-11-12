@@ -1,4 +1,5 @@
 ; asw/diag/diag_s582.a66
+; Cam adaptation NVM save (block 0x582) and cam hysteresis reference.
 ; 0xC1B8C-0xC1DEC  (608 bytes, 2 functions)
 $MOD167
 $SEGMENTED

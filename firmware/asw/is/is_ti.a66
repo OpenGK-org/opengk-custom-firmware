@@ -1,4 +1,5 @@
 ; asw/is/is_ti.a66
+; Idle injection time correction (ti_is).
 ; 0xB9A78-0xB9BDA  (354 bytes, 2 functions)
 $MOD167
 $SEGMENTED

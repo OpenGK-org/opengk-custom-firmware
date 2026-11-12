@@ -1,4 +1,5 @@
 ; asw/dtp/dtp_cp.a66
+; EVAP differential tank pressure acquisition and leak-diagnosis DTC.
 ; 0xD39E8-0xD3F04  (1308 bytes, 4 functions)
 $MOD167
 $SEGMENTED

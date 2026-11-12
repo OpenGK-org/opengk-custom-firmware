@@ -1,4 +1,5 @@
 ; asw/comm/comm_daq.a66
+; CCP periodic DAQ scheduler and DAQ tasks; flash block compare helper.
 ; 0xCC7E2-0xCC9A4  (450 bytes, 8 functions)
 $MOD167
 $SEGMENTED

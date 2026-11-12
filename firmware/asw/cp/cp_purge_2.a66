@@ -1,4 +1,6 @@
 ; asw/cp/cp_purge_2.a66
+; Canister purge: relative flow, lambda disturbance, fuel vapour flow, ramp open; per-
+; cylinder MAF delay.
 ; 0xB238E-0xB2874  (1254 bytes, 7 functions)
 $MOD167
 $SEGMENTED

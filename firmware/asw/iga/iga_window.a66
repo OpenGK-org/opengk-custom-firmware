@@ -1,4 +1,5 @@
 ; asw/iga/iga_window.a66
+; Engine speed window check and combustion task.
 ; 0xC840C-0xC849E  (146 bytes, 3 functions)
 $MOD167
 $SEGMENTED

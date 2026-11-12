@@ -1,4 +1,6 @@
 ; asw/imob/imob_smartra_5.a66
+; SMARTRA run-time authentication: frame handling, key signature / validation, challenge
+; generator.
 ; 0xBDB38-0xBDF20  (1000 bytes, 8 functions)
 $MOD167
 $SEGMENTED

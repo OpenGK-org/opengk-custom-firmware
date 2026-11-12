@@ -1,4 +1,5 @@
 ; asw/sys/sys_tx.a66
+; SMARTRA immobilizer serial (ASC0) interrupt and transmit phases.
 ; 0xA8536-0xA85F0  (186 bytes, 5 functions)
 $MOD167
 $SEGMENTED

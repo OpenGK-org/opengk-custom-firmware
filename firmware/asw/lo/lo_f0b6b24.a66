@@ -1,4 +1,5 @@
 ; asw/lo/lo_f0b6b24.a66
+; Front O2 heater PWM output and event logging.
 ; 0xB6A9A-0xB6B7A  (224 bytes, 4 functions)
 $MOD167
 $SEGMENTED

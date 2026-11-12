@@ -1,4 +1,6 @@
 ; asw/comm/comm_scan.a66
+; Flash/calibration block scanner and validator, block copy and elevated flash/EEPROM write
+; routines.
 ; 0xDE73A-0xDED22  (1512 bytes, 12 functions)
 $MOD167
 $SEGMENTED

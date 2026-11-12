@@ -1,4 +1,5 @@
 ; asw/maf/maf_s632.a66
+; End-of-line MAF trim and trim state, NVM restore/save (block 0x632); program session exit.
 ; 0xDD862-0xDE082  (2080 bytes, 5 functions)
 $MOD167
 $SEGMENTED

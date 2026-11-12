@@ -1,4 +1,5 @@
 ; asw/diag/diag_trt.a66
+; Total run time counter and NVM restore of blocks 0x00C and 0x56A.
 ; 0xDA842-0xDAB06  (708 bytes, 4 functions)
 $MOD167
 $SEGMENTED

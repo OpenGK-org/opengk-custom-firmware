@@ -1,4 +1,5 @@
 ; asw/diag/diag_s56e.a66
+; NVM restore of blocks 0x56E and 0x574.
 ; 0xDCA7E-0xDCBB2  (308 bytes, 4 functions)
 $MOD167
 $SEGMENTED

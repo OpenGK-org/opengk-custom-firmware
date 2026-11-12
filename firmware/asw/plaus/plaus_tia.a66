@@ -1,4 +1,5 @@
 ; asw/plaus/plaus_tia.a66
+; Intake air temperature plausibility rate-based monitor (IUMPR).
 ; 0xC916E-0xC9216  (168 bytes, 3 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/ivvt/ivvt_ram.a66
+; IVVT RAM pointers, cam adaptation state and table index.
 ; 0xB46D4-0xB4874  (416 bytes, 5 functions)
 $MOD167
 $SEGMENTED

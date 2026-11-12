@@ -1,4 +1,5 @@
 ; asw/plaus/plaus_tps.a66
+; MAF/TPS plausibility monitors and EVAP diagnosis task group.
 ; 0xD0E24-0xD1110  (748 bytes, 4 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/sys/sys_inhibit.a66
+; Catalyst diagnosis inhibit conditions and NVM restore of block 0x5DC.
 ; 0xCCEF6-0xCD772  (2172 bytes, 4 functions)
 $MOD167
 $SEGMENTED

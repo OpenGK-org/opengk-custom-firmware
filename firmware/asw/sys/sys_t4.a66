@@ -1,4 +1,5 @@
 ; asw/sys/sys_t4.a66
+; Ignition capture/compare interrupts (CC6, CC7, CC9, CC27) and timer T4.
 ; 0xAA49E-0xAB32C  (3726 bytes, 5 functions)
 $MOD167
 $SEGMENTED

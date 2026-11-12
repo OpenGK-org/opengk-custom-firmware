@@ -1,4 +1,6 @@
 ; asw/tooth/tooth_ac.a66
+; A/C compressor request delay (altitude, vehicle speed, off delay) and NVM save (block
+; 0x640).
 ; 0xC76A6-0xC790A  (612 bytes, 6 functions)
 $MOD167
 $SEGMENTED

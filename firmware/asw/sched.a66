@@ -1,4 +1,5 @@
 ; asw/sched.a66
+; Fuel pump output, SMARTRA phase sync, idle CO EEPROM write and battery-voltage helper.
 ; 0xE5D36-0xE5E0C  (214 bytes, 5 functions)
 $MOD167
 $SEGMENTED

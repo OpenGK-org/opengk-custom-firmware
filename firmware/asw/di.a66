@@ -1,4 +1,5 @@
 ; asw/di.a66
+; Canister purge control state machine and relative purge flow.
 ; 0xB1FF0-0xB21FA  (522 bytes, 2 functions)
 $MOD167
 $SEGMENTED

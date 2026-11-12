@@ -1,4 +1,5 @@
 ; asw/iga/iga_ref.a66
+; Ignition reference angle and its temperature corrections.
 ; 0xADF66-0xAE0D6  (368 bytes, 5 functions)
 $MOD167
 $SEGMENTED

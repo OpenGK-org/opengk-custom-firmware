@@ -1,4 +1,5 @@
 ; asw/cam/cam_nvmy.a66
+; Cam phase difference, cam reference edges and cam adaptation NVM restore.
 ; 0xC186A-0xC1B8C  (802 bytes, 4 functions)
 $MOD167
 $SEGMENTED

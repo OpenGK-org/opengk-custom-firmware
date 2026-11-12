@@ -1,4 +1,5 @@
 ; asw/sys/sys_adcic.a66
+; Interrupt-control resets (ADC, port 3, CC10) and immobilizer comms error flag.
 ; 0xA3424-0xA3554  (304 bytes, 4 functions)
 $MOD167
 $SEGMENTED

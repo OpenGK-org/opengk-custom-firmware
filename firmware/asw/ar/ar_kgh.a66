@@ -1,4 +1,5 @@
 ; asw/ar/ar_kgh.a66
+; MAF scaling: mass-flow factor, hot-bridge raw value and MAF-based torque reference.
 ; 0xD0744-0xD0896  (338 bytes, 4 functions)
 $MOD167
 $SEGMENTED

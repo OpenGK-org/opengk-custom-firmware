@@ -1,4 +1,6 @@
 ; asw/comm/comm_m01_2.a66
+; OBD-II Mode 01 PIDs 0x30 and up (warm-ups, distance, EVAP, baro, cat temps, monitor
+; status...).
 ; 0xE05AC-0xE2736  (8586 bytes, 26 functions)
 $MOD167
 $SEGMENTED

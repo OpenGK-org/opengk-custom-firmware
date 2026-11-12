@@ -1,4 +1,5 @@
 ; asw/comm/comm_permission.a66
+; KWP service permission gate and response buffer copy.
 ; 0xDFC04-0xDFCD4  (208 bytes, 4 functions)
 $MOD167
 $SEGMENTED

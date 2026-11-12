@@ -1,4 +1,5 @@
 ; asw/sys/sys_er.a66
+; Roughness adaptation preconditions and misfire variant coding.
 ; 0xBC21E-0xBC2F0  (210 bytes, 3 functions)
 $MOD167
 $SEGMENTED

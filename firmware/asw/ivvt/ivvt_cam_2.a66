@@ -1,4 +1,5 @@
 ; asw/ivvt/ivvt_cam_2.a66
+; IVVT additive cam set point.
 ; 0xB5552-0xB564C  (250 bytes, 3 functions)
 $MOD167
 $SEGMENTED

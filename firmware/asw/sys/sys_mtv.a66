@@ -1,4 +1,5 @@
 ; asw/sys/sys_mtv.a66
+; Manifold tuning valve (MTV) control and variant coding.
 ; 0xB78D2-0xB7BC8  (758 bytes, 4 functions)
 $MOD167
 $SEGMENTED

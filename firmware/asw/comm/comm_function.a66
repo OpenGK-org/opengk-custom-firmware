@@ -1,4 +1,5 @@
 ; asw/comm/comm_function.a66
+; KWP SID 0x30 input/output control by local ID: sub-function dispatcher.
 ; 0xE4E38-0xE4F38  (256 bytes, 9 functions)
 $MOD167
 $SEGMENTED

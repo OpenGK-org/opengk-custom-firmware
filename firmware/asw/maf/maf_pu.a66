@@ -1,4 +1,6 @@
 ; asw/maf/maf_pu.a66
+; Trailing-throttle engine state, MAF-difference conditions, power-up timers and part-load
+; state.
 ; 0xD8410-0xD8A98  (1672 bytes, 5 functions)
 $MOD167
 $SEGMENTED

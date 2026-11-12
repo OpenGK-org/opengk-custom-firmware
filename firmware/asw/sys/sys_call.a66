@@ -1,4 +1,5 @@
 ; asw/sys/sys_call.a66
+; XP2 interrupt handler, call-through helpers, SSC interrupt bits and MAF base air mass.
 ; 0xAB494-0xABBF2  (1886 bytes, 5 functions)
 $MOD167
 $SEGMENTED

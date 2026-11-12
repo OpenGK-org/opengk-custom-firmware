@@ -1,4 +1,5 @@
 ; asw/cat/cat_rbm.a66
+; Catalyst diagnosis rate-based monitor (IUMPR) state.
 ; 0xB8404-0xB84D0  (204 bytes, 3 functions)
 $MOD167
 $SEGMENTED

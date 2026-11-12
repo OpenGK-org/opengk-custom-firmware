@@ -1,4 +1,5 @@
 ; asw/work/work_readiness.a66
+; OBD readiness: DTC coupling and readiness group 4.
 ; 0xDB4DA-0xDBCA4  (1994 bytes, 2 functions)
 $MOD167
 $SEGMENTED

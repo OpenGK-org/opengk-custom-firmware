@@ -1,4 +1,5 @@
 ; asw/imob/imob_comms.a66
+; KWP application services 0x13, 0x16, 0x17, 0x18, 0x19, 0x21.
 ; 0xE57D2-0xE5A86  (692 bytes, 7 functions)
 $MOD167
 $SEGMENTED

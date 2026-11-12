@@ -1,4 +1,5 @@
 ; asw/vls/vls_down_2.a66
+; Rear O2 sensor based catalyst and fuel-system diagnosis, power-up check and DTC.
 ; 0xB89EE-0xB8EF0  (1282 bytes, 4 functions)
 $MOD167
 $SEGMENTED

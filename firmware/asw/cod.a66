@@ -1,4 +1,6 @@
 ; asw/cod.a66
+; OBD readiness drive-cycle counter, fault-table init and MAF/TPS variant-coding
+; plausibility.
 ; 0xDB24E-0xDB4DA  (652 bytes, 4 functions)
 $MOD167
 $SEGMENTED

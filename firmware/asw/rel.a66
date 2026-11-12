@@ -1,4 +1,5 @@
 ; asw/rel.a66
+; Canister purge relative flow.
 ; 0xB21FA-0xB238E  (404 bytes, 2 functions)
 $MOD167
 $SEGMENTED

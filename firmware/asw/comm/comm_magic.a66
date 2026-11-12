@@ -1,4 +1,5 @@
 ; asw/comm/comm_magic.a66
+; Bootloader reprogramming request: exec magic in NVM, mode status; XOR checksum routine.
 ; 0xDE082-0xDE73A  (1720 bytes, 6 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/rbm/rbm_swt.a66
+; Rear O2 switching and voltage plausibility rate-based monitors (IUMPR).
 ; 0xB8EF0-0xB901E  (302 bytes, 6 functions)
 $MOD167
 $SEGMENTED

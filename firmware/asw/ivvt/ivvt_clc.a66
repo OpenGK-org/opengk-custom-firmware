@@ -1,4 +1,5 @@
 ; asw/ivvt/ivvt_clc.a66
+; IVVT cam set point calculation and control.
 ; 0xAE6B6-0xAEB0C  (1110 bytes, 5 functions)
 $MOD167
 $SEGMENTED

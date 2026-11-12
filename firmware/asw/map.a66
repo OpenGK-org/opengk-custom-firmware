@@ -1,4 +1,5 @@
 ; asw/map.a66
+; Ambient pressure acquisition and cylinder air charge model.
 ; 0xC3BA4-0xC400C  (1128 bytes, 2 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/comm/comm_scale.a66
+; OBD Mode 09 status and OBD PID scaling helpers (fuel system, temperature, trim, rpm).
 ; 0xE2736-0xE28F6  (448 bytes, 8 functions)
 $MOD167
 $SEGMENTED

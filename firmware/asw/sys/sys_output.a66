@@ -1,4 +1,6 @@
 ; asw/sys/sys_output.a66
+; Capture/compare output setup and interrupt-control resets (CC5, CC13, CC29, CC30, ports
+; 2/7).
 ; 0xA5230-0xA53A0  (368 bytes, 12 functions)
 $MOD167
 $SEGMENTED

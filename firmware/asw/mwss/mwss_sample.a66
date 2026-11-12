@@ -1,4 +1,5 @@
 ; asw/mwss/mwss_sample.a66
+; Pressure sensor (MWSS) plausibility diagnosis.
 ; 0xB9318-0xB943A  (290 bytes, 2 functions)
 $MOD167
 $SEGMENTED

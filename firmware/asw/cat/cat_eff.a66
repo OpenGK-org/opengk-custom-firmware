@@ -1,4 +1,6 @@
 ; asw/cat/cat_eff.a66
+; Catalyst efficiency OBD monitor (P0420): ratio, operating-point conditions and main
+; diagnosis.
 ; 0xB7D82-0xB8404  (1666 bytes, 3 functions)
 $MOD167
 $SEGMENTED

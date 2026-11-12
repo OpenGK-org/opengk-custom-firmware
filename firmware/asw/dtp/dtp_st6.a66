@@ -1,4 +1,5 @@
 ; asw/dtp/dtp_st6.a66
+; EVAP leak diagnosis states 4-6.
 ; 0xD2222-0xD2454  (562 bytes, 3 functions)
 $MOD167
 $SEGMENTED

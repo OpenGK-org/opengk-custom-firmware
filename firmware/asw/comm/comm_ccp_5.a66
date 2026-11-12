@@ -1,4 +1,5 @@
 ; asw/comm/comm_ccp_5.a66
+; CCP checksum calculation and bootloader-execution arming.
 ; 0xA68D2-0xA6A44  (370 bytes, 4 functions)
 $MOD167
 $SEGMENTED

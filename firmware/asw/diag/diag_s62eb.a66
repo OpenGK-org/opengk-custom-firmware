@@ -1,4 +1,5 @@
 ; asw/diag/diag_s62eb.a66
+; NVM restore/save of block 0x62EB; coolant temperature latched at engine stop.
 ; 0xC8F28-0xC9032  (266 bytes, 3 functions)
 $MOD167
 $SEGMENTED

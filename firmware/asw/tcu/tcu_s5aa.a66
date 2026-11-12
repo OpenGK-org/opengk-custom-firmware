@@ -1,4 +1,5 @@
 ; asw/tcu/tcu_s5aa.a66
+; NVM restore/save of blocks 0x5AA and 0x5AE; ASR/ABS CAN timeout reset.
 ; 0xD74AA-0xD76B4  (522 bytes, 7 functions)
 $MOD167
 $SEGMENTED

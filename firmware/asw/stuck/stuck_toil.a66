@@ -1,4 +1,5 @@
 ; asw/stuck/stuck_toil.a66
+; Oil temperature stuck rate-based monitor (IUMPR).
 ; 0xBA37E-0xBA410  (146 bytes, 2 functions)
 $MOD167
 $SEGMENTED

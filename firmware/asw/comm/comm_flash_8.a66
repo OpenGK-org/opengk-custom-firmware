@@ -1,4 +1,6 @@
 ; asw/comm/comm_flash_8.a66
+; KWP flash-reprogramming commands 0x21-0x23 (program/erase routine control) and default
+; handler.
 ; 0xCC42C-0xCC7E2  (950 bytes, 5 functions)
 $MOD167
 $SEGMENTED

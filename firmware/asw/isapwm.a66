@@ -1,4 +1,6 @@
 ; asw/isapwm.a66
+; Idle air actuator during catalyst heating, ignition duration diagnosis and purge-valve
+; close request.
 ; 0xCD8EA-0xCDC6C  (898 bytes, 4 functions)
 $MOD167
 $SEGMENTED

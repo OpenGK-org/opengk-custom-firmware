@@ -1,4 +1,5 @@
 ; asw/cur.a66
+; Current-type O2 sensors (front and rear): signal calculation and response-time diagnosis.
 ; 0xB6B7A-0xB773E  (3012 bytes, 6 functions)
 $MOD167
 $SEGMENTED

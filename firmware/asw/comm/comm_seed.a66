@@ -1,4 +1,5 @@
 ; asw/comm/comm_seed.a66
+; CCP GET_SEED (0x12) and UNLOCK (0x13).
 ; 0xA5822-0xA58DC  (186 bytes, 2 functions)
 $MOD167
 $SEGMENTED

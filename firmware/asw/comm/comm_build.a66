@@ -1,4 +1,6 @@
 ; asw/comm/comm_build.a66
+; CCP DAQ DTO builder, comms-object state init, KWP negative response builder and checksum
+; gate.
 ; 0xA65B8-0xA68D2  (794 bytes, 5 functions)
 $MOD167
 $SEGMENTED

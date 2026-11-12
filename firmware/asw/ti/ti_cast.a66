@@ -1,4 +1,5 @@
 ; asw/ti/ti_cast.a66
+; Base injection time and map-based base quantity, warm-up and after-start enrichment.
 ; 0xC598A-0xC5EC6  (1340 bytes, 5 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/tipr/tipr_ti.a66
+; Catalyst-heating injection correction and per-cylinder injection phase.
 ; 0xB09F0-0xB0B9C  (428 bytes, 4 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/gr.a66
+; Drive train engaged / gear shift detection and gear ratio detection.
 ; 0xBF3F8-0xBFA10  (1560 bytes, 3 functions)
 $MOD167
 $SEGMENTED

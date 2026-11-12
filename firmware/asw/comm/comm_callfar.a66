@@ -1,4 +1,5 @@
 ; asw/comm/comm_callfar.a66
+; KWP transmit setup and comms tick, plus far-call trampolines.
 ; 0xDED22-0xDEE52  (304 bytes, 9 functions)
 $MOD167
 $SEGMENTED

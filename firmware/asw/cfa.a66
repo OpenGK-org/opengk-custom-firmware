@@ -1,4 +1,5 @@
 ; asw/cfa.a66
+; Cooling fan: vehicle-speed state machine and fan relay output latches.
 ; 0xD791A-0xD7D78  (1118 bytes, 8 functions)
 $MOD167
 $SEGMENTED

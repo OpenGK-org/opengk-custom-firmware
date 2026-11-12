@@ -1,4 +1,5 @@
 ; asw/teg/teg_min.a66
+; Exhaust temperature hysteresis and minimum ignition angle for exhaust protection.
 ; 0xC06DC-0xC077A  (158 bytes, 3 functions)
 $MOD167
 $SEGMENTED

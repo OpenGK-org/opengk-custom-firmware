@@ -1,4 +1,5 @@
 ; asw/imob/imob_cipher.a66
+; SMARTRA cipher (shift register clock, output S-box) and response compare.
 ; 0xBDF20-0xBE20C  (748 bytes, 3 functions)
 $MOD167
 $SEGMENTED

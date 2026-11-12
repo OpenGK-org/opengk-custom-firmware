@@ -1,4 +1,5 @@
 ; asw/sys/sys_isa.a66
+; Idle air actuator reset and opening set point.
 ; 0xC0C9E-0xC0E64  (454 bytes, 3 functions)
 $MOD167
 $SEGMENTED

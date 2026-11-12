@@ -1,4 +1,5 @@
 ; asw/sys/sys_dword.a66
+; Runtime: 2D/3D table reads with 32-bit table pointers.
 ; 0xFFBEA-0xFFDEE  (516 bytes, 5 functions)
 $MOD167
 $SEGMENTED

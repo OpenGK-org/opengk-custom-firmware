@@ -1,4 +1,6 @@
 ; asw/osc.a66
+; Crankshaft oscillation misfire detection, roughness adaptation state/memory and OBD system
+; flags.
 ; 0xBBC52-0xBC0C4  (1138 bytes, 7 functions)
 $MOD167
 $SEGMENTED

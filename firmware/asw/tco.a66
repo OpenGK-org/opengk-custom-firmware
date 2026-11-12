@@ -1,4 +1,5 @@
 ; asw/tco.a66
+; Fuel system diagnosis preconditions and coolant temperature plausibility monitor (IUMPR).
 ; 0xB87E0-0xB89EE  (526 bytes, 8 functions)
 $MOD167
 $SEGMENTED

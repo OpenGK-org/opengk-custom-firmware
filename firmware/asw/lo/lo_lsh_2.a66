@@ -1,4 +1,5 @@
 ; asw/lo/lo_lsh_2.a66
+; Front O2 sensor heater: init, state and PWM.
 ; 0xB673C-0xB6880  (324 bytes, 4 functions)
 $MOD167
 $SEGMENTED

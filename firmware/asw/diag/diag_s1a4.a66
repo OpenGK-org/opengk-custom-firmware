@@ -1,4 +1,5 @@
 ; asw/diag/diag_s1a4.a66
+; NVM restore/save of block 0x1A4 (MAF altitude factor).
 ; 0xC3746-0xC3832  (236 bytes, 3 functions)
 $MOD167
 $SEGMENTED

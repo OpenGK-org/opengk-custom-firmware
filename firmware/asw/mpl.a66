@@ -1,4 +1,5 @@
 ; asw/mpl.a66
+; Ignition dwell base time and multi-pulse ignition enable.
 ; 0xAE0D6-0xAE28C  (438 bytes, 4 functions)
 $MOD167
 $SEGMENTED

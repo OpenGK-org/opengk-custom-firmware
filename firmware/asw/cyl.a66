@@ -1,4 +1,5 @@
 ; asw/cyl.a66
+; Sequential fuel cut-off: cylinder selection.
 ; 0xB38F2-0xB3DF4  (1282 bytes, 3 functions)
 $MOD167
 $SEGMENTED

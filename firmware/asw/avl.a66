@@ -1,4 +1,5 @@
 ; asw/avl.a66
+; Reduced-area / MAF min-max availability limits used by the ambient-pressure acquisition.
 ; 0xB773E-0xB78D2  (404 bytes, 2 functions)
 $MOD167
 $SEGMENTED

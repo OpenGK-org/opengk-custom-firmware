@@ -1,4 +1,5 @@
 ; asw/rbm/rbm_states.a66
+; Rate-based monitor state snapshot and catalyst-diagnosis inhibit.
 ; 0xCD772-0xCD8EA  (376 bytes, 2 functions)
 $MOD167
 $SEGMENTED

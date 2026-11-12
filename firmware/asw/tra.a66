@@ -1,4 +1,5 @@
 ; asw/tra.a66
+; Transient torque request (state machine and ramp) and oil temperature model.
 ; 0xBA410-0xBAFD6  (3014 bytes, 4 functions)
 $MOD167
 $SEGMENTED

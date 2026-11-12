@@ -1,4 +1,5 @@
 ; asw/can1.a66
+; CAN1 (powertrain CAN, 0xEF00) message-object receive and transmit.
 ; 0xD76B4-0xD77E0  (300 bytes, 4 functions)
 $MOD167
 $SEGMENTED

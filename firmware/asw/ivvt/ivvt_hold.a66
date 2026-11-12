@@ -1,4 +1,5 @@
 ; asw/ivvt/ivvt_hold.a66
+; IVVT cam phase adaptation during hold and hold-PWM (OCV hold current) adaptation.
 ; 0xAEB0C-0xAF1FE  (1778 bytes, 5 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/comm/comm_objects.a66
+; CCP connect: arms and rebuilds the CAN DAQ/transmit message objects.
 ; 0xA56DE-0xA5822  (324 bytes, 3 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/cat/cat_ls.a66
+; Catalyst temperature delay and lambda-sensor diagnosis groups.
 ; 0xB5BF8-0xB5FA2  (938 bytes, 4 functions)
 $MOD167
 $SEGMENTED

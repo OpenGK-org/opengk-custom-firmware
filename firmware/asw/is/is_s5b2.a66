@@ -1,4 +1,5 @@
 ; asw/is/is_s5b2.a66
+; Idle speed set point maximum and idle torque adaptation NVM restore/save (block 0x5B2).
 ; 0xC0E64-0xC1090  (556 bytes, 3 functions)
 $MOD167
 $SEGMENTED

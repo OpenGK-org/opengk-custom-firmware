@@ -1,4 +1,6 @@
 ; asw/sys/sys_stack.a66
+; Lambda / canister-purge variant coding, roughness ignition-difference diagnosis and system
+; stack push.
 ; 0xCFDC8-0xD0000  (568 bytes, 4 functions)
 $MOD167
 $SEGMENTED

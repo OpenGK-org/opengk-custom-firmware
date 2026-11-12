@@ -1,4 +1,5 @@
 ; asw/sys/sys_axis.a66
+; Runtime: axis lookup and indexed table read helpers.
 ; 0xFF0D8-0xFF16C  (148 bytes, 3 functions)
 $MOD167
 $SEGMENTED

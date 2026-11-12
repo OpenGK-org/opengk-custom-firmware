@@ -1,4 +1,5 @@
 ; asw/vls/vls_struct.a66
+; O2 sensor and purge solenoid DTC setters.
 ; 0xCE6CA-0xCF682  (4024 bytes, 10 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/slv/slv_mec.a66
+; Injection firing pattern and IVVT electrical / mechanical / short-trip diagnosis.
 ; 0xC1090-0xC133A  (682 bytes, 5 functions)
 $MOD167
 $SEGMENTED

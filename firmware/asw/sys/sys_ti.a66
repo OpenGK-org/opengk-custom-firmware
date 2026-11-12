@@ -1,4 +1,5 @@
 ; asw/sys/sys_ti.a66
+; Injector capture/compare interrupts (CC0-CC3).
 ; 0xA86F0-0xA9236  (2886 bytes, 4 functions)
 $MOD167
 $SEGMENTED

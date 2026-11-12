@@ -1,4 +1,5 @@
 ; asw/pwl.a66
+; Idle air actuator opening ramp (piecewise linear) and its state.
 ; 0xC0BD2-0xC0C9E  (204 bytes, 3 functions)
 $MOD167
 $SEGMENTED

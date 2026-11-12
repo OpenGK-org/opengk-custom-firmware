@@ -1,4 +1,5 @@
 ; asw/sys/sys_adcint.a66
+; ADC and capture/compare (CC10, CC17, CC22) interrupt handlers.
 ; 0xA8368-0xA8536  (462 bytes, 4 functions)
 $MOD167
 $SEGMENTED

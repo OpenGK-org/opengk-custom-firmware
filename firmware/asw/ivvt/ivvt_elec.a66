@@ -1,4 +1,5 @@
 ; asw/ivvt/ivvt_elec.a66
+; IVVT oil-control valve electrical DTCs and cam-phaser response measurement.
 ; 0xB507E-0xB53BA  (828 bytes, 4 functions)
 $MOD167
 $SEGMENTED

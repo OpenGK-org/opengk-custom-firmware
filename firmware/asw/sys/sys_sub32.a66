@@ -1,4 +1,5 @@
 ; asw/sys/sys_sub32.a66
+; Bootloader programming-session check and buffer scaling helpers.
 ; 0xDFCD4-0xDFD70  (156 bytes, 3 functions)
 $MOD167
 $SEGMENTED

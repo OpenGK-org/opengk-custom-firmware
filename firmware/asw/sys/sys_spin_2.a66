@@ -1,4 +1,5 @@
 ; asw/sys/sys_spin_2.a66
+; Power-on port init, variant-coding nibble read and halt stubs.
 ; 0xA3BBC-0xA3F1A  (862 bytes, 5 functions)
 $MOD167
 $SEGMENTED

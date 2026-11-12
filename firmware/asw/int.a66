@@ -1,4 +1,5 @@
 ; asw/int.a66
+; KWP I/O control: adaptation reset services.
 ; 0xE44E8-0xE4644  (348 bytes, 12 functions)
 $MOD167
 $SEGMENTED

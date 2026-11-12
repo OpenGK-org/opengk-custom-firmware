@@ -1,4 +1,5 @@
 ; asw/lam/lam_close.a66
+; Lambda closed-loop control: regulation, limits and injection-time adaptation.
 ; 0xCDC6C-0xCE6CA  (2654 bytes, 8 functions)
 $MOD167
 $SEGMENTED

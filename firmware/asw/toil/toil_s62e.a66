@@ -1,4 +1,5 @@
 ; asw/toil/toil_s62e.a66
+; Oil temperature acquisition, value at engine stop and NVM restore/save (block 0x62E).
 ; 0xB9E66-0xB9F4A  (228 bytes, 4 functions)
 $MOD167
 $SEGMENTED

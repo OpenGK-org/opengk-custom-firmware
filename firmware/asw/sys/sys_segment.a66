@@ -1,4 +1,5 @@
 ; asw/sys/sys_segment.a66
+; Crank tooth / segment timing acquisition and CAPCOM / T5 / CC15 interrupts.
 ; 0xA8080-0xA8368  (744 bytes, 5 functions)
 $MOD167
 $SEGMENTED

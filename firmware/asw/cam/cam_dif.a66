@@ -1,4 +1,5 @@
 ; asw/cam/cam_dif.a66
+; IVVT intake cam-difference rate-based monitor (IUMPR).
 ; 0xC1650-0xC16E6  (150 bytes, 5 functions)
 $MOD167
 $SEGMENTED

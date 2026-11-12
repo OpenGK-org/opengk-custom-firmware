@@ -1,4 +1,6 @@
 ; asw/vap.a66
+; EVAP diagnosis: vapour generation check, noise abort, tank-pressure dynamics and fault
+; state.
 ; 0xD3154-0xD3690  (1340 bytes, 5 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/diagcp/diagcp_cp_2.a66
+; EVAP leak diagnosis: tank pressure scaling, leak volume and closed-loop model value.
 ; 0xD3690-0xD391C  (652 bytes, 5 functions)
 $MOD167
 $SEGMENTED

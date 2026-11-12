@@ -1,4 +1,6 @@
 ; asw/ti/ti_hom.a66
+; Per-cylinder injection: base quantity, start/end of injection, wall film and battery dead-
+; time compensation.
 ; 0xDCE40-0xDD6BA  (2170 bytes, 5 functions)
 $MOD167
 $SEGMENTED

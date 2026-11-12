@@ -1,4 +1,5 @@
 ; asw/vls/vls_down.a66
+; Rear O2 sensor: init, signal voltage and readiness.
 ; 0xB6050-0xB6384  (820 bytes, 5 functions)
 $MOD167
 $SEGMENTED

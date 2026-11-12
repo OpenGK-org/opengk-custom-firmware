@@ -1,4 +1,6 @@
 ; asw/maf/maf_variables.a66
+; MAF master signal selection and filtering, air model constants and ambient-pressure
+; prediction.
 ; 0xC3832-0xC3BA4  (882 bytes, 5 functions)
 $MOD167
 $SEGMENTED

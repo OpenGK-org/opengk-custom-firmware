@@ -1,4 +1,5 @@
 ; asw/comm/comm_flash_4.a66
+; KWP flash-reprogramming commands 0x0E-0x10.
 ; 0xCBE36-0xCBF96  (352 bytes, 3 functions)
 $MOD167
 $SEGMENTED

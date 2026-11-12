@@ -1,4 +1,6 @@
 ; asw/bank/bank_s1b4.a66
+; Lambda (injection time) adaptation NVM restore/save, cold-start counter and catalyst-
+; efficiency variant coding.
 ; 0xCFA1E-0xCFDC8  (938 bytes, 5 functions)
 $MOD167
 $SEGMENTED

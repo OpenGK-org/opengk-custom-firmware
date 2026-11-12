@@ -1,4 +1,5 @@
 ; asw/knk/knk_maps.a66
+; Knock maximum-retard factor, adaptation map clamping and sensor gain NVM storage.
 ; 0xC2F9E-0xC30F0  (338 bytes, 3 functions)
 $MOD167
 $SEGMENTED

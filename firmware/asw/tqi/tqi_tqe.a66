@@ -1,4 +1,5 @@
 ; asw/tqi/tqi_tqe.a66
+; Indicated torque set point, actual engine torque and reference torque.
 ; 0xB0FE4-0xB132E  (842 bytes, 4 functions)
 $MOD167
 $SEGMENTED

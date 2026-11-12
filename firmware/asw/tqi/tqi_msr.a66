@@ -1,4 +1,6 @@
 ; asw/tqi/tqi_msr.a66
+; Torque request min/max selection, ASR fast torque, MSR drag torque and trailing-throttle
+; minimum torque.
 ; 0xC622C-0xC6584  (856 bytes, 7 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/dtc/dtc_debounced.a66
+; Debounced DTC updates (normal and OBD) and drive-cycle / MIL status.
 ; 0xD8A98-0xD9436  (2462 bytes, 5 functions)
 $MOD167
 $SEGMENTED

@@ -1,4 +1,5 @@
 ; asw/lam/lam_dly.a66
+; Lambda control delays: filtered MAF, integral delay adaptation and catalyst factor.
 ; 0xB564C-0xB592E  (738 bytes, 5 functions)
 $MOD167
 $SEGMENTED

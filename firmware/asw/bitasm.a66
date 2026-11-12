@@ -1,4 +1,6 @@
 ; asw/bitasm.a66
+; KWP SID 0x21 local-identifier descriptors and I/O control by local ID; injection inhibit
+; after start.
 ; 0xE3220-0xE44E8  (4808 bytes, 3 functions)
 $MOD167
 $SEGMENTED
