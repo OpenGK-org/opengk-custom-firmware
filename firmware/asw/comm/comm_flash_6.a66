@@ -24,7 +24,7 @@ KWP_Flash_Cmd20_arm:
         AND R4,#02H
         JMPR cc_EQ,L_CC1C2
         MOVBZ R12,kwp_dl_buf
-        CALLS 00CH,Find_FlashCmd_Index
+        CALLS SEG Find_FlashCmd_Index, SOF Find_FlashCmd_Index
         MOVBZ R9,RL4
         CMP R9,#06H
         JMPR cc_NC,L_CC1B0
@@ -49,7 +49,7 @@ KWP_Flash_Cmd20_arm:
         SHL R4,#01H
         MOVB RL5,[R4+#04F59H]
         MOVBZ R14,RL5
-        CALLS 00CH,Advance_Buffer_Ptr
+        CALLS SEG Advance_Buffer_Ptr, SOF Advance_Buffer_Ptr
         MOV R4,#01H
         SHL R4,R9
         OR kwp_e1ba,R4
@@ -95,7 +95,7 @@ KWP_Flash_Cmd21_arm:
         AND R4,#02H
         JMPR cc_EQ,L_CC254
         MOVBZ R12,kwp_dl_buf
-        CALLS 00CH,Find_FlashCmd_Index
+        CALLS SEG Find_FlashCmd_Index, SOF Find_FlashCmd_Index
         MOVBZ R9,RL4
         CMP R9,#06H
         JMPR cc_NC,L_CC248
@@ -161,7 +161,7 @@ KWP_Flash_Cmd22_arm:
         MOVBZ R9,kwp_dl_buf
         MOV R12,[R0]
         MOV R13,[R0+#02H]
-        CALLS 00CH,Resolve_Paged_Addr
+        CALLS SEG Resolve_Paged_Addr, SOF Resolve_Paged_Addr
         MOV R6,R4
         CMP R4,#00H
         JMPR cc_EQ,L_CC35C

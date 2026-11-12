@@ -48,7 +48,7 @@ L_A6A6E:                 ; 0xa6a6e
         MOV R12,#04H
         MOV R13,#DATA16 00022H
         MOV R14,R9
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV R6,R4
         MOV R4,#DATA16 08002H
         MOV R5,#08H
@@ -159,7 +159,7 @@ L_A6B58:                 ; 0xa6b58
         EXTP #00H, #02H
         MOV R4,kwp_286
         MOV R5,kwp_288
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
         MOV R4,R9
         MOV R5,#00H
         MOV R10,[R0]
@@ -197,7 +197,7 @@ L_A6BAE:                 ; 0xa6bae
         EXTP #00H, #02H
         MOV R4,kwp_286
         MOV R5,kwp_288
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
 L_A6BFE:                 ; 0xa6bfe
         MOVB bl_exec_magic_b3,ZEROS
         MOVB bl_exec_magic_b2,ZEROS
@@ -259,7 +259,7 @@ L_A6C74:                 ; 0xa6c74
         EXTP #00H, #02H
         MOV R4,kwp_286
         MOV R5,kwp_288
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
         JNB bl_mode_status_flags.07H,L_A6CAE
         MOV R4,[R9+#02H]
         MOV R5,#00H
@@ -273,7 +273,7 @@ L_A6CAE:                 ; 0xa6cae
         MOV R12,#04H
         MOV R13,#DATA16 00022H
         MOV R14,[R0]
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV [R0+#02H],R4
         JNB bl_mode_status_flags.07H,L_A6D18
         MOV R4,#DATA16 08000H
@@ -287,7 +287,7 @@ L_A6CAE:                 ; 0xa6cae
         EXTP #00H, #02H
         MOV R4,kwp_286
         MOV R5,kwp_288
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
         MOV R4,#DATA16 08002H
         MOV R5,#08H
         MOV bl_exec_addr_lo,R4
@@ -300,7 +300,7 @@ L_A6CAE:                 ; 0xa6cae
         EXTP #00H, #02H
         MOV R4,kwp_286
         MOV R5,kwp_288
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
 L_A6D18:                 ; 0xa6d18
         MOVB bl_exec_magic_b3,ZEROS
         MOVB bl_exec_magic_b2,ZEROS

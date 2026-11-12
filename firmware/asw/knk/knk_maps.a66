@@ -26,10 +26,10 @@ Calc_Fac_IGA_Max_Knk:
         MOV R12,#DATA16 POF ldp_tco__fac_iga_max_knk
         MOV R13,#DATA16 PAG ldp_tco__fac_iga_max_knk
         MOVBZ R14,tco
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_fac_iga_max_knk__tco
         MOV R13,#DATA16 PAG ip_fac_iga_max_knk__tco
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVB fac_iga_max_knk,RL4
         MOVB RL5,tco
         CMPB RL5,DPP0:c_tco_min_ad2_knk
@@ -120,7 +120,7 @@ Store_Knks_Gain_NVM:
         MOV R13,R5
         MOV R14,#DATA16 0C304H
         MOV R15,#04H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         EXTP #03H, #02H
         MOV R12,DPP0:diag_f890
         MOV R13,DPP0:diag_f892
@@ -140,7 +140,7 @@ Store_Knks_Gain_NVM:
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#04H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV [R0],R4
         EXTP #03H, #02H
         MOV R12,DPP0:diag_f890
@@ -156,7 +156,7 @@ Store_Knks_Gain_NVM:
         MOV R13,R5
         MOV R14,R0
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         ADD R0,#02H
         RETS
 

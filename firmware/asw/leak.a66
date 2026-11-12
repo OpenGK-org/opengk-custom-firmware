@@ -65,7 +65,7 @@ L_D1430:                 ; 0xd1430
         MOV R13,R12
         MOV R12,0FF1CH
         MOV R14,ctr_cdn_rbm_leak_small
-        CALLS 00FH,Div_U32_U16_Round32
+        CALLS SEG Div_U32_U16_Round32, SOF Div_U32_U16_Round32
         MOV R8,R4
         MOV R9,R5
         MOV R4,R9
@@ -143,7 +143,7 @@ L_D14CE:                 ; 0xd14ce
         MOV R13,R12
         MOV R12,0FF1CH
         MOV R14,ctr_cdn_rbm_leak_large
-        CALLS 00FH,Div_U32_U16_Round32
+        CALLS SEG Div_U32_U16_Round32, SOF Div_U32_U16_Round32
         MOV R8,R4
         MOV R9,R5
         MOV R4,R9

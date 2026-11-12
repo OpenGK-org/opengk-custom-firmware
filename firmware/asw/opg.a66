@@ -29,44 +29,44 @@ Calc_ISA_Opening_Start:
         MOV R12,#DATA16 04804H
         MOV R13,n_C93C
         MOVBZ R14,tco
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YWord
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XByte_YWord, SOF Get_IP_Word_3D_Table_DWord_XByte_YWord
         MOV R9,R4
         JMPR cc_UC,L_B9812
 L_B9800:                 ; 0xb9800
         MOV R12,#DATA16 04810H
         MOV R13,n_C93C
         MOVBZ R14,tco
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YWord
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XByte_YWord, SOF Get_IP_Word_3D_Table_DWord_XByte_YWord
         MOV R9,R4
 L_B9812:                 ; 0xb9812
         MOV R12,#DATA16 0482CH
         MOV R13,n_C93C
         MOV R14,amp
-        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YWord
+        CALLS SEG Get_IP_Byte_3D_Table_DWord_XWord_YWord, SOF Get_IP_Byte_3D_Table_DWord_XWord_YWord
         MOVBZ R4,RL4
         MOV [-R0],R4
         MOV R12,#DATA16 04824H
         MOVBZ R13,tia
-        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Byte_2D_Table_DWord_YByte, SOF Get_IP_Byte_2D_Table_DWord_YByte
         MOVBZ R4,RL4
         MOV [-R0],R4
         MOV R12,#DATA16 0481CH
         MOVBZ R13,pv_av
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YByte, SOF Get_IP_Word_2D_Table_DWord_YByte
         MOV R13,R4
         MOV R12,R9
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV R12,R4
         MOV R13,[R0+]
-        CALLS 00FH,Mul_Frac_Sat_x2
+        CALLS SEG Mul_Frac_Sat_x2, SOF Mul_Frac_Sat_x2
         MOV R12,R4
         MOV R13,[R0+]
-        CALLS 00FH,Mul_Frac_Sat_x2
+        CALLS SEG Mul_Frac_Sat_x2, SOF Mul_Frac_Sat_x2
         MOV opg_rel_st,R4
         MOV R12,#DATA16 04838H
         MOV R13,n_C93C
         MOV R14,R4
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XWord_YWord
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XWord_YWord, SOF Get_IP_Word_3D_Table_DWord_XWord_YWord
         MOV opg_sp_st_isa,R4
 L_B9870:                 ; 0xb9870
         MOV R9,[R0+]

@@ -62,7 +62,7 @@ SMARTRA_tx_begin:
         EXTP #00H, #02H
         MOV R4,imob_23e
         MOV R5,imob_240
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
         BSET smartra_comms_status.0CH
         RETS
 
@@ -91,7 +91,7 @@ SMARTRA_comms_timeout_monitor:
         JMPR cc_ULE,L_A3654
         BCLR lv_err_com_resp_imob.03H
         JNB lv_err_com_resp_imob.02H,L_A35F0
-        CALLS 00AH,SMARTRA_flush_RX_buffers
+        CALLS SEG SMARTRA_flush_RX_buffers, SOF SMARTRA_flush_RX_buffers
         RETS
 L_A35F0:                 ; 0xa35f0
         MOVB smartra_comms_phase,ZEROS
@@ -99,7 +99,7 @@ L_A35F0:                 ; 0xa35f0
         ; ------------------------------------------------------------
         ; (unclassified) RAM/paged global @0xa35f6 [dpp]  W:{-}  R:{-}
         ; ------------------------------------------------------------
-        CALLS 00AH,SMARTRA_tx_begin
+        CALLS SEG SMARTRA_tx_begin, SOF SMARTRA_tx_begin
         ; ------------------------------------------------------------
         ; (unclassified) RAM/paged global @0xa35fa [dpp]  W:{-}  R:{-}
         ; ------------------------------------------------------------
@@ -108,7 +108,7 @@ L_A35F0:                 ; 0xa35f0
         JMPR cc_ULE,L_A3654
         BCLR lv_err_com_resp_imob.03H
         JNB lv_err_com_resp_imob.02H,L_A360E
-        CALLS 00AH,SMARTRA_flush_RX_buffers
+        CALLS SEG SMARTRA_flush_RX_buffers, SOF SMARTRA_flush_RX_buffers
         RETS
 L_A360E:                 ; 0xa360e
         MOVB smartra_comms_phase,ZEROS
@@ -119,7 +119,7 @@ L_A360E:                 ; 0xa360e
         MOV R4,smartra_byte_timer
         CMP R4,#04H
         JMPR cc_ULE,L_A3654
-        CALLS 00AH,SMARTRA_tx_begin
+        CALLS SEG SMARTRA_tx_begin, SOF SMARTRA_tx_begin
         BSET smartra_comms_status.0FH
         RETS
         ; ------------------------------------------------------------
@@ -128,7 +128,7 @@ L_A360E:                 ; 0xa360e
         MOV R4,smartra_byte_timer
         CMP R4,#DATA16 0025BH
         JMPR cc_ULE,L_A3654
-        CALLS 00AH,SMARTRA_tx_begin
+        CALLS SEG SMARTRA_tx_begin, SOF SMARTRA_tx_begin
         BSET smartra_comms_status.0EH
         RETS
         ; ------------------------------------------------------------
@@ -137,7 +137,7 @@ L_A360E:                 ; 0xa360e
         MOV R4,smartra_byte_timer
         CMP R4,#04H
         JMPR cc_ULE,L_A3654
-        CALLS 00AH,SMARTRA_tx_begin
+        CALLS SEG SMARTRA_tx_begin, SOF SMARTRA_tx_begin
         BSET smartra_comms_status.0DH
         RETS
 L_A3646:                 ; 0xa3646
@@ -145,7 +145,7 @@ L_A3646:                 ; 0xa3646
         BMOV R4.00H,lv_err_com_resp_imob.01H
         CMPB RL4,#01H
         JMPR cc_NE,L_A3654
-        CALLS 00AH,SMARTRA_tx_begin
+        CALLS SEG SMARTRA_tx_begin, SOF SMARTRA_tx_begin
 L_A3654:                 ; 0xa3654
         RETS
 

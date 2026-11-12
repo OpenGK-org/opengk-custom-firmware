@@ -31,7 +31,7 @@ CCP_GetSeed_0x12:
         MOV R13,R8
         ADD R13,#05H
         MOV R14,#08H
-        CALLS 00AH,Move_xFF_items__from_PTR_R12_to_PTR_R13
+        CALLS SEG Move_xFF_items__from_PTR_R12_to_PTR_R13, SOF Move_xFF_items__from_PTR_R12_to_PTR_R13
         MOV R4,#DATA16 0E7FFH
         MOV [R9],R4
         MOVB RL4,#00H
@@ -91,7 +91,7 @@ L_A588A:                 ; 0xa588a
         MOV R13,R9
         ADD R13,#03H
         MOV R14,#08H
-        CALLS 00AH,Move_xFF_items__from_PTR_R12_to_PTR_R13
+        CALLS SEG Move_xFF_items__from_PTR_R12_to_PTR_R13, SOF Move_xFF_items__from_PTR_R12_to_PTR_R13
         MOVB RL4,[R9+#02H]
         CMPB RL4,#01H
         JMPR cc_NE,L_A58CC

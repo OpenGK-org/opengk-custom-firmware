@@ -40,7 +40,7 @@ Diag_IVVT_CamDif_Inci:
         MOV R13,#DATA16 05A42H
         MOVBZ R14,DPP0:c_abc_inc_ad_mec_ref_ivvt
         MOVBZ R15,DPP0:c_abc_max_ad_mec_ref_ivvt
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_can_bus_off_err.0EH,dtc_status_work.06H
         MOVBZ R4,g_d5fe
         AND R4,#DATA16 00020H
@@ -54,7 +54,7 @@ L_C1382:                 ; 0xc1382
         MOV R13,#DATA16 05A58H
         MOVBZ R14,DPP0:c_abc_inc_tooth_off_ivvt
         MOVBZ R15,DPP0:c_abc_max_tooth_off_ivvt
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_can_bus_off_err.0FH,dtc_status_work.06H
         MOVBZ R4,lv_ivvt_d60c
         AND R4,#DATA16 00020H
@@ -64,7 +64,7 @@ L_C1382:                 ; 0xc1382
 L_C13B2:                 ; 0xc13b2
         MOV R12,#DATA16 0D61EH
         MOV R13,#DATA16 05A84H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_acp_err.01H,dtc_status_work.06H
         MOVBZ R4,lv_ivvt_d628
         AND R4,#DATA16 00020H
@@ -99,7 +99,7 @@ L_C13F8:                 ; 0xc13f8
         MOV R13,#DATA16 05A42H
         MOVBZ R14,DPP0:c_abc_inc_ad_mec_ref_ivvt
         MOVBZ R15,DPP0:c_abc_max_ad_mec_ref_ivvt
-        CALLS 00DH,DTC_Update_Debounced_OBD
+        CALLS SEG DTC_Update_Debounced_OBD, SOF DTC_Update_Debounced_OBD
         BMOV lv_can_bus_off_err.0EH,dtc_status_work.06H
         MOVBZ R4,g_d5fe
         AND R4,#DATA16 00020H
@@ -133,7 +133,7 @@ L_C1444:                 ; 0xc1444
         MOV R13,#DATA16 05A58H
         MOVBZ R14,DPP0:c_abc_inc_tooth_off_ivvt
         MOVBZ R15,DPP0:c_abc_max_tooth_off_ivvt
-        CALLS 00DH,DTC_Update_Debounced_OBD
+        CALLS SEG DTC_Update_Debounced_OBD, SOF DTC_Update_Debounced_OBD
         BMOV lv_can_bus_off_err.0FH,dtc_status_work.06H
         MOVBZ R4,lv_ivvt_d60c
         AND R4,#DATA16 00020H
@@ -167,7 +167,7 @@ L_C1490:                 ; 0xc1490
         MOV R13,#DATA16 05A84H
         MOVBZ R14,DPP0:c_abc_inc_cam_dif_ivvt
         MOVBZ R15,DPP0:c_abc_max_cam_dif_ivvt
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_acp_err.01H,dtc_status_work.06H
         MOVBZ R4,lv_ivvt_d628
         AND R4,#DATA16 00020H

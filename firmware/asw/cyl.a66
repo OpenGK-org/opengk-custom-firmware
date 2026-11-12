@@ -50,14 +50,14 @@ L_B390A:                 ; 0xb390a
         MOV R12,#DATA16 POF ldp_case_sel_cyl__pat_sel_cyl
         MOV R13,#DATA16 PAG ldp_case_sel_cyl__pat_sel_cyl
         MOVBZ R14,case_sel_cyl
-        CALLS 00FH,Get_Byte_Y_Axis
+        CALLS SEG Get_Byte_Y_Axis, SOF Get_Byte_Y_Axis
         MOV R12,#DATA16 POF ldp_nr_sel_cyl__pat_sel_cyl
         MOV R13,#DATA16 PAG ldp_nr_sel_cyl__pat_sel_cyl
         MOVBZ R14,nr_sel_cyl
-        CALLS 00FH,Get_Byte_X_Axis
+        CALLS SEG Get_Byte_X_Axis, SOF Get_Byte_X_Axis
         MOV R12,#DATA16 POF id_pat_sel_cyl
         MOV R13,#DATA16 PAG id_pat_sel_cyl
-        CALLS 00FH,Read_Byte_Far_Scaled
+        CALLS SEG Read_Byte_Far_Scaled, SOF Read_Byte_Far_Scaled
         MOVB nr_pat_sel_cyl,RL4
         RETS
 L_B3948:                 ; 0xb3948
@@ -91,14 +91,14 @@ L_B397A:                 ; 0xb397a
         MOV R12,#DATA16 POF ldp_case_sel_cyl__pat_sel_cyl
         MOV R13,#DATA16 PAG ldp_case_sel_cyl__pat_sel_cyl
         MOVBZ R14,case_sel_cyl
-        CALLS 00FH,Get_Byte_Y_Axis
+        CALLS SEG Get_Byte_Y_Axis, SOF Get_Byte_Y_Axis
         MOV R12,#DATA16 POF ldp_nr_sel_cyl__pat_sel_cyl
         MOV R13,#DATA16 PAG ldp_nr_sel_cyl__pat_sel_cyl
         MOVBZ R14,nr_sel_cyl
-        CALLS 00FH,Get_Byte_X_Axis
+        CALLS SEG Get_Byte_X_Axis, SOF Get_Byte_X_Axis
         MOV R12,#DATA16 POF id_pat_sel_cyl
         MOV R13,#DATA16 PAG id_pat_sel_cyl
-        CALLS 00FH,Read_Byte_Far_Scaled
+        CALLS SEG Read_Byte_Far_Scaled, SOF Read_Byte_Far_Scaled
         MOVB nr_pat_sel_cyl,RL4
         MOV g_f946,ZEROS
         BCLR lv_dc_rbm.04H
@@ -124,10 +124,10 @@ SeqFuelCut_CylSel:
         MOV R12,#DATA16 POF ldp_gr_mt__t_osc_dt
         MOV R13,#DATA16 PAG ldp_gr_mt__t_osc_dt
         MOVBZ R14,gr_mt
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF id_t_osc_dt
         MOV R13,#DATA16 PAG id_t_osc_dt
-        CALLS 00FH,Read_Byte_Far
+        CALLS SEG Read_Byte_Far, SOF Read_Byte_Far
         MOVB t_osc_dt,RL4
         JMPR cc_UC,L_B39FA
 L_B39F6:                 ; 0xb39f6
@@ -186,7 +186,7 @@ L_B3A80:                 ; 0xb3a80
         JMPR cc_EQ,L_B3A8A
         JNB abs_def.04H,L_B3A9E
 L_B3A8A:                 ; 0xb3a8a
-        CALLS 00BH,Calc_Cyl_Select_Seq
+        CALLS SEG Calc_Cyl_Select_Seq, SOF Calc_Cyl_Select_Seq
         JNB lv_dc_rbm.03H,L_B3A96
         JMPA cc_UC,L_B3DDC
 L_B3A96:                 ; 0xb3a96
@@ -201,14 +201,14 @@ L_B3A9E:                 ; 0xb3a9e
         MOV R12,#DATA16 POF ldp_case_sel_cyl__pat_sel_cyl
         MOV R13,#DATA16 PAG ldp_case_sel_cyl__pat_sel_cyl
         MOVBZ R14,case_sel_cyl
-        CALLS 00FH,Get_Byte_Y_Axis
+        CALLS SEG Get_Byte_Y_Axis, SOF Get_Byte_Y_Axis
         MOV R12,#DATA16 POF ldp_nr_sel_cyl__pat_sel_cyl
         MOV R13,#DATA16 PAG ldp_nr_sel_cyl__pat_sel_cyl
         MOVBZ R14,nr_sel_cyl
-        CALLS 00FH,Get_Byte_X_Axis
+        CALLS SEG Get_Byte_X_Axis, SOF Get_Byte_X_Axis
         MOV R12,#DATA16 POF id_pat_sel_cyl
         MOV R13,#DATA16 PAG id_pat_sel_cyl
-        CALLS 00FH,Read_Byte_Far_Scaled
+        CALLS SEG Read_Byte_Far_Scaled, SOF Read_Byte_Far_Scaled
         MOVB nr_pat_sel_cyl,RL4
         MOVB case_sel_cyl,ZEROS
         JMPA cc_UC,L_B3DDC
@@ -218,14 +218,14 @@ L_B3AE6:                 ; 0xb3ae6
         MOV R12,#DATA16 POF ldp_case_sel_cyl__pat_sel_cyl
         MOV R13,#DATA16 PAG ldp_case_sel_cyl__pat_sel_cyl
         MOVBZ R14,case_sel_cyl
-        CALLS 00FH,Get_Byte_Y_Axis
+        CALLS SEG Get_Byte_Y_Axis, SOF Get_Byte_Y_Axis
         MOV R12,#DATA16 POF ldp_nr_sel_cyl__pat_sel_cyl
         MOV R13,#DATA16 PAG ldp_nr_sel_cyl__pat_sel_cyl
         MOVBZ R14,nr_sel_cyl
-        CALLS 00FH,Get_Byte_X_Axis
+        CALLS SEG Get_Byte_X_Axis, SOF Get_Byte_X_Axis
         MOV R12,#DATA16 POF id_pat_sel_cyl
         MOV R13,#DATA16 PAG id_pat_sel_cyl
-        CALLS 00FH,Read_Byte_Far_Scaled
+        CALLS SEG Read_Byte_Far_Scaled, SOF Read_Byte_Far_Scaled
         MOVB nr_pat_sel_cyl,RL4
         BSET lv_dc_rbm.03H
         JNB lv_dc_rbm.04H,L_B3B28
@@ -236,10 +236,10 @@ L_B3B28:                 ; 0xb3b28
         MOV R12,#DATA16 POF ldp_gr_mt__t_osc_dt
         MOV R13,#DATA16 PAG ldp_gr_mt__t_osc_dt
         MOVBZ R14,gr_mt
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF id_t_osc_dt
         MOV R13,#DATA16 PAG id_t_osc_dt
-        CALLS 00FH,Read_Byte_Far
+        CALLS SEG Read_Byte_Far, SOF Read_Byte_Far
         MOVB t_osc_dt,RL4
         JMPR cc_UC,L_B3B54
 L_B3B50:                 ; 0xb3b50
@@ -257,14 +257,14 @@ L_B3B68:                 ; 0xb3b68
         MOV R12,#DATA16 POF ldp_case_sel_cyl__pat_sel_cyl
         MOV R13,#DATA16 PAG ldp_case_sel_cyl__pat_sel_cyl
         MOVBZ R14,case_sel_cyl
-        CALLS 00FH,Get_Byte_Y_Axis
+        CALLS SEG Get_Byte_Y_Axis, SOF Get_Byte_Y_Axis
         MOV R12,#DATA16 POF ldp_nr_sel_cyl__pat_sel_cyl
         MOV R13,#DATA16 PAG ldp_nr_sel_cyl__pat_sel_cyl
         MOVBZ R14,nr_sel_cyl
-        CALLS 00FH,Get_Byte_X_Axis
+        CALLS SEG Get_Byte_X_Axis, SOF Get_Byte_X_Axis
         MOV R12,#DATA16 POF id_pat_sel_cyl
         MOV R13,#DATA16 PAG id_pat_sel_cyl
-        CALLS 00FH,Read_Byte_Far_Scaled
+        CALLS SEG Read_Byte_Far_Scaled, SOF Read_Byte_Far_Scaled
         MOVB nr_pat_sel_cyl,RL4
         MOVB case_sel_cyl,ZEROS
         JMPA cc_UC,L_B3DDC
@@ -282,7 +282,7 @@ L_B3BC6:                 ; 0xb3bc6
         JMPR cc_EQ,L_B3BD0
         JNB abs_def.04H,L_B3BF2
 L_B3BD0:                 ; 0xb3bd0
-        CALLS 00BH,Calc_Cyl_Select_Seq
+        CALLS SEG Calc_Cyl_Select_Seq, SOF Calc_Cyl_Select_Seq
         JNB lv_dc_rbm.03H,L_B3BDC
         JMPA cc_UC,L_B3DDC
 L_B3BDC:                 ; 0xb3bdc
@@ -302,14 +302,14 @@ L_B3BF2:                 ; 0xb3bf2
         MOV R12,#DATA16 POF ldp_case_sel_cyl__pat_sel_cyl
         MOV R13,#DATA16 PAG ldp_case_sel_cyl__pat_sel_cyl
         MOVBZ R14,case_sel_cyl
-        CALLS 00FH,Get_Byte_Y_Axis
+        CALLS SEG Get_Byte_Y_Axis, SOF Get_Byte_Y_Axis
         MOV R12,#DATA16 POF ldp_nr_sel_cyl__pat_sel_cyl
         MOV R13,#DATA16 PAG ldp_nr_sel_cyl__pat_sel_cyl
         MOVBZ R14,nr_sel_cyl
-        CALLS 00FH,Get_Byte_X_Axis
+        CALLS SEG Get_Byte_X_Axis, SOF Get_Byte_X_Axis
         MOV R12,#DATA16 POF id_pat_sel_cyl
         MOV R13,#DATA16 PAG id_pat_sel_cyl
-        CALLS 00FH,Read_Byte_Far_Scaled
+        CALLS SEG Read_Byte_Far_Scaled, SOF Read_Byte_Far_Scaled
         MOVB nr_pat_sel_cyl,RL4
         MOVB case_sel_cyl,ZEROS
         JMPA cc_UC,L_B3DDC
@@ -319,14 +319,14 @@ L_B3C3A:                 ; 0xb3c3a
         MOV R12,#DATA16 POF ldp_case_sel_cyl__pat_sel_cyl
         MOV R13,#DATA16 PAG ldp_case_sel_cyl__pat_sel_cyl
         MOVBZ R14,case_sel_cyl
-        CALLS 00FH,Get_Byte_Y_Axis
+        CALLS SEG Get_Byte_Y_Axis, SOF Get_Byte_Y_Axis
         MOV R12,#DATA16 POF ldp_nr_sel_cyl__pat_sel_cyl
         MOV R13,#DATA16 PAG ldp_nr_sel_cyl__pat_sel_cyl
         MOVBZ R14,nr_sel_cyl
-        CALLS 00FH,Get_Byte_X_Axis
+        CALLS SEG Get_Byte_X_Axis, SOF Get_Byte_X_Axis
         MOV R12,#DATA16 POF id_pat_sel_cyl
         MOV R13,#DATA16 PAG id_pat_sel_cyl
-        CALLS 00FH,Read_Byte_Far_Scaled
+        CALLS SEG Read_Byte_Far_Scaled, SOF Read_Byte_Far_Scaled
         MOVB nr_pat_sel_cyl,RL4
         BSET lv_dc_rbm.03H
         JNB lv_dc_rbm.04H,L_B3C7C
@@ -337,10 +337,10 @@ L_B3C7C:                 ; 0xb3c7c
         MOV R12,#DATA16 POF ldp_gr_mt__t_osc_dt
         MOV R13,#DATA16 PAG ldp_gr_mt__t_osc_dt
         MOVBZ R14,gr_mt
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF id_t_osc_dt
         MOV R13,#DATA16 PAG id_t_osc_dt
-        CALLS 00FH,Read_Byte_Far
+        CALLS SEG Read_Byte_Far, SOF Read_Byte_Far
         MOVB t_osc_dt,RL4
         JMPR cc_UC,L_B3CA8
 L_B3CA4:                 ; 0xb3ca4
@@ -367,7 +367,7 @@ L_B3CC8:                 ; 0xb3cc8
         JMPR cc_EQ,L_B3CEA
         JNB abs_def.04H,L_B3D08
 L_B3CEA:                 ; 0xb3cea
-        CALLS 00BH,Calc_Cyl_Select_Seq
+        CALLS SEG Calc_Cyl_Select_Seq, SOF Calc_Cyl_Select_Seq
         JNB lv_dc_rbm.03H,L_B3CF6
         JMPA cc_UC,L_B3DDC
 L_B3CF6:                 ; 0xb3cf6
@@ -387,14 +387,14 @@ L_B3D08:                 ; 0xb3d08
         MOV R12,#DATA16 POF ldp_case_sel_cyl__pat_sel_cyl
         MOV R13,#DATA16 PAG ldp_case_sel_cyl__pat_sel_cyl
         MOVBZ R14,case_sel_cyl
-        CALLS 00FH,Get_Byte_Y_Axis
+        CALLS SEG Get_Byte_Y_Axis, SOF Get_Byte_Y_Axis
         MOV R12,#DATA16 POF ldp_nr_sel_cyl__pat_sel_cyl
         MOV R13,#DATA16 PAG ldp_nr_sel_cyl__pat_sel_cyl
         MOVBZ R14,nr_sel_cyl
-        CALLS 00FH,Get_Byte_X_Axis
+        CALLS SEG Get_Byte_X_Axis, SOF Get_Byte_X_Axis
         MOV R12,#DATA16 POF id_pat_sel_cyl
         MOV R13,#DATA16 PAG id_pat_sel_cyl
-        CALLS 00FH,Read_Byte_Far_Scaled
+        CALLS SEG Read_Byte_Far_Scaled, SOF Read_Byte_Far_Scaled
         MOVB nr_pat_sel_cyl,RL4
         MOVB case_sel_cyl,ZEROS
         JMPR cc_UC,L_B3DDC
@@ -404,14 +404,14 @@ L_B3D4E:                 ; 0xb3d4e
         MOV R12,#DATA16 POF ldp_case_sel_cyl__pat_sel_cyl
         MOV R13,#DATA16 PAG ldp_case_sel_cyl__pat_sel_cyl
         MOVBZ R14,case_sel_cyl
-        CALLS 00FH,Get_Byte_Y_Axis
+        CALLS SEG Get_Byte_Y_Axis, SOF Get_Byte_Y_Axis
         MOV R12,#DATA16 POF ldp_nr_sel_cyl__pat_sel_cyl
         MOV R13,#DATA16 PAG ldp_nr_sel_cyl__pat_sel_cyl
         MOVBZ R14,nr_sel_cyl
-        CALLS 00FH,Get_Byte_X_Axis
+        CALLS SEG Get_Byte_X_Axis, SOF Get_Byte_X_Axis
         MOV R12,#DATA16 POF id_pat_sel_cyl
         MOV R13,#DATA16 PAG id_pat_sel_cyl
-        CALLS 00FH,Read_Byte_Far_Scaled
+        CALLS SEG Read_Byte_Far_Scaled, SOF Read_Byte_Far_Scaled
         MOVB nr_pat_sel_cyl,RL4
         BSET lv_dc_rbm.03H
         JB lv_dc_rbm.04H,L_B3DDC
@@ -420,10 +420,10 @@ L_B3D4E:                 ; 0xb3d4e
         MOV R12,#DATA16 POF ldp_gr_mt__t_osc_dt
         MOV R13,#DATA16 PAG ldp_gr_mt__t_osc_dt
         MOVBZ R14,gr_mt
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF id_t_osc_dt
         MOV R13,#DATA16 PAG id_t_osc_dt
-        CALLS 00FH,Read_Byte_Far
+        CALLS SEG Read_Byte_Far, SOF Read_Byte_Far
         MOVB t_osc_dt,RL4
         JMPR cc_UC,L_B3DB8
 L_B3DB4:                 ; 0xb3db4
@@ -446,7 +446,7 @@ L_B3DDC:                 ; 0xb3ddc
         MOVB RL4,nr_pat
         CMPB RL4,nr_pat_sel_cyl
         JMPR cc_EQ,L_B3DEA
-        CALLS 00CH,Calc_Inj_Pattern
+        CALLS SEG Calc_Inj_Pattern, SOF Calc_Inj_Pattern
 L_B3DEA:                 ; 0xb3dea
         BMOV lv_dc_rbm.05H,lv_pl.01H
         BMOV lv_dc_rbm.06H,lv_pl.02H

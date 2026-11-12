@@ -52,7 +52,7 @@ L_BCE38:                 ; 0xbce38
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D506H
         MOV R13,#DATA16 058CCH
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_ecu_err.0DH,dtc_status_work.06H
         MOVBZ R4,dtc_done_imob_b
         AND R4,#DATA16 00020H
@@ -65,7 +65,7 @@ L_BCE62:                 ; 0xbce62
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D4F8H
         MOV R13,#DATA16 058B6H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_ecu_err.0CH,dtc_status_work.06H
         MOVBZ R4,dtc_done_imob_a
         AND R4,#DATA16 00020H
@@ -78,7 +78,7 @@ L_BCE8C:                 ; 0xbce8c
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D514H
         MOV R13,#DATA16 058E2H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_ecu_err.0EH,dtc_status_work.06H
         MOVBZ R4,dtc_done_imob_c
         AND R4,#DATA16 00020H
@@ -91,7 +91,7 @@ L_BCEB6:                 ; 0xbceb6
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D4F8H
         MOV R13,#DATA16 058B6H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_ecu_err.0CH,dtc_status_work.06H
         MOVBZ R4,dtc_done_imob_a
         AND R4,#DATA16 00020H
@@ -104,7 +104,7 @@ L_BCEE0:                 ; 0xbcee0
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D4F8H
         MOV R13,#DATA16 058B6H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_ecu_err.0CH,dtc_status_work.06H
         MOVBZ R4,dtc_done_imob_a
         AND R4,#DATA16 00020H
@@ -180,7 +180,7 @@ Reset_lv_fmy_imob_f86:
         ; ------------------------------------------------------------
 Imob_DTC_Fmy:
         BSET lv_fmy_imob.0EH
-        CALLS 00BH,Imob_DTC_update_comms
+        CALLS SEG Imob_DTC_update_comms, SOF Imob_DTC_update_comms
 L_BCF96:                 ; 0xbcf96
         RETS
 
@@ -240,7 +240,7 @@ L_BCFF2:                 ; 0xbcff2
 L_BCFF8:                 ; 0xbcff8
         MOV R12,#DATA16 0D522H
         MOV R13,#DATA16 058F8H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_ecu_err.0FH,dtc_status_work.06H
         MOVBZ R4,dtc_done_imob_d
         AND R4,#DATA16 00020H

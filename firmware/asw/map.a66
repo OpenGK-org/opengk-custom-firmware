@@ -28,40 +28,40 @@ Acq_AMP_Mes:
         MOV [-R0],R6
         MOV R12,ar_red
         MOV R13,maf_mdl_con_1
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV g_cc6e,R4
         MOV R12,R4
         MOV R13,maf_fac_ofs
         MOV R14,#0BH
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV R6,R4
         MOV R12,#00H
         MOV R13,lv_maf_cc36
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV g_cc70,R4
         MOV R12,R4
         MOV R13,maf_fac_ofs_egr
         MOV R14,#0BH
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV R7,R4
         MOV R12,g_cc70
         MOV R13,maf_fac_slop_egr
         MOV R14,#0BH
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV R8,R4
         MOV R12,g_cc6e
         MOV R13,maf_fac_slop
         MOV R14,#0BH
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV R12,R4
         MOV R13,R8
         MOV R14,eff_vol_slop
-        CALLS 00FH,Sat_Add3_U16
+        CALLS SEG Sat_Add3_U16, SOF Sat_Add3_U16
         MOV R9,R4
         MOV R12,t_seg_av
         MOV R13,maf_mdl_con_0
         MOV R14,#0BH
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV g_cc6c,R4
         MOV R8,R4
         SHR R8,#01H
@@ -74,55 +74,55 @@ Acq_AMP_Mes:
         MOV R12,R6
         MOV R13,prs_up_thr
         MOV R14,#0FH
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV R6,R4
         MOV R12,R7
         MOV R13,prs_ex
         MOV R14,#0FH
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV R12,R4
         MOV R13,R6
         MOV R14,eff_vol_ofs
         SHR R14,#04H
-        CALLS 00FH,Sat_Add3_U16
+        CALLS SEG Sat_Add3_U16, SOF Sat_Add3_U16
         MOV R7,R4
         MOV R12,R8
         MOV R13,R9
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV R6,R4
         ADD R6,#DATA16 00800H
         MOV R12,R7
         MOV R13,R8
         MOV R14,R6
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         SHR R4,#01H
         MOV R8,R4
         MOV R12,map_drv1
         MOV R13,t_seg_av
         MOV R14,#0EH
-        CALLS 00FH,Mul_Shift_S16
+        CALLS SEG Mul_Shift_S16, SOF Mul_Shift_S16
         MOV R13,R4
         MOV R12,map
-        CALLS 00FH,Sat_Add_U16
+        CALLS SEG Sat_Add_U16, SOF Sat_Add_U16
         MOV R13,R4
         MOV R12,#DATA16 00801H
         MOV R14,R6
-        CALLS 00FH,MulDiv_Round_S16
+        CALLS SEG MulDiv_Round_S16, SOF MulDiv_Round_S16
         MOV R6,R4
         MOV R12,R8
         MOV R13,R6
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV R6,R4
         MOV R8,prs_up_thr
         MOV R12,DPP0:c_pq_thd
         MOV R13,R8
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         CMP R6,R4
         JMPR cc_C,L_C3CCC
         JB lv_pl.04H,L_C3CCC
         MOV R12,R7
         MOV R13,R9
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         MOV R6,R4
         SHR R6,#01H
 L_C3CCC:                 ; 0xc3ccc
@@ -134,77 +134,77 @@ L_C3CCC:                 ; 0xc3ccc
 L_C3CD6:                 ; 0xc3cd6
         MOV R12,g_cc70
         MOV R13,maf_fac_slop_egr
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV R6,R4
         MOV R12,g_cc6e
         MOV R13,maf_fac_slop
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV R12,R4
         MOV R13,R6
         MOV R14,eff_vol_slop
         SHR R14,#05H
-        CALLS 00FH,Sat_Add3_U16
+        CALLS SEG Sat_Add3_U16, SOF Sat_Add3_U16
         MOV R9,R4
         MOV R12,g_cc6e
         MOV R13,maf_fac_ofs
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV R13,R4
         MOV R12,prs_up_thr
         MOV R14,#0EH
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV R6,R4
         MOV R12,g_cc70
         MOV R13,maf_fac_ofs_egr
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV R13,R4
         MOV R12,prs_ex
         MOV R14,#0EH
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV R12,R4
         MOV R13,R6
         MOV R14,eff_vol_ofs
         SHR R14,#08H
-        CALLS 00FH,Sat_Add3_U16
+        CALLS SEG Sat_Add3_U16, SOF Sat_Add3_U16
         MOV R7,R4
         MOV R12,R8
         MOV R13,R9
         MOV R14,#0DH
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV R6,R4
         ADD R6,#DATA16 00200H
         MOV R12,R7
         MOV R13,R8
         SHL R13,#01H
         MOV R14,R6
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV R8,R4
         MOV R12,map_drv1
         MOV R13,t_seg_av
         MOV R14,#0EH
-        CALLS 00FH,Mul_Shift_S16
+        CALLS SEG Mul_Shift_S16, SOF Mul_Shift_S16
         MOV R13,R4
         MOV R12,map
-        CALLS 00FH,Sat_Add_U16
+        CALLS SEG Sat_Add_U16, SOF Sat_Add_U16
         MOV R13,R4
         MOV R12,#DATA16 00200H
         MOV R14,R6
-        CALLS 00FH,MulDiv_Round_S16
+        CALLS SEG MulDiv_Round_S16, SOF MulDiv_Round_S16
         MOV R6,R4
         MOV R12,R8
         MOV R13,R6
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV R6,R4
         MOV R8,prs_up_thr
         MOV R12,DPP0:c_pq_thd
         MOV R13,R8
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         CMP R6,R4
         JMPR cc_C,L_C3DB4
         JB lv_pl.04H,L_C3DB4
         MOV R12,R7
         MOV R13,#DATA16 04001H
         MOV R14,R9
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV R6,R4
 L_C3DB4:                 ; 0xc3db4
         CMP R6,R8
@@ -215,11 +215,11 @@ L_C3DBC:                 ; 0xc3dbc
         MOV map,R6
         MOV R12,R6
         MOV R13,R8
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         MOV pq,R4
         MOV R12,R6
         MOV R13,prs_ex
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         MOV pq_egr,R4
         MOV R6,[R0+]
         MOV R7,[R0+]
@@ -240,36 +240,36 @@ Calc_AirCharge_Model:
         MOV R12,map
         MOV R13,eff_vol_slop
         MOV R14,#0BH
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV R12,R4
         MOV R13,eff_vol_ofs
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV maf_cyl,R4
         MOV R12,R4
         MOV R13,#DATA16 0C000H
         MOV R14,n_C93C
         SHL R14,#02H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV maf_cyl_stk,R4
         MOV R12,maf_fac_slop_egr
         MOV R13,pq_egr
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV R13,R4
         MOV R12,maf_fac_ofs_egr
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV R9,R4
         MOV R12,g_cc70
         MOV R13,R9
         MOV R14,#0BH
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV R12,R4
         MOV R13,prs_ex
         MOV R14,#0BH
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV maf_egr,R4
         MOV R12,R4
         MOV R13,maf_cyl
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         MOV egr_ratio,R4
         MOV R5,map_drv1
         MOV lv_maf_cc6a,R5
@@ -278,48 +278,48 @@ Calc_AirCharge_Model:
         JMPR cc_UGT,L_C3EBA
         MOV R12,maf_fac_slop
         MOV R13,R2
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV R13,R4
         MOV R12,maf_fac_ofs
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV R9,R4
         MOV R12,g_cc6e
         MOV R13,R9
         MOV R14,#0BH
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV R12,R4
         MOV R13,prs_up_thr
         MOV R14,#0BH
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV maf_thr,R4
         MOV R12,R4
         SUB R12,maf_cyl
         ADD R12,maf_egr
         MOV R13,maf_mdl_con_0
         MOV R14,#0EH
-        CALLS 00FH,Mul_Shift_S16
+        CALLS SEG Mul_Shift_S16, SOF Mul_Shift_S16
         MOV map_drv1,R4
         JMPR cc_UC,L_C3ECE
 L_C3EBA:                 ; 0xc3eba
         MOV R12,maf_cyl
         MOV R13,maf_egr
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV maf_thr,R4
         MOV map_drv1,ZEROS
 L_C3ECE:                 ; 0xc3ece
         MOV R12,eff_vol_slop
         MOV R13,g_cc6c
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV R9,R4
         ADD R9,#DATA16 00800H
         MOV R12,g_cc6c
         MOV R13,maf_egr
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV R12,R4
         ADD R12,map_egr
         MOV R13,#DATA16 00801H
         MOV R14,R9
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV map_egr,R4
         MOV R5,map
         SUB R5,map_egr
@@ -330,13 +330,13 @@ L_C3ECE:                 ; 0xc3ece
         MOV R12,R4
         MOV R13,eff_vol_slop
         MOV R14,#0BH
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV R12,maf_egr
         SUB R12,R4
         SHL R12,#01H
         MOV R13,maf_mdl_con_0
         SHL R13,#01H
-        CALLS 00FH,Mul_S16_Hi
+        CALLS SEG Mul_S16_Hi, SOF Mul_S16_Hi
         MOV R9,R4
         JMPR cc_UC,L_C3F3A
 L_C3F38:                 ; 0xc3f38
@@ -345,38 +345,38 @@ L_C3F3A:                 ; 0xc3f3a
         MOV R12,eff_vol_slop
         MOV R13,map_fg
         MOV R14,#0BH
-        CALLS 00FH,Mul_Shift_U16_Sat32
+        CALLS SEG Mul_Shift_U16_Sat32, SOF Mul_Shift_U16_Sat32
         MOV R12,R4
         MOV R13,eff_vol_ofs
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV maf_fg_cyl,R4
         MOV R12,R4
         MOV R13,#DATA16 0C000H
         MOV R14,n_C93C
         SHL R14,#02H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV maf_fg_cyl_stk,R4
         MOV R12,t_seg_av
         MOVBZ R13,g_c322
         SHL R13,#05H
-        CALLS 00FH,Mul_Frac_U16_Sat
+        CALLS SEG Mul_Frac_U16_Sat, SOF Mul_Frac_U16_Sat
         MOV R8,R4
         MOV R12,map_egr_drv1
         ADD R12,R9
         MOV R13,R8
-        CALLS 00FH,Mul_S16_Hi
+        CALLS SEG Mul_S16_Hi, SOF Mul_S16_Hi
         ADD R4,map_egr
         MOV map_egr_pred,R4
         MOV map_egr_drv1,R9
         MOV R12,map_drv1
         MOV R13,lv_maf_cc6a
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV R12,R4
         MOV R13,R8
-        CALLS 00FH,Mul_S16_Hi
+        CALLS SEG Mul_S16_Hi, SOF Mul_S16_Hi
         MOV R13,R4
         MOV R12,map
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV R9,R4
         CMP R9,prs_up_thr
         JMPR cc_ULE,L_C3FBE
@@ -388,21 +388,21 @@ L_C3FBE:                 ; 0xc3fbe
         MOV map_fg_pred,R9
         MOV R12,eff_vol_slop
         MOV R13,R8
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV R7,R4
         MOV R12,map_drv1
         MOV R13,lv_maf_cc6a
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV R12,R4
         MOV R13,R7
         MOV R14,#0BH
-        CALLS 00FH,Mul_Shift_S16
+        CALLS SEG Mul_Shift_S16, SOF Mul_Shift_S16
         MOV maf_pred_kgh,R4
         MOV R12,#DATA16 0C000H
         MOV R13,R4
         MOV R14,n_C93C
         SHL R14,#02H
-        CALLS 00FH,MulDiv_Round_S16
+        CALLS SEG MulDiv_Round_S16, SOF MulDiv_Round_S16
         MOV maf_pred,R4
         MOV R7,[R0+]
         MOV R8,[R0+]

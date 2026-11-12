@@ -26,7 +26,7 @@ DTC_Status_Proc_1:
 L_DBCB6:                 ; 0xdbcb6
         MOV R4,R9
         MOVBZ R12,RL4
-        CALLS 00DH,Get_DTC_StatusBits
+        CALLS SEG Get_DTC_StatusBits, SOF Get_DTC_StatusBits
         MOV R8,R4
         CMPB RL4,#04H
         JMPA cc_NC,L_DBE6A
@@ -93,7 +93,7 @@ L_DBD16:                 ; 0xdbd16
         SHL R4,#03H
         ADD R12,R4
         MOV R13,#DATA16 0CA68H
-        CALLS 00DH,DTC_Process_StatusByte
+        CALLS SEG DTC_Process_StatusByte, SOF DTC_Process_StatusByte
         MOV R4,R8
         MOVBZ R4,RL4
         SHL R4,#03H
@@ -195,7 +195,7 @@ L_DBE28:                 ; 0xdbe28
         BSET dtc_status_work.03H
         MOV R4,R9
         MOVBZ R12,RL4
-        CALLS 00DH,OBD_Readiness_Grp2
+        CALLS SEG OBD_Readiness_Grp2, SOF OBD_Readiness_Grp2
 L_DBE56:                 ; 0xdbe56
         MOVB RL4,dtc_status_work
         MOV R5,R9
@@ -224,7 +224,7 @@ DTC_Status_Proc_2:
         JMPA cc_UC,L_DC076
 L_DBE82:                 ; 0xdbe82
         MOVBZ R12,RL7
-        CALLS 00DH,Get_DTC_StatusBits
+        CALLS SEG Get_DTC_StatusBits, SOF Get_DTC_StatusBits
         MOVB RL6,RL4
         CMPB RL4,#04H
         JMPA cc_NC,L_DC076
@@ -259,7 +259,7 @@ L_DBE98:                 ; 0xdbe98
         SHL R4,#03H
         ADD R12,R4
         MOV R13,#DATA16 0CA6CH
-        CALLS 00DH,DTC_Process_StatusByte
+        CALLS SEG DTC_Process_StatusByte, SOF DTC_Process_StatusByte
         MOVBZ R4,RL6
         SHL R4,#03H
         MOVB RL5,[R4+#0D6BFH]
@@ -317,7 +317,7 @@ L_DBF48:                 ; 0xdbf48
         BSET dtc_status_work.02H
         BSET dtc_status_work.03H
         MOVBZ R12,RL7
-        CALLS 00DH,OBD_Readiness_Grp2
+        CALLS SEG OBD_Readiness_Grp2, SOF OBD_Readiness_Grp2
 L_DBF70:                 ; 0xdbf70
         MOVB RL4,dtc_status_work
         MOVBZ R5,RL7
@@ -359,7 +359,7 @@ L_DBF86:                 ; 0xdbf86
         SHL R4,#03H
         ADD R12,R4
         MOV R13,#DATA16 0CA6CH
-        CALLS 00DH,DTC_Process_StatusByte
+        CALLS SEG DTC_Process_StatusByte, SOF DTC_Process_StatusByte
         MOVBZ R4,RL6
         SHL R4,#03H
         MOVB RL5,[R4+#0D6DFH]
@@ -417,7 +417,7 @@ L_DC03C:                 ; 0xdc03c
         BSET dtc_status_work.02H
         BSET dtc_status_work.03H
         MOVBZ R12,RL7
-        CALLS 00DH,OBD_Readiness_Grp2
+        CALLS SEG OBD_Readiness_Grp2, SOF OBD_Readiness_Grp2
 L_DC064:                 ; 0xdc064
         MOVB RL4,dtc_status_work
         MOVBZ R5,RL7
@@ -449,7 +449,7 @@ DTC_Status_Proc_3:
         MOV dtc_status_work,R4
         JNB dtc_status_work.05H,L_DC176
         MOVBZ R12,RL7
-        CALLS 00DH,Get_DTC_StatusBits
+        CALLS SEG Get_DTC_StatusBits, SOF Get_DTC_StatusBits
         SUBB RL4,#04H
         MOVB RL6,RL4
         CMPB RL4,#02H
@@ -482,7 +482,7 @@ DTC_Status_Proc_3:
         SHL R4,#03H
         ADD R12,R4
         MOV R13,#DATA16 0C952H
-        CALLS 00DH,DTC_Process_StatusByte
+        CALLS SEG DTC_Process_StatusByte, SOF DTC_Process_StatusByte
         MOVBZ R4,RL6
         SHL R4,#03H
         MOVB RL5,[R4+#0D6FFH]
@@ -528,7 +528,7 @@ DTC_Status_Proc_3:
         BSET dtc_status_work.02H
         BSET dtc_status_work.03H
         MOVBZ R12,RL7
-        CALLS 00DH,OBD_Readiness_Grp2
+        CALLS SEG OBD_Readiness_Grp2, SOF OBD_Readiness_Grp2
 L_DC164:                 ; 0xdc164
         MOVB RL4,dtc_status_work
         MOVBZ R5,RL7
@@ -577,7 +577,7 @@ Eval_DTC_Status:
         AND R5,#DATA16 00060H
         JMPR cc_EQ,L_DC22A
         MOVBZ R12,RL7
-        CALLS 00DH,Get_DTC_StatusBits
+        CALLS SEG Get_DTC_StatusBits, SOF Get_DTC_StatusBits
         MOVB RL6,RL4
         CMPB RL4,#04H
         JMPR cc_NC,L_DC20A
@@ -605,7 +605,7 @@ Eval_DTC_Status:
         JMPR cc_UC,L_DC22A
 L_DC20A:                 ; 0xdc20a
         MOVBZ R12,RL7
-        CALLS 00DH,Get_DTC_StatusBits
+        CALLS SEG Get_DTC_StatusBits, SOF Get_DTC_StatusBits
         SUBB RL4,#04H
         MOVB RL6,RL4
         CMPB RL4,#02H
@@ -631,7 +631,7 @@ Calc_Mis_Rate_FromFault:
         MOV [-R0],R6
         MOVB RL4,[R0+#02H]
         MOVBZ R12,RL4
-        CALLS 00DH,Get_DTC_StatusBits
+        CALLS SEG Get_DTC_StatusBits, SOF Get_DTC_StatusBits
         MOVB RL6,RL4
         CMPB RL4,#04H
         JMPR cc_NC,L_DC256

@@ -41,7 +41,7 @@ DiagCP_St4:
         ADD dtp_ofs,R5
         MOV R12,dtp_sword
         MOV R13,R5
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV dtp_sword,R4
         MOV R12,dtp_sword
         CALLA cc_UC,Delay_Dc397
@@ -87,7 +87,7 @@ L_D2296:                 ; 0xd2296
 L_D22B6:                 ; 0xd22b6
         MOV R12,dtp_sword
         MOV R13,DPP0:c_dtp_bas_cor
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV dtp_cor,R4
         MOV R5,ctr_sum_dtp
         CMP R5,tot_sum_dtp
@@ -105,7 +105,7 @@ L_D22B6:                 ; 0xd22b6
         JMPR cc_SGE,L_D2362
         MOVBZ R12,g_c39c
         MOVBZ R13,DPP0:c_abc_inc_cps_mecha
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB g_c39c,RL4
         CMPB RL4,DPP0:c_abc_max_cps_mecha
         JMPA cc_C,L_D3586
@@ -117,7 +117,7 @@ L_D22B6:                 ; 0xd22b6
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D2E4H
         MOV R13,#DATA16 05572H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cps_err.06H,dtc_status_work.06H
         MOVBZ R4,dtc_done_cp_4
         AND R4,#DATA16 00020H
@@ -147,7 +147,7 @@ L_D2374:                 ; 0xd2374
         MOV R12,#DATA16 0502EH
         MOV R13,R4
         MOVBZ R14,tam
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YWord
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XByte_YWord, SOF Get_IP_Word_3D_Table_DWord_XByte_YWord
         MOV diagcp_mdl_estim,R4
         MOV R5,intr_state_diagcp
         AND R5,#04H
@@ -174,7 +174,7 @@ L_D23D0:                 ; 0xd23d0
         MOV dtp_dif_cor_mod_6_sword,R4
         MOV R12,#DATA16 0D2E4H
         MOV R13,#DATA16 05572H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cps_err.06H,dtc_status_work.06H
         MOVBZ R4,dtc_done_cp_4
         AND R4,#DATA16 00020H

@@ -37,22 +37,22 @@ KWP_io_adaptive_values_adjustment:
 Reset_Adapt_Group:
         JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E454A
         JNB can_fd58.09H,L_E454A
-        CALLS 00DH,Tail_f0c400c_918
-        CALLS 00CH,Set_maf_fac_alti_mmv_7a6
-        CALLS 00CH,Init_IGA_Knk_Adapt
-        CALLS 00CH,Set_ratio_tqi_bas_max_stnd_2_750
-        CALLS 00CH,Calc_TPS_AD_MMV_IS
+        CALLS SEG Tail_f0c400c_918, SOF Tail_f0c400c_918
+        CALLS SEG Set_maf_fac_alti_mmv_7a6, SOF Set_maf_fac_alti_mmv_7a6
+        CALLS SEG Init_IGA_Knk_Adapt, SOF Init_IGA_Knk_Adapt
+        CALLS SEG Set_ratio_tqi_bas_max_stnd_2_750, SOF Set_ratio_tqi_bas_max_stnd_2_750
+        CALLS SEG Calc_TPS_AD_MMV_IS, SOF Calc_TPS_AD_MMV_IS
         MOVB RL4,conf_lam
         JMPR cc_EQ,L_E452E
-        CALLS 00CH,Reset_ctr_cold_st_b96
+        CALLS SEG Reset_ctr_cold_st_b96, SOF Reset_ctr_cold_st_b96
 L_E452E:                 ; 0xe452e
-        CALLS 00BH,Reset_cppwm_ad_mem_ee0
-        CALLS 00AH,Reset_TQ_Dif_IS_Ad
+        CALLS SEG Reset_cppwm_ad_mem_ee0, SOF Reset_cppwm_ad_mem_ee0
+        CALLS SEG Reset_TQ_Dif_IS_Ad, SOF Reset_TQ_Dif_IS_Ad
         JNB lv_conf_mis.02H,L_E453E
-        CALLS 00DH,Calc_ER_Thd_Adapt
+        CALLS SEG Calc_ER_Thd_Adapt, SOF Calc_ER_Thd_Adapt
 L_E453E:                 ; 0xe453e
-        CALLS 00BH,Reset_iga_er_ad_mem_142
-        CALLS 00CH,Calc_Cam_Ref_Edges
+        CALLS SEG Reset_iga_er_ad_mem_142, SOF Reset_iga_er_ad_mem_142
+        CALLS SEG Calc_Cam_Ref_Edges, SOF Calc_Cam_Ref_Edges
         JMPA cc_UC,L_E463C
 L_E454A:                 ; 0xe454a
         MOVB RL6,#DATA16 00022H
@@ -65,8 +65,8 @@ L_E454A:                 ; 0xe454a
 Reset_Adapt_Group_2:
         JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E4566
         JNB can_fd58.09H,L_E4566
-        CALLS 00DH,Tail_f0c400c_918
-        CALLS 00CH,Set_maf_fac_alti_mmv_7a6
+        CALLS SEG Tail_f0c400c_918, SOF Tail_f0c400c_918
+        CALLS SEG Set_maf_fac_alti_mmv_7a6, SOF Set_maf_fac_alti_mmv_7a6
         JMPA cc_UC,L_E463C
 L_E4566:                 ; 0xe4566
         MOVB RL6,#DATA16 00022H
@@ -82,8 +82,8 @@ KWP_Reset_Adapt_MafGate:
         JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_E4586
 L_E4576:                 ; 0xe4576
         JNB can_fd58.09H,L_E4586
-        CALLS 00CH,Init_IGA_Knk_Adapt
-        CALLS 00CH,Set_ratio_tqi_bas_max_stnd_2_750
+        CALLS SEG Init_IGA_Knk_Adapt, SOF Init_IGA_Knk_Adapt
+        CALLS SEG Set_ratio_tqi_bas_max_stnd_2_750, SOF Set_ratio_tqi_bas_max_stnd_2_750
         JMPA cc_UC,L_E463C
 L_E4586:                 ; 0xe4586
         MOVB RL6,#DATA16 00022H
@@ -97,7 +97,7 @@ L_E4586:                 ; 0xe4586
 KWP_Reset_TPS_AdMmv:
         JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E459E
         JNB can_fd58.09H,L_E459E
-        CALLS 00CH,Calc_TPS_AD_MMV_IS
+        CALLS SEG Calc_TPS_AD_MMV_IS, SOF Calc_TPS_AD_MMV_IS
         JMPA cc_UC,L_E463C
 L_E459E:                 ; 0xe459e
         MOVB RL6,#DATA16 00022H
@@ -115,7 +115,7 @@ L_E45AC:                 ; 0xe45ac
         JNB can_fd58.09H,L_E45BC
         MOVB RL4,conf_lam
         JMPR cc_EQ,L_E45BC
-        CALLS 00CH,Reset_ctr_cold_st_b96
+        CALLS SEG Reset_ctr_cold_st_b96, SOF Reset_ctr_cold_st_b96
         JMPR cc_UC,L_E463C
 L_E45BC:                 ; 0xe45bc
         MOVB RL6,#DATA16 00022H
@@ -130,7 +130,7 @@ KWP_Reset_ER_Adapt:
         JNB lv_conf_mis.02H,L_E45DA
         JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E45D4
         JNB can_fd58.09H,L_E45D4
-        CALLS 00DH,Calc_ER_Thd_Adapt
+        CALLS SEG Calc_ER_Thd_Adapt, SOF Calc_ER_Thd_Adapt
         JMPR cc_UC,L_E463C
 L_E45D4:                 ; 0xe45d4
         MOVB RL6,#DATA16 00022H
@@ -146,7 +146,7 @@ L_E45DA:                 ; 0xe45da
 KWP_Reset_IGA_ER_Mem:
         JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E45EE
         JNB can_fd58.09H,L_E45EE
-        CALLS 00BH,Reset_iga_er_ad_mem_142
+        CALLS SEG Reset_iga_er_ad_mem_142, SOF Reset_iga_er_ad_mem_142
         JMPR cc_UC,L_E463C
 L_E45EE:                 ; 0xe45ee
         MOVB RL6,#DATA16 00022H
@@ -159,7 +159,7 @@ L_E45EE:                 ; 0xe45ee
 KWP_Reset_CPPWM_AdMem:
         JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E4602
         JNB can_fd58.09H,L_E4602
-        CALLS 00BH,Reset_cppwm_ad_mem_ee0
+        CALLS SEG Reset_cppwm_ad_mem_ee0, SOF Reset_cppwm_ad_mem_ee0
         JMPR cc_UC,L_E463C
 L_E4602:                 ; 0xe4602
         MOVB RL6,#DATA16 00022H
@@ -176,7 +176,7 @@ KWP_Reset_Adapt_PlGate:
         JNB lv_pl.00H,L_E461E
 L_E4614:                 ; 0xe4614
         JNB can_fd58.09H,L_E461E
-        CALLS 00AH,Reset_TQ_Dif_IS_Ad
+        CALLS SEG Reset_TQ_Dif_IS_Ad, SOF Reset_TQ_Dif_IS_Ad
         JMPR cc_UC,L_E463C
 L_E461E:                 ; 0xe461e
         MOVB RL6,#DATA16 00022H
@@ -189,7 +189,7 @@ L_E461E:                 ; 0xe461e
 KWP_Reset_Cam_Edges:
         JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E4632
         JNB can_fd58.09H,L_E4632
-        CALLS 00CH,Calc_Cam_Ref_Edges
+        CALLS SEG Calc_Cam_Ref_Edges, SOF Calc_Cam_Ref_Edges
         JMPR cc_UC,L_E463C
 L_E4632:                 ; 0xe4632
         MOVB RL6,#DATA16 00022H

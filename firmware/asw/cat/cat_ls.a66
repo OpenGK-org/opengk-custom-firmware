@@ -74,10 +74,10 @@ L_B5C46:                 ; 0xb5c46
 L_B5C4E:                 ; 0xb5c4e
         MOV R12,maf_kgh
         MOV R13,#DATA16 00198H
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV R13,R4
         MOV R12,[R9+#066H]
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV [R9+#066H],R4
         JMPA cc_UC,L_B5D80
 L_B5C6C:                 ; 0xb5c6c
@@ -87,13 +87,13 @@ L_B5C6C:                 ; 0xb5c6c
         MOV R12,#DATA16 POF ldp_maf_int_puc_ip_maf_int
         MOV R13,#DATA16 PAG ldp_maf_int_puc_ip_maf_int
         MOV R14,[R9+#066H]
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_maf_int_dly_puc__maf_int_puc
         MOV R13,#DATA16 PAG ip_maf_int_dly_puc__maf_int_puc
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV R13,R4
         MOV R12,[R9+#064H]
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV R8,R4
         CMP R8,DPP0:c_maf_int_dly_puc_max
         JMPR cc_ULE,L_B5CAE
@@ -117,19 +117,19 @@ L_B5CB8:                 ; 0xb5cb8
         MOV R13,#DATA16 PAG ldp_cat_ip_fac_cat_dly_puc
         MOVB RL4,[R9+#0126H]
         MOVBZ R14,RL4
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_fac_cat_dly_puc__cat_diag
         MOV R13,#DATA16 PAG ip_fac_cat_dly_puc__cat_diag
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVBZ R4,RL4
         SHL R4,#08H
         MOV [-R0],R4
         MOV R12,maf_kgh
         MOV R13,#DATA16 00198H
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV R12,R4
         MOV R13,[R0+]
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV R8,R4
         CMP R8,#00H
         JMPR cc_UGT,L_B5D10
@@ -137,7 +137,7 @@ L_B5CB8:                 ; 0xb5cb8
 L_B5D10:                 ; 0xb5d10
         MOV R12,[R9+#064H]
         MOV R13,R8
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV [R9+#064H],R4
 L_B5D1E:                 ; 0xb5d1e
         JNB lv_inh_fsd_cp.0CH,L_B5D48
@@ -145,20 +145,20 @@ L_B5D1E:                 ; 0xb5d1e
         MOV R12,#DATA16 POF ldp_maf_kgh_ip_t_dly_puc
         MOV R13,#DATA16 PAG ldp_maf_kgh_ip_t_dly_puc
         MOV R14,maf_kgh
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_t_dly_puc_pue__maf_kgh
         MOV R13,#DATA16 PAG ip_t_dly_puc_pue__maf_kgh
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV [R9+#062H],R4
         JMPR cc_UC,L_B5D80
 L_B5D48:                 ; 0xb5d48
         MOV R12,#DATA16 POF ldp_maf_kgh_ip_t_dly_puc
         MOV R13,#DATA16 PAG ldp_maf_kgh_ip_t_dly_puc
         MOV R14,maf_kgh
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_t_dly_puc__maf_kgh
         MOV R13,#DATA16 PAG ip_t_dly_puc__maf_kgh
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV [R9+#062H],R4
         JMPR cc_UC,L_B5D80
 L_B5D6A:                 ; 0xb5d6a
@@ -264,33 +264,33 @@ L_B5E88:                 ; 0xb5e88
 LS_Diag_Group_1:
         MOVB RL4,diag_c242
         JMPR cc_NE,L_B5E94
-        CALLS 00BH,Calc_MAF_MMV_Dly
+        CALLS SEG Calc_MAF_MMV_Dly, SOF Calc_MAF_MMV_Dly
 L_B5E94:                 ; 0xb5e94
         MOVB RL4,conf_cat_eff
         CMPB RL4,#01H
         JMPR cc_NE,L_B5EE2
-        CALLS 00BH,Calc_LS_Down_Sig
+        CALLS SEG Calc_LS_Down_Sig, SOF Calc_LS_Down_Sig
         MOVB RL4,diag_c242
         JMPR cc_NE,L_B5EAE
-        CALLS 00CH,Diag_DTC_dd220
-        CALLS 00CH,Diag_DTC_dd22e
+        CALLS SEG Diag_DTC_dd220, SOF Diag_DTC_dd220
+        CALLS SEG Diag_DTC_dd22e, SOF Diag_DTC_dd22e
 L_B5EAE:                 ; 0xb5eae
-        CALLS 00BH,Diag_Cat_Eff_VlsDown
-        CALLS 00BH,Diag_FSD_CP_VlsDown
+        CALLS SEG Diag_Cat_Eff_VlsDown, SOF Diag_Cat_Eff_VlsDown
+        CALLS SEG Diag_FSD_CP_VlsDown, SOF Diag_FSD_CP_VlsDown
         MOVB RL4,diag_c243
         JMPR cc_NE,L_B5ECC
-        CALLS 00BH,Calc_LSH_Down_OBD2_Temp
-        CALLS 00BH,Calc_RBM_LSH_Down_OBD2
-        CALLS 00BH,Calc_RBM_LS_Down_Swt
-        CALLS 00BH,Calc_RBM_VLS_Down_Plaus
+        CALLS SEG Calc_LSH_Down_OBD2_Temp, SOF Calc_LSH_Down_OBD2_Temp
+        CALLS SEG Calc_RBM_LSH_Down_OBD2, SOF Calc_RBM_LSH_Down_OBD2
+        CALLS SEG Calc_RBM_LS_Down_Swt, SOF Calc_RBM_LS_Down_Swt
+        CALLS SEG Calc_RBM_VLS_Down_Plaus, SOF Calc_RBM_VLS_Down_Plaus
 L_B5ECC:                 ; 0xb5ecc
-        CALLS 00BH,Calc_Inh_FSD_CP
-        CALLS 00BH,Calc_Cat_Temp_Dly
+        CALLS SEG Calc_Inh_FSD_CP, SOF Calc_Inh_FSD_CP
+        CALLS SEG Calc_Cat_Temp_Dly, SOF Calc_Cat_Temp_Dly
         MOVB RL4,diag_c242
         JMPR cc_NE,L_B5EDE
-        CALLS 00BH,Calc_Cat_VLS_Diag
+        CALLS SEG Calc_Cat_VLS_Diag, SOF Calc_Cat_VLS_Diag
 L_B5EDE:                 ; 0xb5ede
-        CALLS 00BH,Diag_LS_Down_Response
+        CALLS SEG Diag_LS_Down_Response, SOF Diag_LS_Down_Response
 L_B5EE2:                 ; 0xb5ee2
         RETS
 
@@ -301,39 +301,39 @@ L_B5EE2:                 ; 0xb5ee2
 LS_Diag_Group_2:
         MOV [-R0],R9
         MOV R9,p_lam_bank1
-        CALLS 00DH,Calc_LS_Up_Amplitude
+        CALLS SEG Calc_LS_Up_Amplitude, SOF Calc_LS_Up_Amplitude
         MOVB RL4,diag_c242
         JMPR cc_NE,L_B5F00
-        CALLS 00CH,Diag_DTC_dd1dab
-        CALLS 00CH,Diag_DTC_dd1f6
-        CALLS 00CH,Diag_DTC_dd212
+        CALLS SEG Diag_DTC_dd1dab, SOF Diag_DTC_dd1dab
+        CALLS SEG Diag_DTC_dd1f6, SOF Diag_DTC_dd1f6
+        CALLS SEG Diag_DTC_dd212, SOF Diag_DTC_dd212
 L_B5F00:                 ; 0xb5f00
         MOVB RL4,diag_c243
         JMPR cc_NE,L_B5F1E
-        CALLS 00CH,Diag_DTC_dd204
-        CALLS 00DH,Calc_LSH_Up_OBD2_Temp
-        CALLS 00CH,Check_CatStruct_Stub
-        CALLS 00DH,Calc_RBM_VLS_Up_Plaus
-        CALLS 00DH,Calc_RBM_VLS_Up_Frq
-        CALLS 00DH,Calc_RBM_LSH_Up_OBD2
+        CALLS SEG Diag_DTC_dd204, SOF Diag_DTC_dd204
+        CALLS SEG Calc_LSH_Up_OBD2_Temp, SOF Calc_LSH_Up_OBD2_Temp
+        CALLS SEG Check_CatStruct_Stub, SOF Check_CatStruct_Stub
+        CALLS SEG Calc_RBM_VLS_Up_Plaus, SOF Calc_RBM_VLS_Up_Plaus
+        CALLS SEG Calc_RBM_VLS_Up_Frq, SOF Calc_RBM_VLS_Up_Frq
+        CALLS SEG Calc_RBM_LSH_Up_OBD2, SOF Calc_RBM_LSH_Up_OBD2
 L_B5F1E:                 ; 0xb5f1e
-        CALLS 00CH,CanPurge_Set_Close_3
-        CALLS 00CH,Check_fd66_Stub
-        CALLS 00DH,Calc_LS_Up_Switching
+        CALLS SEG CanPurge_Set_Close_3, SOF CanPurge_Set_Close_3
+        CALLS SEG Check_fd66_Stub, SOF Check_fd66_Stub
+        CALLS SEG Calc_LS_Up_Switching, SOF Calc_LS_Up_Switching
         MOVB RL4,conf_cat_eff
         CMPB RL4,#01H
         JMPR cc_NE,L_B5F3A
-        CALLS 00BH,Calc_Cat_MMV
-        CALLS 00BH,Diag_Cat_Eff_Main
+        CALLS SEG Calc_Cat_MMV, SOF Calc_Cat_MMV
+        CALLS SEG Diag_Cat_Eff_Main, SOF Diag_Cat_Eff_Main
 L_B5F3A:                 ; 0xb5f3a
-        CALLS 00BH,Diag_LS_Up_Response
+        CALLS SEG Diag_LS_Up_Response, SOF Diag_LS_Up_Response
         MOVB RL4,diag_c242
         JMPR cc_NE,L_B5F4C
         JB lv_cam_ad_di_ivvt.09H,L_B5F4C
-        CALLS 00BH,Calc_DynWatch_DYW
+        CALLS SEG Calc_DynWatch_DYW, SOF Calc_DynWatch_DYW
 L_B5F4C:                 ; 0xb5f4c
-        CALLS 00CH,Calc_Lam_Ctl_Limits
-        CALLS 00CH,Calc_TI_AD_ADD_MMV
+        CALLS SEG Calc_Lam_Ctl_Limits, SOF Calc_Lam_Ctl_Limits
+        CALLS SEG Calc_TI_AD_ADD_MMV, SOF Calc_TI_AD_ADD_MMV
         MOVB RL4,diag_c240
         JMPR cc_NE,L_B5F62
         MOVB RL5,#09H

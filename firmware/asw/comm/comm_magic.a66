@@ -91,7 +91,7 @@ L_DE106:                 ; 0xde106
 L_DE126:                 ; 0xde126
         MOV WDTCON,#DATA16 09201H
         SRVWDT
-        CALLS 00DH,BL_Validate_Setup
+        CALLS SEG BL_Validate_Setup, SOF BL_Validate_Setup
         JB can_fd58.04H,L_DE13A
         JMPA cc_UC,L_DE26C
 L_DE13A:                 ; 0xde13a
@@ -105,7 +105,7 @@ L_DE13A:                 ; 0xde13a
         JMPR cc_NC,L_DE1E4
         MOV R12,#DATA16 0F562H
         MOV R13,#04H
-        CALLS 00DH,Scan_Block_Bit0_Clear
+        CALLS SEG Scan_Block_Bit0_Clear, SOF Scan_Block_Bit0_Clear
         MOV [R0],R4
         CMP R4,#04H
         JMPR cc_NE,L_DE1B0
@@ -126,7 +126,7 @@ L_DE186:                 ; 0xde186
 L_DE18E:                 ; 0xde18e
         MOV R12,#DATA16 0F566H
         MOV R13,#04H
-        CALLS 00DH,Scan_Block_Bit0_Set
+        CALLS SEG Scan_Block_Bit0_Set, SOF Scan_Block_Bit0_Set
         CMP R4,#04H
         JMPR cc_NE,L_DE1A8
         MOV R8,#DATA16 02000H
@@ -155,7 +155,7 @@ L_DE1B0:                 ; 0xde1b0
 L_DE1D2:                 ; 0xde1d2
         MOV R12,#DATA16 0F566H
         MOV R13,#04H
-        CALLS 00DH,Scan_Block_Bit0_Set
+        CALLS SEG Scan_Block_Bit0_Set, SOF Scan_Block_Bit0_Set
         CMP R4,#04H
         JMPR cc_EQ,L_DE286
         BSET can_fd58.06H
@@ -163,7 +163,7 @@ L_DE1D2:                 ; 0xde1d2
 L_DE1E4:                 ; 0xde1e4
         MOV R12,#DATA16 0F566H
         MOV R13,#04H
-        CALLS 00DH,Scan_Block_Bit0_Clear
+        CALLS SEG Scan_Block_Bit0_Clear, SOF Scan_Block_Bit0_Clear
         MOV [R0],R4
         CMP R4,#04H
         JMPR cc_NE,L_DE238
@@ -184,7 +184,7 @@ L_DE216:                 ; 0xde216
 L_DE21C:                 ; 0xde21c
         MOV R12,#DATA16 0F562H
         MOV R13,#04H
-        CALLS 00DH,Scan_Block_Bit0_Set
+        CALLS SEG Scan_Block_Bit0_Set, SOF Scan_Block_Bit0_Set
         CMP R4,#04H
         JMPR cc_NE,L_DE232
         MOV R8,#00H
@@ -213,7 +213,7 @@ L_DE238:                 ; 0xde238
 L_DE25A:                 ; 0xde25a
         MOV R12,#DATA16 0F562H
         MOV R13,#04H
-        CALLS 00DH,Scan_Block_Bit0_Set
+        CALLS SEG Scan_Block_Bit0_Set, SOF Scan_Block_Bit0_Set
         CMP R4,#04H
         JMPR cc_EQ,L_DE286
         BSET can_fd58.05H
@@ -221,7 +221,7 @@ L_DE25A:                 ; 0xde25a
 L_DE26C:                 ; 0xde26c
         MOV R12,#DATA16 0F562H
         MOV R13,#04H
-        CALLS 00DH,Scan_Block_Bit0_Set
+        CALLS SEG Scan_Block_Bit0_Set, SOF Scan_Block_Bit0_Set
         CMP R4,#04H
         JMPR cc_NE,L_DE282
         MOV R8,#00H
@@ -279,22 +279,22 @@ L_DE2D4:                 ; 0xde2d4
         MOV R13,R5
         MOV R14,R0
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOVB RL4,#DATA16 00053H
         MOVB bl_exec_arm_magic,RL4
 L_DE324:                 ; 0xde324
         JNB can_fd58.05H,L_DE36A
         MOV R12,#DATA16 04000H
         MOV R13,#00H
-        CALLS 00DH,Elevated_Eeprom_Clear__Routine
+        CALLS SEG Elevated_Eeprom_Clear__Routine, SOF Elevated_Eeprom_Clear__Routine
         MOV R12,#DATA16 0F562H
         MOV R13,#DATA16 04000H
         MOV R14,#00H
         MOV R15,#04H
-        CALLS 00DH,BL_Copy_Blocks
+        CALLS SEG BL_Copy_Blocks, SOF BL_Copy_Blocks
         MOV R12,#DATA16 0F562H
         MOV R13,#04H
-        CALLS 00DH,Scan_Block_Bit0_Clear
+        CALLS SEG Scan_Block_Bit0_Clear, SOF Scan_Block_Bit0_Clear
         MOV [R0],R4
         CMP R4,#04H
         JMPR cc_NE,L_DE356
@@ -313,15 +313,15 @@ L_DE36A:                 ; 0xde36a
         JNB can_fd58.06H,L_DE3AE
         MOV R12,#DATA16 06000H
         MOV R13,#00H
-        CALLS 00DH,Elevated_Eeprom_Clear__Routine
+        CALLS SEG Elevated_Eeprom_Clear__Routine, SOF Elevated_Eeprom_Clear__Routine
         MOV R12,#DATA16 0F566H
         MOV R13,#DATA16 06000H
         MOV R14,#00H
         MOV R15,#04H
-        CALLS 00DH,BL_Copy_Blocks
+        CALLS SEG BL_Copy_Blocks, SOF BL_Copy_Blocks
         MOV R12,#DATA16 0F566H
         MOV R13,#04H
-        CALLS 00DH,Scan_Block_Bit0_Clear
+        CALLS SEG Scan_Block_Bit0_Clear, SOF Scan_Block_Bit0_Clear
         MOV [R0],R4
         CMP R4,#04H
         JMPR cc_NE,L_DE39C
@@ -348,7 +348,7 @@ L_DE3B2:                 ; 0xde3b2
         SHR R13,#02H
         MOV R14,#DATA16 0F9A6H
         MOV R15,#04H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R4,bl_blk_addr_lo
         MOV R5,bl_blk_addr_hi
         CPL R4
@@ -368,7 +368,7 @@ L_DE3B2:                 ; 0xde3b2
         MOV R13,R5
         MOV R14,#DATA16 0F9A6H
         MOV R15,#04H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,R8
         MOV R13,R9
         ADD R12,#04H
@@ -382,14 +382,14 @@ L_DE3B2:                 ; 0xde3b2
         MOV R13,R5
         MOV R14,#DATA16 0F56AH
         MOV R15,#0AH
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R4,R8
         MOV R5,R9
         ADD R4,#DATA16 00010H
         EXTP #03H, #02H
         MOV DPP0:bl_cur_addr_lo,R4
         MOV DPP0:bl_cur_addr_hi,R5
-        CALLS 00DH,Calc_ECU_Diag_SF_2
+        CALLS SEG Calc_ECU_Diag_SF_2, SOF Calc_ECU_Diag_SF_2
         MOV [R0],DPP1:0A0944H
         MOV R4,[R0]
         ADD R4,#DATA16 00010H
@@ -398,7 +398,7 @@ L_DE3B2:                 ; 0xde3b2
         MOV R12,R8
         MOV R13,R9
         MOV R14,R4
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV [R0+#02H],R4
         ADD R4,#02H
         MOV [R0+#02H],R4
@@ -421,11 +421,11 @@ L_DE45E:                 ; 0xde45e
         MOV R13,R5
         MOV R14,#DATA16 0F9AEH
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,R8
         MOV R13,R9
         MOV R14,[R0]
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV [R0+#02H],R4
 L_DE49C:                 ; 0xde49c
         MOV R12,R8
@@ -442,7 +442,7 @@ L_DE49C:                 ; 0xde49c
         MOV R14,#02H
         ADD R14,R0
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,R8
         MOV R13,R9
         ADD R12,#DATA16 007F6H
@@ -456,7 +456,7 @@ L_DE49C:                 ; 0xde49c
         MOV R13,R5
         MOV R14,R0
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         JNB can_fd58.06H,L_DE542
         MOV R4,#DATA16 07C3EH
         MOV [R0],R4
@@ -473,10 +473,10 @@ L_DE49C:                 ; 0xde49c
         MOV R13,R5
         MOV R14,R0
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,#DATA16 06000H
         MOV R13,#00H
-        CALLS 00DH,Elevated_Eeprom_Clear__Routine
+        CALLS SEG Elevated_Eeprom_Clear__Routine, SOF Elevated_Eeprom_Clear__Routine
         MOVB RL4,#DATA16 00065H
         MOVB bl_exec_arm_magic,RL4
         MOV R4,#DATA16 0383CH
@@ -494,7 +494,7 @@ L_DE49C:                 ; 0xde49c
         MOV R13,R5
         MOV R14,R0
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         JMPR cc_UC,L_DE5A4
 L_DE542:                 ; 0xde542
         JNB can_fd58.05H,L_DE5A4
@@ -513,10 +513,10 @@ L_DE542:                 ; 0xde542
         MOV R13,R5
         MOV R14,R0
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,#DATA16 04000H
         MOV R13,#00H
-        CALLS 00DH,Elevated_Eeprom_Clear__Routine
+        CALLS SEG Elevated_Eeprom_Clear__Routine, SOF Elevated_Eeprom_Clear__Routine
         MOVB RL4,#DATA16 00065H
         MOVB bl_exec_arm_magic,RL4
         MOV R4,#DATA16 0383CH
@@ -534,7 +534,7 @@ L_DE542:                 ; 0xde542
         MOV R13,R5
         MOV R14,R0
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
 L_DE5A4:                 ; 0xde5a4
         MOV WDTCON,#DATA16 09201H
         SRVWDT
@@ -579,7 +579,7 @@ BL_Arm_Exec_Magic:
         MOV bl_blk_addr_hi,ZEROS
         MOV bl_blk_cnt_lo,ZEROS
         MOV bl_blk_cnt_hi,ZEROS
-        CALLS 00DH,BL_Validate_Setup
+        CALLS SEG BL_Validate_Setup, SOF BL_Validate_Setup
         JNB can_fd58.04H,L_DE66C
         EXTP #03H, #02H
         MOV R7,DPP0:bl_cur_addr_lo
@@ -640,15 +640,15 @@ BL_Set_Mode_Status:
         BCLR PSW.0BH
         MOV R4,DPP1:0A046AH
         MOV R5,DPP1:0A046CH
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
         MOV R12,#DATA16 0005CH
         MOV R13,#DATA16 00028H
         MOV R14,#DATA16 0AC53H
-        CALLS 00DH,BL_Set_ExecMagic_NVM
+        CALLS SEG BL_Set_ExecMagic_NVM, SOF BL_Set_ExecMagic_NVM
         BMOVN bl_mode_status_flags.07H,can_fd58.03H
         MOV R4,DPP1:0A0476H
         MOV R5,DPP1:0A0478H
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
         RETS
 
 ; ======== BL_Set_ExecMagic_2  (@0xde6bc) ========
@@ -660,7 +660,7 @@ BL_Set_ExecMagic_2:
         BCLR PSW.0BH
         MOV R4,DPP1:0A046AH
         MOV R5,DPP1:0A046CH
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
         MOVB RL4,#DATA16 00065H
         MOVB bl_exec_arm_magic,RL4
         MOVB RL5,#DATA16 000ACH
@@ -682,10 +682,10 @@ BL_Set_ExecMagic_2:
         MOV R13,R5
         MOV R14,[R0]
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R4,DPP1:0A0476H
         MOV R5,DPP1:0A0478H
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
         ADD R0,#02H
         RETS
 

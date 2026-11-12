@@ -56,7 +56,7 @@ Calc_TQ_St:
         MOV R13,n_dif_st
         ADD R13,#DATA16 08000H
         MOVBZ R14,tco
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YWord
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XByte_YWord, SOF Get_IP_Word_3D_Table_DWord_XByte_YWord
         SUB R4,#DATA16 08000H
         MOV tq_st_1,R4
         CMP R4,tq_st
@@ -68,7 +68,7 @@ L_B1878:                 ; 0xb1878
         MOV R13,tq_st_1
         MOVBZ R14,DPP0:c_tq_st_crlc
         SHL R14,#08H
-        CALLS 00FH,Interp_S16
+        CALLS SEG Interp_S16, SOF Interp_S16
         MOV tq_st,R4
 L_B188E:                 ; 0xb188e
         RETS

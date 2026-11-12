@@ -22,14 +22,14 @@ S_B5FA2 SECTION CODE AT 0B5FA2H
 Reset_LS_State_Group_1:
         MOVB RL4,conf_lam
         JMPR cc_EQ,L_B5FC4
-        CALLS 00CH,Reset_Dfd66_c88
-        CALLS 00DH,Reset_Dfd6a_070
-        CALLS 00BH,Calc_LSH_Up_State
+        CALLS SEG Reset_Dfd66_c88, SOF Reset_Dfd66_c88
+        CALLS SEG Reset_Dfd6a_070, SOF Reset_Dfd6a_070
+        CALLS SEG Calc_LSH_Up_State, SOF Calc_LSH_Up_State
         MOVB RL4,conf_cat_eff
         CMPB RL4,#01H
         JMPR cc_NE,L_B5FC4
-        CALLS 00BH,Reset_Dfd68_050
-        CALLS 00BH,Calc_LSH_Down_PWM
+        CALLS SEG Reset_Dfd68_050, SOF Reset_Dfd68_050
+        CALLS SEG Calc_LSH_Down_PWM, SOF Calc_LSH_Down_PWM
 L_B5FC4:                 ; 0xb5fc4
         RETS
 
@@ -40,19 +40,19 @@ L_B5FC4:                 ; 0xb5fc4
 Reset_LS_State_Group_2:
         MOVB RL4,conf_lam
         JMPR cc_EQ,L_B5FFC
-        CALLS 00DH,Init_LS_Up_Struct
-        CALLS 00CH,Reset_Dc788_c76
-        CALLS 00BH,Calc_LSH_Up_PWM
-        CALLS 00DH,Reset_temp_dif_lsh_up_obd2_66c
-        CALLS 00BH,Calc_LS_Cur_Up
+        CALLS SEG Init_LS_Up_Struct, SOF Init_LS_Up_Struct
+        CALLS SEG Reset_Dc788_c76, SOF Reset_Dc788_c76
+        CALLS SEG Calc_LSH_Up_PWM, SOF Calc_LSH_Up_PWM
+        CALLS SEG Reset_temp_dif_lsh_up_obd2_66c, SOF Reset_temp_dif_lsh_up_obd2_66c
+        CALLS SEG Calc_LS_Cur_Up, SOF Calc_LS_Cur_Up
         MOVB RL4,conf_cat_eff
         CMPB RL4,#01H
         JMPR cc_NE,L_B5FFC
-        CALLS 00BH,Calc_Lam_Dly_CatFac
-        CALLS 00BH,Init_LS_Down
-        CALLS 00BH,Calc_LSH_Down_Ctl
-        CALLS 00BH,Reset_temp_dif_lsh_down_obd2_08e
-        CALLS 00BH,Calc_LS_Cur_Down
+        CALLS SEG Calc_Lam_Dly_CatFac, SOF Calc_Lam_Dly_CatFac
+        CALLS SEG Init_LS_Down, SOF Init_LS_Down
+        CALLS SEG Calc_LSH_Down_Ctl, SOF Calc_LSH_Down_Ctl
+        CALLS SEG Reset_temp_dif_lsh_down_obd2_08e, SOF Reset_temp_dif_lsh_down_obd2_08e
+        CALLS SEG Calc_LS_Cur_Down, SOF Calc_LS_Cur_Down
 L_B5FFC:                 ; 0xb5ffc
         RETS
 
@@ -63,11 +63,11 @@ L_B5FFC:                 ; 0xb5ffc
 Reset_LS_State_Group_4:
         MOVB RL4,conf_lam
         JMPR cc_EQ,L_B6014
-        CALLS 00CH,Reset_lam_bank_1_lam_up_ti_ad_ad_c6c
+        CALLS SEG Reset_lam_bank_1_lam_up_ti_ad_ad_c6c, SOF Reset_lam_bank_1_lam_up_ti_ad_ad_c6c
         MOVB RL4,conf_cat_eff
         CMPB RL4,#01H
         JMPR cc_NE,L_B6014
-        CALLS 00BH,Reset_Dc79e_8fa
+        CALLS SEG Reset_Dc79e_8fa, SOF Reset_Dc79e_8fa
 L_B6014:                 ; 0xb6014
         RETS
 
@@ -78,15 +78,15 @@ L_B6014:                 ; 0xb6014
 Reset_LS_State_Group_3:
         MOVB RL4,conf_lam
         JMPR cc_EQ,L_B603C
-        CALLS 00BH,Reset_Dfd68_03e
-        CALLS 00CH,Reset_Dfd66_c88
-        CALLS 00BH,Calc_LSH_Up_PWM
-        CALLS 00BH,Calc_LS_Cur_Up_2
+        CALLS SEG Reset_Dfd68_03e, SOF Reset_Dfd68_03e
+        CALLS SEG Reset_Dfd66_c88, SOF Reset_Dfd66_c88
+        CALLS SEG Calc_LSH_Up_PWM, SOF Calc_LSH_Up_PWM
+        CALLS SEG Calc_LS_Cur_Up_2, SOF Calc_LS_Cur_Up_2
         MOVB RL4,conf_cat_eff
         CMPB RL4,#01H
         JMPR cc_NE,L_B603C
-        CALLS 00BH,Calc_LSH_Down_Ctl
-        CALLS 00BH,Calc_LS_Cur_Down_2
+        CALLS SEG Calc_LSH_Down_Ctl, SOF Calc_LSH_Down_Ctl
+        CALLS SEG Calc_LS_Cur_Down_2, SOF Calc_LS_Cur_Down_2
 L_B603C:                 ; 0xb603c
         RETS
 

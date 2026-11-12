@@ -8,7 +8,7 @@ $INCLUDE (zone_syms.inc)
 
 
 S_A0210 SECTION CODE AT 0A0210H
-        JMPS 008H,cstart_reset_selftest_ramtest
+        JMPS SEG cstart_reset_selftest_ramtest, SOF cstart_reset_selftest_ramtest
 
 S_A0210 ENDS
         END

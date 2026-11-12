@@ -56,14 +56,14 @@ Calc_TQ_Loss_ECF:
         MOV R12,#DATA16 POF ldpm_state_cfa
         MOV R13,#DATA16 PAG ldpm_state_cfa
         MOVBZ R14,state_cfa
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF id_pow_loss_ecf
         MOV R13,#DATA16 PAG id_pow_loss_ecf
-        CALLS 00FH,Read_Byte_Far
+        CALLS SEG Read_Byte_Far, SOF Read_Byte_Far
         MOVBZ R12,RL4
         MOV R13,#DATA16 017DFH
         MOV R14,n_C93C
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV R8,R4
         CMP R8,#DATA16 07FFFH
         JMPR cc_ULE,L_D7DBC
@@ -110,7 +110,7 @@ Diag_DTC_dd108:
         MOVB dtc_test_result,ZEROS
         MOV R12,#DATA16 0D108H
         MOV R13,#DATA16 05286H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cam_err.04H,dtc_status_work.06H
         MOVBZ R4,dtc_done_maf_dif_ch
         AND R4,#DATA16 00020H
@@ -198,39 +198,39 @@ L_D7F14:                 ; 0xd7f14
         BSET lv_cdn_diag_maf_dif_ch_int.07H
         MOV R12,maf_sp
         MOV R13,maf_sp_z3
-        CALLS 00FH,Sat_Sub_S16_v2
+        CALLS SEG Sat_Sub_S16_v2, SOF Sat_Sub_S16_v2
         ASHR R4,#02H
         MOV maf_sp_grd_diag_ch,R4
         MOV R12,maf_mes_fil
         MOV R13,maf_mes_fil_z
-        CALLS 00FH,Sat_Sub_S16_v2
+        CALLS SEG Sat_Sub_S16_v2, SOF Sat_Sub_S16_v2
         MOV maf_mes_fil_dif_diag_ch,R4
         MOV R12,maf_im_mdl
         MOV R13,maf_im_mdl_z
-        CALLS 00FH,Sat_Sub_S16_v2
+        CALLS SEG Sat_Sub_S16_v2, SOF Sat_Sub_S16_v2
         MOV maf_im_mdl_dif_diag_ch,R4
         MOVBS R12,n_grd
         MOVBS R13,n_grd_z3
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         ASHR R4,#02H
         MOVB n_grd_diag_ch,RL4
         MOV R12,#DATA16 05212H
         MOVBZ R13,n_32
         MOV R14,tqi_req_tra
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XWord_YByte
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XWord_YByte, SOF Get_IP_Word_3D_Table_DWord_XWord_YByte
         MOV R12,R4
         ADD R12,#DATA16 08000H
         MOVBZ R13,fac_ch_red
         SHL R13,#02H
-        CALLS 00FH,Mul_S16_Q23
+        CALLS SEG Mul_S16_Q23, SOF Mul_S16_Q23
         MOV R9,R4
         MOV R12,R9
         MOV R13,DPP0:c_tq_add_ch_diag_hys
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV R9,R4
         MOV R12,maf_sp_grd_diag_ch
         MOV R13,DPP0:c_maf_sp_grd_diag_ch
-        CALLS 00FH,Sat_Sub_S16_Min
+        CALLS SEG Sat_Sub_S16_Min, SOF Sat_Sub_S16_Min
         CMP R4,#00H
         JMPA cc_SGT,L_D8128
         MOVB RL4,n_grd_diag_ch
@@ -272,11 +272,11 @@ L_D8006:                 ; 0xd8006
         JMPA cc_UGT,L_D8122
         MOV R12,maf_sp
         MOV R13,maf_mes_fil
-        CALLS 00FH,Sat_Sub_S16_v2
+        CALLS SEG Sat_Sub_S16_v2, SOF Sat_Sub_S16_v2
         MOV maf_dif_diag_ch_1,R4
         MOV R12,maf_sp
         MOV R13,maf_im_mdl
-        CALLS 00FH,Sat_Sub_S16_v2
+        CALLS SEG Sat_Sub_S16_v2, SOF Sat_Sub_S16_v2
         MOV maf_dif_diag_ch_2,R4
         MOV R5,maf_dif_diag_ch_1
         CMP R5,DPP0:c_maf_dif_diag_ch_1
@@ -310,7 +310,7 @@ L_D808A:                 ; 0xd808a
         MOV R14,maf_dif_diag_ch_1
         MOV R15,R14
         ASHR R15,#0FH
-        CALLS 00FH,Sat_Add_S32
+        CALLS SEG Sat_Add_S32, SOF Sat_Add_S32
         MOV maf_dif_diag_ch_int_1,R4
         MOV maf_dif_int1_hi,R5
 L_D80A6:                 ; 0xd80a6
@@ -341,7 +341,7 @@ L_D80EE:                 ; 0xd80ee
         MOV R14,maf_dif_diag_ch_2
         MOV R15,R14
         ASHR R15,#0FH
-        CALLS 00FH,Sat_Add_S32
+        CALLS SEG Sat_Add_S32, SOF Sat_Add_S32
         MOV maf_dif_diag_ch_int_2,R4
         MOV maf_dif_int2_hi,R5
 L_D810A:                 ; 0xd810a
@@ -365,7 +365,7 @@ L_D812C:                 ; 0xd812c
         JMPR cc_ULE,L_D81E2
         MOV R12,#DATA16 05202H
         MOV R13,R4
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YWord
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YWord, SOF Get_IP_Word_2D_Table_DWord_YWord
         ADD R4,#DATA16 08000H
         MOV R5,R4
         ASHR R5,#0FH
@@ -378,7 +378,7 @@ L_D812C:                 ; 0xd812c
         MOV [R0+#02H],R5
         MOV R12,#DATA16 0520AH
         MOV R13,nr_seg_ctr_maf_dif_diag_ch_2
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YWord
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YWord, SOF Get_IP_Word_2D_Table_DWord_YWord
         ADD R4,#DATA16 08000H
         MOV R5,R4
         ASHR R5,#0FH
@@ -411,7 +411,7 @@ L_D81A6:                 ; 0xd81a6
 L_D81AE:                 ; 0xd81ae
         MOV R12,#DATA16 0D108H
         MOV R13,#DATA16 05286H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cam_err.04H,dtc_status_work.06H
         MOVBZ R4,dtc_done_maf_dif_ch
         AND R4,#DATA16 00020H
@@ -494,7 +494,7 @@ L_D825C:                 ; 0xd825c
         MOV R13,R12
         MOV R12,0FF1CH
         MOV R14,ctr_cdn_rbm_maf_dif_ch
-        CALLS 00FH,Div_U32_U16_Round32
+        CALLS SEG Div_U32_U16_Round32, SOF Div_U32_U16_Round32
         MOV R8,R4
         MOV R9,R5
         MOV R4,R9
@@ -542,15 +542,15 @@ L_D82A8:                 ; 0xd82a8
         MOV R4,#DATA16 08000H
         MOV eng_state_marker,R4
         BCLR lv_pl.09H
-        CALLS 00CH,Calc_prs_ex
+        CALLS SEG Calc_prs_ex, SOF Calc_prs_ex
         BCLR lv_pl.06H
-        CALLS 00BH,Tail_f0b7bc8_bf8
+        CALLS SEG Tail_f0b7bc8_bf8, SOF Tail_f0b7bc8_bf8
         MOV maf_word,ZEROS
         MOV maf_kgh,ZEROS
-        CALLS 00CH,Set_lv_maf_puls
-        CALLS 00CH,Init_Knock_State
-        CALLS 00DH,Calc_TI_Hom_Base
-        CALLS 00CH,Reset_Df627_d54
+        CALLS SEG Set_lv_maf_puls, SOF Set_lv_maf_puls
+        CALLS SEG Init_Knock_State, SOF Init_Knock_State
+        CALLS SEG Calc_TI_Hom_Base, SOF Calc_TI_Hom_Base
+        CALLS SEG Reset_Df627_d54, SOF Reset_Df627_d54
         JNB lv_conf_mis.02H,L_D82F4
         MOV t_mis_min_pu,ZEROS
 L_D82F4:                 ; 0xd82f4
@@ -568,16 +568,16 @@ L_D830C:                 ; 0xd830c
         BCLR state_out_diag.0DH
 L_D8314:                 ; 0xd8314
         BCLR lv_cdn_diag_maf_dif_ch_int.0DH
-        CALLS 00BH,Reset_lv_ch_294
-        CALLS 00BH,Reset_ti_ch_9f0
-        CALLS 00BH,ClrBits_lv_carb_err_0ba
-        CALLS 00AH,Reset_Dc534_d9a
-        CALLS 00AH,Reset_ti_er_ad_f4a
-        CALLS 00AH,Reset_iga_er_ad_add_b4a
-        CALLS 00CH,ClrBits_lv_ch_060
-        CALLS 00BH,Reset_mpl_iga_act_c8a
-        CALLS 00CH,Calc_Eff_SCC_Av
-        CALLS 00CH,Reset_tq_msr_int_306
+        CALLS SEG Reset_lv_ch_294, SOF Reset_lv_ch_294
+        CALLS SEG Reset_ti_ch_9f0, SOF Reset_ti_ch_9f0
+        CALLS SEG ClrBits_lv_carb_err_0ba, SOF ClrBits_lv_carb_err_0ba
+        CALLS SEG Reset_Dc534_d9a, SOF Reset_Dc534_d9a
+        CALLS SEG Reset_ti_er_ad_f4a, SOF Reset_ti_er_ad_f4a
+        CALLS SEG Reset_iga_er_ad_add_b4a, SOF Reset_iga_er_ad_add_b4a
+        CALLS SEG ClrBits_lv_ch_060, SOF ClrBits_lv_ch_060
+        CALLS SEG Reset_mpl_iga_act_c8a, SOF Reset_mpl_iga_act_c8a
+        CALLS SEG Calc_Eff_SCC_Av, SOF Calc_Eff_SCC_Av
+        CALLS SEG Reset_tq_msr_int_306, SOF Reset_tq_msr_int_306
         MOVB RL4,conf_diagcp
         JMPR cc_EQ,L_D8380
         JB state_out_req.09H,L_D8360
@@ -602,28 +602,28 @@ L_D8360:                 ; 0xd8360
         BCLR lv_act_diagcps.03H
         BCLR lv_err_maf_tps_ratio_2.0AH
 L_D8380:                 ; 0xd8380
-        CALLS 00CH,AcComp_AccIn_Reset
-        CALLS 00CH,Clr_Out_AJ
+        CALLS SEG AcComp_AccIn_Reset, SOF AcComp_AccIn_Reset
+        CALLS SEG Clr_Out_AJ, SOF Clr_Out_AJ
         MOV t_ast,ZEROS
         JB can_fd58.09H,L_D83BC
-        CALLS 00BH,Calc_LS_Down_OBD2_PUC
-        CALLS 00BH,Diag_DTC_dd23c
-        CALLS 00BH,Calc_Cat_Eff_Ratio
+        CALLS SEG Calc_LS_Down_OBD2_PUC, SOF Calc_LS_Down_OBD2_PUC
+        CALLS SEG Diag_DTC_dd23c, SOF Diag_DTC_dd23c
+        CALLS SEG Calc_Cat_Eff_Ratio, SOF Calc_Cat_Eff_Ratio
         JNB lv_conf_mis.02H,L_D83AE
         BCLR lv_er_carb_b4.03H
         MOVB RL4,mis_b4_obd_ctr
         MOVB diag_c4ab,RL4
-        CALLS 00BH,Init_Misfire_Counters
+        CALLS SEG Init_Misfire_Counters, SOF Init_Misfire_Counters
 L_D83AE:                 ; 0xd83ae
-        CALLS 00DH,Init_Fault_Table_1
-        CALLS 00DH,OBD_Readiness_DTC
-        CALLS 00DH,Calc_Fmy_Count
+        CALLS SEG Init_Fault_Table_1, SOF Init_Fault_Table_1
+        CALLS SEG OBD_Readiness_DTC, SOF OBD_Readiness_DTC
+        CALLS SEG Calc_Fmy_Count, SOF Calc_Fmy_Count
         BCLR lv_pl.0BH
 L_D83BC:                 ; 0xd83bc
         JB can_fd58.09H,L_D83E2
         MOV R12,#DATA16 0D1BEH
         MOV R13,#DATA16 053A4H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_lam_lim_1_err.01H,dtc_status_work.06H
         MOVBZ R4,g_d1c8
         AND R4,#DATA16 00020H
@@ -632,16 +632,16 @@ L_D83BC:                 ; 0xd83bc
         AND diag_f864,R4
 L_D83E2:                 ; 0xd83e2
         MOV t_tia_tco_diag,ZEROS
-        CALLS 00BH,Reset_LS_State_Group_1
-        CALLS 00BH,Calc_FSD_OBD2_Ratio
-        CALLS 00BH,Reset_WallFilm_TI
-        CALLS 00CH,Reset_Dcdc2_eb0
-        CALLS 00CH,IVVT_Reset_CamSp
-        CALLS 00BH,Acq_TOIL
-        CALLS 00DH,Reset_sum_maf_tps_plaus_diag_2_9f0
-        CALLS 00BH,ClrBits_lv_dc_rbm_5d0
-        CALLS 00BH,Reset_Dc744_92e
-        CALLS 00EH,Set__t_ast_obd_ee2
+        CALLS SEG Reset_LS_State_Group_1, SOF Reset_LS_State_Group_1
+        CALLS SEG Calc_FSD_OBD2_Ratio, SOF Calc_FSD_OBD2_Ratio
+        CALLS SEG Reset_WallFilm_TI, SOF Reset_WallFilm_TI
+        CALLS SEG Reset_Dcdc2_eb0, SOF Reset_Dcdc2_eb0
+        CALLS SEG IVVT_Reset_CamSp, SOF IVVT_Reset_CamSp
+        CALLS SEG Acq_TOIL, SOF Acq_TOIL
+        CALLS SEG Reset_sum_maf_tps_plaus_diag_2_9f0, SOF Reset_sum_maf_tps_plaus_diag_2_9f0
+        CALLS SEG ClrBits_lv_dc_rbm_5d0, SOF ClrBits_lv_dc_rbm_5d0
+        CALLS SEG Reset_Dc744_92e, SOF Reset_Dc744_92e
+        CALLS SEG Set__t_ast_obd_ee2, SOF Set__t_ast_obd_ee2
         RETS
 
 S_D7D78 ENDS

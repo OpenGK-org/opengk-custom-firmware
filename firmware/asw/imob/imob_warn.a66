@@ -43,7 +43,7 @@ L_BD74E:                 ; 0xbd74e
 L_BD754:                 ; 0xbd754
         MOV R12,#DATA16 0D530H
         MOV R13,#DATA16 0590EH
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_can_bus_off_err.00H,dtc_status_work.06H
         MOVBZ R4,imob_d53a
         AND R4,#DATA16 00020H
@@ -123,7 +123,7 @@ L_BD7F6:                 ; 0xbd7f6
         CMPB RL5,#01H
         JMPR cc_NE,L_BD834
         MOV R12,#00H
-        CALLS 00BH,Imob_Update_WarnLamp
+        CALLS SEG Imob_Update_WarnLamp, SOF Imob_Update_WarnLamp
         MOVB imob_ca2a,ZEROS
         MOVB smartra_cmd,ZEROS
         BSET imob_bw.08H
@@ -171,7 +171,7 @@ SMARTRA_auth_post_update:
         DIVU R4
         MOV R12,0FE0EH
         ADD R12,#02H
-        CALLS 00BH,Imob_Update_WarnLamp
+        CALLS SEG Imob_Update_WarnLamp, SOF Imob_Update_WarnLamp
         JMPR cc_UC,L_BD8A4
 L_BD8A0:                 ; 0xbd8a0
         MOVB imob_c292,ONES
@@ -203,7 +203,7 @@ L_BD8D0:                 ; 0xbd8d0
         MOVB imob_c290,ZEROS
         MOVBZ R12,DPP0:c_dly_secu_2_imob
         ADD R12,#02H
-        CALLS 00BH,Imob_Update_WarnLamp
+        CALLS SEG Imob_Update_WarnLamp, SOF Imob_Update_WarnLamp
         JMPR cc_UC,L_BD8F8
 L_BD8F6:                 ; 0xbd8f6
         BSET imob_bw.08H
@@ -249,7 +249,7 @@ Imob_WarnLamp_Dly:
         MOV R4,lv_lam_ca46
         JMPR cc_NE,L_BD93C
         MOV R12,#00H
-        CALLS 00BH,Imob_Update_WarnLamp
+        CALLS SEG Imob_Update_WarnLamp, SOF Imob_Update_WarnLamp
         RETS
 L_BD93C:                 ; 0xbd93c
         ADD lv_lam_ca46,ONES

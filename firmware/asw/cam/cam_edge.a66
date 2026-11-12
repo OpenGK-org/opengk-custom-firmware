@@ -84,13 +84,13 @@ L_C8008:                 ; 0xc8008
         JMPR cc_NE,L_C80A8
         MOVBZ R12,DPP0:c_cam_1_edge_tooth_pos
         MOVBZ R13,DPP0:c_cam_dyw_diag
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB RL5,[R0]
         CMPB RL5,RL4
         JMPR cc_C,L_C809E
         MOVBZ R12,DPP0:c_cam_1_edge_tooth_pos
         MOVBZ R13,DPP0:c_cam_dyw_diag
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB RL5,[R0]
         CMPB RL5,RL4
         JMPR cc_UGT,L_C809E
@@ -103,12 +103,12 @@ L_C8008:                 ; 0xc8008
         MOVBS R5,RL5
         MOV R13,#DATA16 000A0H
         SUB R13,R5
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV R7,R4
         MOV R12,R7
         MOV R13,DPP0:c_cam_ref_cor_ivvt_in_1
         ADD R13,#DATA16 07FFFH
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV R8,R4
         MOV R9,R8
         ADD R9,#DATA16 08000H
@@ -139,26 +139,26 @@ L_C809E:                 ; 0xc809e
 L_C80A8:                 ; 0xc80a8
         MOVBZ R12,DPP0:c_cam_1_edge_tooth_pos
         MOVBZ R13,DPP0:c_cam_dyw_diag
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB RL5,[R0]
         CMPB RL5,RL4
         JMPR cc_C,L_C80CE
         MOVBZ R12,DPP0:c_cam_1_edge_tooth_pos
         MOVBZ R13,DPP0:c_cam_dyw_diag
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB RL5,[R0]
         CMPB RL5,RL4
         JMPA cc_ULE,L_C81E2
 L_C80CE:                 ; 0xc80ce
         MOVBZ R12,DPP0:c_cam_1_edge_tooth_neg
         MOVBZ R13,DPP0:c_cam_dyw_diag
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB RL5,[R0]
         CMPB RL5,RL4
         JMPR cc_C,L_C80F4
         MOVBZ R12,DPP0:c_cam_1_edge_tooth_neg
         MOVBZ R13,DPP0:c_cam_dyw_diag
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB RL5,[R0]
         CMPB RL5,RL4
         JMPA cc_ULE,L_C81E2
@@ -171,13 +171,13 @@ L_C80FE:                 ; 0xc80fe
         JMPR cc_NE,L_C818C
         MOVBZ R12,DPP0:c_cam_1_edge_tooth_neg
         MOVBZ R13,DPP0:c_cam_dyw_diag
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB RL5,[R0]
         CMPB RL5,RL4
         JMPR cc_C,L_C8184
         MOVBZ R12,DPP0:c_cam_1_edge_tooth_neg
         MOVBZ R13,DPP0:c_cam_dyw_diag
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB RL5,[R0]
         CMPB RL5,RL4
         JMPR cc_UGT,L_C8184
@@ -186,12 +186,12 @@ L_C80FE:                 ; 0xc80fe
         MOVB RL4,[R5+#01H]
         MOVBZ R12,RL4
         MOV R13,#DATA16 00460H
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV [R0+#08H],R4
         MOV R12,R4
         MOV R13,DPP0:c_cam_ref_cor_ivvt_in_1
         ADD R13,#DATA16 07FFFH
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV [R0+#06H],R4
         MOV R6,R4
         ADD R6,#DATA16 08000H
@@ -221,26 +221,26 @@ L_C8184:                 ; 0xc8184
 L_C818C:                 ; 0xc818c
         MOVBZ R12,DPP0:c_cam_1_edge_tooth_neg
         MOVBZ R13,DPP0:c_cam_dyw_diag
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB RL5,[R0]
         CMPB RL5,RL4
         JMPR cc_C,L_C81B0
         MOVBZ R12,DPP0:c_cam_1_edge_tooth_neg
         MOVBZ R13,DPP0:c_cam_dyw_diag
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB RL5,[R0]
         CMPB RL5,RL4
         JMPR cc_ULE,L_C81E2
 L_C81B0:                 ; 0xc81b0
         MOVBZ R12,DPP0:c_cam_1_edge_tooth_pos
         MOVBZ R13,DPP0:c_cam_dyw_diag
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB RL5,[R0]
         CMPB RL5,RL4
         JMPR cc_C,L_C81D4
         MOVBZ R12,DPP0:c_cam_1_edge_tooth_pos
         MOVBZ R13,DPP0:c_cam_dyw_diag
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB RL5,[R0]
         CMPB RL5,RL4
         JMPR cc_ULE,L_C81E2
@@ -262,11 +262,11 @@ L_C81E2:                 ; 0xc81e2
         JMPA cc_NE,L_C82DA
         MOV R12,DPP0:c_n_cam_lih_diag
         MOV R13,n_sp_is_max
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         CMP R4,n_C93C
         JMPR cc_NC,L_C82DA
         MOVBS R12,n_grd
-        CALLS 00DH,Abs_S16_Simple
+        CALLS SEG Abs_S16_Simple, SOF Abs_S16_Simple
         MOVBS R5,DPP0:c_n_grd_cam_lih_diag
         CMP R4,R5
         JMPR cc_SGE,L_C82DA
@@ -282,7 +282,7 @@ L_C822A:                 ; 0xc822a
         JMPR cc_NE,L_C82DA
         MOV R12,#DATA16 0D124H
         MOV R13,#DATA16 052B2H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cam_err.06H,dtc_status_work.06H
         MOVBZ R4,diag_d12e
         AND R4,#DATA16 00020H
@@ -303,7 +303,7 @@ L_C8272:                 ; 0xc8272
         JMPR cc_NC,L_C82C2
         MOVBZ R12,RL4
         MOVBZ R13,DPP0:c_abc_inc_cam
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB diag_c340,RL4
         CMPB RL4,DPP0:c_abc_max_cam
         JMPR cc_C,L_C82BC
@@ -311,7 +311,7 @@ L_C8272:                 ; 0xc8272
         MOVB diag_c340,RL5
         MOV R12,#DATA16 0D124H
         MOV R13,#DATA16 052B2H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cam_err.06H,dtc_status_work.06H
         MOVBZ R4,diag_d12e
         AND R4,#DATA16 00020H
@@ -360,67 +360,67 @@ Calc_Crank_Tooth_Pattern:
         MOVB RL6,RL4
         MOVBZ R12,DPP0:c_cam_1_edge_tooth_neg
         MOVBZ R13,DPP0:c_cam_eng_rev
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVBZ R13,RL4
         MOV R12,#DATA16 00078H
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL6,RL4
         JMPR cc_UGT,L_C8368
         MOVBZ R12,DPP0:c_cam_1_edge_tooth_neg
         MOVBZ R13,DPP0:c_cam_eng_rev
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVBZ R13,RL4
         MOV R12,#DATA16 00078H
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL6,RL4
         JMPR cc_C,L_C8368
         MOVBZ R12,DPP0:c_cam_1_edge_tooth_pos
         MOVBZ R13,DPP0:c_cam_eng_rev
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVBZ R13,RL4
         MOV R12,#DATA16 00078H
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL4,crank_tim_1
         JMPR cc_C,L_C8368
         MOVBZ R12,DPP0:c_cam_1_edge_tooth_pos
         MOVBZ R13,DPP0:c_cam_eng_rev
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVBZ R13,RL4
         MOV R12,#DATA16 00078H
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL4,crank_tim_1
         JMPR cc_ULE,L_C83D4
 L_C8368:                 ; 0xc8368
         MOVBZ R12,DPP0:c_cam_1_edge_tooth_pos
         MOVBZ R13,DPP0:c_cam_eng_rev
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVBZ R13,RL4
         MOV R12,#DATA16 00078H
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL6,RL4
         JMPR cc_UGT,L_C83DE
         MOVBZ R12,DPP0:c_cam_1_edge_tooth_pos
         MOVBZ R13,DPP0:c_cam_eng_rev
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVBZ R13,RL4
         MOV R12,#DATA16 00078H
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL6,RL4
         JMPR cc_C,L_C83DE
         MOVBZ R12,DPP0:c_cam_1_edge_tooth_neg
         MOVBZ R13,DPP0:c_cam_eng_rev
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVBZ R13,RL4
         MOV R12,#DATA16 00078H
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL4,crank_tim_1
         JMPR cc_C,L_C83DE
         MOVBZ R12,DPP0:c_cam_1_edge_tooth_neg
         MOVBZ R13,DPP0:c_cam_eng_rev
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVBZ R13,RL4
         MOV R12,#DATA16 00078H
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL4,crank_tim_1
         JMPR cc_UGT,L_C83DE
 L_C83D4:                 ; 0xc83d4

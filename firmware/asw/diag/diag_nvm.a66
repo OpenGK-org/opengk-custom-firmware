@@ -50,7 +50,7 @@ NVM_Save_s00c:
         MOV R13,R5
         MOV R14,R0
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         EXTP #03H, #02H
         MOV R12,DPP0:diag_f890
         MOV R13,DPP0:diag_f892
@@ -70,7 +70,7 @@ NVM_Save_s00c:
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#02H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV [R0],R4
         EXTP #03H, #02H
         MOV R12,DPP0:diag_f890
@@ -86,7 +86,7 @@ NVM_Save_s00c:
         MOV R13,R5
         MOV R14,R0
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         ADD R0,#02H
         RETS
 
@@ -109,7 +109,7 @@ Store_TRT_NVM:
         MOV R13,R5
         MOV R14,#DATA16 0F87EH
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         SUB trt_word,ONES
         EXTP #03H, #02H
         MOV R12,DPP0:diag_f890
@@ -125,7 +125,7 @@ Store_TRT_NVM:
         MOV R13,R5
         MOV R14,#DATA16 0F87EH
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         SUB trt_word,ONES
         EXTP #03H, #02H
         MOV R12,DPP0:diag_f890
@@ -141,7 +141,7 @@ Store_TRT_NVM:
         MOV R13,R5
         MOV R14,#DATA16 0F87EH
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R4,#02H
         SUB trt_word,R4
         RETS
@@ -167,7 +167,7 @@ Inc_Ctr_f896_NVM:
         MOV R13,R5
         MOV R14,#DATA16 0F896H
         MOV R15,#04H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         RETS
 
 ; ======== NVM_Save_s56a  (@0xdac50) ========
@@ -191,7 +191,7 @@ NVM_Save_s56a:
         MOV R13,R5
         MOV R14,#DATA16 0F50CH
         MOV R15,#01H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         EXTP #03H, #02H
         MOV R12,DPP0:diag_f890
         MOV R13,DPP0:diag_f892
@@ -206,7 +206,7 @@ NVM_Save_s56a:
         MOV R13,R5
         MOV R14,#DATA16 0F4A6H
         MOV R15,#01H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         EXTP #03H, #02H
         MOV R12,DPP0:diag_f890
         MOV R13,DPP0:diag_f892
@@ -226,7 +226,7 @@ NVM_Save_s56a:
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#02H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV [R0],R4
         EXTP #03H, #02H
         MOV R12,DPP0:diag_f890
@@ -242,7 +242,7 @@ NVM_Save_s56a:
         MOV R13,R5
         MOV R14,R0
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         ADD R0,#02H
         RETS
 
@@ -275,49 +275,49 @@ L_DAD36:                 ; 0xdad36
         MOV DPP0:diag_f892,R5
         MOV R2,#DATA16 0FFBFH
         AND ecu_diag_sf_word,R2
-        CALLS 00DH,Store_TRT_NVM
-        CALLS 00DH,Inc_Ctr_f896_NVM
+        CALLS SEG Store_TRT_NVM, SOF Store_TRT_NVM
+        CALLS SEG Inc_Ctr_f896_NVM, SOF Inc_Ctr_f896_NVM
         MOVB RL4,lv_sched_diag_inh
         ANDB RL4,#01H
         JMPR cc_NE,L_DADE2
-        CALLS 00DH,NVM_Save_s1a8
-        CALLS 00CH,NVM_Save_s1a4
-        CALLS 00CH,Store_IGA_Knk_Ad_NVM
-        CALLS 00CH,NVM_Save_s1b0
-        CALLS 00DH,NVM_Save_s56a
-        CALLS 00DH,NVM_Save_s56e
-        CALLS 00DH,NVM_Save_s574
-        CALLS 00BH,NVM_Save_s57c
-        CALLS 00BH,NVM_Save_s63e
-        CALLS 00CH,NVM_Save_s640
-        CALLS 00CH,NVM_Save_s641
-        CALLS 00BH,NVM_Save_s642
-        CALLS 00CH,NVM_Save_s5b2
-        CALLS 00CH,Store_Knks_Gain_NVM
-        CALLS 00BH,NVM_Save_s62e
-        CALLS 00CH,NVM_Save_s62eb
-        CALLS 00BH,SMARTRA_Save_data_to_EEPROM
-        CALLS 00DH,NVM_Save_s5aa
-        CALLS 00DH,NVM_Save_s5ae
-        CALLS 00CH,NVM_Save_s1b4
-        CALLS 00BH,NVM_Save_s1fa
-        CALLS 00DH,NVM_Save_s200
-        CALLS 00DH,NVM_Save_s5ce
-        CALLS 00CH,NVM_Save_s582_CamAd
-        CALLS 00CH,NVM_Save_s5d8
-        CALLS 00DH,NVM_Save_s5dc
-        CALLS 00BH,NVM_Save_s5c6
-        CALLS 00BH,NVM_Save_s643
-        CALLS 00BH,NVM_Save_s578
-        CALLS 00CH,NVM_Save_s4aa
-        CALLS 00DH,NVM_Save_s632
+        CALLS SEG NVM_Save_s1a8, SOF NVM_Save_s1a8
+        CALLS SEG NVM_Save_s1a4, SOF NVM_Save_s1a4
+        CALLS SEG Store_IGA_Knk_Ad_NVM, SOF Store_IGA_Knk_Ad_NVM
+        CALLS SEG NVM_Save_s1b0, SOF NVM_Save_s1b0
+        CALLS SEG NVM_Save_s56a, SOF NVM_Save_s56a
+        CALLS SEG NVM_Save_s56e, SOF NVM_Save_s56e
+        CALLS SEG NVM_Save_s574, SOF NVM_Save_s574
+        CALLS SEG NVM_Save_s57c, SOF NVM_Save_s57c
+        CALLS SEG NVM_Save_s63e, SOF NVM_Save_s63e
+        CALLS SEG NVM_Save_s640, SOF NVM_Save_s640
+        CALLS SEG NVM_Save_s641, SOF NVM_Save_s641
+        CALLS SEG NVM_Save_s642, SOF NVM_Save_s642
+        CALLS SEG NVM_Save_s5b2, SOF NVM_Save_s5b2
+        CALLS SEG Store_Knks_Gain_NVM, SOF Store_Knks_Gain_NVM
+        CALLS SEG NVM_Save_s62e, SOF NVM_Save_s62e
+        CALLS SEG NVM_Save_s62eb, SOF NVM_Save_s62eb
+        CALLS SEG SMARTRA_Save_data_to_EEPROM, SOF SMARTRA_Save_data_to_EEPROM
+        CALLS SEG NVM_Save_s5aa, SOF NVM_Save_s5aa
+        CALLS SEG NVM_Save_s5ae, SOF NVM_Save_s5ae
+        CALLS SEG NVM_Save_s1b4, SOF NVM_Save_s1b4
+        CALLS SEG NVM_Save_s1fa, SOF NVM_Save_s1fa
+        CALLS SEG NVM_Save_s200, SOF NVM_Save_s200
+        CALLS SEG NVM_Save_s5ce, SOF NVM_Save_s5ce
+        CALLS SEG NVM_Save_s582_CamAd, SOF NVM_Save_s582_CamAd
+        CALLS SEG NVM_Save_s5d8, SOF NVM_Save_s5d8
+        CALLS SEG NVM_Save_s5dc, SOF NVM_Save_s5dc
+        CALLS SEG NVM_Save_s5c6, SOF NVM_Save_s5c6
+        CALLS SEG NVM_Save_s643, SOF NVM_Save_s643
+        CALLS SEG NVM_Save_s578, SOF NVM_Save_s578
+        CALLS SEG NVM_Save_s4aa, SOF NVM_Save_s4aa
+        CALLS SEG NVM_Save_s632, SOF NVM_Save_s632
 L_DADE2:                 ; 0xdade2
-        CALLS 00BH,NVM_Save_s63a
-        CALLS 00CH,Diag_VS_Plaus
-        CALLS 00CH,NVM_Save_s3da
-        CALLS 00CH,Backup_ER_Adapt
+        CALLS SEG NVM_Save_s63a, SOF NVM_Save_s63a
+        CALLS SEG Diag_VS_Plaus, SOF Diag_VS_Plaus
+        CALLS SEG NVM_Save_s3da, SOF NVM_Save_s3da
+        CALLS SEG Backup_ER_Adapt, SOF Backup_ER_Adapt
         MOV R12,#DATA16 00040H
-        CALLS 00DH,DTC_Calc_Activation_MIL
+        CALLS SEG DTC_Calc_Activation_MIL, SOF DTC_Calc_Activation_MIL
         BMOV lv_ecu_err.03H,dtc_status_work.06H
         MOVBZ R4,dtc_ecu_flags
         AND R4,#DATA16 00020H
@@ -325,11 +325,11 @@ L_DADE2:                 ; 0xdade2
         MOV R4,#DATA16 0FFF7H
         AND dtc_st_grp_ecu,R4
 L_DAE10:                 ; 0xdae10
-        CALLS 00DH,NVM_Save_s210
-        CALLS 00DH,NVM_Save_s210b
-        CALLS 00EH,NVM_Save_s1ce_MisCtr
-        CALLS 00EH,NVM_Save_s1c2
-        CALLS 00DH,NVM_Save_s00c
+        CALLS SEG NVM_Save_s210, SOF NVM_Save_s210
+        CALLS SEG NVM_Save_s210b, SOF NVM_Save_s210b
+        CALLS SEG NVM_Save_s1ce_MisCtr, SOF NVM_Save_s1ce_MisCtr
+        CALLS SEG NVM_Save_s1c2, SOF NVM_Save_s1c2
+        CALLS SEG NVM_Save_s00c, SOF NVM_Save_s00c
         RETS
 
 ; ======== Set_PL_Flags  (@0xdae26) ========

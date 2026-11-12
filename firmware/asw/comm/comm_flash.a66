@@ -78,7 +78,7 @@ KWP_Flash_Cmd03_arm:
         MOV R13,kwp_dl_count
         MOV R14,R9
         MOV R15,#01H
-        CALLS 00CH,CanPurge_SetAct_2
+        CALLS SEG CanPurge_SetAct_2, SOF CanPurge_SetAct_2
         ANDB RL4,kwp_dl_mask
         JMPA cc_EQ,L_CBA44
 L_CB8FC:                 ; 0xcb8fc
@@ -126,7 +126,7 @@ L_CB942:                 ; 0xcb942
         MOV R13,kwp_dl_count
         MOV R14,[R0+#04H]
         MOV R15,[R0+#06H]
-        CALLS 00CH,Nop_ccac2
+        CALLS SEG Nop_ccac2, SOF Nop_ccac2
         MOV R4,#04H
         MOV R5,#00H
         ADD kwp_dl_addr,R4
@@ -168,7 +168,7 @@ L_CB9E0:                 ; 0xcb9e0
         MOV R13,kwp_dl_count
         MOV R14,#DATA16 0D783H
         MOV R15,R9
-        CALLS 00DH,Interp_Scale_Buffer
+        CALLS SEG Interp_Scale_Buffer, SOF Interp_Scale_Buffer
         CMPB RL4,#00H
         JMPR cc_NE,L_CBA04
         MOV R4,R9
@@ -217,7 +217,7 @@ KWP_Flash_Cmd04_arm:
         MOV R13,kwp_dl_count
         MOVBZ R14,kwp_dl_buf
         MOV R15,#00H
-        CALLS 00CH,CanPurge_SetAct_2
+        CALLS SEG CanPurge_SetAct_2, SOF CanPurge_SetAct_2
         MOVBZ R9,RL4
         JMPR cc_EQ,L_CBA82
         MOVBZ R4,kwp_dl_mask

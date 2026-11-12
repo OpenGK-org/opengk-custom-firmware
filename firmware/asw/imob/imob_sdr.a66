@@ -131,7 +131,7 @@ L_E5048:                 ; 0xe5048
         SUB R12,R4
         SHL R12,#02H
         ADD R12,#02H
-        CALLS 00BH,Imob_Update_WarnLamp
+        CALLS SEG Imob_Update_WarnLamp, SOF Imob_Update_WarnLamp
         MOVBZ R4,DPP0:c_dly_lock_imob
         MOV R5,R4
         SHL R5,#04H
@@ -223,7 +223,7 @@ KWP_App_SID_20_case:
         MOVB q_imob_resp_key,ZEROS
         MOVB imob_ca25,ZEROS
         MOVB imob_ca26,ZEROS
-        CALLS 00BH,SMARTRA_disable
+        CALLS SEG SMARTRA_disable, SOF SMARTRA_disable
         MOV imob_sdr_b5,ZEROS
         MOVB RL4,#05H
         MOVB imob_sdr_ctr,RL4

@@ -103,7 +103,7 @@ L_AE49C:                 ; 0xae49c
 Reset_uVar1_4a2:
         MOV R12,#DATA16 04520H
         MOVBZ R13,toil
-        CALLS 00FH,Get_Byte_2D_Table_DWord_YByte
+        CALLS SEG Get_Byte_2D_Table_DWord_YByte, SOF Get_Byte_2D_Table_DWord_YByte
         MOVBZ R4,RL4
         MOV lv_ivvt_f980,R4
         BCLR lv_ct.0DH
@@ -176,7 +176,7 @@ L_AE540:                 ; 0xae540
 L_AE552:                 ; 0xae552
         MOVBZ R12,DPP0:c_toil_min_ivvt
         MOVBZ R13,DPP0:c_toil_hys_ivvt
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL4,toil
         JMPR cc_UGT,L_AE574
         MOVB RL4,vb
@@ -199,10 +199,10 @@ L_AE580:                 ; 0xae580
 L_AE592:                 ; 0xae592
         MOV R12,#DATA16 04528H
         MOVBZ R13,n_32
-        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Byte_2D_Table_DWord_YByte, SOF Get_IP_Byte_2D_Table_DWord_YByte
         MOVBZ R12,RL4
         MOVBZ R13,DPP0:c_toil_hys_ivvt
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL4,toil
         JMPA cc_ULE,L_AE6B0
         MOV R4,#02H
@@ -220,7 +220,7 @@ L_AE5BE:                 ; 0xae5be
 L_AE5D0:                 ; 0xae5d0
         MOVBZ R12,DPP0:c_toil_min_ivvt
         MOVBZ R13,DPP0:c_toil_hys_ivvt
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL4,toil
         JMPR cc_UGT,L_AE5F2
         MOVB RL4,vb
@@ -265,7 +265,7 @@ L_AE638:                 ; 0xae638
 L_AE64A:                 ; 0xae64a
         MOVBZ R12,DPP0:c_toil_min_ivvt
         MOVBZ R13,DPP0:c_toil_hys_ivvt
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL4,toil
         JMPR cc_UGT,L_AE66C
         MOVB RL4,vb
@@ -281,7 +281,7 @@ L_AE66C:                 ; 0xae66c
 L_AE678:                 ; 0xae678
         MOV R12,#DATA16 04528H
         MOVBZ R13,n_32
-        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Byte_2D_Table_DWord_YByte, SOF Get_IP_Byte_2D_Table_DWord_YByte
         CMPB RL4,toil
         JMPR cc_NC,L_AE698
         MOV R4,#01H

@@ -15,15 +15,15 @@ S_A53A0 SECTION CODE AT 0A53A0H
 ; ======== CCP_Init  (@0xa53a0) ========
         ; CCP_Init(): CCP slave init - calls flush helpers (0a5efa, 0a5eaa) then CCP_Reset_State.
 CCP_Init:
-        CALLS 00AH,CCP_Prog_State
-        CALLS 00AH,CCP_DAQ_Security
-        CALLS 00AH,CCP_Reset_State
+        CALLS SEG CCP_Prog_State, SOF CCP_Prog_State
+        CALLS SEG CCP_DAQ_Security, SOF CCP_DAQ_Security
+        CALLS SEG CCP_Reset_State, SOF CCP_Reset_State
         RETS
         ; ------------------------------------------------------------
         ; (unclassified) RAM/paged global @0xa53ae [dpp]  W:{-}  R:{-}
         ; ------------------------------------------------------------
         MOV R12,#DATA16 0FAF4H
-        CALLS 00AH,CCP_Svc_Conn_Security
+        CALLS SEG CCP_Svc_Conn_Security, SOF CCP_Svc_Conn_Security
         RETS
 
 ; ======== CCP_Resp_Dispatch  (@0xa53b8) ========
@@ -54,7 +54,7 @@ L_A53E4:                 ; 0xa53e4
         MOVB RL5,[R9+#02H]
         MOVB ccp_d7c0,RL5
         MOV R12,#DATA16 0D7BEH
-        CALLS 00AH,CCP_Cmd_StateMachine
+        CALLS SEG CCP_Cmd_StateMachine, SOF CCP_Cmd_StateMachine
         JMPR cc_UC,L_A548C
 L_A53FE:                 ; 0xa53fe
         MOVB RL4,#DATA16 00016H
@@ -62,39 +62,39 @@ L_A53FE:                 ; 0xa53fe
         MOVB RL5,#DATA16 00050H
         MOVB ccp_d7c0,RL5
         MOV R12,#DATA16 0D7BEH
-        CALLS 00AH,CCP_Cmd_StateMachine
+        CALLS SEG CCP_Cmd_StateMachine, SOF CCP_Cmd_StateMachine
         JMPR cc_UC,L_A548C
 L_A5418:                 ; 0xa5418
         MOVB RL4,#DATA16 00017H
         MOVB ccp_d7bc,RL4
         MOV R12,#DATA16 0D7BCH
-        CALLS 00AH,CCP_Svc_Prog_DAQ
+        CALLS SEG CCP_Svc_Prog_DAQ, SOF CCP_Svc_Prog_DAQ
         MOVB RL4,#DATA16 0001AH
         MOVB ccp_d7b8,RL4
         MOV R12,#DATA16 0D7B8H
-        CALLS 00AH,CCP_Svc_Conn_Security
+        CALLS SEG CCP_Svc_Conn_Security, SOF CCP_Svc_Conn_Security
         JMPR cc_UC,L_A548C
 L_A543A:                 ; 0xa543a
         MOVB RL4,#DATA16 00018H
         MOVB ccp_d7bc,RL4
         MOV R12,#DATA16 0D7BCH
-        CALLS 00AH,CCP_Svc_Prog_DAQ
+        CALLS SEG CCP_Svc_Prog_DAQ, SOF CCP_Svc_Prog_DAQ
         MOVB RL4,#DATA16 0001BH
         MOVB ccp_d7b8,RL4
         MOV R12,#DATA16 0D7B8H
-        CALLS 00AH,CCP_Svc_Conn_Security
+        CALLS SEG CCP_Svc_Conn_Security, SOF CCP_Svc_Conn_Security
         JMPR cc_UC,L_A548C
 L_A545C:                 ; 0xa545c
         MOVB RL4,#DATA16 00019H
         MOVB ccp_d7b8,RL4
         MOV R12,#DATA16 0D7B8H
-        CALLS 00AH,CCP_Svc_Conn_Security
+        CALLS SEG CCP_Svc_Conn_Security, SOF CCP_Svc_Conn_Security
         JMPR cc_UC,L_A548C
 L_A546E:                 ; 0xa546e
         MOVB RL4,#DATA16 0001CH
         MOVB ccp_d7b8,RL4
         MOV R12,#DATA16 0D7B8H
-        CALLS 00AH,CCP_Svc_Conn_Security
+        CALLS SEG CCP_Svc_Conn_Security, SOF CCP_Svc_Conn_Security
         MOVB RL4,ccp_d7ba
         MOVB [R9+#02H],RL4
         JMPR cc_UC,L_A548C
@@ -152,7 +152,7 @@ L_A54C6:                 ; 0xa54c6
         ; ------------------------------------------------------------
         JMPA cc_UC,L_A56CA
 L_A54FC:                 ; 0xa54fc
-        CALLS 00AH,CCP_Prog_State
+        CALLS SEG CCP_Prog_State, SOF CCP_Prog_State
         JMPA cc_UC,L_A56D4
 L_A5504:                 ; 0xa5504
         MOVB RL4,#DATA16 00013H
@@ -183,7 +183,7 @@ L_A5504:                 ; 0xa5504
         MOV [R2+#0EH],R5
 L_A555C:                 ; 0xa555c
         MOV R12,#DATA16 0E1A8H
-        CALLS 00AH,CCP_Svc_Conn_Security
+        CALLS SEG CCP_Svc_Conn_Security, SOF CCP_Svc_Conn_Security
         MOVB RL6,RL4
         JMPA cc_UC,L_A56D4
 L_A556A:                 ; 0xa556a
@@ -206,9 +206,9 @@ L_A556A:                 ; 0xa556a
         ADD R13,#04H
         MOVB RL5,[R8+#03H]
         MOVBZ R14,RL5
-        CALLS 00AH,Move_xFF_items__from_PTR_R12_to_PTR_R13
+        CALLS SEG Move_xFF_items__from_PTR_R12_to_PTR_R13, SOF Move_xFF_items__from_PTR_R12_to_PTR_R13
         MOV R12,#DATA16 0E1A8H
-        CALLS 00AH,CCP_Svc_Conn_Security
+        CALLS SEG CCP_Svc_Conn_Security, SOF CCP_Svc_Conn_Security
         MOVB RL6,RL4
         JMPA cc_UC,L_A56D4
 L_A55B6:                 ; 0xa55b6
@@ -238,7 +238,7 @@ L_A55B6:                 ; 0xa55b6
         SHL R4,#01H
         MOVB RL5,[R4+#0D79AH]
         MOVBZ R14,RL5
-        CALLS 00AH,Move_xFF_items__from_PTR_R12_to_PTR_R13
+        CALLS SEG Move_xFF_items__from_PTR_R12_to_PTR_R13, SOF Move_xFF_items__from_PTR_R12_to_PTR_R13
         JMPR cc_UC,L_A56D4
 L_A55FE:                 ; 0xa55fe
         SUBB ccp_c511,ONES
@@ -268,7 +268,7 @@ L_A5614:                 ; 0xa5614
         MOV R5,R9
         MOVB ccp_d796,RL5
         MOV R12,#DATA16 0D794H
-        CALLS 00AH,CCP_Set_EngineFlags
+        CALLS SEG CCP_Set_EngineFlags, SOF CCP_Set_EngineFlags
         JMPR cc_UC,L_A56D4
 L_A5656:                 ; 0xa5656
         MOV R4,[R8+#02H]
@@ -298,7 +298,7 @@ L_A5656:                 ; 0xa5656
         SHL R4,#01H
         MOVB RL5,[R4+#0D79AH]
         MOVBZ R14,RL5
-        CALLS 00AH,Move_xFF_items__from_PTR_R12_to_PTR_R13
+        CALLS SEG Move_xFF_items__from_PTR_R12_to_PTR_R13, SOF Move_xFF_items__from_PTR_R12_to_PTR_R13
         MOVB RL4,#01H
         MOVB [R9+#0C512H],RL4
         MOV R4,[R8+#02H]
@@ -313,7 +313,7 @@ L_A5656:                 ; 0xa5656
         MOV R5,R9
         MOVB ccp_d796,RL5
         MOV R12,#DATA16 0D794H
-        CALLS 00AH,CCP_Set_EngineFlags
+        CALLS SEG CCP_Set_EngineFlags, SOF CCP_Set_EngineFlags
         JMPR cc_UC,L_A56D4
 L_A56CA:                 ; 0xa56ca
         SUBB ccp_c511,ONES

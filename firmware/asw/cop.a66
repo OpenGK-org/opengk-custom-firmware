@@ -58,49 +58,49 @@ S_D648A SECTION CODE AT 0D648AH
         ; TPS learn, etc.). Top of the slow diagnostic task group.
         ; ------------------------------------------------------------
 Sched_Diag_Tasks:
-        CALLS 00DH,Calc_TI_AS
-        CALLS 00DH,Calc_MAF_Trim_EOL
-        CALLS 00CH,Calc_MAF_Model_Const
-        CALLS 00CH,Calc_maf_fac_alti_mmv
-        CALLS 00AH,Lookup_Dc204_Tco
-        CALLS 00AH,Lookup_Lamb_ER_Ad_Fac
-        CALLS 00CH,Learn_TPS_AdMmv_IS
-        CALLS 00BH,Calc_FAC_WF_VO_Fdout
+        CALLS SEG Calc_TI_AS, SOF Calc_TI_AS
+        CALLS SEG Calc_MAF_Trim_EOL, SOF Calc_MAF_Trim_EOL
+        CALLS SEG Calc_MAF_Model_Const, SOF Calc_MAF_Model_Const
+        CALLS SEG Calc_maf_fac_alti_mmv, SOF Calc_maf_fac_alti_mmv
+        CALLS SEG Lookup_Dc204_Tco, SOF Lookup_Dc204_Tco
+        CALLS SEG Lookup_Lamb_ER_Ad_Fac, SOF Lookup_Lamb_ER_Ad_Fac
+        CALLS SEG Learn_TPS_AdMmv_IS, SOF Learn_TPS_AdMmv_IS
+        CALLS SEG Calc_FAC_WF_VO_Fdout, SOF Calc_FAC_WF_VO_Fdout
         JNB lv_conf_mis.04H,L_D64B2
-        CALLS 00DH,Diag_Coding_MAF_TPS_Plaus
+        CALLS SEG Diag_Coding_MAF_TPS_Plaus, SOF Diag_Coding_MAF_TPS_Plaus
 L_D64B2:                 ; 0xd64b2
         JNB lv_conf_mis.00H,L_D64BA
-        CALLS 00DH,Calc_LS_Up_OBD2_CycNr
+        CALLS SEG Calc_LS_Up_OBD2_CycNr, SOF Calc_LS_Up_OBD2_CycNr
 L_D64BA:                 ; 0xd64ba
-        CALLS 00BH,Calc_TOil_Model
-        CALLS 00BH,Acq_TOIL_2
-        CALLS 00BH,Diag_TOIL
-        CALLS 00BH,Calc_lamb_sp
-        CALLS 00DH,Calc_MAF_Trim_State
-        CALLS 00BH,Calc_Fcut_State
-        CALLS 00EH,Set_lv_maf_trim_e31a
-        CALLS 00CH,IVVT_Task_Group_2
-        CALLS 00BH,Diag_DTC_dd63a
-        CALLS 00BH,Calc_MAF_Int_CH
-        CALLS 00BH,Calc_TEG_Cor
-        CALLS 00CH,Calc_TEG_Model
-        CALLS 00CH,Calc_TEG_Dyn_Hys
-        CALLS 00BH,Calc_RBM_Cat_Diag
-        CALLS 00DH,Calc_Evap_RBM_Cond
-        CALLS 00DH,Calc_RBM_DTP_Noise
-        CALLS 00DH,Calc_RBM_CPS_Mecha
-        CALLS 00DH,Calc_RBM_Leak_Small
-        CALLS 00DH,Calc_RBM_Leak_Large
-        CALLS 00CH,Calc_RBM_TCO_Stuck
-        CALLS 00CH,Calc_RBM_TCO_Stuck_Rng
-        CALLS 00BH,Calc_RBM_TCO_Plaus
-        CALLS 00BH,Calc_RBM_Th_Det
-        CALLS 00BH,Calc_RBM_TOil_Stuck
-        CALLS 00DH,Calc_RBM_MAF_Dif_CH
-        CALLS 00CH,Calc_RBM_TIA_Plaus
-        CALLS 00BH,RBM_Inc_IgnCyc_Ctr
-        CALLS 00CH,Set_Conf_VIN_Diag
-        CALLS 00EH,Calc_TAst_OBD
+        CALLS SEG Calc_TOil_Model, SOF Calc_TOil_Model
+        CALLS SEG Acq_TOIL_2, SOF Acq_TOIL_2
+        CALLS SEG Diag_TOIL, SOF Diag_TOIL
+        CALLS SEG Calc_lamb_sp, SOF Calc_lamb_sp
+        CALLS SEG Calc_MAF_Trim_State, SOF Calc_MAF_Trim_State
+        CALLS SEG Calc_Fcut_State, SOF Calc_Fcut_State
+        CALLS SEG Set_lv_maf_trim_e31a, SOF Set_lv_maf_trim_e31a
+        CALLS SEG IVVT_Task_Group_2, SOF IVVT_Task_Group_2
+        CALLS SEG Diag_DTC_dd63a, SOF Diag_DTC_dd63a
+        CALLS SEG Calc_MAF_Int_CH, SOF Calc_MAF_Int_CH
+        CALLS SEG Calc_TEG_Cor, SOF Calc_TEG_Cor
+        CALLS SEG Calc_TEG_Model, SOF Calc_TEG_Model
+        CALLS SEG Calc_TEG_Dyn_Hys, SOF Calc_TEG_Dyn_Hys
+        CALLS SEG Calc_RBM_Cat_Diag, SOF Calc_RBM_Cat_Diag
+        CALLS SEG Calc_Evap_RBM_Cond, SOF Calc_Evap_RBM_Cond
+        CALLS SEG Calc_RBM_DTP_Noise, SOF Calc_RBM_DTP_Noise
+        CALLS SEG Calc_RBM_CPS_Mecha, SOF Calc_RBM_CPS_Mecha
+        CALLS SEG Calc_RBM_Leak_Small, SOF Calc_RBM_Leak_Small
+        CALLS SEG Calc_RBM_Leak_Large, SOF Calc_RBM_Leak_Large
+        CALLS SEG Calc_RBM_TCO_Stuck, SOF Calc_RBM_TCO_Stuck
+        CALLS SEG Calc_RBM_TCO_Stuck_Rng, SOF Calc_RBM_TCO_Stuck_Rng
+        CALLS SEG Calc_RBM_TCO_Plaus, SOF Calc_RBM_TCO_Plaus
+        CALLS SEG Calc_RBM_Th_Det, SOF Calc_RBM_Th_Det
+        CALLS SEG Calc_RBM_TOil_Stuck, SOF Calc_RBM_TOil_Stuck
+        CALLS SEG Calc_RBM_MAF_Dif_CH, SOF Calc_RBM_MAF_Dif_CH
+        CALLS SEG Calc_RBM_TIA_Plaus, SOF Calc_RBM_TIA_Plaus
+        CALLS SEG RBM_Inc_IgnCyc_Ctr, SOF RBM_Inc_IgnCyc_Ctr
+        CALLS SEG Set_Conf_VIN_Diag, SOF Set_Conf_VIN_Diag
+        CALLS SEG Calc_TAst_OBD, SOF Calc_TAst_OBD
         RETS
 
 ; ======== Calc_COP_IGA_TI  (@0xd6530) ========
@@ -117,22 +117,22 @@ Calc_COP_IGA_TI:
         MOVBS R12,RL4
         MOVB RL4,iga_bas_temp_cor
         MOVBS R13,RL4
-        CALLS 00FH,Sat_Add_S8
+        CALLS SEG Sat_Add_S8, SOF Sat_Add_S8
         ADDB RL4,#DATA16 00080H
         MOVB iga_cop,RL4
         JNB lv_pl.00H,L_D6628
         MOV R12,#DATA16 POF sstm_n_1_8
         MOV R13,#DATA16 PAG sstm_n_1_8
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF sst_zw_mw_kr_kf_lm_min_ks
         MOV R13,#DATA16 PAG sst_zw_mw_kr_kf_lm_min_ks
         MOVBZ R14,iga_cop
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         JNB lv_iga_dif_max_er.0DH,L_D65B6
         MOVBZ R12,DPP0:c_vs_min_cop
         MOVBZ R13,DPP0:c_vs_hys_cop
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL4,vs
         JMPR cc_ULE,L_D6644
         MOVB RL4,iga_cop
@@ -140,10 +140,10 @@ Calc_COP_IGA_TI:
         JMPR cc_UGT,L_D65B0
         MOV R12,#DATA16 POF ip_maf_min_cop__n__iga_cop
         MOV R13,#DATA16 PAG ip_maf_min_cop__n__iga_cop
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVBZ R12,RL4
         MOVBZ R13,DPP0:c_maf_min_hys_cop
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL4,lv_iga_cc2b
         JMPR cc_ULE,L_D6644
 L_D65B0:                 ; 0xd65b0
@@ -154,19 +154,19 @@ L_D65B6:                 ; 0xd65b6
         MOV R12,#DATA16 POF sstm_tkw_1_8
         MOV R13,#DATA16 PAG sstm_tkw_1_8
         MOVBZ R14,tco_st
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_tco_lam_min__tco_st
         MOV R13,#DATA16 PAG ip_tco_lam_min__tco_st
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVB RL6,RL4
         MOV R12,#DATA16 POF sstm_n_1_8
         MOV R13,#DATA16 PAG sstm_n_1_8
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF sst_zw_mw_kr_kf_lm_min_ks
         MOV R13,#DATA16 PAG sst_zw_mw_kr_kf_lm_min_ks
         MOVBZ R14,iga_cop
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         CMPB RL6,tco
         JMPR cc_NC,L_D6644
         MOVB RL4,iga_cop
@@ -174,7 +174,7 @@ L_D65B6:                 ; 0xd65b6
         JMPR cc_UGT,L_D6616
         MOV R12,#DATA16 POF ip_maf_min_cop__n__iga_cop
         MOV R13,#DATA16 PAG ip_maf_min_cop__n__iga_cop
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         CMPB RL4,lv_iga_cc2b
         JMPR cc_ULE,L_D6620
 L_D6616:                 ; 0xd6616
@@ -205,44 +205,44 @@ L_D6644:                 ; 0xd6644
         JB abs_def.04H,L_D6660
         MOV R12,#DATA16 050A4H
         MOVBZ R13,vs
-        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Byte_2D_Table_DWord_YByte, SOF Get_IP_Byte_2D_Table_DWord_YByte
         MOVB RL6,RL4
         JMPR cc_UC,L_D666E
 L_D6660:                 ; 0xd6660
         MOV R12,#DATA16 050ACH
         MOVBZ R13,vs
-        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Byte_2D_Table_DWord_YByte, SOF Get_IP_Byte_2D_Table_DWord_YByte
         MOVB RL6,RL4
 L_D666E:                 ; 0xd666e
         MOV R12,#DATA16 POF sstm_n_1_8
         MOV R13,#DATA16 PAG sstm_n_1_8
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF sst_lm_kf_ti_ks
         MOV R13,#DATA16 PAG sst_lm_kf_ti_ks
         MOVBZ R14,lv_iga_cc2b
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         MOV R12,#DATA16 POF ip_ti_cop__n__maf
         MOV R13,#DATA16 PAG ip_ti_cop__n__maf
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVBZ R9,RL4
         MOV R12,R9
         MOVBZ R13,RL6
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVBZ R4,RL4
         MOV R9,R4
         MOV R12,#DATA16 POF sst_zw_mw_kr_kf_ti_ks_zw
         MOV R13,#DATA16 PAG sst_zw_mw_kr_kf_ti_ks_zw
         MOVBZ R14,iga_cop
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_ti_cop_iga__iga_cop
         MOV R13,#DATA16 PAG ip_ti_cop_iga__iga_cop
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         ADDB RL4,#DATA16 00080H
         MOVBS R13,RL4
         MOV R4,R9
         MOVBZ R12,RL4
-        CALLS 00FH,Add_Clamp_U8
+        CALLS SEG Add_Clamp_U8, SOF Add_Clamp_U8
         MOVBZ R4,RL4
         SHL R4,#04H
         MOV R9,R4
@@ -265,7 +265,7 @@ L_D66FE:                 ; 0xd66fe
 L_D6704:                 ; 0xd6704
         MOV R12,ti_cop
         MOV R13,DPP0:c_ti_cop_inc
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV ti_cop,R4
         CMP R4,#00H
         JMPR cc_NE,L_D671C
@@ -319,7 +319,7 @@ L_D678C:                 ; 0xd678c
         ORB lv_sched_diag_inh,RL4
 L_D6792:                 ; 0xd6792
         MOV R12,#DATA16 00020H
-        CALLS 00DH,DTC_Calc_Activation_MIL
+        CALLS SEG DTC_Calc_Activation_MIL, SOF DTC_Calc_Activation_MIL
         BMOV lv_ecu_err.03H,dtc_status_work.06H
         MOVBZ R4,dtc_ecu_flags
         AND R4,#DATA16 00020H
@@ -331,20 +331,20 @@ L_D67B0:                 ; 0xd67b0
 
 ; ======== Set_Conf_VS  (@0xd67b2) ========
 Set_Conf_VS:
-        CALLS 00CH,Calc_Conf_Lam
-        CALLS 00CH,Calc_Conf_CatEff
-        CALLS 00DH,Set_Conf_MIL_FMY
+        CALLS SEG Calc_Conf_Lam, SOF Calc_Conf_Lam
+        CALLS SEG Calc_Conf_CatEff, SOF Calc_Conf_CatEff
+        CALLS SEG Set_Conf_MIL_FMY, SOF Set_Conf_MIL_FMY
         MOVB RL4,DPP0:c_conf_mis
         CMPB RL4,#01H
         JMPR cc_NE,L_D67C8
         BSET lv_conf_mis.02H
 L_D67C8:                 ; 0xd67c8
-        CALLS 00CH,Calc_Conf_CP
-        CALLS 00DH,DiagCP_Set_Config
-        CALLS 00CH,Set_lv_conf_mis
-        CALLS 00BH,Set_Conf_ACP
-        CALLS 00DH,NVM_Restore_s5aa
-        CALLS 00DH,NVM_Restore_s5ae
+        CALLS SEG Calc_Conf_CP, SOF Calc_Conf_CP
+        CALLS SEG DiagCP_Set_Config, SOF DiagCP_Set_Config
+        CALLS SEG Set_lv_conf_mis, SOF Set_lv_conf_mis
+        CALLS SEG Set_Conf_ACP, SOF Set_Conf_ACP
+        CALLS SEG NVM_Restore_s5aa, SOF NVM_Restore_s5aa
+        CALLS SEG NVM_Restore_s5ae, SOF NVM_Restore_s5ae
         BSET lv_conf_mis.09H
         JB can_fd58.02H,L_D67FC
         MOV R4,diag_f890
@@ -358,14 +358,14 @@ L_D67FC:                 ; 0xd67fc
         MOVB RL4,#03H
         MOVB conf_vs,RL4
 L_D6802:                 ; 0xd6802
-        CALLS 00CH,Calc_VS
-        CALLS 00BH,Calc_Conf_Mis
-        CALLS 00DH,Set_PL_Flags
-        CALLS 00DH,Calc_MAF_Dif_CH_Upd
-        CALLS 00BH,Set_Conf_MTV
-        CALLS 00EH,Set_lv_maf_trim_e2d7
-        CALLS 00EH,Set_lv_pl
-        CALLS 00DH,Set_Conf_Ad_Rst
+        CALLS SEG Calc_VS, SOF Calc_VS
+        CALLS SEG Calc_Conf_Mis, SOF Calc_Conf_Mis
+        CALLS SEG Set_PL_Flags, SOF Set_PL_Flags
+        CALLS SEG Calc_MAF_Dif_CH_Upd, SOF Calc_MAF_Dif_CH_Upd
+        CALLS SEG Set_Conf_MTV, SOF Set_Conf_MTV
+        CALLS SEG Set_lv_maf_trim_e2d7, SOF Set_lv_maf_trim_e2d7
+        CALLS SEG Set_lv_pl, SOF Set_lv_pl
+        CALLS SEG Set_Conf_Ad_Rst, SOF Set_Conf_Ad_Rst
         RETS
 
 S_D648A ENDS

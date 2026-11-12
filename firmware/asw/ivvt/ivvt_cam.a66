@@ -113,7 +113,7 @@ L_B497A:                 ; 0xb497a
         ADD R12,R4
         MOV R13,#00H
         MOV R14,#DATA16 000FFH
-        CALLS 00FH,Clamp_S16
+        CALLS SEG Clamp_S16, SOF Clamp_S16
         MOVB [R8+#014H],RL4
         JMPR cc_UC,L_B49CC
 L_B4996:                 ; 0xb4996
@@ -134,7 +134,7 @@ L_B49AA:                 ; 0xb49aa
         ADD R12,R4
         MOV R13,#00H
         MOV R14,#DATA16 000FFH
-        CALLS 00FH,Clamp_S16
+        CALLS SEG Clamp_S16, SOF Clamp_S16
         MOVB [R8+#014H],RL4
 L_B49CC:                 ; 0xb49cc
         MOVB RL4,[R8+#014H]
@@ -153,7 +153,7 @@ Calc_Cam_Ad_IVVT:
         JMPA cc_C,L_B4DA0
         MOV R12,#DATA16 04770H
         MOVBZ R13,toil
-        CALLS 00FH,Get_Byte_2D_Table_DWord_YByte
+        CALLS SEG Get_Byte_2D_Table_DWord_YByte, SOF Get_Byte_2D_Table_DWord_YByte
         MOVB RL7,RL4
         MOVB RL4,[R8+#03H]
         JMPA cc_NE,L_B4B9C
@@ -171,7 +171,7 @@ L_B4A0E:                 ; 0xb4a0e
         MOVBZ R12,RL4
         MOVB RL4,[R8+#02H]
         MOVBZ R13,RL4
-        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CALLS SEG subtract_r12_r13_negate_if_not_rets_r4, SOF subtract_r12_r13_negate_if_not_rets_r4
         MOV R5,[R0+#0AH]
         MOV R2,[R5+#02H]
         CMPB RL4,[R2]
@@ -191,7 +191,7 @@ L_B4A44:                 ; 0xb4a44
         MOVBZ R12,RL4
         MOVB RL4,[R8+#01BH]
         MOVBZ R13,RL4
-        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CALLS SEG subtract_r12_r13_negate_if_not_rets_r4, SOF subtract_r12_r13_negate_if_not_rets_r4
         MOVBZ R4,RL4
         SHR R4,#01H
         CMPB RL4,DPP0:c_cam_grd_ad_max_st_ivvt
@@ -208,7 +208,7 @@ L_B4A70:                 ; 0xb4a70
         SHL R13,#08H
         MOVBZ R14,DPP0:c_crlc_ref_ivvt
         SHL R14,#08H
-        CALLS 00FH,Interp_U16
+        CALLS SEG Interp_U16, SOF Interp_U16
         MOV R5,[R8+#08H]
         MOV [R5],R4
         MOVB RL4,#01H
@@ -222,7 +222,7 @@ L_B4A94:                 ; 0xb4a94
         MOVB RL4,[R5]
         MOVBZ R12,RL4
         MOVBZ R13,DPP0:c_cam_hys_ref_ivvt
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOV R5,[R8+#08H]
         MOVB RL3,[R5+#01H]
         CMPB RL3,RL4
@@ -232,7 +232,7 @@ L_B4A94:                 ; 0xb4a94
         MOVB RL4,[R5]
         MOVBZ R12,RL4
         MOVBZ R13,DPP0:c_cam_hys_ref_ivvt
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOV R5,[R8+#08H]
         MOVB RL3,[R5+#01H]
         CMPB RL3,RL4
@@ -276,7 +276,7 @@ L_B4B1A:                 ; 0xb4b1a
         MOV R4,[R8+#08H]
         MOVB RL5,[R4+#01H]
         MOVBZ R13,RL5
-        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CALLS SEG subtract_r12_r13_negate_if_not_rets_r4, SOF subtract_r12_r13_negate_if_not_rets_r4
         MOVB [R0],RL4
         MOV R4,[R0+#0AH]
         MOV R2,[R4+#04H]
@@ -310,7 +310,7 @@ L_B4B8E:                 ; 0xb4b8e
         JMPR cc_NE,L_B4B9C
         MOVB RL4,[R8+#021H]
         JMPR cc_EQ,L_B4B9C
-        CALLS 00BH,Diag_IVVT_Elec_SetDTC
+        CALLS SEG Diag_IVVT_Elec_SetDTC, SOF Diag_IVVT_Elec_SetDTC
 L_B4B9C:                 ; 0xb4b9c
         MOVB RL4,[R8+#03H]
         JMPA cc_EQ,L_B4CB2
@@ -332,18 +332,18 @@ L_B4BCC:                 ; 0xb4bcc
         MOVBZ R12,RL4
         MOVB RL4,[R8+#02H]
         MOVBZ R13,RL4
-        CALLS 00FH,Sat_Sub_S8
+        CALLS SEG Sat_Sub_S8, SOF Sat_Sub_S8
         MOVBS R12,RL4
         MOVB RL4,[R8+#013H]
         NEGB RL4
         MOVBS R13,RL4
-        CALLS 00FH,Sat_Add_S8
+        CALLS SEG Sat_Add_S8, SOF Sat_Add_S8
         MOVBS R13,RL4
         MOVBZ R4,DPP0:c_crlc_cam_ad_st_ivvt
         MUL R13,R4
         MOV R13,0FE0EH
         MOV R12,[R8+#012H]
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV [R8+#012H],R4
         MOVB RL4,[R8+#01FH]
         CMPB RL4,#DATA16 000FFH
@@ -398,19 +398,19 @@ L_B4C6E:                 ; 0xb4c6e
         MOVBZ R12,idx_cam_ad_ivvt
         SUB R12,#DATA16 00042H
         MOV R13,#DATA16 0FFC0H
-        CALLS 00FH,Clamp_S16_SignedLimit
+        CALLS SEG Clamp_S16_SignedLimit, SOF Clamp_S16_SignedLimit
         MOV R12,R4
         MOVBZ R13,DPP0:c_tco_add_cam_ref_ivvt
-        CALLS 00FH,Mul_S16_Sat16
+        CALLS SEG Mul_S16_Sat16, SOF Mul_S16_Sat16
         MOV R13,R4
         MOVBZ R12,tco_st
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOVBZ R5,tco
         CMP R5,R4
         JMPR cc_UGT,L_B4CB2
         MOVBZ R12,idx_cam_ad_ivvt
         MOV R13,#02H
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB idx_cam_ad_ivvt,RL4
 L_B4CB2:                 ; 0xb4cb2
         MOVB RL4,[R8+#03H]
@@ -432,7 +432,7 @@ L_B4CB2:                 ; 0xb4cb2
         SUB R12,R4
         MOV R13,#00H
         MOV R14,#DATA16 000FFH
-        CALLS 00FH,Clamp_S16
+        CALLS SEG Clamp_S16, SOF Clamp_S16
         MOVB [R8+#014H],RL4
         JMPR cc_UC,L_B4D3E
 L_B4CF4:                 ; 0xb4cf4
@@ -461,7 +461,7 @@ L_B4D02:                 ; 0xb4d02
         ADD R12,R4
         MOV R13,#00H
         MOV R14,#DATA16 000FFH
-        CALLS 00FH,Clamp_S16
+        CALLS SEG Clamp_S16, SOF Clamp_S16
         MOVB [R8+#014H],RL4
 L_B4D3E:                 ; 0xb4d3e
         MOVB RL4,[R8+#014H]
@@ -475,7 +475,7 @@ L_B4D3E:                 ; 0xb4d3e
         MOVB RL4,[R2]
         MOVBZ R12,RL4
         MOVBZ R13,DPP0:c_cam_hys_ad_ivvt
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB RL5,[R9+#04H]
         CMPB RL5,RL4
         JMPR cc_C,L_B4D90
@@ -488,7 +488,7 @@ L_B4D76:                 ; 0xb4d76
         MOVBZ R12,RL4
         MOVB RL4,[R8+#02H]
         MOVBZ R13,RL4
-        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CALLS SEG subtract_r12_r13_negate_if_not_rets_r4, SOF subtract_r12_r13_negate_if_not_rets_r4
         MOVBZ R4,RL4
         SHR R4,#01H
         CMPB RL4,DPP0:c_cam_raw_grd_max_ivvt
@@ -529,7 +529,7 @@ Set_lv_cam_ad_di_ivvt:
         ADD R12,R4
         MOV R13,#00H
         MOV R14,#DATA16 000FFH
-        CALLS 00FH,Clamp_S16
+        CALLS SEG Clamp_S16, SOF Clamp_S16
         MOVB [R8+#014H],RL4
         MOVB RL4,[R8+#02H]
         MOVB [R8+#017H],RL4
@@ -544,7 +544,7 @@ L_B4DF4:                 ; 0xb4df4
         ADD R12,R4
         MOV R13,#00H
         MOV R14,#DATA16 000FFH
-        CALLS 00FH,Clamp_S16
+        CALLS SEG Clamp_S16, SOF Clamp_S16
         MOVB [R8+#014H],RL4
 L_B4E16:                 ; 0xb4e16
         MOVB RL4,[R8+#014H]
@@ -556,7 +556,7 @@ L_B4E16:                 ; 0xb4e16
         JMPR cc_NE,L_B4E46
         MOVBZ R12,DPP0:c_cam_ini_in
         MOVBZ R13,DPP0:c_cam_hys_ad_ivvt
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL4,ivvt_in_struct_sp_ivvt_cam_sp_ivvt
         JMPR cc_NC,L_B4E42
         MOVB RL4,#01H
@@ -575,23 +575,23 @@ L_B4E46:                 ; 0xb4e46
         MOVBZ R12,idx_cam_ad_ivvt
         SUB R12,#DATA16 00040H
         MOVBZ R13,DPP0:c_tco_add_cam_ref_ivvt
-        CALLS 00FH,Mul_S16_Sat16
+        CALLS SEG Mul_S16_Sat16, SOF Mul_S16_Sat16
         MOV R13,R4
         MOVBZ R12,tco_st
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOVBZ R5,tco
         CMP R5,R4
         JMPR cc_NC,L_B4EA4
         MOVBZ R12,idx_cam_ad_ivvt
         SUB R12,#DATA16 00042H
         MOV R13,#DATA16 0FFC0H
-        CALLS 00FH,Clamp_S16_SignedLimit
+        CALLS SEG Clamp_S16_SignedLimit, SOF Clamp_S16_SignedLimit
         MOV R12,R4
         MOVBZ R13,DPP0:c_tco_add_cam_ref_ivvt
-        CALLS 00FH,Mul_S16_Sat16
+        CALLS SEG Mul_S16_Sat16, SOF Mul_S16_Sat16
         MOV R13,R4
         MOVBZ R12,tco_st
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOVBZ R5,tco
         CMP R5,R4
         JMPR cc_UGT,L_B4EEE
@@ -602,7 +602,7 @@ L_B4EA4:                 ; 0xb4ea4
         MOVBZ R12,RL4
         MOVB RL4,[R8+#02H]
         MOVBZ R13,RL4
-        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CALLS SEG subtract_r12_r13_negate_if_not_rets_r4, SOF subtract_r12_r13_negate_if_not_rets_r4
         MOVBZ R4,RL4
         SHR R4,#01H
         CMPB RL4,DPP0:c_cam_raw_grd_max_ivvt
@@ -638,7 +638,7 @@ L_B4EF6:                 ; 0xb4ef6
         MOVBZ R12,RL4
         MOVB RL4,[R8+#014H]
         MOVBZ R13,RL4
-        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CALLS SEG subtract_r12_r13_negate_if_not_rets_r4, SOF subtract_r12_r13_negate_if_not_rets_r4
         MOVBZ R4,RL4
         SHR R4,#01H
         CMPB RL4,DPP0:c_cam_grd_ad_max_ivvt
@@ -654,13 +654,13 @@ L_B4F2A:                 ; 0xb4f2a
         MOVBZ R12,RL4
         MOVB RL4,[R8+#014H]
         MOVBZ R13,RL4
-        CALLS 00FH,Sat_Sub_S8
+        CALLS SEG Sat_Sub_S8, SOF Sat_Sub_S8
         MOVBS R13,RL4
         MOVBZ R4,DPP0:c_crlc_cam_ad_ivvt
         MUL R13,R4
         MOV R13,0FE0EH
         MOV R12,[R8+#012H]
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV [R8+#012H],R4
 L_B4F52:                 ; 0xb4f52
         CMP R9,#DATA16 0CBCAH
@@ -694,9 +694,9 @@ L_B4F86:                 ; 0xb4f86
         MOVB RL5,[R8+#02H]
         MOVBZ R12,RL5
         MOV R13,[R8+#0EH]
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV R12,R4
-        CALLS 00FH,Sat_HiByte_ff
+        CALLS SEG Sat_HiByte_ff, SOF Sat_HiByte_ff
         MOVB [R8+#014H],RL4
         JMPR cc_UC,L_B5008
 L_B4FAE:                 ; 0xb4fae
@@ -726,7 +726,7 @@ L_B4FD2:                 ; 0xb4fd2
         ADD R12,R4
         MOV R13,#00H
         MOV R14,#DATA16 000FFH
-        CALLS 00FH,Clamp_S16
+        CALLS SEG Clamp_S16, SOF Clamp_S16
         MOVB [R8+#014H],RL4
         JMPR cc_UC,L_B5008
 L_B4FFC:                 ; 0xb4ffc

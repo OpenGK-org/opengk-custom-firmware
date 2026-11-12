@@ -60,11 +60,11 @@ Reset_Dc2d1_03a:
         MOVB lv_iga_c2d1,RL4
         MOVBZ R12,RL4
         MOV R13,#0AH
-        CALLS 00FH,Mul_U16_Sat16
+        CALLS SEG Mul_U16_Sat16, SOF Mul_U16_Sat16
         MOV lv_iga_caa6,R4
         MOV R12,#DATA16 04992H
         MOVBZ R13,tco
-        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Byte_2D_Table_DWord_YByte, SOF Get_IP_Byte_2D_Table_DWord_YByte
         MOVB lv_iga_c2d2,RL4
         RETS
 
@@ -107,27 +107,27 @@ L_C00A0:                 ; 0xc00a0
         MOVB iga_sp_max_1,RL4
         MOV R12,lv_iga_caa6
         MOVBZ R13,lv_iga_c2d2
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV lv_iga_caa6,R4
         MOV R5,#00H
         MOV R12,R4
         MOV R13,R5
         MOV R14,#0AH
-        CALLS 00FH,Div_U32_U16_Round
+        CALLS SEG Div_U32_U16_Round, SOF Div_U32_U16_Round
         MOVB lv_iga_c2d1,RL4
         MOV R9,#00H
         MOVB RL5,DPP0:lc_iga_man_act
         JMPA cc_NE,L_C02B0
         MOVBS R12,DPP0:c_iga_as_0
         MOVBS R13,DPP0:c_iga_as
-        CALLS 00FH,Sat_Add_S8
+        CALLS SEG Sat_Add_S8, SOF Sat_Add_S8
         MOVB RL6,RL4
         MOVBS R12,lv_iga_f487
         MOVBS R13,RL6
-        CALLS 00FH,Sat_Add_S8
+        CALLS SEG Sat_Add_S8, SOF Sat_Add_S8
         MOVBS R13,RL4
         MOVBZ R12,iga_bas_cor
-        CALLS 00FH,Add_Clamp_U8
+        CALLS SEG Add_Clamp_U8, SOF Add_Clamp_U8
         MOVB iga_0,RL4
         MOVB RL5,iga_min
         CMPB RL5,iga_0
@@ -164,14 +164,14 @@ L_C0134:                 ; 0xc0134
         MOVB iga_er_seg,RL4
         MOVBS R12,DPP0:c_iga_as_1
         MOVBS R13,DPP0:c_iga_as
-        CALLS 00FH,Sat_Add_S8
+        CALLS SEG Sat_Add_S8, SOF Sat_Add_S8
         MOVB RL6,RL4
         MOVBS R12,lv_iga_f488
         MOVBS R13,RL6
-        CALLS 00FH,Sat_Add_S8
+        CALLS SEG Sat_Add_S8, SOF Sat_Add_S8
         MOVBS R13,RL4
         MOVBZ R12,iga_bas_cor
-        CALLS 00FH,Add_Clamp_U8
+        CALLS SEG Add_Clamp_U8, SOF Add_Clamp_U8
         MOVB iga_1,RL4
         MOVB RL5,iga_min
         CMPB RL5,iga_1
@@ -208,14 +208,14 @@ L_C01AA:                 ; 0xc01aa
         MOVB lv_iga_f5a9,RL4
         MOVBS R12,DPP0:c_iga_as_2
         MOVBS R13,DPP0:c_iga_as
-        CALLS 00FH,Sat_Add_S8
+        CALLS SEG Sat_Add_S8, SOF Sat_Add_S8
         MOVB RL6,RL4
         MOVBS R12,lv_iga_f489
         MOVBS R13,RL6
-        CALLS 00FH,Sat_Add_S8
+        CALLS SEG Sat_Add_S8, SOF Sat_Add_S8
         MOVBS R13,RL4
         MOVBZ R12,iga_bas_cor
-        CALLS 00FH,Add_Clamp_U8
+        CALLS SEG Add_Clamp_U8, SOF Add_Clamp_U8
         MOVB iga_2,RL4
         MOVB RL5,iga_min
         CMPB RL5,iga_2
@@ -252,14 +252,14 @@ L_C0220:                 ; 0xc0220
         MOVB lv_iga_f5aa,RL4
         MOVBS R12,DPP0:c_iga_as_3
         MOVBS R13,DPP0:c_iga_as
-        CALLS 00FH,Sat_Add_S8
+        CALLS SEG Sat_Add_S8, SOF Sat_Add_S8
         MOVB RL6,RL4
         MOVBS R12,lv_iga_f48a
         MOVBS R13,RL6
-        CALLS 00FH,Sat_Add_S8
+        CALLS SEG Sat_Add_S8, SOF Sat_Add_S8
         MOVBS R13,RL4
         MOVBZ R12,iga_bas_cor
-        CALLS 00FH,Add_Clamp_U8
+        CALLS SEG Add_Clamp_U8, SOF Add_Clamp_U8
         MOVB iga_3,RL4
         MOVB RL5,iga_min
         CMPB RL5,iga_3
@@ -389,14 +389,14 @@ L_C0384:                 ; 0xc0384
         JMPA cc_NE,L_C0518
         MOVBS R12,DPP0:c_iga_as_0
         MOVBS R13,DPP0:c_iga_as
-        CALLS 00FH,Sat_Add_S8
+        CALLS SEG Sat_Add_S8, SOF Sat_Add_S8
         MOVB RL6,RL4
         MOVBS R12,lv_iga_f487
         MOVBS R13,RL6
-        CALLS 00FH,Sat_Add_S8
+        CALLS SEG Sat_Add_S8, SOF Sat_Add_S8
         MOVBS R13,RL4
         MOVBZ R12,iga_bas_cor
-        CALLS 00FH,Add_Clamp_U8
+        CALLS SEG Add_Clamp_U8, SOF Add_Clamp_U8
         MOVB iga_0,RL4
         MOVB RL5,iga_min
         CMPB RL5,iga_0
@@ -428,14 +428,14 @@ L_C03EC:                 ; 0xc03ec
         MOVB iga_er_seg,RL4
         MOVBS R12,DPP0:c_iga_as_1
         MOVBS R13,DPP0:c_iga_as
-        CALLS 00FH,Sat_Add_S8
+        CALLS SEG Sat_Add_S8, SOF Sat_Add_S8
         MOVB RL6,RL4
         MOVBS R12,lv_iga_f488
         MOVBS R13,RL6
-        CALLS 00FH,Sat_Add_S8
+        CALLS SEG Sat_Add_S8, SOF Sat_Add_S8
         MOVBS R13,RL4
         MOVBZ R12,iga_bas_cor
-        CALLS 00FH,Add_Clamp_U8
+        CALLS SEG Add_Clamp_U8, SOF Add_Clamp_U8
         MOVB iga_1,RL4
         MOVB RL5,iga_min
         CMPB RL5,iga_1
@@ -467,14 +467,14 @@ L_C0456:                 ; 0xc0456
         MOVB lv_iga_f5a9,RL4
         MOVBS R12,DPP0:c_iga_as_2
         MOVBS R13,DPP0:c_iga_as
-        CALLS 00FH,Sat_Add_S8
+        CALLS SEG Sat_Add_S8, SOF Sat_Add_S8
         MOVB RL6,RL4
         MOVBS R12,lv_iga_f489
         MOVBS R13,RL6
-        CALLS 00FH,Sat_Add_S8
+        CALLS SEG Sat_Add_S8, SOF Sat_Add_S8
         MOVBS R13,RL4
         MOVBZ R12,iga_bas_cor
-        CALLS 00FH,Add_Clamp_U8
+        CALLS SEG Add_Clamp_U8, SOF Add_Clamp_U8
         MOVB iga_2,RL4
         MOVB RL5,iga_min
         CMPB RL5,iga_2
@@ -506,14 +506,14 @@ L_C04C0:                 ; 0xc04c0
         MOVB lv_iga_f5aa,RL4
         MOVBS R12,DPP0:c_iga_as_3
         MOVBS R13,DPP0:c_iga_as
-        CALLS 00FH,Sat_Add_S8
+        CALLS SEG Sat_Add_S8, SOF Sat_Add_S8
         MOVB RL6,RL4
         MOVBS R12,lv_iga_f48a
         MOVBS R13,RL6
-        CALLS 00FH,Sat_Add_S8
+        CALLS SEG Sat_Add_S8, SOF Sat_Add_S8
         MOVBS R13,RL4
         MOVBZ R12,iga_bas_cor
-        CALLS 00FH,Add_Clamp_U8
+        CALLS SEG Add_Clamp_U8, SOF Add_Clamp_U8
         MOVB iga_3,RL4
         MOVB RL5,iga_min
         CMPB RL5,iga_3
@@ -577,11 +577,11 @@ L_C0574:                 ; 0xc0574
         ; (was FUN_0c057e)
         ; ------------------------------------------------------------
 Calc_EFF_IGA:
-        CALLS 00AH,Calc_IGA_Ref
-        CALLS 00BH,Calc_IGA_Bas
-        CALLS 00CH,Nop_cb6c8
-        CALLS 00BH,Calc_VO_Sp
-        CALLS 00BH,Calc_iga_bas_amp_cor
+        CALLS SEG Calc_IGA_Ref, SOF Calc_IGA_Ref
+        CALLS SEG Calc_IGA_Bas, SOF Calc_IGA_Bas
+        CALLS SEG Nop_cb6c8, SOF Nop_cb6c8
+        CALLS SEG Calc_VO_Sp, SOF Calc_VO_Sp
+        CALLS SEG Calc_iga_bas_amp_cor, SOF Calc_iga_bas_amp_cor
         MOVB RL4,lv_iga_c2d7
         JMPR cc_EQ,L_C05AA
         CMPB RL4,#02H
@@ -593,30 +593,30 @@ Calc_EFF_IGA:
         CMPB RL4,#DATA16 00008H
         JMPR cc_NE,L_C05AE
 L_C05AA:                 ; 0xc05aa
-        CALLS 00AH,Calc_IGA_Temp_Cor
+        CALLS SEG Calc_IGA_Temp_Cor, SOF Calc_IGA_Temp_Cor
 L_C05AE:                 ; 0xc05ae
-        CALLS 00BH,Calc_IGA_Bas_Cor
-        CALLS 00AH,Calc_IGA_Ref_Cor
-        CALLS 00CH,Nop_cb6ca
+        CALLS SEG Calc_IGA_Bas_Cor, SOF Calc_IGA_Bas_Cor
+        CALLS SEG Calc_IGA_Ref_Cor, SOF Calc_IGA_Ref_Cor
+        CALLS SEG Nop_cb6ca, SOF Nop_cb6ca
         JNB lv_ast.06H,L_C0610
         JNB lv_pl.04H,L_C05C6
         JB lv_iga_tra_knk.00H,L_C0604
 L_C05C6:                 ; 0xc05c6
         MOVBZ R12,iga_bas_cor
         MOVBS R13,lv_knk_f486
-        CALLS 00FH,Add_Clamp_U8
+        CALLS SEG Add_Clamp_U8, SOF Add_Clamp_U8
         MOVB iga_bas_cor_knk_add,RL4
         MOVBZ R12,iga_ref_cor
         MOVBZ R13,RL4
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB iga_dif_bas,RL4
         MOV R12,#DATA16 0498AH
         MOVBZ R13,RL4
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YByte, SOF Get_IP_Word_2D_Table_DWord_YByte
         MOV eff_iga_bas_cor,R4
         MOV R12,#DATA16 0498AH
         MOVBZ R13,iga_dif_min
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YByte, SOF Get_IP_Word_2D_Table_DWord_YByte
         MOV eff_iga_min,R4
         JMPR cc_UC,L_C0610
 L_C0604:                 ; 0xc0604
@@ -626,15 +626,15 @@ L_C0604:                 ; 0xc0604
 L_C0610:                 ; 0xc0610
         MOVB RL4,lv_iga_c2d7
         JMPR cc_NE,L_C061A
-        CALLS 00CH,Calc_IGA_Min_TEG
+        CALLS SEG Calc_IGA_Min_TEG, SOF Calc_IGA_Min_TEG
 L_C061A:                 ; 0xc061a
-        CALLS 00BH,Calc_EFF_IGA_SP
-        CALLS 00BH,Calc_IGA_Dif_Min_Ext_Lim
-        CALLS 00BH,Calc_IGA_Min
+        CALLS SEG Calc_EFF_IGA_SP, SOF Calc_EFF_IGA_SP
+        CALLS SEG Calc_IGA_Dif_Min_Ext_Lim, SOF Calc_IGA_Dif_Min_Ext_Lim
+        CALLS SEG Calc_IGA_Min, SOF Calc_IGA_Min
         MOVB RL4,n_32
         CMPB RL4,#DATA16 000FFH
         JMPR cc_UGT,L_C0634
-        CALLS 00CH,Calc_IGA_Av_Gen
+        CALLS SEG Calc_IGA_Av_Gen, SOF Calc_IGA_Av_Gen
 L_C0634:                 ; 0xc0634
         JNB lv_ast.06H,L_C06C0
         JNB lv_pl.04H,L_C0640
@@ -642,36 +642,36 @@ L_C0634:                 ; 0xc0634
 L_C0640:                 ; 0xc0640
         MOVBZ R12,iga_ref_cor
         MOVBZ R13,iga_av_mv
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB iga_dif_av,RL4
         MOV R12,#DATA16 0498AH
         MOVBZ R13,RL4
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YByte, SOF Get_IP_Word_2D_Table_DWord_YByte
         MOV eff_iga_av,R4
         MOVBS R12,lv_knk_f486
         SHL R12,#08H
         MOVBS R13,iga_mv_knk_fil
         SHL R13,#08H
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         ASHR R4,#08H
         MOVBS R12,RL4
         MOVBZ R13,DPP0:c_crlc_iga_knk
-        CALLS 00FH,SignByBit7_fe0f
+        CALLS SEG SignByBit7_fe0f, SOF SignByBit7_fe0f
         MOVBS R13,RL4
         MOVBS R12,iga_mv_knk_fil
-        CALLS 00FH,Sat_Add_S8
+        CALLS SEG Sat_Add_S8, SOF Sat_Add_S8
         MOVB iga_mv_knk_fil,RL4
         MOVBZ R12,iga_bas_cor
         MOVBS R13,RL4
-        CALLS 00FH,Add_Clamp_U8
+        CALLS SEG Add_Clamp_U8, SOF Add_Clamp_U8
         MOVB iga_bas_cor_knk_fil,RL4
         MOVBZ R12,iga_ref_cor
         MOVBZ R13,RL4
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB iga_dif_bas_knk_fil,RL4
         MOV R12,#DATA16 0498AH
         MOVBZ R13,RL4
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YByte, SOF Get_IP_Word_2D_Table_DWord_YByte
         MOV eff_iga_bas_cor_knk_fil,R4
         JMPR cc_UC,L_C06C0
 L_C06B4:                 ; 0xc06b4
@@ -679,8 +679,8 @@ L_C06B4:                 ; 0xc06b4
         MOV eff_iga_bas_cor_knk_fil,R4
         MOV eff_iga_av,R4
 L_C06C0:                 ; 0xc06c0
-        CALLS 00AH,Calc_MPL_IGA_ACT
-        CALLS 00AH,Calc_TD_Dwell_Base_2
+        CALLS SEG Calc_MPL_IGA_ACT, SOF Calc_MPL_IGA_ACT
+        CALLS SEG Calc_TD_Dwell_Base_2, SOF Calc_TD_Dwell_Base_2
         SUBB lv_iga_c2d7,ONES
         MOVB RL4,lv_iga_c2d7
         CMPB RL4,#DATA16 0000AH

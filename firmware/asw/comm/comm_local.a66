@@ -62,7 +62,7 @@ L_DF69A:                 ; 0xdf69a
 L_DF6BC:                 ; 0xdf6bc
         MOVB RL4,[R9]
         MOVBZ R12,RL4
-        CALLS 00EH,KWP_SID21_ResolveLID_Descriptor
+        CALLS SEG KWP_SID21_ResolveLID_Descriptor, SOF KWP_SID21_ResolveLID_Descriptor
         MOV R4,kwp_lid_desc_ptr
         JMPR cc_EQ,L_DF6DE
         ADD R9,#01H
@@ -179,7 +179,7 @@ L_DF7DE:                 ; 0xdf7de
         MOV R4,kwp_req_ptr
         MOVB RL5,[R4]
         MOVBZ R12,RL5
-        CALLS 00EH,KWP_SID21_ResolveLID_Descriptor
+        CALLS SEG KWP_SID21_ResolveLID_Descriptor, SOF KWP_SID21_ResolveLID_Descriptor
         MOV R4,kwp_lid_desc_ptr
         JMPR cc_NE,L_DF804
         MOVB RL4,#DATA16 00012H
@@ -365,7 +365,7 @@ L_DF9B6:                 ; 0xdf9b6
         MOV R4,kwp_req_ptr
         MOVB RL5,[R4+#03H]
         MOVBZ R12,RL5
-        CALLS 00EH,KWP_SID21_ResolveLID_Descriptor
+        CALLS SEG KWP_SID21_ResolveLID_Descriptor, SOF KWP_SID21_ResolveLID_Descriptor
         MOV R4,kwp_lid_desc_ptr
         JMPR cc_EQ,L_DFA10
         MOVB RL4,kwp_lid_len
@@ -423,7 +423,7 @@ L_DFA1A:                 ; 0xdfa1a
         EXTP #00H, #02H
         MOV R4,kwp_20a
         MOV R5,kwp_20c
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
         JMPR cc_UC,L_DFA86
 L_DFA7E:                 ; 0xdfa7e
         MOVB RL4,#DATA16 00022H
@@ -498,7 +498,7 @@ KWP_SID3B_WriteDataByLocalId:
         JMPR cc_NE,L_DFB4A
         MOV R12,kwp_req_ptr
         ADD R12,#01H
-        CALLS 00AH,KWP_SID3B_WriteBlock90
+        CALLS SEG KWP_SID3B_WriteBlock90, SOF KWP_SID3B_WriteBlock90
         JNB PSW.06H,L_DFB40
         MOV R4,#02H
         MOV kwp_msg_len,R4

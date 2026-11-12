@@ -32,7 +32,7 @@ L_BD046:                 ; 0xbd046
 
 ; ======== SMARTRA_start_step2  (@0xbd05a) ========
 SMARTRA_start_step2:
-        CALLS 00AH,SMARTRA_flush_RX_buffers
+        CALLS SEG SMARTRA_flush_RX_buffers, SOF SMARTRA_flush_RX_buffers
         MOVB RL4,#02H
         MOVB smartra_proto_step,RL4
         JMPA cc_UC,L_BD656
@@ -90,7 +90,7 @@ L_BD074:                 ; 0xbd074
 
 ; ======== SMARTRA_start_step3  (@0xbd104) ========
 SMARTRA_start_step3:
-        CALLS 00AH,SMARTRA_flush_RX_buffers
+        CALLS SEG SMARTRA_flush_RX_buffers, SOF SMARTRA_flush_RX_buffers
         MOVB RL4,#03H
         MOVB smartra_proto_step,RL4
         JMPA cc_UC,L_BD656
@@ -128,7 +128,7 @@ L_BD146:                 ; 0xbd146
 
 ; ======== SMARTRA_start_step4  (@0xbd154) ========
 SMARTRA_start_step4:
-        CALLS 00AH,SMARTRA_flush_RX_buffers
+        CALLS SEG SMARTRA_flush_RX_buffers, SOF SMARTRA_flush_RX_buffers
         MOVB RL4,#04H
         MOVB smartra_proto_step,RL4
         JMPA cc_UC,L_BD656
@@ -228,13 +228,13 @@ L_BD22E:                 ; 0xbd22e
         MOVB RL4,key_state_imob
         CMPB RL4,#01H
         JMPR cc_EQ,L_BD29A
-        CALLS 00BH,SMARTRA_gen_challenge_lcg
+        CALLS SEG SMARTRA_gen_challenge_lcg, SOF SMARTRA_gen_challenge_lcg
         MOV imob_resp_len,R4
         MOV imob_resp_b0,R5
         MOV R12,#DATA16 0CA1EH
         MOV R13,#DATA16 0C28BH
         MOV R14,#DATA16 0CA4AH
-        CALLS 00BH,SMARTRA_load_response_compare
+        CALLS SEG SMARTRA_load_response_compare, SOF SMARTRA_load_response_compare
         MOVB smartra_send_req,ZEROS
         MOV R4,#01H
         MOV t_oneshot_sched,R4
@@ -309,7 +309,7 @@ L_BD2D6:                 ; 0xbd2d6
 
 ; ======== SMARTRA_start_step6  (@0xbd324) ========
 SMARTRA_start_step6:
-        CALLS 00AH,SMARTRA_flush_RX_buffers
+        CALLS SEG SMARTRA_flush_RX_buffers, SOF SMARTRA_flush_RX_buffers
         MOVB RL4,#06H
         MOVB smartra_proto_step,RL4
         JMPA cc_UC,L_BD656

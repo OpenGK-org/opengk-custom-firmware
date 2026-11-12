@@ -51,13 +51,13 @@ L_B84EA:                 ; 0xb84ea
         MOV R12,#DATA16 POF ldp_toil_max__stop_dec_fsd
         MOV R13,#DATA16 PAG ldp_toil_max__stop_dec_fsd
         MOVBZ R14,toil_max
-        CALLS 00FH,Get_Byte_Y_Axis
+        CALLS SEG Get_Byte_Y_Axis, SOF Get_Byte_Y_Axis
         MOV R12,#DATA16 POF id_stop_dec_fsd__toil_max
         MOV R13,#DATA16 PAG id_stop_dec_fsd__toil_max
-        CALLS 00FH,Read_Byte_Far
+        CALLS SEG Read_Byte_Far, SOF Read_Byte_Far
         MOVBZ R13,RL4
         MOVBZ R12,ctr_stop_fsd
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB ctr_stop_fsd_new,RL4
         MOVB RL5,#01H
         MOVB g_c253,RL5
@@ -94,7 +94,7 @@ L_B8564:                 ; 0xb8564
         BSET state_cat_diag.09H
         MOV R12,[R7+#0AH]
         MOV R13,[R7+#01AH]
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV R8,R4
         ASHR R8,#01H
         MOVB RL4,n_32
@@ -105,7 +105,7 @@ L_B8564:                 ; 0xb8564
         JMPR cc_ULE,L_B8596
         MOV R12,R8
         MOV R13,[R7+#01EH]
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV R8,R4
 L_B8596:                 ; 0xb8596
         CMP R8,DPP0:c_lam_max_fsd
@@ -119,7 +119,7 @@ L_B8596:                 ; 0xb8596
         MOV [R4],R5
         JB lv_inh_fsd_cp.07H,L_B85B8
         MOV R12,#DATA16 0C952H
-        CALLS 00CH,Check_N_Window
+        CALLS SEG Check_N_Window, SOF Check_N_Window
 L_B85B8:                 ; 0xb85b8
         MOV R4,[R7+#01BEH]
         CMP R4,DPP0:c_t_sum_max_max_fsd
@@ -134,9 +134,9 @@ L_B85B8:                 ; 0xb85b8
         BCLR lv_inh_fsd_cp.04H
         JB lv_cam_ad_di_ivvt.09H,L_B85E8
         MOV R12,#DATA16 00024H
-        CALLS 00DH,Eval_DTC_Status
+        CALLS SEG Eval_DTC_Status, SOF Eval_DTC_Status
 L_B85E8:                 ; 0xb85e8
-        CALLS 00CH,Diag_DTC_dd2c8
+        CALLS SEG Diag_DTC_dd2c8, SOF Diag_DTC_dd2c8
         JMPR cc_UC,L_B86C0
 L_B85EE:                 ; 0xb85ee
         MOVB RL4,ctr_stop_fsd_new
@@ -153,7 +153,7 @@ L_B85EE:                 ; 0xb85ee
         MOV [R4],R5
         JB lv_inh_fsd_cp.07H,L_B861A
         MOV R12,#DATA16 0C952H
-        CALLS 00CH,Check_N_Window
+        CALLS SEG Check_N_Window, SOF Check_N_Window
 L_B861A:                 ; 0xb861a
         MOV R4,[R7+#01C0H]
         CMP R4,DPP0:c_t_sum_min_max_fsd
@@ -168,9 +168,9 @@ L_B861A:                 ; 0xb861a
         BCLR lv_inh_fsd_cp.05H
         JB lv_cam_ad_di_ivvt.09H,L_B8646
         MOV R12,#DATA16 00024H
-        CALLS 00DH,Eval_DTC_Status
+        CALLS SEG Eval_DTC_Status, SOF Eval_DTC_Status
 L_B8646:                 ; 0xb8646
-        CALLS 00CH,Diag_DTC_dd2c8
+        CALLS SEG Diag_DTC_dd2c8, SOF Diag_DTC_dd2c8
         JMPR cc_UC,L_B86C0
 L_B864C:                 ; 0xb864c
         JB lv_cps_err.04H,L_B86C0
@@ -186,7 +186,7 @@ L_B8664:                 ; 0xb8664
 L_B8668:                 ; 0xb8668
         MOV R12,R9
         MOV R13,#DATA16 009C4H
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV R5,[R7+#01C6H]
         CMP R5,R4
         JMPR cc_C,L_B86B4
@@ -194,13 +194,13 @@ L_B8668:                 ; 0xb8668
         BCLR lv_inh_fsd_cp.05H
         JB lv_cam_ad_di_ivvt.09H,L_B868A
         MOV R12,#DATA16 00024H
-        CALLS 00DH,Eval_DTC_Status
+        CALLS SEG Eval_DTC_Status, SOF Eval_DTC_Status
 L_B868A:                 ; 0xb868a
         MOVB RL4,#01H
         MOVB lv_cps_d2c9,RL4
         MOV R12,#DATA16 0D2C8H
         MOV R13,#DATA16 05546H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cps_err.04H,dtc_status_work.06H
         MOVBZ R4,diag_d2d2
         AND R4,#DATA16 00020H
@@ -283,13 +283,13 @@ Calc_Ctr_Stop_FSD:
         MOV R12,#DATA16 POF sst_tkw_st
         MOV R13,#DATA16 PAG sst_tkw_st
         MOVBZ R14,tco_st
-        CALLS 00FH,Get_Byte_Y_Axis
+        CALLS SEG Get_Byte_Y_Axis, SOF Get_Byte_Y_Axis
         MOV R12,#DATA16 POF id_stop_inc_fsd__tco_st
         MOV R13,#DATA16 PAG id_stop_inc_fsd__tco_st
-        CALLS 00FH,Read_Byte_Far
+        CALLS SEG Read_Byte_Far, SOF Read_Byte_Far
         MOVBZ R13,RL4
         MOVBZ R12,ctr_stop_fsd
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB ctr_stop_fsd,RL4
 L_B877E:                 ; 0xb877e
         RETS
@@ -326,13 +326,13 @@ Calc_Ctr_Stop_FSD_2:
         MOV R12,#DATA16 POF ldp_toil_max__stop_dec_fsd
         MOV R13,#DATA16 PAG ldp_toil_max__stop_dec_fsd
         MOVBZ R14,toil_max
-        CALLS 00FH,Get_Byte_Y_Axis
+        CALLS SEG Get_Byte_Y_Axis, SOF Get_Byte_Y_Axis
         MOV R12,#DATA16 POF id_stop_dec_fsd__toil_max
         MOV R13,#DATA16 PAG id_stop_dec_fsd__toil_max
-        CALLS 00FH,Read_Byte_Far
+        CALLS SEG Read_Byte_Far, SOF Read_Byte_Far
         MOVBZ R13,RL4
         MOVBZ R12,ctr_stop_fsd
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB ctr_stop_fsd,RL4
 L_B87DE:                 ; 0xb87de
         RETS

@@ -97,7 +97,7 @@ L_DE784:                 ; 0xde784
         MOV R12,R8
         MOV R13,R9
         MOV R14,#DATA16 00800H
-        CALLS 00DH,Scan_Block_NotErased_E73A
+        CALLS SEG Scan_Block_NotErased_E73A, SOF Scan_Block_NotErased_E73A
         CMP R4,#00H
         JMPR cc_NE,L_DE7CA
         MOV R4,R6
@@ -122,7 +122,7 @@ L_DE7CA:                 ; 0xde7ca
         EXTP R9, #02H
         MOV R14,[R8+#07F6H]
         NOP
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         EXTP R9, #02H
         MOV R5,[R8+#07FEH]
         NOP
@@ -448,13 +448,13 @@ BL_Validate_Setup:
         MOV R13,#DATA16 04000H
         MOV R14,#00H
         MOV R15,#04H
-        CALLS 00DH,BL_Scan_Validate_Blocks
+        CALLS SEG BL_Scan_Validate_Blocks, SOF BL_Scan_Validate_Blocks
         BMOV can_fd58.08H,can_fd58.07H
         MOV R12,#DATA16 0F566H
         MOV R13,#DATA16 06000H
         MOV R14,#00H
         MOV R15,#04H
-        CALLS 00DH,BL_Scan_Validate_Blocks
+        CALLS SEG BL_Scan_Validate_Blocks, SOF BL_Scan_Validate_Blocks
         JB can_fd58.04H,L_DEBD8
         MOV R9,#00H
 L_DEB4A:                 ; 0xdeb4a
@@ -549,7 +549,7 @@ L_DEBF0:                 ; 0xdebf0
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#DATA16 00800H
-        CALLS 00DH,Scan_Block_NotErased_E73A
+        CALLS SEG Scan_Block_NotErased_E73A, SOF Scan_Block_NotErased_E73A
         CMP R4,#00H
         JMPR cc_NE,L_DEC2E
         MOV R4,R8
@@ -581,7 +581,7 @@ Elevated_Write_Routine_prg_zone_wrapper:
         EXTP #00H, #02H
         MOV R4,kwp_286
         MOV R5,kwp_288
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
         JB bl_mode_status_flags.07H,L_DEC6E
         BSET can_fd58.03H
 L_DEC6E:                 ; 0xdec6e
@@ -597,7 +597,7 @@ Elevated_Eeprom_Clear__Routine:
         EXTP #00H, #02H
         MOV R4,ccp_282
         MOV R5,ccp_284
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
         ADD R0,#04H
         RETS
 
@@ -635,11 +635,11 @@ KWP_Set_Buffer:
         MOV kwp_req_arg1,R5
         MOV kwp_prog_flags,ZEROS
         MOV R12,#00H
-        CALLS 008H,CommObj_ClearPendingFlagByHandle
+        CALLS SEG CommObj_ClearPendingFlagByHandle, SOF CommObj_ClearPendingFlagByHandle
         MOV R12,#01H
-        CALLS 008H,CommObj_ClearPendingFlagByHandle
+        CALLS SEG CommObj_ClearPendingFlagByHandle, SOF CommObj_ClearPendingFlagByHandle
         MOV R12,#02H
-        CALLS 008H,CommObj_ClearPendingFlagByHandle
+        CALLS SEG CommObj_ClearPendingFlagByHandle, SOF CommObj_ClearPendingFlagByHandle
         RETS
 
 ; ======== Compare_Array_Bytes  (@0xdecf2) ========

@@ -61,7 +61,7 @@ IVVT_CamMeas_St1_WaitMove:
         MOVB RL5,[R4]
         MOVBZ R12,RL5
         MOVBZ R13,DPP0:c_cam_hys_ad_ivvt
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB RL5,[R8+#014H]
         CMPB RL5,RL4
         JMPR cc_C,L_B54CE
@@ -94,7 +94,7 @@ IVVT_CamMeas_St2_WaitSettle:
         MOVB RL5,[R4]
         MOVBZ R12,RL5
         MOVBZ R13,DPP0:c_cam_hys_ad_ivvt
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB RL5,[R8+#014H]
         CMPB RL5,RL4
         JMPR cc_UGT,L_B54CE
@@ -127,7 +127,7 @@ IVVT_CamMeas_St3_Confirm:
         MOVB RL5,[R4]
         MOVBZ R12,RL5
         MOVBZ R13,DPP0:c_cam_hys_ad_ivvt
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB RL5,[R8+#014H]
         CMPB RL5,RL4
         JMPR cc_C,L_B54CE
@@ -162,7 +162,7 @@ IVVT_CamMeas_Trip:
         MOV ivvt_in_1_struct_diag_mec_ivvt_state_trip_ivvt,ZEROS
 L_B54CE:                 ; 0xb54ce
         MOVBZ R12,RL6
-        CALLS 00CH,Set_IVVT_Trip_Avl
+        CALLS SEG Set_IVVT_Trip_Avl, SOF Set_IVVT_Trip_Avl
         MOVB RL4,#00H
         BMOV R4.00H,PSW.06H
         MOVB [R8+#0E5H],RL4
@@ -175,7 +175,7 @@ L_B54CE:                 ; 0xb54ce
         MOV R4,[R7+#02H]
         MOVB RL5,[R4]
         MOVBZ R13,RL5
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB state_ivvt_cammeas,RL4
         MOVB RL5,[R9+#04H]
         CMPB RL5,state_ivvt_cammeas
@@ -185,7 +185,7 @@ L_B54CE:                 ; 0xb54ce
         JMPR cc_C,L_B553A
         MOVBZ R12,RL4
         MOVBZ R13,DPP0:c_cam_hys_end_act_ivvt
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB state_ivvt_cammeas,RL4
         MOVB RL5,[R9+#04H]
         CMPB RL5,state_ivvt_cammeas

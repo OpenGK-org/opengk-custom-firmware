@@ -223,7 +223,7 @@ L_CDAB8:                 ; 0xcdab8
 L_CDAC0:                 ; 0xcdac0
         MOV R12,n_sp_is
         MOV R13,DPP0:c_n_dif_max_diag
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         CMP R4,n_C93C
         JMPR cc_NC,L_CDB14
         MOV R4,t_dly_isapwm_diag
@@ -235,7 +235,7 @@ L_CDAC0:                 ; 0xcdac0
         MOV R13,#DATA16 057AEH
         MOVBZ R14,DPP0:c_abc_inc_isapwm_h
         MOVBZ R15,DPP0:c_abc_max_isapwm_h
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_ecu_err.00H,dtc_status_work.06H
         MOVBZ R4,lv_iga_d45a
         AND R4,#DATA16 00020H
@@ -249,7 +249,7 @@ L_CDB0E:                 ; 0xcdb0e
 L_CDB14:                 ; 0xcdb14
         MOV R12,n_sp_is
         MOV R13,DPP0:c_n_dif_min_diag
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         CMP R4,n_C93C
         JMPR cc_ULE,L_CDB68
         MOV R4,t_dly_isapwm_diag
@@ -261,7 +261,7 @@ L_CDB14:                 ; 0xcdb14
         MOV R13,#DATA16 05798H
         MOVBZ R14,DPP0:c_abc_inc_isapwm_l
         MOVBZ R15,DPP0:c_abc_max_isapwm_l
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_dur_igc_0_err.0FH,dtc_status_work.06H
         MOVBZ R4,lv_iga_d44c
         AND R4,#DATA16 00020H
@@ -278,7 +278,7 @@ L_CDB68:                 ; 0xcdb68
         MOV R13,#DATA16 057AEH
         MOVBZ R14,DPP0:c_abc_inc_isapwm_h
         MOVBZ R15,DPP0:c_abc_max_isapwm_h
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_ecu_err.00H,dtc_status_work.06H
         MOVBZ R4,lv_iga_d45a
         AND R4,#DATA16 00020H
@@ -290,7 +290,7 @@ L_CDB96:                 ; 0xcdb96
         MOV R13,#DATA16 05798H
         MOVBZ R14,DPP0:c_abc_inc_isapwm_l
         MOVBZ R15,DPP0:c_abc_max_isapwm_l
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_dur_igc_0_err.0FH,dtc_status_work.06H
         MOVBZ R4,lv_iga_d44c
         AND R4,#DATA16 00020H

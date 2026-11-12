@@ -33,7 +33,7 @@ Calc_Cam_Dif:
         MOVB RL4,[R9+#014H]
         MOVBZ R12,RL4
         MOVBZ R13,lv_ivvt_c2f6
-        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CALLS SEG subtract_r12_r13_negate_if_not_rets_r4, SOF subtract_r12_r13_negate_if_not_rets_r4
         MOVB cam_in_1_dif,RL4
         CMPB RL4,#DATA16 000A0H
         JMPR cc_C,L_C18BE
@@ -44,7 +44,7 @@ L_C189E:                 ; 0xc189e
         MOVB RL4,[R9+#014H]
         MOVBZ R12,RL4
         MOVBZ R13,lv_ivvt_c2f6
-        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CALLS SEG subtract_r12_r13_negate_if_not_rets_r4, SOF subtract_r12_r13_negate_if_not_rets_r4
         MOVB cam_in_2_dif,RL4
         CMPB RL4,#DATA16 000A0H
         JMPR cc_C,L_C18BE
@@ -54,7 +54,7 @@ L_C18BE:                 ; 0xc18be
         MOVB RL4,[R9+#014H]
         MOVBZ R12,RL4
         MOVBZ R13,lv_ivvt_c2f5
-        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CALLS SEG subtract_r12_r13_negate_if_not_rets_r4, SOF subtract_r12_r13_negate_if_not_rets_r4
         MOVB cam_in_1_2_dif,RL4
         CMPB RL4,#DATA16 000A0H
         JMPR cc_C,L_C18DE
@@ -143,7 +143,7 @@ L_C196C:                 ; 0xc196c
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#DATA16 00026H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV R10,diag_f890
         MOV R11,diag_f892
         EXTP R11, #02H
@@ -226,12 +226,12 @@ L_C1A26:                 ; 0xc1a26
         MOVBS R4,RL4
         MOV R13,#DATA16 000A0H
         SUB R13,R4
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV R7,R4
         MOV R12,R7
         MOV R13,DPP0:c_cam_ref_cor_ivvt_in_1
         ADD R13,#DATA16 07FFFH
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV R8,R4
         MOV R9,R8
         ADD R9,#DATA16 08000H
@@ -247,12 +247,12 @@ L_C1AC4:                 ; 0xc1ac4
 L_C1ACA:                 ; 0xc1aca
         MOVBZ R12,g_f6d1
         MOV R13,#DATA16 00460H
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV [R0+#0CH],R4
         MOV R12,R4
         MOV R13,DPP0:c_cam_ref_cor_ivvt_in_1
         ADD R13,#DATA16 07FFFH
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV [R0+#06H],R4
         MOV R6,R4
         ADD R6,#DATA16 08000H
@@ -271,7 +271,7 @@ L_C1B04:                 ; 0xc1b04
         MOVB cam_rise_av_z,RL5
         JMPR cc_UC,L_C1B1A
 L_C1B16:                 ; 0xc1b16
-        CALLS 00CH,Calc_Cam_Ref_Edges
+        CALLS SEG Calc_Cam_Ref_Edges, SOF Calc_Cam_Ref_Edges
 L_C1B1A:                 ; 0xc1b1a
         ADD R0,#DATA16 0000EH
         MOV R6,[R0+]
@@ -315,7 +315,7 @@ L_C1B68:                 ; 0xc1b68
         ADDB RL6,#01H
         CMPB RL6,#DATA16 00010H
         JMPR cc_C,L_C1B68
-        CALLS 00CH,IVVT_Save_CamDif
+        CALLS SEG IVVT_Save_CamDif, SOF IVVT_Save_CamDif
         MOV R6,[R0+]
         RETS
 

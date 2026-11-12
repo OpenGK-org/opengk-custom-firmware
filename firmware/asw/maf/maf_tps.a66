@@ -81,7 +81,7 @@ L_D0A4E:                 ; 0xd0a4e
         MOV R13,#DATA16 0525AH
         MOVBZ R14,DPP0:c_abc_inc_maf
         MOVBZ R15,DPP0:c_abc_max_maf
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_cam_err.02H,dtc_status_work.06H
         MOVBZ R4,lv_maf_d0f6
         AND R4,#DATA16 00020H
@@ -105,7 +105,7 @@ L_D0AAA:                 ; 0xd0aaa
         MOV R13,#DATA16 0525AH
         MOVBZ R14,DPP0:c_abc_inc_maf
         MOVBZ R15,DPP0:c_abc_max_maf
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_cam_err.02H,dtc_status_work.06H
         MOVBZ R4,lv_maf_d0f6
         AND R4,#DATA16 00020H
@@ -121,7 +121,7 @@ L_D0AD6:                 ; 0xd0ad6
         MOV R13,#DATA16 0525AH
         MOVBZ R14,DPP0:c_abc_inc_maf
         MOVBZ R15,DPP0:c_abc_max_maf
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_cam_err.02H,dtc_status_work.06H
         MOVBZ R4,lv_maf_d0f6
         AND R4,#DATA16 00020H
@@ -179,7 +179,7 @@ L_D0B6A:                 ; 0xd0b6a
 L_D0B7A:                 ; 0xd0b7a
         MOV R12,tps_grd_sam
         MOV R13,DPP0:c_tps_grd_tra
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         CMP R4,#00H
         JMPR cc_SGE,L_D0B90
         JB lv_err_maf_tps_ratio_2.03H,L_D0B90
@@ -192,30 +192,30 @@ L_D0B90:                 ; 0xd0b90
         JNB lv_err_maf_tps_ratio_2.03H,L_D0BB4
         MOV R12,#DATA16 0500AH
         MOVBZ R13,n_32
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YByte, SOF Get_IP_Word_2D_Table_DWord_YByte
         CMP R4,tps_seg
         JMPR cc_NC,L_D0BD8
 L_D0BB4:                 ; 0xd0bb4
         MOV R12,maf_max_tot
         MOVBZ R13,DPP0:c_fac_ratio_max
-        CALLS 00FH,Read_MulDiv_MD
+        CALLS SEG Read_MulDiv_MD, SOF Read_MulDiv_MD
         CMP R4,maf_cyl_stk
         JMPR cc_NC,L_D0BD8
         MOV R12,maf_max_tot
         MOVBZ R13,DPP0:c_fac_ratio_max_diag
-        CALLS 00FH,Read_MulDiv_MD
+        CALLS SEG Read_MulDiv_MD, SOF Read_MulDiv_MD
         CMP R4,maf_mes
         JMPR cc_UGT,L_D0C00
 L_D0BD8:                 ; 0xd0bd8
         JNB lv_err_maf_tps_ratio_2.03H,L_D0C04
         MOV R12,maf_max_tot
         MOVBZ R13,DPP0:c_fac_ratio_min
-        CALLS 00FH,Read_MulDiv_MD
+        CALLS SEG Read_MulDiv_MD, SOF Read_MulDiv_MD
         CMP R4,maf_cyl_stk
         JMPR cc_ULE,L_D0C04
         MOV R12,maf_max_tot
         MOVBZ R13,DPP0:c_fac_ratio_min_diag
-        CALLS 00FH,Read_MulDiv_MD
+        CALLS SEG Read_MulDiv_MD, SOF Read_MulDiv_MD
         CMP R4,maf_mes
         JMPR cc_NC,L_D0C04
 L_D0C00:                 ; 0xd0c00
@@ -231,11 +231,11 @@ L_D0C0A:                 ; 0xd0c0a
         MOV R4,sum_maf_tps_plaus_diag_1
         JMPR cc_NE,L_D0C34
         MOV R12,maf_mdl_dif
-        CALLS 00FH,Abs_S16
+        CALLS SEG Abs_S16, SOF Abs_S16
         MOV [-R0],R4
         MOV R12,#DATA16 05012H
         MOVBZ R13,n_32
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YByte, SOF Get_IP_Word_2D_Table_DWord_YByte
         MOV R5,[R0+]
         CMP R5,R4
         JMPR cc_ULE,L_D0C34
@@ -247,7 +247,7 @@ L_D0C36:                 ; 0xd0c36
         JNB lv_amp_ad_rst.0FH,L_D0C50
         MOVBZ R12,tps_mes
         MOVBZ R13,lv_tps_f78f
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL4,DPP0:c_tps_max_ratio
         JMPR cc_ULE,L_D0C50
         BSET lv_err_maf_tps_ratio_2.01H
@@ -265,22 +265,22 @@ L_D0C52:                 ; 0xd0c52
         MOV sum_maf_tps_plaus_2,ZEROS
         MOV sum_maf_tps_plaus_diag_2,ZEROS
         MOV sum_lam_plaus_diag_2,ZEROS
-        CALLS 00DH,Diag_MAF_TPS_Plaus_1
+        CALLS SEG Diag_MAF_TPS_Plaus_1, SOF Diag_MAF_TPS_Plaus_1
         JMPR cc_UC,L_D0C8A
 L_D0C7A:                 ; 0xd0c7a
-        CALLS 00DH,Diag_MAF_TPS_Plaus_2
+        CALLS SEG Diag_MAF_TPS_Plaus_2, SOF Diag_MAF_TPS_Plaus_2
         JMPR cc_UC,L_D0C8A
 L_D0C80:                 ; 0xd0c80
-        CALLS 00DH,Diag_MAF_TPS_Plaus_2
+        CALLS SEG Diag_MAF_TPS_Plaus_2, SOF Diag_MAF_TPS_Plaus_2
         JMPR cc_UC,L_D0C8A
 L_D0C86:                 ; 0xd0c86
-        CALLS 00DH,Diag_MAF_TPS_Plaus_1
+        CALLS SEG Diag_MAF_TPS_Plaus_1, SOF Diag_MAF_TPS_Plaus_1
 L_D0C8A:                 ; 0xd0c8a
         BCMP lv_cam_err.03H,lv_cam_err.01H
         BMOV lv_amp_ad_rst.0EH,PSW.02H
         MOV R12,#DATA16 05026H
         MOVBZ R13,n_32
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YByte, SOF Get_IP_Word_2D_Table_DWord_YByte
         ADD R4,#DATA16 08000H
         CMP R4,maf_mdl_dif
         JMPR cc_SLE,L_D0CBA
@@ -307,7 +307,7 @@ L_D0CD2:                 ; 0xd0cd2
         MOV R12,#DATA16 0501AH
         MOV R13,tps_av
         MOVBZ R14,tco
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YWord
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XByte_YWord, SOF Get_IP_Word_3D_Table_DWord_XByte_YWord
         MOV opg_sp_lim_isa,R4
         RETS
 L_D0CF2:                 ; 0xd0cf2

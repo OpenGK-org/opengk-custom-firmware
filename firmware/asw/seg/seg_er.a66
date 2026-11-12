@@ -98,12 +98,12 @@ L_D494C:                 ; 0xd494c
         CALLA cc_UC,Calc_Mis_Detect_Cond
         CALLA cc_UC,Calc_ER_Av_Seg
         CALLA cc_UC,Diag_IV_Misfire
-        CALLS 00BH,Calc_Mis_Rate_Err
+        CALLS SEG Calc_Mis_Rate_Err, SOF Calc_Mis_Rate_Err
         CALLA cc_UC,Calc_IV_Off_ER
         MOVB RL4,seg_nr_er
         JMPR cc_NE,L_D49BA
         CALLA cc_UC,Calc_ER_Thd_Adapt_2
-        CALLS 00BH,Diag_DTC_dd496
+        CALLS SEG Diag_DTC_dd496, SOF Diag_DTC_dd496
         BCLR lv_iga_dif_max_er.03H
 L_D49BA:                 ; 0xd49ba
         MOV R4,seg_t_mes
@@ -133,7 +133,7 @@ Lookup_Dc3b5_TqAddCh:
         MOVBZ R13,tco
         MOV R14,tq_add_ch
         ADD R14,#DATA16 08000H
-        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YByte
+        CALLS SEG Get_IP_Byte_3D_Table_DWord_XWord_YByte, SOF Get_IP_Byte_3D_Table_DWord_XWord_YByte
         MOVB g_c3b5,RL4
         RETS
 L_D4A08:                 ; 0xd4a08
@@ -141,7 +141,7 @@ L_D4A08:                 ; 0xd4a08
         MOVBZ R13,tco
         MOV R14,tq_add_ch
         ADD R14,#DATA16 08000H
-        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YByte
+        CALLS SEG Get_IP_Byte_3D_Table_DWord_XWord_YByte, SOF Get_IP_Byte_3D_Table_DWord_XWord_YByte
         MOVB g_c3b5,RL4
         RETS
 
@@ -158,10 +158,10 @@ L_D4A2C:                 ; 0xd4a2c
         MOV R12,#DATA16 POF ldp_tps__tps_grd_max_er
         MOV R13,#DATA16 PAG ldp_tps__tps_grd_max_er
         MOVBZ R14,tps
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_tps_grd_max_er__tps
         MOV R13,#DATA16 PAG ip_tps_grd_max_er__tps
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         CMPB RL4,lv_tps_f4b6
         JMPR cc_NC,L_D4A58
         CMP R9,DPP0:c_tps_grd_dly_er
@@ -216,7 +216,7 @@ L_D4A86:                 ; 0xd4a86
         MOV R11,#00H
         MOV R4,R12
         MOV R5,R13
-        CALLS 00DH,Calc_CtrlModule_Voltage
+        CALLS SEG Calc_CtrlModule_Voltage, SOF Calc_CtrlModule_Voltage
         MOV R12,R4
         MOV R13,R5
         MOV R4,R12

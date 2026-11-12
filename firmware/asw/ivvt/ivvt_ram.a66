@@ -75,7 +75,7 @@ L_B473C:                 ; 0xb473c
         MOV R12,#DATA16 POF ldpm_tmag_ivvt_1_ivvt
         MOV R13,#DATA16 PAG ldpm_tmag_ivvt_1_ivvt
         MOVBZ R14,tmag_ivvt
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R4,[R9+#0B6H]
         JMPR cc_NE,L_B475A
         MOVB RL4,#00H
@@ -90,11 +90,11 @@ L_B475A:                 ; 0xb475a
         ADD R4,R5
         MOV R12,[R4]
         MOV R13,[R9+#0B6H]
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV R12,R4
         MOV R13,DPP0:c_ivvthpwm_ad_min
         MOV R14,DPP0:c_ivvthpwm_ad_max
-        CALLS 00FH,Clamp_U16
+        CALLS SEG Clamp_U16, SOF Clamp_U16
         MOV R5,[R9+#0C0H]
         MOVBZ R2,ip_idx
         SHL R2,#01H
@@ -117,11 +117,11 @@ L_B47A6:                 ; 0xb47a6
         ADD R4,R5
         MOV R12,[R4]
         MOV R13,[R9+#0CCH]
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV R12,R4
         MOV R13,DPP0:c_ivvthpwm_ad_min
         MOV R14,DPP0:c_ivvthpwm_ad_max
-        CALLS 00FH,Clamp_U16
+        CALLS SEG Clamp_U16, SOF Clamp_U16
         MOV R5,[R9+#0C0H]
         MOVBZ R2,ip_idx
         SHL R2,#01H

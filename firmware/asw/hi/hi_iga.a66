@@ -283,7 +283,7 @@ L_D60EC:                 ; 0xd60ec
         CMPB RL4,#03H
         JMPR cc_NE,L_D6164
 L_D60F8:                 ; 0xd60f8
-        CALLS 00CH,Acq_Cam_Raw
+        CALLS SEG Acq_Cam_Raw, SOF Acq_Cam_Raw
         MOVB RL4,#DATA16 00041H
         MOVBZ R5,tq_mid_wr
         MOVB [R5+#0F64EH],RL4
@@ -323,9 +323,9 @@ L_D6164:                 ; 0xd6164
         ; Named by caller-context + body analysis (push to 100pct).
         ; ------------------------------------------------------------
 Task_TI_Reset:
-        CALLS 00CH,Nop_c4080
-        CALLS 00BH,Calc_TI_St_Rest
-        CALLS 00CH,Reset_lv_crk_tooth_err_ece
+        CALLS SEG Nop_c4080, SOF Nop_c4080
+        CALLS SEG Calc_TI_St_Rest, SOF Calc_TI_St_Rest
+        CALLS SEG Reset_lv_crk_tooth_err_ece, SOF Reset_lv_crk_tooth_err_ece
         RETS
 
 ; ======== Calc_CDN_Diag_MAF_Cond  (@0xd6174) ========
@@ -335,13 +335,13 @@ Task_TI_Reset:
         ; ------------------------------------------------------------
 Calc_CDN_Diag_MAF_Cond:
         JB lv_cdn_diag_maf_dif_ch_int.0BH,L_D620C
-        CALLS 00BH,Calc_Inh_IGC
-        CALLS 00BH,Calc_Seg_Timing
+        CALLS SEG Calc_Inh_IGC, SOF Calc_Inh_IGC
+        CALLS SEG Calc_Seg_Timing, SOF Calc_Seg_Timing
         MOV eng_state_marker,ZEROS
         BMOV lv_pl.03H,lv_iga_tra_knk.01H
-        CALLS 00CH,Calc_TPS_Seg
+        CALLS SEG Calc_TPS_Seg, SOF Calc_TPS_Seg
         JNB lv_err_tps_det.01H,L_D61B8
-        CALLS 00CH,Calc_TPS_GRD_SAM
+        CALLS SEG Calc_TPS_GRD_SAM, SOF Calc_TPS_GRD_SAM
         MOVB RL4,n_32
         CMPB RL4,DPP0:c_n_max_inf
         JMPR cc_NC,L_D61B0
@@ -354,13 +354,13 @@ Calc_CDN_Diag_MAF_Cond:
 L_D61B0:                 ; 0xd61b0
         BCLR lv_cdn_diag_maf_dif_ch_int.0FH
 L_D61B2:                 ; 0xd61b2
-        CALLS 00DH,Calc_MAF_Dif_CH_Cond
+        CALLS SEG Calc_MAF_Dif_CH_Cond, SOF Calc_MAF_Dif_CH_Cond
         BCLR lv_err_tps_det.01H
 L_D61B8:                 ; 0xd61b8
-        CALLS 00CH,Acq_MAF_Mes
-        CALLS 00DH,Diag_MAF_Sensor
-        CALLS 00CH,Calc_MAF_Variables
-        CALLS 00DH,Calc_MAF_HB
+        CALLS SEG Acq_MAF_Mes, SOF Acq_MAF_Mes
+        CALLS SEG Diag_MAF_Sensor, SOF Diag_MAF_Sensor
+        CALLS SEG Calc_MAF_Variables, SOF Calc_MAF_Variables
+        CALLS SEG Calc_MAF_HB, SOF Calc_MAF_HB
         JB lv_pl.02H,L_D61E4
         MOV R4,cycnr_hys_pu
         JMPR cc_EQ,L_D61E4
@@ -372,18 +372,18 @@ L_D61B8:                 ; 0xd61b8
         MOVB n_hys_pu,RL4
 L_D61E4:                 ; 0xd61e4
         MOV R12,#DATA16 0D672H
-        CALLS 00CH,Check_N_Window
-        CALLS 00BH,Calc_IGA_Tra_Knk
-        CALLS 00BH,SeqFuelCut_CylSel
-        CALLS 00CH,Calc_Inj_Pattern
-        CALLS 00CH,Set_state_iv
-        CALLS 00CH,Calc_Eff_SCC_Upd
-        CALLS 00BH,Calc_TI_CatHeat
-        CALLS 00BH,Calc_TI_Cor_IVVT
-        CALLS 00AH,Calc_ER_Std
+        CALLS SEG Check_N_Window, SOF Check_N_Window
+        CALLS SEG Calc_IGA_Tra_Knk, SOF Calc_IGA_Tra_Knk
+        CALLS SEG SeqFuelCut_CylSel, SOF SeqFuelCut_CylSel
+        CALLS SEG Calc_Inj_Pattern, SOF Calc_Inj_Pattern
+        CALLS SEG Set_state_iv, SOF Set_state_iv
+        CALLS SEG Calc_Eff_SCC_Upd, SOF Calc_Eff_SCC_Upd
+        CALLS SEG Calc_TI_CatHeat, SOF Calc_TI_CatHeat
+        CALLS SEG Calc_TI_Cor_IVVT, SOF Calc_TI_Cor_IVVT
+        CALLS SEG Calc_ER_Std, SOF Calc_ER_Std
 L_D620C:                 ; 0xd620c
-        CALLS 00CH,Dec_Dc346_SegCtr
-        CALLS 00DH,Diag_MAF_Dif_CH
+        CALLS SEG Dec_Dc346_SegCtr, SOF Dec_Dc346_SegCtr
+        CALLS SEG Diag_MAF_Dif_CH, SOF Diag_MAF_Dif_CH
         RETS
 
 ; ======== Task_COP_IGA_TI  (@0xd6216) ========
@@ -392,7 +392,7 @@ L_D620C:                 ; 0xd620c
         ; ------------------------------------------------------------
 Task_COP_IGA_TI:
         JB lv_cdn_diag_maf_dif_ch_int.0BH,L_D621E
-        CALLS 00DH,Calc_COP_IGA_TI
+        CALLS SEG Calc_COP_IGA_TI, SOF Calc_COP_IGA_TI
 L_D621E:                 ; 0xd621e
         RETS
 
@@ -402,9 +402,9 @@ L_D621E:                 ; 0xd621e
         ; ------------------------------------------------------------
 Set_lv_iga_dif_max_er:
         BXOR lv_iga_dif_max_er.07H,ONES.00H
-        CALLS 00DH,Calc_TI_ADD_DLY_VB
+        CALLS SEG Calc_TI_ADD_DLY_VB, SOF Calc_TI_ADD_DLY_VB
         JB can_fd58.0BH,L_D6230
-        CALLS 00DH,Clamp_IGC_Dur_Min
+        CALLS SEG Clamp_IGC_Dur_Min, SOF Clamp_IGC_Dur_Min
 L_D6230:                 ; 0xd6230
         MOVB RL4,vb
         CMPB RL4,DPP0:c_vb_min_obd1
@@ -415,14 +415,14 @@ L_D6230:                 ; 0xd6230
         MOVB RL3,#02H
         MOVB dbc_rly_efp,RL3
 L_D6248:                 ; 0xd6248
-        CALLS 00CH,Acq_TPS
-        CALLS 00CH,Calc_TPS_Av
+        CALLS SEG Acq_TPS, SOF Acq_TPS
+        CALLS SEG Calc_TPS_Av, SOF Calc_TPS_Av
         JNB lv_iga_dif_max_er.07H,L_D6258
-        CALLS 00CH,Calc_AR_Red_Bas_Thr
+        CALLS SEG Calc_AR_Red_Bas_Thr, SOF Calc_AR_Red_Bas_Thr
 L_D6258:                 ; 0xd6258
-        CALLS 00CH,Calc_VS_ConfLearn
-        CALLS 00CH,Calc_AMP_Pred
-        CALLS 00CH,Calc_Cat_Diag_Inhibit_2
+        CALLS SEG Calc_VS_ConfLearn, SOF Calc_VS_ConfLearn
+        CALLS SEG Calc_AMP_Pred, SOF Calc_AMP_Pred
+        CALLS SEG Calc_Cat_Diag_Inhibit_2, SOF Calc_Cat_Diag_Inhibit_2
         JNB lv_conf_mis.02H,L_D6278
         MOVB RL4,conf_vs
         CMPB RL4,#01H
@@ -430,26 +430,26 @@ L_D6258:                 ; 0xd6258
         CMPB RL4,#02H
         JMPR cc_NE,L_D6278
 L_D6274:                 ; 0xd6274
-        CALLS 00CH,Calc_VS_RR
+        CALLS SEG Calc_VS_RR, SOF Calc_VS_RR
 L_D6278:                 ; 0xd6278
         MOVB RL4,lv_iga_f4c8
         JMPR cc_NE,L_D6292
-        CALLS 00CH,AcComp_AccIn_Ctl
-        CALLS 00CH,AcComp_PressureCutoff
-        CALLS 00DH,Calc_VS_STATE_CFA
+        CALLS SEG AcComp_AccIn_Ctl, SOF AcComp_AccIn_Ctl
+        CALLS SEG AcComp_PressureCutoff, SOF AcComp_PressureCutoff
+        CALLS SEG Calc_VS_STATE_CFA, SOF Calc_VS_STATE_CFA
         MOVB RL4,#03H
         MOVB lv_iga_f4c8,RL4
         JMPR cc_UC,L_D6296
 L_D6292:                 ; 0xd6292
         ADDB lv_iga_f4c8,ONES
 L_D6296:                 ; 0xd6296
-        CALLS 00CH,Calc_GS_Act_Delay
-        CALLS 00CH,IVVT_MesStep_Tick
-        CALLS 00CH,Calc_TPS_PWM
-        CALLS 00BH,Diag_CAN_BusOff
-        CALLS 00DH,Calc_t_pu
+        CALLS SEG Calc_GS_Act_Delay, SOF Calc_GS_Act_Delay
+        CALLS SEG IVVT_MesStep_Tick, SOF IVVT_MesStep_Tick
+        CALLS SEG Calc_TPS_PWM, SOF Calc_TPS_PWM
+        CALLS SEG Diag_CAN_BusOff, SOF Diag_CAN_BusOff
+        CALLS SEG Calc_t_pu, SOF Calc_t_pu
         JNB lv_conf_mis.02H,L_D62B2
-        CALLS 00DH,Calc_Mis_FadeOut_TPS
+        CALLS SEG Calc_Mis_FadeOut_TPS, SOF Calc_Mis_FadeOut_TPS
 L_D62B2:                 ; 0xd62b2
         RETS
 
@@ -458,13 +458,13 @@ L_D62B2:                 ; 0xd62b2
         ; Named by caller-context + body analysis (push to 100pct).
         ; ------------------------------------------------------------
 Task_Idle_Gear:
-        CALLS 00CH,Calc_N_SP_IS_Sel
-        CALLS 00CH,Calc_N_SP_IS_Cor
-        CALLS 00CH,Calc_N_DIF
-        CALLS 00BH,Reset_pv_av_h_9d8
-        CALLS 00BH,GearRatio_Detect
-        CALLS 00BH,DriveTrain_Engaged
-        CALLS 00CH,Calc_TQ_Min_Clu
+        CALLS SEG Calc_N_SP_IS_Sel, SOF Calc_N_SP_IS_Sel
+        CALLS SEG Calc_N_SP_IS_Cor, SOF Calc_N_SP_IS_Cor
+        CALLS SEG Calc_N_DIF, SOF Calc_N_DIF
+        CALLS SEG Reset_pv_av_h_9d8, SOF Reset_pv_av_h_9d8
+        CALLS SEG GearRatio_Detect, SOF GearRatio_Detect
+        CALLS SEG DriveTrain_Engaged, SOF DriveTrain_Engaged
+        CALLS SEG Calc_TQ_Min_Clu, SOF Calc_TQ_Min_Clu
         RETS
 
 ; ======== Set_lv_iga_dif_max_er_d62d  (@0xd62d2) ========
@@ -474,16 +474,16 @@ Task_Idle_Gear:
 Set_lv_iga_dif_max_er_d62d:
         BXOR lv_iga_dif_max_er.08H,ONES.00H
         JMPR cc_NN,L_D62F0
-        CALLS 00BH,Calc_AR_Red_Avl
-        CALLS 00BH,Reset_uVar1_89c
-        CALLS 00BH,Calc_TQI_Max
-        CALLS 00BH,Calc_Fac_TQ_Req_TPS
-        CALLS 00BH,Calc_Fac_TQ_Req
-        CALLS 00BH,Calc_TQ_Loss
+        CALLS SEG Calc_AR_Red_Avl, SOF Calc_AR_Red_Avl
+        CALLS SEG Reset_uVar1_89c, SOF Reset_uVar1_89c
+        CALLS SEG Calc_TQI_Max, SOF Calc_TQI_Max
+        CALLS SEG Calc_Fac_TQ_Req_TPS, SOF Calc_Fac_TQ_Req_TPS
+        CALLS SEG Calc_Fac_TQ_Req, SOF Calc_Fac_TQ_Req
+        CALLS SEG Calc_TQ_Loss, SOF Calc_TQ_Loss
 L_D62F0:                 ; 0xd62f0
-        CALLS 00CH,Calc_N_SP_IS_MAX
-        CALLS 00BH,Calc_TQ_Add_IS_Pred
-        CALLS 00BH,Calc_TQ_ADD_CP
+        CALLS SEG Calc_N_SP_IS_MAX, SOF Calc_N_SP_IS_MAX
+        CALLS SEG Calc_TQ_Add_IS_Pred, SOF Calc_TQ_Add_IS_Pred
+        CALLS SEG Calc_TQ_ADD_CP, SOF Calc_TQ_ADD_CP
         RETS
 
 ; ======== Set_lv_iga_dif_max_er_d62f  (@0xd62fe) ========
@@ -492,20 +492,20 @@ L_D62F0:                 ; 0xd62f0
         ; ------------------------------------------------------------
 Set_lv_iga_dif_max_er_d62f:
         BXOR lv_iga_dif_max_er.09H,ONES.00H
-        CALLS 00CH,Reset_Df748_14e
-        CALLS 00BH,Calc_TQ_St
-        CALLS 00BH,Calc_N_PRED_MAX_LIM
-        CALLS 00CH,Calc_TQ_Loss_Acc
-        CALLS 00BH,Calc_TQ_Loss_Sum
-        CALLS 00BH,Calc_TQ_Req_Clu
+        CALLS SEG Reset_Df748_14e, SOF Reset_Df748_14e
+        CALLS SEG Calc_TQ_St, SOF Calc_TQ_St
+        CALLS SEG Calc_N_PRED_MAX_LIM, SOF Calc_N_PRED_MAX_LIM
+        CALLS SEG Calc_TQ_Loss_Acc, SOF Calc_TQ_Loss_Acc
+        CALLS SEG Calc_TQ_Loss_Sum, SOF Calc_TQ_Loss_Sum
+        CALLS SEG Calc_TQ_Req_Clu, SOF Calc_TQ_Req_Clu
         JNB lv_iga_dif_max_er.09H,L_D6328
         BXOR lv_iga_dif_max_er.0AH,ONES.00H
         JMPR cc_NN,L_D6328
-        CALLS 00AH,Calc_FacTqReqClu_Hys
+        CALLS SEG Calc_FacTqReqClu_Hys, SOF Calc_FacTqReqClu_Hys
 L_D6328:                 ; 0xd6328
-        CALLS 00BH,Calc_TQ_Req_Tra
-        CALLS 00CH,Calc_TQI_Req_Driv
-        CALLS 00BH,Calc_TQ_Add_Tra
+        CALLS SEG Calc_TQ_Req_Tra, SOF Calc_TQ_Req_Tra
+        CALLS SEG Calc_TQI_Req_Driv, SOF Calc_TQI_Req_Driv
+        CALLS SEG Calc_TQ_Add_Tra, SOF Calc_TQ_Add_Tra
         RETS
 
 ; ======== Task_TQI_Coord  (@0xd6336) ========
@@ -513,12 +513,12 @@ L_D6328:                 ; 0xd6328
         ; Named by caller-context + body analysis (push to 100pct).
         ; ------------------------------------------------------------
 Task_TQI_Coord:
-        CALLS 00BH,Calc_TQI_Ref_Bas
-        CALLS 00BH,Calc_TQ_Add_Coord
-        CALLS 00CH,Calc_TQI_GS_FAST_DEC
-        CALLS 00CH,Calc_TQI_ASR_FAST
-        CALLS 00CH,Calc_TQI_MSR
-        CALLS 00CH,Calc_TQI_Req_MinMax
+        CALLS SEG Calc_TQI_Ref_Bas, SOF Calc_TQI_Ref_Bas
+        CALLS SEG Calc_TQ_Add_Coord, SOF Calc_TQ_Add_Coord
+        CALLS SEG Calc_TQI_GS_FAST_DEC, SOF Calc_TQI_GS_FAST_DEC
+        CALLS SEG Calc_TQI_ASR_FAST, SOF Calc_TQI_ASR_FAST
+        CALLS SEG Calc_TQI_MSR, SOF Calc_TQI_MSR
+        CALLS SEG Calc_TQI_Req_MinMax, SOF Calc_TQI_Req_MinMax
         RETS
 
 ; ======== Task_TQ_Control  (@0xd6350) ========
@@ -526,18 +526,18 @@ Task_TQI_Coord:
         ; Named by caller-context + body analysis (push to 100pct).
         ; ------------------------------------------------------------
 Task_TQ_Control:
-        CALLS 00BH,Calc_TQ_DIF_P_D_IS
-        CALLS 00CH,Calc_Act_AJ
-        CALLS 00CH,Calc_AntiJerk_Filt
-        CALLS 00BH,Calc_TQI_Sp
-        CALLS 00BH,Calc_Eff_Lamb
-        CALLS 00CH,Calc_Eff_SCC_Pattern
-        CALLS 00BH,Calc_maf_sp
-        CALLS 00DH,Calc_MAF_TQI_Ref
-        CALLS 00CH,Calc_EFF_IGA
-        CALLS 00BH,Calc_TQE
-        CALLS 00CH,Calc_TQI_AV_EMS
-        CALLS 00CH,Calc_maf_sp_hb
+        CALLS SEG Calc_TQ_DIF_P_D_IS, SOF Calc_TQ_DIF_P_D_IS
+        CALLS SEG Calc_Act_AJ, SOF Calc_Act_AJ
+        CALLS SEG Calc_AntiJerk_Filt, SOF Calc_AntiJerk_Filt
+        CALLS SEG Calc_TQI_Sp, SOF Calc_TQI_Sp
+        CALLS SEG Calc_Eff_Lamb, SOF Calc_Eff_Lamb
+        CALLS SEG Calc_Eff_SCC_Pattern, SOF Calc_Eff_SCC_Pattern
+        CALLS SEG Calc_maf_sp, SOF Calc_maf_sp
+        CALLS SEG Calc_MAF_TQI_Ref, SOF Calc_MAF_TQI_Ref
+        CALLS SEG Calc_EFF_IGA, SOF Calc_EFF_IGA
+        CALLS SEG Calc_TQE, SOF Calc_TQE
+        CALLS SEG Calc_TQI_AV_EMS, SOF Calc_TQI_AV_EMS
+        CALLS SEG Calc_maf_sp_hb, SOF Calc_maf_sp_hb
         RETS
 
 ; ======== Task_AirPath_ISA  (@0xd6382) ========
@@ -545,11 +545,11 @@ Task_TQ_Control:
         ; Named by caller-context + body analysis (push to 100pct).
         ; ------------------------------------------------------------
 Task_AirPath_ISA:
-        CALLS 00BH,Calc_AirPath_Sp
-        CALLS 00BH,Calc_ISA_Opening_Start
-        CALLS 00DH,Diag_DTC_dd426
-        CALLS 00CH,Calc_ISA_PWL_State
-        CALLS 00CH,Calc_ISA_CatHeat
+        CALLS SEG Calc_AirPath_Sp, SOF Calc_AirPath_Sp
+        CALLS SEG Calc_ISA_Opening_Start, SOF Calc_ISA_Opening_Start
+        CALLS SEG Diag_DTC_dd426, SOF Diag_DTC_dd426
+        CALLS SEG Calc_ISA_PWL_State, SOF Calc_ISA_PWL_State
+        CALLS SEG Calc_ISA_CatHeat, SOF Calc_ISA_CatHeat
         RETS
 
 ; ======== Task_TqConverter  (@0xd6398) ========
@@ -560,14 +560,14 @@ Task_TqConverter:
         MOVBZ R4,g_f4c9
         AND R4,#01H
         JMPR cc_EQ,L_D63BA
-        CALLS 00CH,Calc_TqConverter
-        CALLS 00BH,Calc_TQ_DIF_I_IS
-        CALLS 00BH,Calc_FuelFlow_Add_CP
+        CALLS SEG Calc_TqConverter, SOF Calc_TqConverter
+        CALLS SEG Calc_TQ_DIF_I_IS, SOF Calc_TQ_DIF_I_IS
+        CALLS SEG Calc_FuelFlow_Add_CP, SOF Calc_FuelFlow_Add_CP
         MOVBZ R4,g_f4c9
         AND R4,#03H
         CMP R4,#03H
         JMPR cc_NE,L_D63BA
-        CALLS 00CH,Calc_TQI_Min_Pu
+        CALLS SEG Calc_TQI_Min_Pu, SOF Calc_TQI_Min_Pu
 L_D63BA:                 ; 0xd63ba
         SUBB g_f4c9,ONES
         RETS
@@ -596,11 +596,11 @@ L_D63E6:                 ; 0xd63e6
         MOVB RL4,#DATA16 0001EH
         MOVB g_f4ca,RL4
 L_D63F2:                 ; 0xd63f2
-        CALLS 00BH,Set_lv_diag_trip_avl_ivvt
-        CALLS 00CH,Calc_MAF_Alti_Cor
-        CALLS 00CH,Diag_IGC_Dur
-        CALLS 00CH,CanPurge_Set_Close_2
-        CALLS 00BH,Set_lv_inh_fsd_cp
+        CALLS SEG Set_lv_diag_trip_avl_ivvt, SOF Set_lv_diag_trip_avl_ivvt
+        CALLS SEG Calc_MAF_Alti_Cor, SOF Calc_MAF_Alti_Cor
+        CALLS SEG Diag_IGC_Dur, SOF Diag_IGC_Dur
+        CALLS SEG CanPurge_Set_Close_2, SOF CanPurge_Set_Close_2
+        CALLS SEG Set_lv_inh_fsd_cp, SOF Set_lv_inh_fsd_cp
         MOVB RL4,conf_diagcp
         JMPR cc_EQ,L_D642E
         JNB lv_pl.00H,L_D642E
@@ -617,19 +617,19 @@ L_D6420:                 ; 0xd6420
         SUB R4,#01H
         MOV t_pl_diagcp,R4
 L_D642E:                 ; 0xd642e
-        CALLS 00CH,Dec_IGA_Knk_Diag_Dly
-        CALLS 00CH,Calc_Knk_Ad_Ast
-        CALLS 00DH,DTC_Capture_FreezeFrame
+        CALLS SEG Dec_IGA_Knk_Diag_Dly, SOF Dec_IGA_Knk_Diag_Dly
+        CALLS SEG Calc_Knk_Ad_Ast, SOF Calc_Knk_Ad_Ast
+        CALLS SEG DTC_Capture_FreezeFrame, SOF DTC_Capture_FreezeFrame
         JNB lv_conf_mis.02H,L_D6446
-        CALLS 00DH,Dec_Dc3b8
-        CALLS 00BH,Set_lv_er_carb_b4
+        CALLS SEG Dec_Dc3b8, SOF Dec_Dc3b8
+        CALLS SEG Set_lv_er_carb_b4, SOF Set_lv_er_carb_b4
 L_D6446:                 ; 0xd6446
-        CALLS 00CH,CanPurge_Set_Close
-        CALLS 00AH,IdleSpeedAdapt_Cond
-        CALLS 00AH,Calc_TQ_DIF_IS_AD
-        CALLS 00CH,IVVT_Diag_Group
-        CALLS 00CH,Calc_Ratio_TQI_Bas_Stnd
-        CALLS 00DH,Calc_PL_State_FromVS
+        CALLS SEG CanPurge_Set_Close, SOF CanPurge_Set_Close
+        CALLS SEG IdleSpeedAdapt_Cond, SOF IdleSpeedAdapt_Cond
+        CALLS SEG Calc_TQ_DIF_IS_AD, SOF Calc_TQ_DIF_IS_AD
+        CALLS SEG IVVT_Diag_Group, SOF IVVT_Diag_Group
+        CALLS SEG Calc_Ratio_TQI_Bas_Stnd, SOF Calc_Ratio_TQI_Bas_Stnd
+        CALLS SEG Calc_PL_State_FromVS, SOF Calc_PL_State_FromVS
         RETS
 
 ; ======== Task_SpeedLimit_Loss  (@0xd6460) ========
@@ -637,16 +637,16 @@ L_D6446:                 ; 0xd6446
         ; Named by caller-context + body analysis (push to 100pct).
         ; ------------------------------------------------------------
 Task_SpeedLimit_Loss:
-        CALLS 00CH,EngSpeedLimit_Coord
-        CALLS 00BH,Calc_TQ_FR_St
-        CALLS 00CH,Calc_prs_ex_c47b
-        CALLS 00BH,Calc_Fac_CH_Red
-        CALLS 00CH,Calc_TQ_Add_CH
-        CALLS 00DH,Calc_TQ_Loss_ECF
-        CALLS 00BH,Calc_RBM_State
-        CALLS 00BH,Diag_ACP_Sensor
-        CALLS 00BH,Calc_ACP
-        CALLS 00CH,Set_lv_n_max_isa_err_c903
+        CALLS SEG EngSpeedLimit_Coord, SOF EngSpeedLimit_Coord
+        CALLS SEG Calc_TQ_FR_St, SOF Calc_TQ_FR_St
+        CALLS SEG Calc_prs_ex_c47b, SOF Calc_prs_ex_c47b
+        CALLS SEG Calc_Fac_CH_Red, SOF Calc_Fac_CH_Red
+        CALLS SEG Calc_TQ_Add_CH, SOF Calc_TQ_Add_CH
+        CALLS SEG Calc_TQ_Loss_ECF, SOF Calc_TQ_Loss_ECF
+        CALLS SEG Calc_RBM_State, SOF Calc_RBM_State
+        CALLS SEG Diag_ACP_Sensor, SOF Diag_ACP_Sensor
+        CALLS SEG Calc_ACP, SOF Calc_ACP
+        CALLS SEG Set_lv_n_max_isa_err_c903, SOF Set_lv_n_max_isa_err_c903
         RETS
 
 S_D5E2A ENDS

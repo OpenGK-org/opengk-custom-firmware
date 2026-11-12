@@ -36,9 +36,9 @@ S_DA6A0 SECTION CODE AT 0DA6A0H
         ; ------------------------------------------------------------
 CAN_Init_Task:
         JNB lv_conf_mis.09H,L_DA6A8
-        CALLS 00DH,CAN1_Init
+        CALLS SEG CAN1_Init, SOF CAN1_Init
 L_DA6A8:                 ; 0xda6a8
-        CALLS 00CH,KWP_Init_Resp
+        CALLS SEG KWP_Init_Resp, SOF KWP_Init_Resp
         MOVB RL4,lv_sched_diag_inh
         ANDB RL4,#01H
         JMPR cc_NE,L_DA6E6
@@ -66,85 +66,85 @@ L_DA6E6:                 ; 0xda6e6
         ; output-request latch bit 0x2000 (variant) + Diag_DTC.
         ; ------------------------------------------------------------
 Set_Out_FuelReq_3:
-        CALLS 00CH,Reset_Df7e6_57e
-        CALLS 00CH,Acq_TIA_TCO_Inputs
-        CALLS 00CH,Diag_Cam_N_Max_d194
-        CALLS 00CH,Init_N_SP_IS
-        CALLS 00BH,Calc_tam_min_diagcp
-        CALLS 00CH,Set_lv_maf_puls
-        CALLS 00DH,Reset_eff_vol_slop_540
-        CALLS 00DH,NVM_Restore_s632
-        CALLS 00CH,Diag_VS_Purge_Cond
-        CALLS 00BH,Reset_LS_State_Group_3
-        CALLS 00CH,Set_lv_cps_err
-        CALLS 00BH,CanPurge_Deac_State
-        CALLS 00CH,CanPurge_Set_TState
-        CALLS 00BH,Tail_f0b28ec_99e
-        CALLS 00CH,Calc_Cat_Diag_Inhibit
-        CALLS 00BH,Reset_ign_mpl_crk_max_c7e
-        CALLS 00BH,Calc_IGA_ST_FF28
-        CALLS 00CH,Calc_IGA_Av
-        CALLS 00BH,Set_iga_sp_e36
-        CALLS 00BH,Set_iga_bas_amp_cor_73a
-        CALLS 00AH,Set_iga_ref_cor_f66
-        CALLS 00BH,Set_iga_bas_cor_a10
-        CALLS 00AH,Calc_TD_Dwell_Base
-        CALLS 00CH,Reset_iga_min_teg_6dc
-        CALLS 00BH,Init_IGA_Dif_Min_Ext
-        CALLS 00BH,Set_TQI_N_Max
-        CALLS 00BH,Init_ISC_State
-        CALLS 00BH,Calc_Cyl_InjPhase
-        CALLS 00CH,Init_TQ_Lamb_Defaults
-        CALLS 00CH,Reset_Eff_SCC
-        CALLS 00BH,Set_eff_tot_bas_21e
-        CALLS 00BH,Reset_Eff_Lamb
-        CALLS 00CH,Reset_tqi_gs_slow_dec_196
-        CALLS 00CH,Reset_tqi_req_slow_2d6
-        CALLS 00CH,Reset_t_acc_fast_862
-        CALLS 00BH,Reset_fac_ch_red_fd6
-        CALLS 00CH,Set_tqi_av_ems_7dc
-        CALLS 00CH,Reset_tq_conv_036
+        CALLS SEG Reset_Df7e6_57e, SOF Reset_Df7e6_57e
+        CALLS SEG Acq_TIA_TCO_Inputs, SOF Acq_TIA_TCO_Inputs
+        CALLS SEG Diag_Cam_N_Max_d194, SOF Diag_Cam_N_Max_d194
+        CALLS SEG Init_N_SP_IS, SOF Init_N_SP_IS
+        CALLS SEG Calc_tam_min_diagcp, SOF Calc_tam_min_diagcp
+        CALLS SEG Set_lv_maf_puls, SOF Set_lv_maf_puls
+        CALLS SEG Reset_eff_vol_slop_540, SOF Reset_eff_vol_slop_540
+        CALLS SEG NVM_Restore_s632, SOF NVM_Restore_s632
+        CALLS SEG Diag_VS_Purge_Cond, SOF Diag_VS_Purge_Cond
+        CALLS SEG Reset_LS_State_Group_3, SOF Reset_LS_State_Group_3
+        CALLS SEG Set_lv_cps_err, SOF Set_lv_cps_err
+        CALLS SEG CanPurge_Deac_State, SOF CanPurge_Deac_State
+        CALLS SEG CanPurge_Set_TState, SOF CanPurge_Set_TState
+        CALLS SEG Tail_f0b28ec_99e, SOF Tail_f0b28ec_99e
+        CALLS SEG Calc_Cat_Diag_Inhibit, SOF Calc_Cat_Diag_Inhibit
+        CALLS SEG Reset_ign_mpl_crk_max_c7e, SOF Reset_ign_mpl_crk_max_c7e
+        CALLS SEG Calc_IGA_ST_FF28, SOF Calc_IGA_ST_FF28
+        CALLS SEG Calc_IGA_Av, SOF Calc_IGA_Av
+        CALLS SEG Set_iga_sp_e36, SOF Set_iga_sp_e36
+        CALLS SEG Set_iga_bas_amp_cor_73a, SOF Set_iga_bas_amp_cor_73a
+        CALLS SEG Set_iga_ref_cor_f66, SOF Set_iga_ref_cor_f66
+        CALLS SEG Set_iga_bas_cor_a10, SOF Set_iga_bas_cor_a10
+        CALLS SEG Calc_TD_Dwell_Base, SOF Calc_TD_Dwell_Base
+        CALLS SEG Reset_iga_min_teg_6dc, SOF Reset_iga_min_teg_6dc
+        CALLS SEG Init_IGA_Dif_Min_Ext, SOF Init_IGA_Dif_Min_Ext
+        CALLS SEG Set_TQI_N_Max, SOF Set_TQI_N_Max
+        CALLS SEG Init_ISC_State, SOF Init_ISC_State
+        CALLS SEG Calc_Cyl_InjPhase, SOF Calc_Cyl_InjPhase
+        CALLS SEG Init_TQ_Lamb_Defaults, SOF Init_TQ_Lamb_Defaults
+        CALLS SEG Reset_Eff_SCC, SOF Reset_Eff_SCC
+        CALLS SEG Set_eff_tot_bas_21e, SOF Set_eff_tot_bas_21e
+        CALLS SEG Reset_Eff_Lamb, SOF Reset_Eff_Lamb
+        CALLS SEG Reset_tqi_gs_slow_dec_196, SOF Reset_tqi_gs_slow_dec_196
+        CALLS SEG Reset_tqi_req_slow_2d6, SOF Reset_tqi_req_slow_2d6
+        CALLS SEG Reset_t_acc_fast_862, SOF Reset_t_acc_fast_862
+        CALLS SEG Reset_fac_ch_red_fd6, SOF Reset_fac_ch_red_fd6
+        CALLS SEG Set_tqi_av_ems_7dc, SOF Set_tqi_av_ems_7dc
+        CALLS SEG Reset_tq_conv_036, SOF Reset_tq_conv_036
         JNB lv_conf_mis.02H,L_DA790
-        CALLS 00DH,Calc_ER_Seg_Ad
-        CALLS 00BH,Init_Misfire_Counters
-        CALLS 00BH,ClrBits_lv_er_carb_b4_c7c
+        CALLS SEG Calc_ER_Seg_Ad, SOF Calc_ER_Seg_Ad
+        CALLS SEG Init_Misfire_Counters, SOF Init_Misfire_Counters
+        CALLS SEG ClrBits_lv_er_carb_b4_c7c, SOF ClrBits_lv_er_carb_b4_c7c
 L_DA790:                 ; 0xda790
         MOVB RL4,#DATA16 00014H
         MOVB lv_iga_c2e5,RL4
-        CALLS 00CH,Tail_f0c5ec6_f48
-        CALLS 00CH,Calc_TPS_ErrSubst
-        CALLS 00BH,Calc_Fac_WF_VO_Fdout_B95A
-        CALLS 00BH,Calc_WallFilm_Seg
+        CALLS SEG Tail_f0c5ec6_f48, SOF Tail_f0c5ec6_f48
+        CALLS SEG Calc_TPS_ErrSubst, SOF Calc_TPS_ErrSubst
+        CALLS SEG Calc_Fac_WF_VO_Fdout_B95A, SOF Calc_Fac_WF_VO_Fdout_B95A
+        CALLS SEG Calc_WallFilm_Seg, SOF Calc_WallFilm_Seg
         MOV R4,#DATA16 00168H
         MOV crank_tim_13,R4
         MOV R5,#01H
         MOV g_f968,R5
-        CALLS 00DH,Reset_state_cfa_is_92a
-        CALLS 00BH,Reset_Df380_408
-        CALLS 00AH,Reset_Dfd62_8ca
-        CALLS 00AH,Reset_Dfd62_830
-        CALLS 00DH,Init_Fault_Table_1
-        CALLS 00DH,Init_Fault_Table_2
-        CALLS 00DH,Clamp_IGC_Dur_Min
-        CALLS 00DH,Clamp_IGC_Dur_Min_2
+        CALLS SEG Reset_state_cfa_is_92a, SOF Reset_state_cfa_is_92a
+        CALLS SEG Reset_Df380_408, SOF Reset_Df380_408
+        CALLS SEG Reset_Dfd62_8ca, SOF Reset_Dfd62_8ca
+        CALLS SEG Reset_Dfd62_830, SOF Reset_Dfd62_830
+        CALLS SEG Init_Fault_Table_1, SOF Init_Fault_Table_1
+        CALLS SEG Init_Fault_Table_2, SOF Init_Fault_Table_2
+        CALLS SEG Clamp_IGC_Dur_Min, SOF Clamp_IGC_Dur_Min
+        CALLS SEG Clamp_IGC_Dur_Min_2, SOF Clamp_IGC_Dur_Min_2
         MOVB RL4,dbc_rly_efp
         CMPB RL4,#02H
         JMPR cc_UGT,L_DA7E4
         MOVB RL5,#02H
         MOVB dbc_rly_efp,RL5
 L_DA7E4:                 ; 0xda7e4
-        CALLS 00BH,Reset_Dc2b4_028
-        CALLS 00CH,Calc_IGC_Dur_Fault
-        CALLS 00BH,Calc_MTV_Ctr
-        CALLS 00BH,Acq_TOIL
-        CALLS 00BH,Reset_toil_mes_max_diag_fca
-        CALLS 00CH,IVVT_Task_Group_1
-        CALLS 00CH,Diag_IVVT_Trip_d62c
-        CALLS 00DH,Reset_sum_maf_tps_plaus_diag_2_9f0
-        CALLS 00BH,Init_GearRatio
-        CALLS 00BH,Calc_ACP_State
-        CALLS 00BH,Reset_RBM_Full
-        CALLS 00DH,Diag_DTC_dd108
+        CALLS SEG Reset_Dc2b4_028, SOF Reset_Dc2b4_028
+        CALLS SEG Calc_IGC_Dur_Fault, SOF Calc_IGC_Dur_Fault
+        CALLS SEG Calc_MTV_Ctr, SOF Calc_MTV_Ctr
+        CALLS SEG Acq_TOIL, SOF Acq_TOIL
+        CALLS SEG Reset_toil_mes_max_diag_fca, SOF Reset_toil_mes_max_diag_fca
+        CALLS SEG IVVT_Task_Group_1, SOF IVVT_Task_Group_1
+        CALLS SEG Diag_IVVT_Trip_d62c, SOF Diag_IVVT_Trip_d62c
+        CALLS SEG Reset_sum_maf_tps_plaus_diag_2_9f0, SOF Reset_sum_maf_tps_plaus_diag_2_9f0
+        CALLS SEG Init_GearRatio, SOF Init_GearRatio
+        CALLS SEG Calc_ACP_State, SOF Calc_ACP_State
+        CALLS SEG Reset_RBM_Full, SOF Reset_RBM_Full
+        CALLS SEG Diag_DTC_dd108, SOF Diag_DTC_dd108
         MOVB RL4,#DATA16 000FEH
         ANDB state_fuel_req,RL4
         MOVB RL4,state_fuel_req
@@ -160,7 +160,7 @@ L_DA82C:                 ; 0xda82c
 L_DA834:                 ; 0xda834
         MOVBZ R4,DPP0:c_t_efp_igk
         MOV sw_timer_b,R4
-        CALLS 00DH,Diag_MAF_TPS_Ratio_d1be
+        CALLS SEG Diag_MAF_TPS_Ratio_d1be, SOF Diag_MAF_TPS_Ratio_d1be
         RETS
 
 S_DA6A0 ENDS

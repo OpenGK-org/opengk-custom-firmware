@@ -42,12 +42,12 @@ OBD_M01_PID14_O2_B1S1_V_STFT:
         SHR R4,#02H
         MOVBZ R12,RL4
         MOV R13,#DATA16 003ECH
-        CALLS 00FH,Mul_U16_SatByte
+        CALLS SEG Mul_U16_SatByte, SOF Mul_U16_SatByte
         MOV R5,R9
         ADD R9,#01H
         MOVB [R5],RL4
         MOV R12,lam_bank_1_lam_up_ti_lam
-        CALLS 00EH,OBD_Scale_FuelTrim
+        CALLS SEG OBD_Scale_FuelTrim, SOF OBD_Scale_FuelTrim
         MOVB [R9],RL4
         MOVB RL7,#02H
         JMPA cc_UC,L_E0940
@@ -66,7 +66,7 @@ OBD_M01_PID15_O2_B1S2_V:
         SHR R4,#02H
         MOVBZ R12,RL4
         MOV R13,#DATA16 003ECH
-        CALLS 00FH,Mul_U16_SatByte
+        CALLS SEG Mul_U16_SatByte, SOF Mul_U16_SatByte
         MOV R5,R9
         ADD R9,#01H
         MOVB [R5],RL4

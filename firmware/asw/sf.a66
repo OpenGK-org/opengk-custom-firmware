@@ -67,12 +67,12 @@ DTC_Process_StatusByte:
         MOVB RL4,[R8]
         MOVBZ R12,RL4
         MOV R13,#0DH
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB [R9],RL4
         MOVB RL4,[R8+#02H]
         MOVBZ R12,RL4
         MOV R13,#0AH
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB [R9+#02H],RL4
         JMPR cc_UC,L_DCD26
 L_DCD12:                 ; 0xdcd12
@@ -88,13 +88,13 @@ L_DCD26:                 ; 0xdcd26
         MOVB RL4,[R8+#03H]
         MOVBZ R12,RL4
         MOV R13,#DATA16 00066H
-        CALLS 00FH,Mul_S16_Q7_Sat
+        CALLS SEG Mul_S16_Q7_Sat, SOF Mul_S16_Q7_Sat
         MOVB [R9+#03H],RL4
         MOV [-R0],R4
         MOVB RL4,[R8+#01H]
         MOVBZ R12,RL4
         MOV R13,#DATA16 00099H
-        CALLS 00FH,Mul_S16_Q7_Sat
+        CALLS SEG Mul_S16_Q7_Sat, SOF Mul_S16_Q7_Sat
         MOVB [R9+#01H],RL4
         MOV R5,[R0+]
         CMPB RL5,RL4

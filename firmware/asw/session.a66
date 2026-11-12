@@ -48,11 +48,11 @@ L_DFD92:                 ; 0xdfd92
 L_DFDB8:                 ; 0xdfdb8
         CMP R9,#04H
         JMPR cc_NE,L_DFDE6
-        CALLS 00DH,Calc_Timer_Delta
+        CALLS SEG Calc_Timer_Delta, SOF Calc_Timer_Delta
         CMPB RL4,#00H
         JMPR cc_NE,L_DFDE2
         MOV ADDRSEL2_FE1A,R8
-        CALLS 00AH,FuelPump_Out_Init
+        CALLS SEG FuelPump_Out_Init, SOF FuelPump_Out_Init
         BCLR PSW.0BH
         MOV ADDRSEL2,#DATA16 00821H
         MOV DPP0,DPP0_FE00

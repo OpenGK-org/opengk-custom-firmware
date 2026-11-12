@@ -41,17 +41,17 @@ Calc_IVVT_CamSp_Add:
         MOV R12,#DATA16 POF ldpm_tco_st_1_ivvt
         MOV R13,#DATA16 PAG ldpm_tco_st_1_ivvt
         MOVBZ R14,tco_st
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
         JMPR cc_NE,L_B55A6
         MOV R12,#DATA16 POF ip_cam_sp_add_ch_is_ivvt_in
         MOV R13,#DATA16 PAG ip_cam_sp_add_ch_is_ivvt_in
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         SUB R4,#DATA16 000A0H
         MOV lv_ivvt_cbe4,R4
         MOV R12,#DATA16 POF ip_cam_sp_add_ch_pl_ivvt_in
         MOV R13,#DATA16 PAG ip_cam_sp_add_ch_pl_ivvt_in
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         SUB R4,#DATA16 000A0H
         MOV lv_ivvt_cbe6,R4
 L_B55A6:                 ; 0xb55a6
@@ -87,19 +87,19 @@ L_B55BE:                 ; 0xb55be
 L_B55E8:                 ; 0xb55e8
         MOV R12,#DATA16 047B6H
         MOV R13,n_C93C
-        CALLS 00FH,Get_Byte_2D_Table_DWord_YWord
+        CALLS SEG Get_Byte_2D_Table_DWord_YWord, SOF Get_Byte_2D_Table_DWord_YWord
         CMPB RL4,pv_av
         JMPR cc_C,L_B5622
         MOV R12,#DATA16 047AAH
         MOV R13,n_C93C
         MOV R14,maf_ivvt
-        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YWord
+        CALLS SEG Get_IP_Byte_3D_Table_DWord_XWord_YWord, SOF Get_IP_Byte_3D_Table_DWord_XWord_YWord
         MOVB RL6,RL4
         MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
         JMPR cc_NE,L_B5648
         MOV R12,lv_ivvt_cbe6
         MOVBZ R13,RL6
-        CALLS 00FH,Read_MD_Signed
+        CALLS SEG Read_MD_Signed, SOF Read_MD_Signed
         MOV ivvt_in_struct_sp_add_ivvt_cam_sp_add_ivvt,R4
         JMPR cc_UC,L_B5648
 L_B5622:                 ; 0xb5622

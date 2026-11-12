@@ -24,14 +24,14 @@ Calc_LS_Up_OBD2_CycNr:
         MOV R12,lam_bank_1_ls_up_vls_mmv_max
         SUB R12,R9
         MOV R13,#DATA16 0E666H
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         ADD R4,R9
         SHR R4,#06H
         MOV lam_bank_1_ls_up_obd2_struct_vls_cycnr_max,R4
         MOV R12,lam_bank_1_ls_up_vls_mmv_max
         SUB R12,R9
         MOV R13,#DATA16 01999H
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         ADD R4,R9
         SHR R4,#06H
         MOV lam_bank_1_ls_up_obd2_struct_vls_cycnr_min,R4
@@ -84,7 +84,7 @@ Calc_LS_Up_OBD2_Freq:
         ; ------------------------------------------------------------
 LS_Up_OBD2_Freq_Gated:
         JB obd_sf.0DH,L_D450C
-        CALLS 00DH,Calc_LS_Up_OBD2_Freq
+        CALLS SEG Calc_LS_Up_OBD2_Freq, SOF Calc_LS_Up_OBD2_Freq
 L_D450C:                 ; 0xd450c
         RETS
 

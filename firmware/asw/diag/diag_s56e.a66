@@ -42,7 +42,7 @@ NVM_Restore_s56e:
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#04H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV R10,diag_f890
         MOV R11,diag_f892
         EXTP R11, #02H
@@ -65,7 +65,7 @@ L_DCAE0:                 ; 0xdcae0
         JMPR cc_C,L_DCAE0
         JMPR cc_UC,L_DCAF6
 L_DCAF2:                 ; 0xdcaf2
-        CALLS 00DH,Restore_Loop_s56e
+        CALLS SEG Restore_Loop_s56e, SOF Restore_Loop_s56e
 L_DCAF6:                 ; 0xdcaf6
         MOV R6,[R0+]
         MOV R7,[R0+]
@@ -104,7 +104,7 @@ NVM_Restore_s574:
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#02H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV R10,diag_f890
         MOV R11,diag_f892
         EXTP R11, #02H
@@ -127,7 +127,7 @@ L_DCB62:                 ; 0xdcb62
         JMPR cc_C,L_DCB62
         JMPR cc_UC,L_DCB78
 L_DCB74:                 ; 0xdcb74
-        CALLS 00DH,Restore_Loop_s574
+        CALLS SEG Restore_Loop_s574, SOF Restore_Loop_s574
 L_DCB78:                 ; 0xdcb78
         MOV R6,[R0+]
         MOV R7,[R0+]

@@ -43,7 +43,7 @@ L_A2E08:                 ; 0xa2e08
         MOV R12,R4
         MOV R13,#03H
         MOV R14,#DATA16 000FFH
-        CALLS 00DH,KWP_GetDTCRecordByStatus
+        CALLS SEG KWP_GetDTCRecordByStatus, SOF KWP_GetDTCRecordByStatus
         MOVB RL7,RL4
         CMPB RL7,#DATA16 000FFH
         JMPR cc_EQ,L_A2E6E
@@ -58,7 +58,7 @@ L_A2E38:                 ; 0xa2e38
         MOV R12,kwp_req_ptr
         MOV R13,#03H
         MOVBZ R14,RL6
-        CALLS 00DH,KWP_GetDTCRecordByStatus
+        CALLS SEG KWP_GetDTCRecordByStatus, SOF KWP_GetDTCRecordByStatus
         MOV R4,#03H
         ADD kwp_req_ptr,R4
         ADD kwp_msg_len,R4
@@ -149,7 +149,7 @@ L_A2F08:                 ; 0xa2f08
         MOV R4,kwp_req_ptr
         MOVB RL5,[R4+#02H]
         MOVBZ R13,RL5
-        CALLS 00AH,KWP_ReadFreezeFrameRecord
+        CALLS SEG KWP_ReadFreezeFrameRecord, SOF KWP_ReadFreezeFrameRecord
         MOVB kwp_nrc,RL4
         CMPB RL4,#DATA16 000FEH
         JMPR cc_EQ,L_A2F2E
@@ -284,7 +284,7 @@ L_A3060:                 ; 0xa3060
         ADD R4,R5
         MOVB [R9],[R4]
         MOV R12,R9
-        CALLS 00EH,KWP_OBD_Svc01_ReadPID
+        CALLS SEG KWP_OBD_Svc01_ReadPID, SOF KWP_OBD_Svc01_ReadPID
         MOVB RL7,RL4
         CMPB RL7,#DATA16 000FFH
         JMPR cc_EQ,L_A307E
@@ -335,7 +335,7 @@ L_A30BE:                 ; 0xa30be
         MOVB RL5,[R4]
         MOVB [R9+#01H],RL5
         MOV R12,R9
-        CALLS 00EH,KWP_ReadRecord_Fmt2
+        CALLS SEG KWP_ReadRecord_Fmt2, SOF KWP_ReadRecord_Fmt2
         MOVB RL7,RL4
         CMPB RL7,#DATA16 000FFH
         JMPR cc_EQ,L_A30F0
@@ -382,7 +382,7 @@ KWP_App_Process_Record_0a312c:
         JMPR cc_NE,L_A3164
         MOV R12,kwp_req_ptr
         MOVBZ R13,kwp_record_fmt
-        CALLS 00EH,KWP_ReadRecord_Single
+        CALLS SEG KWP_ReadRecord_Single, SOF KWP_ReadRecord_Single
         MOVB RL6,RL4
         CMPB RL6,#DATA16 000FFH
         JMPR cc_NE,L_A314E
@@ -409,7 +409,7 @@ KWP_App_Process_Record_0a316a:
         MOV R4,kwp_msg_len
         CMP R4,#01H
         JMPR cc_NE,L_A31AA
-        CALLS 00EH,KWP_ClearLearnedValues
+        CALLS SEG KWP_ClearLearnedValues, SOF KWP_ClearLearnedValues
         MOVB RL6,RL4
         CMPB RL6,#DATA16 000FDH
         JMPR cc_EQ,L_A3188
@@ -471,7 +471,7 @@ L_A31EE:                 ; 0xa31ee
         ADD R4,R5
         MOVB [R9],[R4]
         MOV R12,R9
-        CALLS 00EH,KWP_App_Read_DataBlock_By_RecordId
+        CALLS SEG KWP_App_Read_DataBlock_By_RecordId, SOF KWP_App_Read_DataBlock_By_RecordId
         MOVB RL7,RL4
         CMPB RL7,#DATA16 000FFH
         JMPR cc_EQ,L_A320C
@@ -512,7 +512,7 @@ L_A3248:                 ; 0xa3248
         ADD R4,R5
         MOVB [R9],[R4]
         MOV R12,R9
-        CALLS 00EH,KWP_OBD_Svc09_VehicleInfo
+        CALLS SEG KWP_OBD_Svc09_VehicleInfo, SOF KWP_OBD_Svc09_VehicleInfo
         MOVB RL7,RL4
         CMPB RL7,#DATA16 000FFH
         JMPR cc_EQ,L_A3266
@@ -573,33 +573,33 @@ L_A32C8:                 ; 0xa32c8
         CMPB RL4,#DATA16 00058H
         JMPR cc_EQ,L_A32F0
         MOVBZ R12,RL4
-        CALLS 00DH,Get_DTC_Record_2
+        CALLS SEG Get_DTC_Record_2, SOF Get_DTC_Record_2
         SHR R4,#08H
         MOV R5,R8
         ADD R8,#01H
         MOVB [R5],RL4
         MOVBZ R12,obd_ff_mon_id
-        CALLS 00DH,Get_DTC_Record_2
+        CALLS SEG Get_DTC_Record_2, SOF Get_DTC_Record_2
         MOV R5,R8
         ADD R8,#01H
         MOVB [R5],RL4
         JMPR cc_UC,L_A330E
 L_A32F0:                 ; 0xa32f0
         MOV R12,#DATA16 00058H
-        CALLS 00DH,Get_DTC_Record_2
+        CALLS SEG Get_DTC_Record_2, SOF Get_DTC_Record_2
         SHR R4,#08H
         MOV R5,R8
         ADD R8,#01H
         MOVB [R5],RL4
         MOV R12,#DATA16 00058H
-        CALLS 00DH,Get_DTC_Record_2
+        CALLS SEG Get_DTC_Record_2, SOF Get_DTC_Record_2
         MOV R5,R8
         ADD R8,#01H
         MOVB [R5],RL4
 L_A330E:                 ; 0xa330e
         MOV R12,R8
         MOV R13,obd_ff_rpm
-        CALLS 00EH,OBD_Scale_RPM
+        CALLS SEG OBD_Scale_RPM, SOF OBD_Scale_RPM
         ADD R8,#02H
         MOV R4,R8
         ADD R8,#01H
@@ -608,14 +608,14 @@ L_A330E:                 ; 0xa330e
         ADD R8,#01H
         MOVB [R4],obd_ff_load
         MOVBZ R12,obd_ff_tco
-        CALLS 00EH,OBD_Scale_Temp
+        CALLS SEG OBD_Scale_Temp, SOF OBD_Scale_Temp
         MOV R5,R8
         ADD R8,#01H
         MOVB [R5],RL4
         JNB lv_conf_mis.00H,L_A3384
         MOV R12,obd_ff_lam_carrier
         MOVBZ R13,obd_ff_lam_ready
-        CALLS 00EH,OBD_Scale_FuelSys
+        CALLS SEG OBD_Scale_FuelSys, SOF OBD_Scale_FuelSys
         MOV R5,R8
         ADD R8,#01H
         MOVB [R5],RL4
@@ -624,7 +624,7 @@ L_A330E:                 ; 0xa330e
         ADD R8,#01H
         MOVB [R5],RL4
         MOV R12,obd_ff_ti_lam
-        CALLS 00EH,OBD_Scale_FuelTrim
+        CALLS SEG OBD_Scale_FuelTrim, SOF OBD_Scale_FuelTrim
         MOV R5,R8
         ADD R8,#01H
         MOVB [R5],RL4
@@ -633,7 +633,7 @@ L_A330E:                 ; 0xa330e
         ADD R8,#01H
         MOVB [R5],RL4
         MOV R12,obd_ff_lam_ad
-        CALLS 00EH,OBD_Scale_FuelTrim
+        CALLS SEG OBD_Scale_FuelTrim, SOF OBD_Scale_FuelTrim
         MOV R5,R8
         ADD R8,#01H
         MOVB [R5],RL4
@@ -670,21 +670,21 @@ L_A33AA:                 ; 0xa33aa
 L_A33B8:                 ; 0xa33b8
         MOVBZ R12,RL7
         MOV R13,#DATA16 000C0H
-        CALLS 00FH,Ret_Const_fe0f
+        CALLS SEG Ret_Const_fe0f, SOF Ret_Const_fe0f
         MOVBZ R13,RL4
         MOV R12,#DATA16 00110H
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV R5,R8
         ADD R8,#01H
         MOVB [R5],RL4
         MOVBZ R12,obd_ff_tia
-        CALLS 00EH,OBD_Scale_Temp
+        CALLS SEG OBD_Scale_Temp, SOF OBD_Scale_Temp
         MOV R5,R8
         ADD R8,#01H
         MOVB [R5],RL4
         MOV R12,obd_ff_maf
         MOV R13,#DATA16 000DEH
-        CALLS 00FH,Read_MulDiv_MD
+        CALLS SEG Read_MulDiv_MD, SOF Read_MulDiv_MD
         MOV R9,R4
         SHR R4,#08H
         MOV R5,R8

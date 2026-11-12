@@ -67,10 +67,10 @@ Calc_TD_Dwell_Base_2:
         MOV R12,#DATA16 0450CH
         MOVBZ R13,vb
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YByte
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XByte_YByte, SOF Get_IP_Word_3D_Table_DWord_XByte_YByte
         MOV R12,R4
         MOV R13,DPP0:c_td_as
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV R9,R4
         MOV R5,#00H
         SUB R4,#DATA16 05553H
@@ -112,14 +112,14 @@ Lookup_Dc20c_Tco:
         MOV R12,#DATA16 POF ldpm_tco_8
         MOV R13,#DATA16 PAG ldpm_tco_8
         MOVBZ R14,tco
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_nr_mpl_is__tco
         MOV R13,#DATA16 PAG ip_nr_mpl_is__tco
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVB lv_tco_c20c,RL4
         MOV R12,#DATA16 POF ip_nr_mpl_st__tco
         MOV R13,#DATA16 PAG ip_nr_mpl_st__tco
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVB lv_tco_c20b,RL4
         RETS
 
@@ -153,7 +153,7 @@ L_AE1E8:                 ; 0xae1e8
         MOVB mpl_iga_act,RL4
         MOV R12,#DATA16 04518H
         MOVBZ R13,vb
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YByte, SOF Get_IP_Word_2D_Table_DWord_YByte
         MOV R9,R4
         MOV R5,#00H
         SUB R4,#DATA16 05553H

@@ -56,7 +56,7 @@ CCP_DAQ_Scheduler:
         MOVB RL4,[R0+#08H]
         MOVBZ R13,RL4
         MOV R14,R7
-        CALLS 00AH,CCP_DAQ_BuildDTO
+        CALLS SEG CCP_DAQ_BuildDTO, SOF CCP_DAQ_BuildDTO
         MOVBZ R4,RL4
         MOV R8,R7
         SUB R8,R4
@@ -102,7 +102,7 @@ L_CC87E:                 ; 0xcc87e
         ; DTOs for its event channel.
 CCP_DAQ_Task_A:
         MOVBZ R12,seg_nr
-        CALLS 00CH,CCP_DAQ_Scheduler
+        CALLS SEG CCP_DAQ_Scheduler, SOF CCP_DAQ_Scheduler
         CMPB RL4,#00H
         JMPR cc_NE,L_CC8A6
         MOVBZ R4,seg_nr
@@ -117,7 +117,7 @@ L_CC8A6:                 ; 0xcc8a6
         ; DTOs for its event channel.
 CCP_DAQ_Task_B:
         MOV R12,#04H
-        CALLS 00CH,CCP_DAQ_Scheduler
+        CALLS SEG CCP_DAQ_Scheduler, SOF CCP_DAQ_Scheduler
         CMPB RL4,#00H
         JMPR cc_NE,L_CC8BA
         MOV R4,#DATA16 00800H
@@ -144,7 +144,7 @@ CCP_DAQ_Task_C:
         MOV R12,R8
         MOV R13,#05H
         MOV R14,#01H
-        CALLS 00AH,CCP_DAQ_BuildDTO
+        CALLS SEG CCP_DAQ_BuildDTO, SOF CCP_DAQ_BuildDTO
         MOVB RL4,[R9+#01H]
         MOVBZ R4,RL4
         MOVB RL5,[R9+#02H]
@@ -173,7 +173,7 @@ CCP_DAQ_Task_D:
         MOV R4,ccp_cf0a
         JMPR cc_EQ,L_CC932
         PRIOR R12,R4
-        CALLS 00CH,CCP_DAQ_Scheduler
+        CALLS SEG CCP_DAQ_Scheduler, SOF CCP_DAQ_Scheduler
         CMPB RL4,#00H
         JMPR cc_EQ,L_CC932
         MOV R5,ccp_cf0a

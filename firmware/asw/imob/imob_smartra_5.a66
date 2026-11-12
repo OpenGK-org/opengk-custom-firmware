@@ -63,7 +63,7 @@ L_BDB5E:                 ; 0xbdb5e
         MOVB smartra_tx_cmd,RL4
         MOVB RL4,#01H
         MOVB smartra_tx_len,RL4
-        CALLS 00AH,SMARTRA_flush_RX_buffers
+        CALLS SEG SMARTRA_flush_RX_buffers, SOF SMARTRA_flush_RX_buffers
         MOVB RL4,#02H
         MOVB smartra_send_state,RL4
         JMPA cc_UC,L_BDEE0
@@ -113,7 +113,7 @@ L_BDBF0:                 ; 0xbdbf0
         MOVB smartra_frame_buf,RL4
         MOVB RL4,#DATA16 0004BH
         MOVB smartra_tx_cmd,RL4
-        CALLS 00AH,SMARTRA_flush_RX_buffers
+        CALLS SEG SMARTRA_flush_RX_buffers, SOF SMARTRA_flush_RX_buffers
         MOVB RL4,#03H
         MOVB smartra_send_state,RL4
         JMPA cc_UC,L_BDEE0
@@ -130,7 +130,7 @@ L_BDC0C:                 ; 0xbdc0c
         MOVB smartra_frame_buf,RL5
         MOVB RL3,#DATA16 0004BH
         MOVB smartra_tx_cmd,RL3
-        CALLS 00AH,SMARTRA_flush_RX_buffers
+        CALLS SEG SMARTRA_flush_RX_buffers, SOF SMARTRA_flush_RX_buffers
         MOVB RL4,#03H
         MOVB smartra_send_state,RL4
         JMPA cc_UC,L_BDEE0
@@ -233,13 +233,13 @@ L_BDD16:                 ; 0xbdd16
         MOVB RL5,key_state_imob
         CMPB RL5,#01H
         JMPR cc_NE,L_BDD8A
-        CALLS 00BH,SMARTRA_gen_challenge_lcg
+        CALLS SEG SMARTRA_gen_challenge_lcg, SOF SMARTRA_gen_challenge_lcg
         MOV imob_resp_len,R4
         MOV imob_resp_b0,R5
         MOV R12,#DATA16 0CA1EH
         MOV R13,#DATA16 0C28BH
         MOV R14,#DATA16 0CA4AH
-        CALLS 00BH,SMARTRA_load_response_compare
+        CALLS SEG SMARTRA_load_response_compare, SOF SMARTRA_load_response_compare
         MOVB smartra_send_req,ZEROS
         MOV R4,#01H
         MOV t_oneshot_sched,R4
@@ -331,7 +331,7 @@ L_BDDFC:                 ; 0xbddfc
         MOVB smartra_tx_c1,RL4
         MOVB RL4,imob_tx_src3
         MOVB smartra_tx_c2,RL4
-        CALLS 00AH,SMARTRA_flush_RX_buffers
+        CALLS SEG SMARTRA_flush_RX_buffers, SOF SMARTRA_flush_RX_buffers
         MOVB RL4,#05H
         MOVB smartra_send_state,RL4
         JMPR cc_UC,L_BDEE0
@@ -408,10 +408,10 @@ SMARTRA_gen_challenge_lcg:
         MOV R5,smartra_lcg_const
         MOVBZ R10,tco
         MOV R11,#00H
-        CALLS 00DH,mul32
+        CALLS SEG mul32, SOF mul32
         MOV R10,#DATA16 04E6DH
         MOV R11,#00H
-        CALLS 00DH,mul32
+        CALLS SEG mul32, SOF mul32
         ADD R4,#DATA16 002D3H
         ADDC R5,#DATA16 04996H
         MOV smartra_lcg_seed,R4

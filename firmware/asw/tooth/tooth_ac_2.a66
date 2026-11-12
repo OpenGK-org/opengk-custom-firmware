@@ -45,16 +45,16 @@ L_C792E:                 ; 0xc792e
         BSET lv_crk_tooth_err.04H
         BCLR lv_crk_tooth_err.01H
         MOV R12,#01H
-        CALLS 00CH,AccInDelay_SetIfLonger
+        CALLS SEG AccInDelay_SetIfLonger, SOF AccInDelay_SetIfLonger
         JMPR cc_UC,L_C7956
 L_C793A:                 ; 0xc793a
         MOVBZ R12,DPP0:c_acp_max_rly_accout_off
         MOVBZ R13,DPP0:c_acp_max_hys
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL4,acp
         JMPR cc_NC,L_C7954
         MOV R12,#01H
-        CALLS 00CH,AccInDelay_SetIfLonger
+        CALLS SEG AccInDelay_SetIfLonger, SOF AccInDelay_SetIfLonger
         JMPR cc_UC,L_C7956
 L_C7954:                 ; 0xc7954
         BCLR lv_crk_tooth_err.04H
@@ -73,16 +73,16 @@ L_C7974:                 ; 0xc7974
         BSET lv_crk_tooth_err.05H
         BCLR lv_crk_tooth_err.01H
         MOV R12,#01H
-        CALLS 00CH,AccInDelay_SetIfLonger
+        CALLS SEG AccInDelay_SetIfLonger, SOF AccInDelay_SetIfLonger
         RETS
 L_C7980:                 ; 0xc7980
         MOVBZ R12,DPP0:c_acp_min_rly_accout_off
         MOVBZ R13,DPP0:c_acp_min_hys
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         CMPB RL4,acp
         JMPR cc_ULE,L_C799A
         MOV R12,#01H
-        CALLS 00CH,AccInDelay_SetIfLonger
+        CALLS SEG AccInDelay_SetIfLonger, SOF AccInDelay_SetIfLonger
         RETS
 L_C799A:                 ; 0xc799a
         BCLR lv_crk_tooth_err.05H
@@ -166,7 +166,7 @@ AcComp_StartCond:
         JMPR cc_ULE,L_C7A52
         MOVBZ R12,tco
         MOVBZ R13,RL4
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL4,DPP0:c_hys_tam_acc_st
         JMPR cc_NC,L_C7A52
         MOVB RL4,DPP0:c_t_accout_st_act
@@ -215,7 +215,7 @@ L_C7A7E:                 ; 0xc7a7e
         BSET lv_act_aj.0BH
         RETS
 L_C7A82:                 ; 0xc7a82
-        CALLS 00CH,AcComp_AccIn_Reset
+        CALLS SEG AcComp_AccIn_Reset, SOF AcComp_AccIn_Reset
         RETS
 
 S_C790A ENDS

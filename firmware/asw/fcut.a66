@@ -50,7 +50,7 @@ Calc_N_PRED_MAX_LIM:
         MOV [-R0],R6
         MOV R12,#DATA16 045C6H
         MOVBZ R13,n_32
-        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Byte_2D_Table_DWord_YByte, SOF Get_IP_Byte_2D_Table_DWord_YByte
         ADDB RL4,#DATA16 00080H
         MOVBS R9,RL4
         MOVBS R4,n_grd
@@ -76,35 +76,35 @@ L_B078E:                 ; 0xb078e
         MOVBS R12,n_grd_fil_fil
         MOVBS R13,n_grd_fil
         MOV R14,R8
-        CALLS 00FH,Interp_S16
+        CALLS SEG Interp_S16, SOF Interp_S16
         MOV R12,R4
-        CALLS 00FH,Sat_S8
+        CALLS SEG Sat_S8, SOF Sat_S8
         MOVB n_grd_fil_fil,RL4
         MOV R12,#DATA16 POF ldpm_gear
         MOV R13,#DATA16 PAG ldpm_gear
         MOVBZ R14,gear
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOVB RL4,n_grd_fil_fil
         CMPB RL4,#00H
         JMPR cc_SLE,L_B07FA
         JNB abs_def.04H,L_B07D2
         MOV R12,#DATA16 POF id_t_n_max_pred_at__gear
         MOV R13,#DATA16 PAG id_t_n_max_pred_at__gear
-        CALLS 00FH,Read_Byte_Far
+        CALLS SEG Read_Byte_Far, SOF Read_Byte_Far
         MOVB RL6,RL4
         JMPR cc_UC,L_B07E0
 L_B07D2:                 ; 0xb07d2
         MOV R12,#DATA16 POF id_t_n_max_pred_mt__gear
         MOV R13,#DATA16 PAG id_t_n_max_pred_mt__gear
-        CALLS 00FH,Read_Byte_Far
+        CALLS SEG Read_Byte_Far, SOF Read_Byte_Far
         MOVB RL6,RL4
 L_B07E0:                 ; 0xb07e0
         MOVBS R12,n_grd_fil_fil
         MOVBZ R13,RL6
-        CALLS 00FH,Mul_S16_Sat16
+        CALLS SEG Mul_S16_Sat16, SOF Mul_S16_Sat16
         MOV R13,R4
         MOV R12,n_C93C
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV n_pred_max_lim,R4
         JMPR cc_UC,L_B0802
 L_B07FA:                 ; 0xb07fa
@@ -114,7 +114,7 @@ L_B0802:                 ; 0xb0802
         BMOV lv_act_cle_slv_ivvt.06H,lv_act_cle_slv_ivvt.03H
         MOV R12,n_max_thd
         MOV R13,DPP0:c_add_n_max_fcut
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV R8,R4
         CMP R8,n_C93C
         JMPR cc_NC,L_B081E
@@ -128,23 +128,23 @@ L_B081E:                 ; 0xb081e
 L_B082A:                 ; 0xb082a
         MOV R12,n_max_thd
         MOV R13,n_pred_max_lim
-        CALLS 00FH,Sat_Sub_S16_v2
+        CALLS SEG Sat_Sub_S16_v2, SOF Sat_Sub_S16_v2
         MOV n_dif_max_lim,R4
         JNB abs_def.04H,L_B084E
         MOV R12,#DATA16 POF id_fac_n_max_p_at__gear
         MOV R13,#DATA16 PAG id_fac_n_max_p_at__gear
-        CALLS 00FH,Read_Byte_Far
+        CALLS SEG Read_Byte_Far, SOF Read_Byte_Far
         MOVB RL6,RL4
         JMPR cc_UC,L_B085C
 L_B084E:                 ; 0xb084e
         MOV R12,#DATA16 POF id_fac_n_max_p_mt__gear
         MOV R13,#DATA16 PAG id_fac_n_max_p_mt__gear
-        CALLS 00FH,Read_Byte_Far
+        CALLS SEG Read_Byte_Far, SOF Read_Byte_Far
         MOVB RL6,RL4
 L_B085C:                 ; 0xb085c
         MOV R12,n_dif_max_lim
         MOVBZ R13,RL6
-        CALLS 00FH,Mul_S16_Sat16
+        CALLS SEG Mul_S16_Sat16, SOF Mul_S16_Sat16
         MOV tq_n_max_dif_p,R4
         BMOV lv_act_cle_slv_ivvt.07H,lv_act_cle_slv_ivvt.02H
         MOV R5,n_dif_max_lim
@@ -178,7 +178,7 @@ L_B08A2:                 ; 0xb08a2
         MOV R12,tqi_n_max_ref
         NEG R12
         MOV R13,tq_n_max_dif_p
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV g_c5b6,R4
         JMPR cc_UC,L_B08C6
 L_B08C2:                 ; 0xb08c2
@@ -188,18 +188,18 @@ L_B08C6:                 ; 0xb08c6
         JNB abs_def.04H,L_B08DE
         MOV R12,#DATA16 POF id_fac_n_max_i_at__gear
         MOV R13,#DATA16 PAG id_fac_n_max_i_at__gear
-        CALLS 00FH,Read_Word_Far
+        CALLS SEG Read_Word_Far, SOF Read_Word_Far
         MOV R8,R4
         JMPR cc_UC,L_B08EC
 L_B08DE:                 ; 0xb08de
         MOV R12,#DATA16 POF id_fac_n_max_i_mt__gear
         MOV R13,#DATA16 PAG id_fac_n_max_i_mt__gear
-        CALLS 00FH,Read_Word_Far
+        CALLS SEG Read_Word_Far, SOF Read_Word_Far
         MOV R8,R4
 L_B08EC:                 ; 0xb08ec
         MOV R12,n_dif_max_lim
         MOV R13,R8
-        CALLS 00FH,Mul_S16_Sat16
+        CALLS SEG Mul_S16_Sat16, SOF Mul_S16_Sat16
         MOV tq_n_max_inp_i,R4
         MOV R5,tqi_n_max_1
         CMP R5,#00H
@@ -225,7 +225,7 @@ L_B0920:                 ; 0xb0920
         SHL R15,#08H
         SHR R4,#08H
         OR R15,R4
-        CALLS 00FH,Sat_Add_S32
+        CALLS SEG Sat_Add_S32, SOF Sat_Add_S32
         MOV tq_n_max_dif_i,R4
         MOV g_c5ae,R5
         JMPR cc_UC,L_B095C
@@ -238,11 +238,11 @@ L_B0948:                 ; 0xb0948
 L_B095C:                 ; 0xb095c
         MOV R12,g_c5ae
         MOV R13,tq_n_max_dif_p
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV tq_n_max_dif,R4
         MOV R12,tqi_n_max_ref
         MOV R13,R4
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV tqi_n_max_1,R4
         JNB lv_act_cle_slv_ivvt.03H,L_B0984
         MOV tqi_n_max_2,ZEROS
@@ -285,7 +285,7 @@ L_B09D0:                 ; 0xb09d0
 Reset_pv_av_h_9d8:
         MOV R12,#DATA16 045CEH
         MOV R13,tps_av
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YWord
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YWord, SOF Get_IP_Word_2D_Table_DWord_YWord
         MOV pv_av_h,R4
         SHR R4,#02H
         MOVB pv_av,RL4

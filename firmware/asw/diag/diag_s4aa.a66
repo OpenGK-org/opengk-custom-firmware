@@ -43,7 +43,7 @@ L_C48B6:                 ; 0xc48b6
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#DATA16 00016H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV R10,diag_f890
         MOV R11,diag_f892
         EXTP R11, #02H
@@ -84,10 +84,10 @@ L_C494A:                 ; 0xc494a
         BSET lv_iga_dif_max_er.00H
         JMPR cc_UC,L_C4958
 L_C494E:                 ; 0xc494e
-        CALLS 00DH,Calc_ER_Thd_Adapt
+        CALLS SEG Calc_ER_Thd_Adapt, SOF Calc_ER_Thd_Adapt
         JMPR cc_UC,L_C4958
 L_C4954:                 ; 0xc4954
-        CALLS 00DH,Calc_ER_Thd_Adapt
+        CALLS SEG Calc_ER_Thd_Adapt, SOF Calc_ER_Thd_Adapt
 L_C4958:                 ; 0xc4958
         MOV R6,[R0+]
         RETS
@@ -115,7 +115,7 @@ L_C4966:                 ; 0xc4966
         MOV R13,R5
         MOV R14,#DATA16 0D070H
         MOV R15,#04H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 004AEH
@@ -129,7 +129,7 @@ L_C4966:                 ; 0xc4966
         MOV R13,R5
         MOV R14,#DATA16 0D088H
         MOV R15,#08H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 004B6H
@@ -143,7 +143,7 @@ L_C4966:                 ; 0xc4966
         MOV R13,R5
         MOV R14,#DATA16 0F81AH
         MOV R15,#06H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 004BCH
@@ -157,7 +157,7 @@ L_C4966:                 ; 0xc4966
         MOV R13,R5
         MOV R14,#DATA16 0F816H
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         JNB lv_iga_dif_max_er.00H,L_C4A2C
         MOV R4,#01H
         MOV [R0],R4
@@ -174,7 +174,7 @@ L_C4966:                 ; 0xc4966
         MOV R13,R5
         MOV R14,R0
         MOV R15,#01H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         JMPR cc_UC,L_C4A54
 L_C4A2C:                 ; 0xc4a2c
         MOV R4,#00H
@@ -192,7 +192,7 @@ L_C4A2C:                 ; 0xc4a2c
         MOV R13,R5
         MOV R14,R0
         MOV R15,#01H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
 L_C4A54:                 ; 0xc4a54
         MOV R12,diag_f890
         MOV R13,diag_f892
@@ -212,7 +212,7 @@ L_C4A54:                 ; 0xc4a54
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#DATA16 00016H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV [R0],R4
         MOV R12,diag_f890
         MOV R13,diag_f892
@@ -227,7 +227,7 @@ L_C4A54:                 ; 0xc4a54
         MOV R13,R5
         MOV R14,R0
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
 L_C4AAC:                 ; 0xc4aac
         ADD R0,#02H
         RETS

@@ -89,12 +89,12 @@ Calc_TQ_DIF_P_D_IS:
         MOV [-R0],R9
         MOV [-R0],R8
         MOV [-R0],R6
-        CALLS 00BH,Calc_ISC_StateReq
+        CALLS SEG Calc_ISC_StateReq, SOF Calc_ISC_StateReq
         MOV R12,lv_tq_c71a
         MOVBS R13,n_grd
         SHL R13,#08H
         MOV R14,DPP0:c_crlc_n_grd
-        CALLS 00FH,Interp_S16
+        CALLS SEG Interp_S16, SOF Interp_S16
         MOV lv_tq_c71a,R4
         ASHR R4,#08H
         MOVB lv_tq_c231,RL4
@@ -139,10 +139,10 @@ L_B3EB8:                 ; 0xb3eb8
 L_B3EBC:                 ; 0xb3ebc
         MOV R12,#00H
         MOV R13,tq_dif_p_d_is
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV R12,R4
         MOV R13,R9
-        CALLS 00FH,Div_S16_Round_Sat
+        CALLS SEG Div_S16_Round_Sat, SOF Div_S16_Round_Sat
         MOV tq_add_p_d_ramp,R4
         MOV R5,tq_dif_p_d_is
         CMP R5,#00H
@@ -184,19 +184,19 @@ L_B3F1C:                 ; 0xb3f1c
         MOVB RL4,n_grd_p_d_is
         ADDB RL4,#DATA16 00080H
         MOVBZ R14,RL4
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YWord
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XByte_YWord, SOF Get_IP_Word_3D_Table_DWord_XByte_YWord
         MOV R8,R4
         ADD R8,#DATA16 08000H
         MOV R12,#DATA16 POF ldp_gr_mt_2
         MOV R13,#DATA16 PAG ldp_gr_mt_2
         MOVBZ R14,gr_mt
-        CALLS 00FH,Get_Byte_Y_Axis
+        CALLS SEG Get_Byte_Y_Axis, SOF Get_Byte_Y_Axis
         MOV R12,#DATA16 POF id_fac_p_d_dt_is
         MOV R13,#DATA16 PAG id_fac_p_d_dt_is
-        CALLS 00FH,Read_Word_Far
+        CALLS SEG Read_Word_Far, SOF Read_Word_Far
         MOV R13,R4
         MOV R12,R8
-        CALLS 00FH,Mul_Q15_Sat_Signed
+        CALLS SEG Mul_Q15_Sat_Signed, SOF Mul_Q15_Sat_Signed
         MOV lv_tq_c720,R4
         CMP R4,tq_dif_p_d_is
         JMPR cc_SGT,L_B3F74
@@ -213,11 +213,11 @@ L_B3F84:                 ; 0xb3f84
         MOV R12,#DATA16 04758H
         MOVBZ R13,tco
         MOV R14,t_ast
-        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YByte
+        CALLS SEG Get_IP_Byte_3D_Table_DWord_XWord_YByte, SOF Get_IP_Byte_3D_Table_DWord_XWord_YByte
         MOVB fac_n_grd_is,RL4
         MOVBS R12,n_grd_p_d_is
         MOVBZ R13,RL4
-        CALLS 00FH,Mul_S8_Q7_Sat
+        CALLS SEG Mul_S8_Q7_Sat, SOF Mul_S8_Q7_Sat
         MOVB RL6,RL4
         MOV R12,#DATA16 0474CH
         MOV R13,n_dif_cor
@@ -225,7 +225,7 @@ L_B3F84:                 ; 0xb3f84
         MOVB RL4,#DATA16 00080H
         ADDB RL4,RL6
         MOVBZ R14,RL4
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YWord
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XByte_YWord, SOF Get_IP_Word_3D_Table_DWord_XByte_YWord
         ADD R4,#DATA16 08000H
         MOV tq_dif_p_d_is,R4
         JMPR cc_UC,L_B402C
@@ -271,18 +271,18 @@ L_B4010:                 ; 0xb4010
 L_B401C:                 ; 0xb401c
         MOV R12,tq_dif_p_d_is
         MOV R13,tq_add_p_d_ramp
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV tq_dif_p_d_is,R4
 L_B402C:                 ; 0xb402c
         MOV R12,#DATA16 POF ldpm_tco_is_1
         MOV R13,#DATA16 PAG ldpm_tco_is_1
         MOVBZ R14,tco
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ldp_tq_dif_p_d_is
         MOV R13,#DATA16 PAG ldp_tq_dif_p_d_is
         MOV R14,tq_dif_p_d_is
         ADD R14,#DATA16 08000H
-        CALLS 00FH,Get_IP_Word_X_Axis
+        CALLS SEG Get_IP_Word_X_Axis, SOF Get_IP_Word_X_Axis
         MOVB RL4,DPP0:lc_tq_p_d_slow_inh_as
         JMPR cc_EQ,L_B405C
         MOV tq_dif_p_d_slow_is,ZEROS
@@ -290,23 +290,23 @@ L_B402C:                 ; 0xb402c
 L_B405C:                 ; 0xb405c
         MOV R12,#DATA16 POF ip_fac_p_d_slow_tco_is
         MOV R13,#DATA16 PAG ip_fac_p_d_slow_tco_is
-        CALLS 00FH,Get_IP_Word_3D_Table
+        CALLS SEG Get_IP_Word_3D_Table, SOF Get_IP_Word_3D_Table
         MOV R13,R4
         MOV R12,tq_dif_p_d_is
-        CALLS 00FH,Mul_Q15_Sat_Signed
+        CALLS SEG Mul_Q15_Sat_Signed, SOF Mul_Q15_Sat_Signed
         MOV tq_dif_p_d_slow_is,R4
 L_B4076:                 ; 0xb4076
         MOV R12,#DATA16 POF ldp_tq_add_ch
         MOV R13,#DATA16 PAG ldp_tq_add_ch
         MOV R14,tq_add_ch
         ADD R14,#DATA16 08000H
-        CALLS 00FH,Get_IP_Word_X_Axis
+        CALLS SEG Get_IP_Word_X_Axis, SOF Get_IP_Word_X_Axis
         MOV R12,#DATA16 POF ip_fac_p_d_fast_tco_is
         MOV R13,#DATA16 PAG ip_fac_p_d_fast_tco_is
-        CALLS 00FH,Get_IP_Word_3D_Table
+        CALLS SEG Get_IP_Word_3D_Table, SOF Get_IP_Word_3D_Table
         MOV R13,R4
         MOV R12,tq_dif_p_d_is
-        CALLS 00FH,Mul_Q15_Sat_Signed
+        CALLS SEG Mul_Q15_Sat_Signed, SOF Mul_Q15_Sat_Signed
         MOV tq_dif_p_d_fast_is,R4
 L_B40A4:                 ; 0xb40a4
         MOV R6,[R0+]
@@ -395,10 +395,10 @@ L_B416C:                 ; 0xb416c
         JMPR cc_SGE,L_B41A2
         MOV R12,R9
         MOV R13,tq_dif_i_is
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV R12,R4
         MOV R13,lv_tq_c722
-        CALLS 00FH,Div_S16_Round_Sat
+        CALLS SEG Div_S16_Round_Sat, SOF Div_S16_Round_Sat
         MOV tq_add_i_ramp,R4
         CMP R4,#DATA16 0FFFFH
         JMPR cc_SGE,L_B4198
@@ -411,10 +411,10 @@ L_B419C:                 ; 0xb419c
 L_B41A2:                 ; 0xb41a2
         MOV R12,R8
         MOV R13,tq_dif_i_is
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV R12,R4
         MOV R13,lv_tq_c722
-        CALLS 00FH,Div_S16_Round_Sat
+        CALLS SEG Div_S16_Round_Sat, SOF Div_S16_Round_Sat
         MOV tq_add_i_ramp,R4
         CMP R4,#01H
         JMPR cc_SLE,L_B41C0
@@ -431,10 +431,10 @@ L_B41CC:                 ; 0xb41cc
         MOVB state_i_isc,RL4
         MOV R12,tqi_dif_i_is
         MOV R13,tq_dif_i_is
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV R12,R4
         MOV R13,lv_tq_c722
-        CALLS 00FH,Div_S16_Round_Sat
+        CALLS SEG Div_S16_Round_Sat, SOF Div_S16_Round_Sat
         MOV tq_add_i_ramp,R4
         MOV R5,tq_dif_i_is
         CMP R5,tqi_dif_i_is
@@ -476,10 +476,10 @@ L_B4244:                 ; 0xb4244
         MOV R13,#DATA16 PAG ldp_n_dif_cor__tq_i_dt_is
         MOV R14,n_dif_cor
         ADD R14,#DATA16 08000H
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_tq_i_dt_is
         MOV R13,#DATA16 PAG ip_tq_i_dt_is
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         ADD R4,#DATA16 08000H
         MOV tq_add_i_is,R4
         JMPR cc_UC,L_B4294
@@ -490,7 +490,7 @@ L_B4272:                 ; 0xb4272
         MOVB RL4,n_grd_i_is
         ADDB RL4,#DATA16 00080H
         MOVBZ R14,RL4
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YWord
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XByte_YWord, SOF Get_IP_Word_3D_Table_DWord_XByte_YWord
         ADD R4,#DATA16 08000H
         MOV tq_add_i_is,R4
 L_B4294:                 ; 0xb4294
@@ -504,7 +504,7 @@ L_B4294:                 ; 0xb4294
         SHL R15,#08H
         SHR R4,#08H
         OR R15,R4
-        CALLS 00FH,Sat_Add_S32
+        CALLS SEG Sat_Add_S32, SOF Sat_Add_S32
         MOV lv_tq_c72e,R4
         MOV st_tqi_dif_i_is,R5
         CMP R9,st_tqi_dif_i_is
@@ -546,10 +546,10 @@ L_B4318:                 ; 0xb4318
         JMPR cc_SGE,L_B434E
         MOV R12,R9
         MOV R13,tq_dif_i_is
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV R12,R4
         MOV R13,lv_tq_c722
-        CALLS 00FH,Div_S16_Round_Sat
+        CALLS SEG Div_S16_Round_Sat, SOF Div_S16_Round_Sat
         MOV tq_add_i_ramp,R4
         CMP R4,#DATA16 0FFFFH
         JMPR cc_SGE,L_B4344
@@ -562,10 +562,10 @@ L_B4348:                 ; 0xb4348
 L_B434E:                 ; 0xb434e
         MOV R12,R8
         MOV R13,tq_dif_i_is
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV R12,R4
         MOV R13,lv_tq_c722
-        CALLS 00FH,Div_S16_Round_Sat
+        CALLS SEG Div_S16_Round_Sat, SOF Div_S16_Round_Sat
         MOV tq_add_i_ramp,R4
         CMP R4,#01H
         JMPR cc_SLE,L_B436C
@@ -586,7 +586,7 @@ L_B437A:                 ; 0xb437a
 L_B4386:                 ; 0xb4386
         MOV R12,lv_tq_c726
         MOV R13,tq_dif_i_is
-        CALLS 00FH,Abs_Diff_S16
+        CALLS SEG Abs_Diff_S16, SOF Abs_Diff_S16
         MOV [-R0],R4
         MOV R4,tq_add_i_ramp
         CMP R4,#00H
@@ -606,7 +606,7 @@ L_B43A8:                 ; 0xb43a8
 L_B43B8:                 ; 0xb43b8
         MOV R12,tq_dif_i_is
         MOV R13,tq_add_i_ramp
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV tq_dif_i_is,R4
 L_B43C8:                 ; 0xb43c8
         MOV R4,tq_dif_i_is
@@ -623,10 +623,10 @@ L_B43E0:                 ; 0xb43e0
         MOVB state_i_isc,RL4
         MOV R12,tqi_dif_i_is
         MOV R13,tq_dif_i_is
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV R12,R4
         MOV R13,lv_tq_c722
-        CALLS 00FH,Div_S16_Round_Sat
+        CALLS SEG Div_S16_Round_Sat, SOF Div_S16_Round_Sat
         MOV tq_add_i_ramp,R4
         MOV R5,tq_dif_i_is
         CMP R5,tqi_dif_i_is
@@ -662,7 +662,7 @@ L_B4438:                 ; 0xb4438
 L_B444E:                 ; 0xb444e
         MOV R12,lv_tq_c72c
         MOV R13,tq_dif_i_is
-        CALLS 00FH,Abs_Diff_S16
+        CALLS SEG Abs_Diff_S16, SOF Abs_Diff_S16
         MOV [-R0],R4
         MOV R4,tq_add_i_ramp
         CMP R4,#00H
@@ -682,7 +682,7 @@ L_B4470:                 ; 0xb4470
 L_B4480:                 ; 0xb4480
         MOV R12,tq_dif_i_is
         MOV R13,tq_add_i_ramp
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV tq_dif_i_is,R4
 L_B4490:                 ; 0xb4490
         MOV R4,tq_dif_i_is
@@ -751,7 +751,7 @@ L_B451C:                 ; 0xb451c
         MOVBS R13,n_grd
         SHL R13,#08H
         MOV R14,DPP0:c_crlc_n_grd_fil_isc_act_ast
-        CALLS 00FH,Interp_S16
+        CALLS SEG Interp_S16, SOF Interp_S16
         MOV st_isc_req,R4
         ASHR R4,#08H
         MOVB n_grd_fil_isc_act_ast,RL4
@@ -760,7 +760,7 @@ L_B451C:                 ; 0xb451c
         BSET lv_dc_rbm.0DH
         MOV R12,n_sp_is
         MOV R13,DPP0:c_n_dif_isc_act_ast
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         CMP R4,n_C93C
         JMPR cc_ULE,L_B45CE
         BSET lv_dc_rbm.0AH
@@ -837,18 +837,18 @@ Calc_TQ_Add_IS_Pred:
         MOV R12,#DATA16 POF ldp_n_t_n_dif_ofs_pred
         MOV R13,#DATA16 PAG ldp_n_t_n_dif_ofs_pred
         MOV R14,n_C93C
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_t_n_dif_ofs_pred__n
         MOV R13,#DATA16 PAG ip_t_n_dif_ofs_pred__n
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVB t_n_dif_ofs_pred,RL4
         MOVBS R12,n_grd
         MOVBZ R13,RL4
-        CALLS 00FH,Mul_S16_Sat16
+        CALLS SEG Mul_S16_Sat16, SOF Mul_S16_Sat16
         MOV n_dif_ofs_pred,R4
         MOV R12,n_dif
         MOV R13,R4
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV lv_tq_c73c,R4
         MOVB RL4,n_grd_fil_isc_act_ast
         CMPB RL4,#00H
@@ -869,10 +869,10 @@ L_B463A:                 ; 0xb463a
         MOV R13,#DATA16 PAG ldp_n_dif_pred_tq_add_is_bol
         MOV R14,n_dif_pred
         ADD R14,#DATA16 08000H
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_tq_add_is_bol__n_dif_pred
         MOV R13,#DATA16 PAG ip_tq_add_is_bol__n_dif_pred
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV R9,R4
         JMPR cc_UC,L_B4678
 L_B465E:                 ; 0xb465e
@@ -893,13 +893,13 @@ L_B4684:                 ; 0xb4684
         MOV R13,R9
         MOVBZ R14,DPP0:c_tq_add_is_bol_crlc
         SHL R14,#08H
-        CALLS 00FH,Interp_S16
+        CALLS SEG Interp_S16, SOF Interp_S16
         MOV tq_add_is_bol,R4
 L_B4698:                 ; 0xb4698
         JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_B46CC
         MOV R12,tqi_req_tra
         MOV R13,tq_add_is_bol
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV R9,tqi_add_max_tol
         SUB R9,R4
         CMP R9,#00H

@@ -76,12 +76,12 @@ Acq_TPS_Mes_Mon:
         JMPR cc_UGT,L_CA13A
         MOV R12,R9
         MOV R13,tps_mes_10_diag
-        CALLS 00FH,Abs_Diff_U16
+        CALLS SEG Abs_Diff_U16, SOF Abs_Diff_U16
         CMP R4,DPP0:c_tps_hys
         JMPR cc_ULE,L_CA136
         MOVBZ R12,tps_mes
         MOVBZ R13,tps_mes_diag
-        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CALLS SEG subtract_r12_r13_negate_if_not_rets_r4, SOF subtract_r12_r13_negate_if_not_rets_r4
         CMPB RL4,DPP0:c_tps_grd_max
         JMPR cc_C,L_CA122
         JNB lv_err_tps_det.0BH,L_CA132
@@ -110,7 +110,7 @@ L_CA148:                 ; 0xca148
         MOV R13,#DATA16 0522EH
         MOVBZ R14,DPP0:c_abc_inc_tps_mes
         MOVBZ R15,DPP0:c_abc_max_tps_mes
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_cam_err.00H,dtc_status_work.06H
         MOVBZ R4,dtc_table
         AND R4,#DATA16 00020H
@@ -130,7 +130,7 @@ L_CA186:                 ; 0xca186
 L_CA188:                 ; 0xca188
         MOVBZ R12,tps_mes
         MOVBZ R13,lv_tps_c359
-        CALLS 00FH,Sat_Sub_S16_v2
+        CALLS SEG Sat_Sub_S16_v2, SOF Sat_Sub_S16_v2
         MOV tps_mes_dif,R4
         MOVB RL4,n_32
         CMPB RL4,DPP0:c_n_max_tps_noise
@@ -249,29 +249,29 @@ L_CA2BA:                 ; 0xca2ba
         MOV R12,#DATA16 POF ldp_n_ip_maf_max_isa
         MOV R13,#DATA16 PAG ldp_n_ip_maf_max_isa
         MOV R14,n_C93C
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_maf_max_isa__n
         MOV R13,#DATA16 PAG ip_maf_max_isa__n
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV R12,R4
         MOV R13,opg_av_isa
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV R13,R4
         MOV R12,maf_kgh
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV maf_tps_diag,R4
         JB lv_amp_ad_rst.0BH,L_CA324
         MOV R12,#DATA16 POF ldp_n_32__tps_sub_diag
         MOV R13,#DATA16 PAG ldp_n_32__tps_sub_diag
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ldp_maf_tps_diag__tps_sub_diag
         MOV R13,#DATA16 PAG ldp_maf_tps_diag__tps_sub_diag
         MOV R14,maf_tps_diag
-        CALLS 00FH,Get_IP_Word_X_Axis
+        CALLS SEG Get_IP_Word_X_Axis, SOF Get_IP_Word_X_Axis
         MOV R12,#DATA16 POF ip_tps_sub_diag
         MOV R13,#DATA16 PAG ip_tps_sub_diag
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVB tps_sub_diag,RL4
         JMPR cc_UC,L_CA32C
 L_CA324:                 ; 0xca324
@@ -314,8 +314,8 @@ Calc_VS:
         MOV p_vs_cc_h,R2
         MOV R2,#DATA16 0FB4CH
         MOV p_vs_cc_e,R2
-        CALLS 00AH,Reset_CC30IC_24e
-        CALLS 00AH,Reset_CC13IC_27e
+        CALLS SEG Reset_CC30IC_24e, SOF Reset_CC30IC_24e
+        CALLS SEG Reset_CC13IC_27e, SOF Reset_CC13IC_27e
         MOVB RL4,DPP0:c_conf_vs
         JMPR cc_NE,L_CA3CA
         MOVB conf_vs,ZEROS
@@ -327,7 +327,7 @@ Calc_VS:
         MOV R5,DPP0:c_vs_fac_0
         MOV vs_fac_div,R5
         MOV R12,#01H
-        CALLS 00AH,Reset_ODP7_230
+        CALLS SEG Reset_ODP7_230, SOF Reset_ODP7_230
         JMPR cc_UC,L_CA42E
 L_CA3CA:                 ; 0xca3ca
         MOVB RL6,DPP0:c_vs_min_1_2
@@ -348,9 +348,9 @@ L_CA3CA:                 ; 0xca3ca
         MOV R4,DPP0:c_t_vs_min_learn
         MOV t_vs_min_learn,R4
         MOV R12,#04H
-        CALLS 00AH,Reset_ODP7_230
+        CALLS SEG Reset_ODP7_230, SOF Reset_ODP7_230
         MOV R12,#04H
-        CALLS 00AH,Reset_ODP2_262
+        CALLS SEG Reset_ODP2_262, SOF Reset_ODP2_262
         JMPR cc_UC,L_CA42E
 L_CA410:                 ; 0xca410
         MOVB RL4,conf_vs
@@ -359,11 +359,11 @@ L_CA410:                 ; 0xca410
         MOV R4,#DATA16 0CDECH
         MOV p_vs_meas,R4
         MOV R12,#04H
-        CALLS 00AH,Reset_ODP2_262
+        CALLS SEG Reset_ODP2_262, SOF Reset_ODP2_262
         JMPR cc_UC,L_CA42E
 L_CA428:                 ; 0xca428
         MOV R12,#04H
-        CALLS 00AH,Reset_ODP7_230
+        CALLS SEG Reset_ODP7_230, SOF Reset_ODP7_230
 L_CA42E:                 ; 0xca42e
         MOVBZ R4,RL6
         MOV R2,vs_fac_div
@@ -416,7 +416,7 @@ L_CA4AE:                 ; 0xca4ae
         MOV R12,vs_div_num_lo
         MOV R13,vs_div_num_hi
         MOV R14,tmp32_lo
-        CALLS 00FH,Div_U32_U16_Round
+        CALLS SEG Div_U32_U16_Round, SOF Div_U32_U16_Round
         SUB R4,#01H
         MOV vs_scale,R4
         MOV R6,[R0+]
@@ -451,14 +451,14 @@ Calc_VS_ConfLearn:
         MOVBZ R12,RL4
         MOV R5,R8
         MOVBZ R13,RL5
-        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CALLS SEG subtract_r12_r13_negate_if_not_rets_r4, SOF subtract_r12_r13_negate_if_not_rets_r4
         CMPB RL4,DPP0:c_vs_dif_max_learn
         JMPR cc_NC,L_CA530
         MOV R4,t_vs_min_learn
         JMPR cc_NE,L_CA52A
         MOVB RL4,#01H
         MOVB conf_vs,RL4
-        CALLS 00AH,Reset_CC13IC_27e
+        CALLS SEG Reset_CC13IC_27e, SOF Reset_CC13IC_27e
         JMPR cc_UC,L_CA57A
 L_CA52A:                 ; 0xca52a
         ADD t_vs_min_learn,ONES
@@ -469,7 +469,7 @@ L_CA530:                 ; 0xca530
         JMPR cc_ULE,L_CA568
         MOVBZ R12,RL4
         MOVBZ R13,RL7
-        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CALLS SEG subtract_r12_r13_negate_if_not_rets_r4, SOF subtract_r12_r13_negate_if_not_rets_r4
         CMPB RL4,DPP0:c_vs_dif_max_learn
         JMPR cc_NC,L_CA568
         MOV R4,t_vs_min_learn
@@ -478,7 +478,7 @@ L_CA530:                 ; 0xca530
         MOVB conf_vs,RL4
         MOV R4,#DATA16 0CDECH
         MOV p_vs_meas,R4
-        CALLS 00AH,Reset_CC30IC_24e
+        CALLS SEG Reset_CC30IC_24e, SOF Reset_CC30IC_24e
         JMPR cc_UC,L_CA57A
 L_CA562:                 ; 0xca562
         ADD t_vs_min_learn,ONES
@@ -507,7 +507,7 @@ L_CA592:                 ; 0xca592
 L_CA59E:                 ; 0xca59e
         MOVBZ R12,vs
         MOV R13,#DATA16 00064H
-        CALLS 00FH,Mul_U16_Sat16
+        CALLS SEG Mul_U16_Sat16, SOF Mul_U16_Sat16
         MOV vs_rbm,R4
         MOVB RL4,vs
         CMPB RL4,DPP0:c_vs_min_run
@@ -538,7 +538,7 @@ L_CA5E6:                 ; 0xca5e6
         JMPR cc_ULE,L_CA6B0
         MOV R12,n_max_thd
         MOV R13,DPP0:c_n_vs_max_hys_diag
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         CMP R4,n_C93C
         JMPR cc_ULE,L_CA6B0
         JNB lv_conf_mis.0AH,L_CA61E
@@ -574,7 +574,7 @@ L_CA654:                 ; 0xca654
         MOV R13,#DATA16 052C8H
         MOV R14,#01H
         MOV R15,#01H
-        CALLS 00DH,DTC_Update_Debounced_OBD
+        CALLS SEG DTC_Update_Debounced_OBD, SOF DTC_Update_Debounced_OBD
         BMOV lv_cam_err.07H,dtc_status_work.06H
         MOVBZ R4,g_d13c
         AND R4,#DATA16 00020H
@@ -586,7 +586,7 @@ L_CA680:                 ; 0xca680
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D14EH
         MOV R13,#DATA16 052F4H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cam_err.09H,dtc_status_work.06H
         MOVBZ R4,diag_d158
         AND R4,#DATA16 00020H
@@ -622,7 +622,7 @@ L_CA6DE:                 ; 0xca6de
         MOV R13,#DATA16 052C8H
         MOV R14,#01H
         MOV R15,#01H
-        CALLS 00DH,DTC_Update_Debounced_OBD
+        CALLS SEG DTC_Update_Debounced_OBD, SOF DTC_Update_Debounced_OBD
         BMOV lv_cam_err.07H,dtc_status_work.06H
         MOVBZ R4,g_d13c
         AND R4,#DATA16 00020H
@@ -637,7 +637,7 @@ L_CA708:                 ; 0xca708
         MOVB dtc_test_result,ZEROS
         MOV R12,#DATA16 0D14EH
         MOV R13,#DATA16 052F4H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cam_err.09H,dtc_status_work.06H
         MOVBZ R4,diag_d158
         AND R4,#DATA16 00020H
@@ -664,7 +664,7 @@ L_CA74E:                 ; 0xca74e
         SHL R12,#08H
         MOV R13,#DATA16 013ECH
         MOV R14,n_C93C
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         SHR R4,#08H
         MOVB crk_vs_n_ratio_osc,RL4
         JMPR cc_UC,L_CA780
@@ -701,7 +701,7 @@ NVM_Save_s641:
         MOV R13,R5
         MOV R14,#DATA16 0F99FH
         MOV R15,#01H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         RETS
 
 ; ======== Acq_VehicleSpeed  (@0xca7ba) ========
@@ -791,7 +791,7 @@ L_CA87A:                 ; 0xca87a
         MOV R12,tmp32_lo
         MOV R13,tmp32_hi
         MOV R14,#04H
-        CALLS 00FH,Div_U32_U16_Round32
+        CALLS SEG Div_U32_U16_Round32, SOF Div_U32_U16_Round32
         MOV tmp32_lo,R4
         MOV tmp32_hi,R5
         MOV R4,tmp32_hi
@@ -838,22 +838,22 @@ L_CA904:                 ; 0xca904
         MOV R12,vs_div_num_lo
         MOV R13,vs_div_num_hi
         MOV R14,tmp32_lo
-        CALLS 00FH,Div_U32_U16_Round32
+        CALLS SEG Div_U32_U16_Round32, SOF Div_U32_U16_Round32
         MOV R12,R4
         MOV R13,R5
         MOV R14,vs_fac_div
-        CALLS 00FH,Div_U32_U16_Round
+        CALLS SEG Div_U32_U16_Round, SOF Div_U32_U16_Round
         MOV R12,R4
         MOV R13,#00H
         MOV R14,#DATA16 001FFH
-        CALLS 00FH,Clamp_U16
+        CALLS SEG Clamp_U16, SOF Clamp_U16
         MOV R8,R4
         SHL R4,#07H
         MOV vs_word,R4
         MOV R12,R8
         MOV R13,#00H
         MOV R14,#DATA16 000FFH
-        CALLS 00FH,Clamp_U16
+        CALLS SEG Clamp_U16, SOF Clamp_U16
         MOV R8,R4
         MOV R4,[R7+#08H]
         MOVB RL5,[R4]

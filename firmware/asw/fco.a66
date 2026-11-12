@@ -50,10 +50,10 @@ Lookup_Alti_Cor_MMV:
         MOV R12,#DATA16 POF ldp_maf_fac_alti_mmv_ip_ti_fac
         MOV R13,#DATA16 PAG ldp_maf_fac_alti_mmv_ip_ti_fac
         MOVBZ R14,maf_fac_alti_mmv
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_ti_fac_alti__maf_fac_alti_mm
         MOV R13,#DATA16 PAG ip_ti_fac_alti__maf_fac_alti_mm
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         RETS
 
 ; ======== Calc_FCO  (@0xdd6f6) ========
@@ -66,7 +66,7 @@ Calc_FCO:
         MOV [-R0],R7
         MOV [-R0],R6
         SUB R0,#02H
-        CALLS 00DH,Calc_TI_RFU
+        CALLS SEG Calc_TI_RFU, SOF Calc_TI_RFU
 L_DD704:                 ; 0xdd704
         MOVB RL6,inj_cc_3
         MOVB RL4,#01H
@@ -116,7 +116,7 @@ L_DD76A:                 ; 0xdd76a
         SHR R4,#01H
         OR R13,R4
         MOV R14,ti_rfu
-        CALLS 00FH,Div_U32_U16_Round32
+        CALLS SEG Div_U32_U16_Round32, SOF Div_U32_U16_Round32
         MOV R12,R4
         MOV R13,R5
         MOV R4,R13
@@ -125,12 +125,12 @@ L_DD76A:                 ; 0xdd76a
         SHL R4,#0EH
         OR R12,R4
         MOV R14,R7
-        CALLS 00FH,MulAdd_U32_Sat
+        CALLS SEG MulAdd_U32_Sat, SOF MulAdd_U32_Sat
         MOV R14,R4
         MOV R15,R5
         MOV R12,lv_ti_f8b6
         MOV R13,lv_ti_f8b8
-        CALLS 00FH,Sat_Add_U32
+        CALLS SEG Sat_Add_U32, SOF Sat_Add_U32
         MOV lv_ti_f89c,R4
         MOV fco_word_1_,R5
         MOV R4,fco_word_1_
@@ -147,7 +147,7 @@ L_DD7CE:                 ; 0xdd7ce
         MOV R5,fco_word_1_
         MOV R10,#00H
         MOV R11,#DATA16 00271H
-        CALLS 00DH,Calc_CtrlModule_Voltage
+        CALLS SEG Calc_CtrlModule_Voltage, SOF Calc_CtrlModule_Voltage
         MOV R7,R4
         CMP R7,#05H
         JMPR cc_ULE,L_DD7EE
@@ -159,7 +159,7 @@ L_DD7EE:                 ; 0xdd7ee
         MOVB fco_nr,RL4
 L_DD7F4:                 ; 0xdd7f4
         MOVBZ R12,fco_nr
-        CALLS 00AH,Set_Output_CC29
+        CALLS SEG Set_Output_CC29, SOF Set_Output_CC29
         MOV R4,lv_ti_f89c
         MOV R5,fco_word_1_
         MOVBZ R2,fco_nr
@@ -189,15 +189,15 @@ L_DD826:                 ; 0xdd826
 Calc_TI_RFU:
         MOV R12,amp
         MOV R13,map_fg_pred
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV amp_map_dif,R4
         MOV R12,#DATA16 POF ldp_amp_map_dif_ip_ti_rfu
         MOV R13,#DATA16 PAG ldp_amp_map_dif_ip_ti_rfu
         MOV R14,R4
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_ti_rfu__amp_map_dif
         MOV R13,#DATA16 PAG ip_ti_rfu__amp_map_dif
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV ti_rfu,R4
         RETS
 

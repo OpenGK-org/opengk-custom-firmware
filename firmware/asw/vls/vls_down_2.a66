@@ -81,7 +81,7 @@ L_B8A42:                 ; 0xb8a42
         JMPR cc_ULE,L_B8A80
         MOV R12,[R9+#0182H]
         MOVBZ R13,DPP0:c_fac_vls_down_diag_max
-        CALLS 00FH,Read_MulDiv_MD
+        CALLS SEG Read_MulDiv_MD, SOF Read_MulDiv_MD
         MOV R5,[R9+#096H]
         CMP R5,R4
         JMPA cc_NC,L_B8BE2
@@ -95,7 +95,7 @@ L_B8A80:                 ; 0xb8a80
 L_B8A8A:                 ; 0xb8a8a
         MOV R12,[R9+#0184H]
         MOV R13,DPP0:c_vls_down_hys
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV R5,[R9+#096H]
         CMP R5,R4
         JMPR cc_UGT,L_B8AE2
@@ -103,7 +103,7 @@ L_B8A8A:                 ; 0xb8a8a
         MOV [R9+#0184H],R4
         MOV R12,[R9+#0182H]
         MOVBZ R13,DPP0:c_fac_vls_down_diag_min
-        CALLS 00FH,Read_MulDiv_MD
+        CALLS SEG Read_MulDiv_MD, SOF Read_MulDiv_MD
         MOV R5,[R9+#096H]
         CMP R5,R4
         JMPR cc_ULE,L_B8AD6
@@ -141,25 +141,25 @@ L_B8B10:                 ; 0xb8b10
         MOV R12,#DATA16 POF ldp_maf_kgh__vls_down_max_cycnr
         MOV R13,#DATA16 PAG ldp_maf_kgh__vls_down_max_cycnr
         MOV R14,maf_kgh_min_puc
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_vls_down_max_cycnr__maf_kgh
         MOV R13,#DATA16 PAG ip_vls_down_max_cycnr__maf_kgh
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVBZ R13,RL4
         SHL R13,#08H
         MOVB RL4,[R9+#0186H]
         MOVBZ R12,RL4
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         MOV [R9+#0188H],R4
         MOV R12,[R9+#018CH]
         MOV R13,[R9+#0188H]
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV [R9+#018CH],R4
         MOV R12,[R9+#018CH]
         MOVB RL4,[R9+#018AH]
         MOVBZ R13,RL4
         SHL R13,#09H
-        CALLS 00FH,Div_Ratio_U8_Sat
+        CALLS SEG Div_Ratio_U8_Sat, SOF Div_Ratio_U8_Sat
         MOVB [R9+#018EH],RL4
         MOVB [R9+#018FH],RL4
 L_B8B66:                 ; 0xb8b66
@@ -179,7 +179,7 @@ L_B8B88:                 ; 0xb8b88
         BSET lv_inh_fsd_cp.0AH
 L_B8B8A:                 ; 0xb8b8a
         BSET state_cat_diag.08H
-        CALLS 00CH,Diag_Cat_Eff_SetDTC
+        CALLS SEG Diag_Cat_Eff_SetDTC, SOF Diag_Cat_Eff_SetDTC
         JMPR cc_UC,L_B8BE2
 L_B8B92:                 ; 0xb8b92
         MOVB RL4,#01H
@@ -332,10 +332,10 @@ L_B8CEC:                 ; 0xb8cec
         JMPR cc_NE,L_B8D14
         MOV R12,maf_kgh
         MOV R13,#DATA16 007F8H
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV R13,R4
         MOV R12,maf_int_pue
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV maf_int_pue,R4
 L_B8D14:                 ; 0xb8d14
         MOV R4,[R9+#0198H]
@@ -423,7 +423,7 @@ L_B8DC8:                 ; 0xb8dc8
 L_B8DE6:                 ; 0xb8de6
         BCLR lv_inh_fsd_cp.0BH
 L_B8DE8:                 ; 0xb8de8
-        CALLS 00CH,Diag_CP_FSD_SetDTC
+        CALLS SEG Diag_CP_FSD_SetDTC, SOF Diag_CP_FSD_SetDTC
         MOV R4,[R9+#019CH]
         MOV [R9+#0196H],R4
         JMPR cc_UC,L_B8E18
@@ -486,7 +486,7 @@ Diag_DTC_dd23c:
         MOVB dtc_test_result,ZEROS
         MOV R12,#DATA16 0D2BAH
         MOV R13,#DATA16 05530H
-        CALLS 00DH,DTC_Update_Imm_V2
+        CALLS SEG DTC_Update_Imm_V2, SOF DTC_Update_Imm_V2
         BMOV lv_cps_err.03H,dtc_status_work.06H
         MOVBZ R4,dtc_done_o2_2
         AND R4,#DATA16 00020H
@@ -504,7 +504,7 @@ L_B8E86:                 ; 0xb8e86
         JB lv_cps_err.03H,L_B8EC4
         MOV R12,#DATA16 0D23CH
         MOV R13,#DATA16 0546AH
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_lam_lim_1_err.0AH,dtc_status_work.06H
         MOVBZ R4,diag_d246
         AND R4,#DATA16 00020H

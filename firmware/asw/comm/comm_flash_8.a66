@@ -36,7 +36,7 @@ L_CC458:                 ; 0xcc458
         MOVBZ R4,kwp_dl_mask
         AND R4,#DATA16 00040H
         JMPR cc_EQ,L_CC498
-        CALLS 00DH,Is_BL_Prog_Session
+        CALLS SEG Is_BL_Prog_Session, SOF Is_BL_Prog_Session
         MOVB kwp_c367,RL4
         CMPB RL4,#00H
         JMPR cc_NE,L_CC470
@@ -84,7 +84,7 @@ L_CC4DE:                 ; 0xcc4de
         JMPR cc_NC,L_CC526
         MOVB RL4,kwp_cmd_param
         MOVBZ R12,RL4
-        CALLS 00DH,call_to_RSW_from_prog_zone
+        CALLS SEG call_to_RSW_from_prog_zone, SOF call_to_RSW_from_prog_zone
         MOVB kwp_c367,RL4
         BCLR lv_cp_act.03H
         MOV R4,#DATA16 0C367H
@@ -116,7 +116,7 @@ L_CC53E:                 ; 0xcc53e
         MOV kwp_dl_count,R5
         MOV R12,#DATA16 0CEC6H
         MOV R13,#DATA16 04CCEH
-        CALLS 00CH,Flash_Compare_Block
+        CALLS SEG Flash_Compare_Block, SOF Flash_Compare_Block
         MOVBZ R9,RL4
         MOV R4,R9
         MOVB kwp_resp_status2,RL4
@@ -161,7 +161,7 @@ KWP_Flash_Cmd35_arm:
         MOV R13,kwp_dl_count
         MOV R14,#06H
         MOV R15,#01H
-        CALLS 00CH,CanPurge_SetAct_2
+        CALLS SEG CanPurge_SetAct_2, SOF CanPurge_SetAct_2
         MOVBZ R9,RL4
         MOVBZ R4,kwp_dl_mask
         AND R4,R9
@@ -223,7 +223,7 @@ L_CC68C:                 ; 0xcc68c
         MOV R13,kwp_dl_count
         MOV R14,#DATA16 0D782H
         MOV R15,#06H
-        CALLS 00DH,Interp_Scale_Buffer
+        CALLS SEG Interp_Scale_Buffer, SOF Interp_Scale_Buffer
         CMPB RL4,#00H
         JMPR cc_NE,L_CC6B0
         MOV R4,#06H

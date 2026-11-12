@@ -148,14 +148,14 @@ L_C08BA:                 ; 0xc08ba
         MOV R12,#DATA16 POF ldpm_n_32__fac_er
         MOV R13,#DATA16 PAG ldpm_n_32__fac_er
         MOVBZ R14,n_32
-        CALLS 00FH,Get_Byte_Y_Axis
+        CALLS SEG Get_Byte_Y_Axis, SOF Get_Byte_Y_Axis
         MOV R12,#DATA16 POF ldpm_maf_hb__fac_er
         MOV R13,#DATA16 PAG ldpm_maf_hb__fac_er
         MOVBZ R14,lv_iga_cc2b
-        CALLS 00FH,Get_Byte_X_Axis
+        CALLS SEG Get_Byte_X_Axis, SOF Get_Byte_X_Axis
         MOV R12,#DATA16 POF id_t_igc_dur_min__n__maf
         MOV R13,#DATA16 PAG id_t_igc_dur_min__n__maf
-        CALLS 00FH,Read_Table_Indexed
+        CALLS SEG Read_Table_Indexed, SOF Read_Table_Indexed
         MOV R5,R9
         SHL R5,#01H
         MOV R2,[R5+#0F700H]
@@ -182,7 +182,7 @@ L_C0918:                 ; 0xc0918
         MOV R13,#DATA16 056A6H
         MOVBZ R14,DPP0:c_abc_inc_igc
         MOVBZ R15,DPP0:c_abc_max_igc
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_dur_igc_0_err.04H,dtc_status_work.06H
         MOVBZ R4,lv_iga_d3b2
         AND R4,#DATA16 00020H
@@ -195,7 +195,7 @@ L_C0948:                 ; 0xc0948
         MOV R13,#DATA16 056BCH
         MOVBZ R14,DPP0:c_abc_inc_igc
         MOVBZ R15,DPP0:c_abc_max_igc
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_dur_igc_0_err.05H,dtc_status_work.06H
         MOVBZ R4,lv_iga_d3c0
         AND R4,#DATA16 00020H
@@ -208,7 +208,7 @@ L_C0978:                 ; 0xc0978
         MOV R13,#DATA16 056D2H
         MOVBZ R14,DPP0:c_abc_inc_igc
         MOVBZ R15,DPP0:c_abc_max_igc
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_dur_igc_0_err.06H,dtc_status_work.06H
         MOVBZ R4,lv_iga_d3ce
         AND R4,#DATA16 00020H
@@ -221,7 +221,7 @@ L_C09A8:                 ; 0xc09a8
         MOV R13,#DATA16 056E8H
         MOVBZ R14,DPP0:c_abc_inc_igc
         MOVBZ R15,DPP0:c_abc_max_igc
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_dur_igc_0_err.07H,dtc_status_work.06H
         MOVBZ R4,lv_iga_d3dc
         AND R4,#DATA16 00020H
@@ -257,14 +257,14 @@ L_C0A12:                 ; 0xc0a12
         MOV R12,#DATA16 POF ldpm_n_32__fac_er
         MOV R13,#DATA16 PAG ldpm_n_32__fac_er
         MOVBZ R14,n_32
-        CALLS 00FH,Get_Byte_Y_Axis
+        CALLS SEG Get_Byte_Y_Axis, SOF Get_Byte_Y_Axis
         MOV R12,#DATA16 POF ldpm_maf_hb__fac_er
         MOV R13,#DATA16 PAG ldpm_maf_hb__fac_er
         MOVBZ R14,lv_iga_cc2b
-        CALLS 00FH,Get_Byte_X_Axis
+        CALLS SEG Get_Byte_X_Axis, SOF Get_Byte_X_Axis
         MOV R12,#DATA16 POF id_t_igc_dur_min__n__maf
         MOV R13,#DATA16 PAG id_t_igc_dur_min__n__maf
-        CALLS 00FH,Read_Table_Indexed
+        CALLS SEG Read_Table_Indexed, SOF Read_Table_Indexed
         MOV R5,R9
         SHL R5,#01H
         MOV R2,[R5+#0F700H]
@@ -288,7 +288,7 @@ L_C0A68:                 ; 0xc0a68
         MOV R13,#DATA16 056A6H
         MOVBZ R14,DPP0:c_abc_inc_igc
         MOVBZ R15,DPP0:c_abc_max_igc
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_dur_igc_0_err.04H,dtc_status_work.06H
         MOVBZ R4,lv_iga_d3b2
         AND R4,#DATA16 00020H
@@ -309,7 +309,7 @@ L_C0AA8:                 ; 0xc0aa8
         MOV R13,#DATA16 056BCH
         MOVBZ R14,DPP0:c_abc_inc_igc
         MOVBZ R15,DPP0:c_abc_max_igc
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_dur_igc_0_err.05H,dtc_status_work.06H
         MOVBZ R4,lv_iga_d3c0
         AND R4,#DATA16 00020H
@@ -330,7 +330,7 @@ L_C0AE8:                 ; 0xc0ae8
         MOV R13,#DATA16 056D2H
         MOVBZ R14,DPP0:c_abc_inc_igc
         MOVBZ R15,DPP0:c_abc_max_igc
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_dur_igc_0_err.06H,dtc_status_work.06H
         MOVBZ R4,lv_iga_d3ce
         AND R4,#DATA16 00020H
@@ -351,7 +351,7 @@ L_C0B28:                 ; 0xc0b28
         MOV R13,#DATA16 056E8H
         MOVBZ R14,DPP0:c_abc_inc_igc
         MOVBZ R15,DPP0:c_abc_max_igc
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_dur_igc_0_err.07H,dtc_status_work.06H
         MOVBZ R4,lv_iga_d3dc
         AND R4,#DATA16 00020H

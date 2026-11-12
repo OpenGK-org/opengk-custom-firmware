@@ -40,7 +40,7 @@ L_DA246:                 ; 0xda246
         MOV R10,R4
         MOV R4,[R10+#0523EH]
         MOV R5,[R10+#05240H]
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
         MOVB RL4,#00H
         MOVB [R9+#0C3DBH],RL4
         MOVB [R9+#0C441H],RL4
@@ -59,29 +59,29 @@ L_DA270:                 ; 0xda270
         JMPR cc_C,L_DA270
         MOV R4,trt_word
         MOV kwp_d664,R4
-        CALLS 00DH,Reset_OBD_Readiness_Group
-        CALLS 00EH,Calc_LS_Down_OBD2_Mod6
-        CALLS 00EH,Reset_OBD_Stat
-        CALLS 00BH,Set_RBM_Cat_Diag_State_2
-        CALLS 00DH,ClrBits_state_rbm_dtp_noise_2c8
-        CALLS 00DH,ClrBits_state_rbm_cps_mecha_352
-        CALLS 00DH,ClrBits_state_rbm_leak_small_3d6
-        CALLS 00DH,ClrBits_state_rbm_leak_large_474
-        CALLS 00DH,ClrBits_state_rbm_lsh_up_obd2_86e
-        CALLS 00BH,ClrBits_state_rbm_lsh_down_obd2_0b6
-        CALLS 00CH,ClrBits_state_rbm_cam_dif_ivvt_in_65e
-        CALLS 00CH,ClrBits_state_rbm_tco_stuck_054
-        CALLS 00CH,ClrBits_state_rbm_tco_stuck_rng_0ec
-        CALLS 00BH,ClrBits_state_rbm_tco_plaus_874
-        CALLS 00BH,ClrBits_state_rbm_th_det_750
-        CALLS 00DH,ClrBits_state_rbm_vls_up_plaus_5b2
-        CALLS 00DH,ClrBits_state_rbm_vls_up_frq_5c6
-        CALLS 00BH,ClrBits_state_rbm_ls_down_swt_efa
-        CALLS 00BH,ClrBits_state_rbm_vls_down_plaus_f94
-        CALLS 00BH,ClrBits_state_rbm_toil_stuck_37e
-        CALLS 00DH,ClrBits_state_rbm_maf_dif_ch_20a
-        CALLS 00CH,ClrBits_state_rbm_tia_plaus_178
-        CALLS 00BH,Reset__ctr_km_mil_on_166
+        CALLS SEG Reset_OBD_Readiness_Group, SOF Reset_OBD_Readiness_Group
+        CALLS SEG Calc_LS_Down_OBD2_Mod6, SOF Calc_LS_Down_OBD2_Mod6
+        CALLS SEG Reset_OBD_Stat, SOF Reset_OBD_Stat
+        CALLS SEG Set_RBM_Cat_Diag_State_2, SOF Set_RBM_Cat_Diag_State_2
+        CALLS SEG ClrBits_state_rbm_dtp_noise_2c8, SOF ClrBits_state_rbm_dtp_noise_2c8
+        CALLS SEG ClrBits_state_rbm_cps_mecha_352, SOF ClrBits_state_rbm_cps_mecha_352
+        CALLS SEG ClrBits_state_rbm_leak_small_3d6, SOF ClrBits_state_rbm_leak_small_3d6
+        CALLS SEG ClrBits_state_rbm_leak_large_474, SOF ClrBits_state_rbm_leak_large_474
+        CALLS SEG ClrBits_state_rbm_lsh_up_obd2_86e, SOF ClrBits_state_rbm_lsh_up_obd2_86e
+        CALLS SEG ClrBits_state_rbm_lsh_down_obd2_0b6, SOF ClrBits_state_rbm_lsh_down_obd2_0b6
+        CALLS SEG ClrBits_state_rbm_cam_dif_ivvt_in_65e, SOF ClrBits_state_rbm_cam_dif_ivvt_in_65e
+        CALLS SEG ClrBits_state_rbm_tco_stuck_054, SOF ClrBits_state_rbm_tco_stuck_054
+        CALLS SEG ClrBits_state_rbm_tco_stuck_rng_0ec, SOF ClrBits_state_rbm_tco_stuck_rng_0ec
+        CALLS SEG ClrBits_state_rbm_tco_plaus_874, SOF ClrBits_state_rbm_tco_plaus_874
+        CALLS SEG ClrBits_state_rbm_th_det_750, SOF ClrBits_state_rbm_th_det_750
+        CALLS SEG ClrBits_state_rbm_vls_up_plaus_5b2, SOF ClrBits_state_rbm_vls_up_plaus_5b2
+        CALLS SEG ClrBits_state_rbm_vls_up_frq_5c6, SOF ClrBits_state_rbm_vls_up_frq_5c6
+        CALLS SEG ClrBits_state_rbm_ls_down_swt_efa, SOF ClrBits_state_rbm_ls_down_swt_efa
+        CALLS SEG ClrBits_state_rbm_vls_down_plaus_f94, SOF ClrBits_state_rbm_vls_down_plaus_f94
+        CALLS SEG ClrBits_state_rbm_toil_stuck_37e, SOF ClrBits_state_rbm_toil_stuck_37e
+        CALLS SEG ClrBits_state_rbm_maf_dif_ch_20a, SOF ClrBits_state_rbm_maf_dif_ch_20a
+        CALLS SEG ClrBits_state_rbm_tia_plaus_178, SOF ClrBits_state_rbm_tia_plaus_178
+        CALLS SEG Reset__ctr_km_mil_on_166, SOF Reset__ctr_km_mil_on_166
         MOV dtc_act_shadow,ZEROS
         MOV dtc_act,ZEROS
         MOVB RL4,RL6

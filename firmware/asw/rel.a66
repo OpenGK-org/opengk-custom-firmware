@@ -33,16 +33,16 @@ L_B2208:                 ; 0xb2208
         MOV R12,#DATA16 POF ldpm_maf_cyl_ip_rel_flow_inc_cp
         MOV R13,#DATA16 PAG ldpm_maf_cyl_ip_rel_flow_inc_cp
         MOV R14,maf_cyl
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_rel_flow_dec_cp__maf_cyl
         MOV R13,#DATA16 PAG ip_rel_flow_dec_cp__maf_cyl
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV R8,R4
         CMP R8,rel_flow_cps
         JMPR cc_NC,L_B2260
         MOV R12,rel_flow_cps
         MOV R13,R8
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV rel_flow_cps,R4
         MOV R5,cp_tra_state
         CMP R5,#03H
@@ -73,14 +73,14 @@ CanPurge_Calc_Flow_3:
         MOV R12,#DATA16 POF ldpm_n_32_ip_rel_flow_min_cps
         MOV R13,#DATA16 PAG ldpm_n_32_ip_rel_flow_min_cps
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ldpm_maf_ip_rel_flow_min_cps
         MOV R13,#DATA16 PAG ldpm_maf_ip_rel_flow_min_cps
         MOVBZ R14,lv_iga_cc2b
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         MOV R12,#DATA16 POF ip_rel_flow_min_cps__n_32__maf
         MOV R13,#DATA16 PAG ip_rel_flow_min_cps__n_32__maf
-        CALLS 00FH,Get_IP_Word_3D_Table
+        CALLS SEG Get_IP_Word_3D_Table, SOF Get_IP_Word_3D_Table
         MOV R8,R4
         JMPR cc_UC,L_B22A6
 L_B22A2:                 ; 0xb22a2
@@ -94,7 +94,7 @@ L_B22B4:                 ; 0xb22b4
         MOV R12,#DATA16 POF ldpm_maf_cyl_ip_rel_flow_inc_cp
         MOV R13,#DATA16 PAG ldpm_maf_cyl_ip_rel_flow_inc_cp
         MOV R14,maf_cyl
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R4,cp_tra_state
         CMP R4,#01H
         JMPR cc_EQ,L_B22D6
@@ -105,16 +105,16 @@ L_B22B4:                 ; 0xb22b4
 L_B22D6:                 ; 0xb22d6
         MOV R12,#DATA16 POF ip_rel_flow_inc_cp__maf_cyl
         MOV R13,#DATA16 PAG ip_rel_flow_inc_cp__maf_cyl
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV R9,R4
         MOV R12,R8
         MOV R13,rel_flow_cps
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         CMP R4,R9
         JMPR cc_ULE,L_B2304
         MOV R12,rel_flow_cps
         MOV R13,R9
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV rel_flow_cps,R4
         JMPA cc_UC,L_B2692
 L_B2304:                 ; 0xb2304
@@ -123,31 +123,31 @@ L_B2304:                 ; 0xb2304
 L_B230C:                 ; 0xb230c
         MOV R12,#DATA16 POF ip_rel_flow_dec_cp__maf_cyl
         MOV R13,#DATA16 PAG ip_rel_flow_dec_cp__maf_cyl
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV R9,R4
         MOV R12,rel_flow_cps
         MOV R13,R8
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         CMP R4,R9
         JMPR cc_ULE,L_B2338
         MOV R12,rel_flow_cps
         MOV R13,R9
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV rel_flow_cps,R4
         JMPR cc_UC,L_B2368
 L_B2338:                 ; 0xb2338
         MOV R12,#DATA16 POF ip_rel_flow_inc_cp__maf_cyl
         MOV R13,#DATA16 PAG ip_rel_flow_inc_cp__maf_cyl
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV R9,R4
         MOV R12,R8
         MOV R13,rel_flow_cps
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         CMP R4,R9
         JMPR cc_ULE,L_B2364
         MOV R12,rel_flow_cps
         MOV R13,R9
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV rel_flow_cps,R4
         JMPR cc_UC,L_B2368
 L_B2364:                 ; 0xb2364

@@ -63,11 +63,11 @@ L_C3144:                 ; 0xc3144
         AND R5,#DATA16 0000AH
         JMPR cc_EQ,L_C315C
         MOV R12,#00H
-        CALLS 00CH,Diag_Knks_Dyw
+        CALLS SEG Diag_Knks_Dyw, SOF Diag_Knks_Dyw
 L_C315C:                 ; 0xc315c
         MOV R12,#00H
-        CALLS 00CH,Set_Knks_Err_Dyw
-        CALLS 00CH,Diag_Knks_SetDTC
+        CALLS SEG Set_Knks_Err_Dyw, SOF Set_Knks_Err_Dyw
+        CALLS SEG Diag_Knks_SetDTC, SOF Diag_Knks_SetDTC
 L_C3166:                 ; 0xc3166
         RETS
 
@@ -84,7 +84,7 @@ Diag_Knks_Dyw:
         MOVBZ R4,cyl_id_knk
         SHL R4,#01H
         MOV R13,[R4+#0FBB4H]
-        CALLS 00FH,Abs_Diff_U16
+        CALLS SEG Abs_Diff_U16, SOF Abs_Diff_U16
         SHR R4,#06H
         MOVBZ R5,RL6
         SHL R5,#01H
@@ -265,7 +265,7 @@ L_C3302:                 ; 0xc3302
         MOV R13,#DATA16 056FEH
         MOVBZ R14,DPP0:c_abc_inc_nl_knk
         MOVBZ R15,DPP0:c_abc_max_nl_knk
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_dur_igc_0_err.08H,dtc_status_work.06H
         MOVBZ R4,lv_knk_d3ea
         AND R4,#DATA16 00020H

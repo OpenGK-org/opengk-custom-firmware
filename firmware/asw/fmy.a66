@@ -74,7 +74,7 @@ L_D9C5A:                 ; 0xd9c5a
         MOVBZ R4,RL6
         MOVB RL5,[R4+#0C3DBH]
         MOVBZ R12,RL5
-        CALLS 00DH,Clear_Fault_Slot
+        CALLS SEG Clear_Fault_Slot, SOF Clear_Fault_Slot
         MOVB RL7,#00H
 L_D9C76:                 ; 0xd9c76
         MOVB RL4,#00H
@@ -104,12 +104,12 @@ L_D9C8E:                 ; 0xd9c8e
         MOV R12,#DATA16 0C3DBH
         MOVBZ R13,fmy_f_anz
         MOVBZ R14,RL6
-        CALLS 00DH,Delay_Loop_da664
+        CALLS SEG Delay_Loop_da664, SOF Delay_Loop_da664
         ADDB fmy_f_anz,ONES
         MOV R12,#DATA16 0C441H
         MOVBZ R13,fmy_s_f_anz
         MOVBZ R14,RL7
-        CALLS 00DH,Delay_Loop_da664
+        CALLS SEG Delay_Loop_da664, SOF Delay_Loop_da664
         ADDB fmy_s_f_anz,ONES
         JMPR cc_UC,L_D9CD4
 L_D9CCE:                 ; 0xd9cce
@@ -121,7 +121,7 @@ L_D9CD4:                 ; 0xd9cd4
         CMPB RL6,fmy_f_anz
         JMPR cc_C,L_D9C02
 L_D9CDA:                 ; 0xd9cda
-        CALLS 00DH,OBD_Readiness_Grp4
+        CALLS SEG OBD_Readiness_Grp4, SOF OBD_Readiness_Grp4
         MOV R6,[R0+]
         MOV R7,[R0+]
         MOV R9,[R0+]
@@ -193,12 +193,12 @@ L_D9D40:                 ; 0xd9d40
         MOVBZ R13,fmy_f_anz
         MOV R4,R8
         MOVBZ R14,RL4
-        CALLS 00DH,Delay_Loop_da664
+        CALLS SEG Delay_Loop_da664, SOF Delay_Loop_da664
         ADDB fmy_f_anz,ONES
         MOV R12,#DATA16 0C441H
         MOVBZ R13,fmy_s_f_anz
         MOVBZ R14,RL6
-        CALLS 00DH,Delay_Loop_da664
+        CALLS SEG Delay_Loop_da664, SOF Delay_Loop_da664
         ADDB fmy_s_f_anz,ONES
         MOV R6,[R0+]
         MOV R7,[R0+]
@@ -275,7 +275,7 @@ L_D9DE2:                 ; 0xd9de2
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#DATA16 001C8H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV R10,diag_f890
         MOV R11,diag_f892
         EXTP R11, #02H
@@ -413,7 +413,7 @@ L_D9F3C:                 ; 0xd9f3c
         MOV R13,R5
         MOV R14,#DATA16 0F6F2H
         MOV R15,#01H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 00211H
@@ -427,7 +427,7 @@ L_D9F3C:                 ; 0xd9f3c
         MOV R13,R5
         MOV R14,#DATA16 0C3DBH
         MOVBZ R15,tmp32_lo
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 003D4H
@@ -441,7 +441,7 @@ L_D9F3C:                 ; 0xd9f3c
         MOV R13,R5
         MOV R14,#DATA16 0D664H
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOVB RL6,#00H
         JMPR cc_UC,L_D9FFA
 L_D9FB4:                 ; 0xd9fb4
@@ -472,7 +472,7 @@ L_D9FB4:                 ; 0xd9fb4
         MOV R14,#DATA16 0D0D0H
         ADD R14,R5
         MOV R15,#0EH
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         ADDB RL6,#01H
 L_D9FFA:                 ; 0xd9ffa
         CMPB RL6,tmp32_lo
@@ -490,7 +490,7 @@ L_D9FFA:                 ; 0xd9ffa
         MOV R13,R5
         MOV R14,#DATA16 0F852H
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 00210H
@@ -509,7 +509,7 @@ L_D9FFA:                 ; 0xd9ffa
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#DATA16 001C8H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV tmp32_lo,R4
         MOV R12,diag_f890
         MOV R13,diag_f892
@@ -524,7 +524,7 @@ L_D9FFA:                 ; 0xd9ffa
         MOV R13,R5
         MOV R14,#DATA16 0F6F2H
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R6,[R0+]
         RETS
 
@@ -608,7 +608,7 @@ L_DA144:                 ; 0xda144
         SHR R4,#02H
         MOVB v_dtp_mes_hb,RL4
         MOV R12,v_dtp_dif_diag
-        CALLS 00FH,Sat_HiByte_ff
+        CALLS SEG Sat_HiByte_ff, SOF Sat_HiByte_ff
         MOVB v_dtp_dif_diag_lb,RL4
         MOV R4,diagcp_mdl_estim
         SHR R4,#08H
@@ -650,7 +650,7 @@ L_DA1BC:                 ; 0xda1bc
         JMPR cc_UC,L_DA21A
 L_DA1D6:                 ; 0xda1d6
         MOVBZ R12,RL6
-        CALLS 00DH,Read_FreezeFrame_1
+        CALLS SEG Read_FreezeFrame_1, SOF Read_FreezeFrame_1
         MOVBZ R5,RL6
         SHL R5,#01H
         MOV [R5+#0F884H],R4
@@ -666,7 +666,7 @@ L_DA1D6:                 ; 0xda1d6
         AND R4,#DATA16 0000FH
         JMPR cc_EQ,L_DA210
         MOVBZ R12,RL6
-        CALLS 00DH,Read_FreezeFrame_2
+        CALLS SEG Read_FreezeFrame_2, SOF Read_FreezeFrame_2
         MOVBZ R5,RL6
         SHL R5,#01H
         MOV [R5+#0D668H],R4

@@ -15,7 +15,7 @@ S_BD3C8 SECTION CODE AT 0BD3C8H
 SMARTRA_auth_step7_WriteKey_arm:
         MOVB RL4,imob_key_wr_idx
         JMPR cc_NE,L_BD3D2
-        CALLS 00BH,SMARTRA_disable
+        CALLS SEG SMARTRA_disable, SOF SMARTRA_disable
 L_BD3D2:                 ; 0xbd3d2
         MOVB RL4,imob_new_key0
         MOVBZ R5,imob_key_wr_idx
@@ -52,7 +52,7 @@ L_BD3D2:                 ; 0xbd3d2
         MOVB dtc_test_result,ZEROS
         MOV R12,#DATA16 0D506H
         MOV R13,#DATA16 058CCH
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_ecu_err.0DH,dtc_status_work.06H
         MOVBZ R4,dtc_done_imob_b
         AND R4,#DATA16 00020H
@@ -62,7 +62,7 @@ L_BD3D2:                 ; 0xbd3d2
 L_BD470:                 ; 0xbd470
         MOV R12,#DATA16 0D4F8H
         MOV R13,#DATA16 058B6H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_ecu_err.0CH,dtc_status_work.06H
         MOVBZ R4,dtc_done_imob_a
         AND R4,#DATA16 00020H
@@ -72,7 +72,7 @@ L_BD470:                 ; 0xbd470
 L_BD492:                 ; 0xbd492
         MOV R12,#DATA16 0D514H
         MOV R13,#DATA16 058E2H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_ecu_err.0EH,dtc_status_work.06H
         MOVBZ R4,dtc_done_imob_c
         AND R4,#DATA16 00020H
@@ -88,7 +88,7 @@ L_BD4B4:                 ; 0xbd4b4
         MOVB dtc_test_result,ZEROS
         MOV R12,#DATA16 0D522H
         MOV R13,#DATA16 058F8H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_ecu_err.0FH,dtc_status_work.06H
         MOVBZ R4,dtc_done_imob_d
         AND R4,#DATA16 00020H
@@ -139,7 +139,7 @@ L_BD540:                 ; 0xbd540
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D506H
         MOV R13,#DATA16 058CCH
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_ecu_err.0DH,dtc_status_work.06H
         MOVBZ R4,dtc_done_imob_b
         AND R4,#DATA16 00020H
@@ -155,7 +155,7 @@ L_BD570:                 ; 0xbd570
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D4F8H
         MOV R13,#DATA16 058B6H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_ecu_err.0CH,dtc_status_work.06H
         MOVBZ R4,dtc_done_imob_a
         AND R4,#DATA16 00020H
@@ -173,7 +173,7 @@ L_BD5A6:                 ; 0xbd5a6
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D514H
         MOV R13,#DATA16 058E2H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_ecu_err.0EH,dtc_status_work.06H
         MOVBZ R4,dtc_done_imob_c
         AND R4,#DATA16 00020H
@@ -189,7 +189,7 @@ L_BD5D6:                 ; 0xbd5d6
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D4F8H
         MOV R13,#DATA16 058B6H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_ecu_err.0CH,dtc_status_work.06H
         MOVBZ R4,dtc_done_imob_a
         AND R4,#DATA16 00020H
@@ -207,7 +207,7 @@ L_BD60C:                 ; 0xbd60c
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D4F8H
         MOV R13,#DATA16 058B6H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_ecu_err.0CH,dtc_status_work.06H
         MOVBZ R4,dtc_done_imob_a
         AND R4,#DATA16 00020H
@@ -282,7 +282,7 @@ SMARTRA_Cipher_Step:
         MOV [-R0],R6
         MOVB RL6,#00H
 L_BD6B0:                 ; 0xbd6b0
-        CALLS 00BH,SMARTRA_cipher_clock_bit
+        CALLS SEG SMARTRA_cipher_clock_bit, SOF SMARTRA_cipher_clock_bit
         MOVB RL4,smartra_send_req
         CMPB RL4,#03H
         JMPR cc_ULE,L_BD6EC

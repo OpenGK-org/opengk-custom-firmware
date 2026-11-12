@@ -132,20 +132,20 @@ L_B6500:                 ; 0xb6500
 L_B6518:                 ; 0xb6518
         MOV R12,DPP0:c_r_down_sp_ls
         MOV R13,[R9+#0E8H]
-        CALLS 00FH,Sat_Sub_S16_v2
+        CALLS SEG Sat_Sub_S16_v2, SOF Sat_Sub_S16_v2
         MOV [R9+#010EH],R4
 L_B6528:                 ; 0xb6528
         MOV R12,#DATA16 POF ldp_n_lshpwm_down
         MOV R13,#DATA16 PAG ldp_n_lshpwm_down
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ldp_maf_lshpwm_down
         MOV R13,#DATA16 PAG ldp_maf_lshpwm_down
         MOVBZ R14,lv_iga_cc2b
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         MOV R12,#DATA16 POF ip_lshpwm_down__n__maf
         MOV R13,#DATA16 PAG ip_lshpwm_down__n__maf
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVB RL6,RL4
         MOV R4,[R9+#0106H]
         CMP R4,#02H
@@ -192,7 +192,7 @@ L_B65C4:                 ; 0xb65c4
         MOVBZ R12,RL6
         MOVB RL4,[R9+#0108H]
         MOVBZ R13,RL4
-        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CALLS SEG subtract_r12_r13_negate_if_not_rets_r4, SOF subtract_r12_r13_negate_if_not_rets_r4
         CMPB RL4,DPP0:c_lsh_down_lgrd
         JMPR cc_ULE,L_B660A
         MOVB RL4,[R9+#0108H]
@@ -201,14 +201,14 @@ L_B65C4:                 ; 0xb65c4
         MOVB RL4,[R9+#0108H]
         MOVBZ R12,RL4
         MOVBZ R13,DPP0:c_lsh_down_lgrd
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB [R9+#0108H],RL4
         JMPA cc_UC,L_B6710
 L_B65F4:                 ; 0xb65f4
         MOVB RL4,[R9+#0108H]
         MOVBZ R12,RL4
         MOVBZ R13,DPP0:c_lsh_down_lgrd
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB [R9+#0108H],RL4
         JMPA cc_UC,L_B6710
 L_B660A:                 ; 0xb660a
@@ -225,14 +225,14 @@ L_B6626:                 ; 0xb6626
         MOV R13,#DATA16 PAG ldp_r_dif_down_ls_1_lshpwm_i
         MOV R14,[R9+#010EH]
         ADD R14,#DATA16 08000H
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_lshpwm_i__r_dif_down_ls_1
         MOV R13,#DATA16 PAG ip_lshpwm_i__r_dif_down_ls_1
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV R13,R4
         ADD R13,#DATA16 08000H
         MOV R12,[R9+#010CH]
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV R8,R4
         CMP R8,DPP0:c_fac_lshpwm_down_i_max
         JMPR cc_C,L_B6664
@@ -270,17 +270,17 @@ L_B66A0:                 ; 0xb66a0
         MOV R12,[R9+#010CH]
         MOVBZ R13,RL6
         SHL R13,#08H
-        CALLS 00FH,Mul_Q15_Sat
+        CALLS SEG Mul_Q15_Sat, SOF Mul_Q15_Sat
         MOV R8,R4
         SHR R4,#08H
         MOVBZ R12,RL4
         MOVBS R13,DPP0:c_lshpwm_down_as
-        CALLS 00FH,Add_Clamp_U8
+        CALLS SEG Add_Clamp_U8, SOF Add_Clamp_U8
         MOVB RL6,RL4
         MOVBZ R12,RL6
         MOVB RL4,[R9+#0108H]
         MOVBZ R13,RL4
-        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CALLS SEG subtract_r12_r13_negate_if_not_rets_r4, SOF subtract_r12_r13_negate_if_not_rets_r4
         CMPB RL4,DPP0:c_lsh_down_lgrd
         JMPR cc_ULE,L_B6702
         MOVB RL4,[R9+#0108H]
@@ -289,14 +289,14 @@ L_B66A0:                 ; 0xb66a0
         MOVB RL4,[R9+#0108H]
         MOVBZ R12,RL4
         MOVBZ R13,DPP0:c_lsh_down_lgrd
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB [R9+#0108H],RL4
         JMPR cc_UC,L_B6710
 L_B66EE:                 ; 0xb66ee
         MOVB RL4,[R9+#0108H]
         MOVBZ R12,RL4
         MOVBZ R13,DPP0:c_lsh_down_lgrd
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB [R9+#0108H],RL4
         JMPR cc_UC,L_B6710
 L_B6702:                 ; 0xb6702

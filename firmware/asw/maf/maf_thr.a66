@@ -34,16 +34,16 @@ Reset_ar_red_bas_thr_530:
         MOV R12,#DATA16 04A26H
         MOV R13,tps_seg
         MOV R14,n_C93C
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XWord_YWord
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XWord_YWord, SOF Get_IP_Word_3D_Table_DWord_XWord_YWord
         MOV ar_red_bas_thr,R4
         MOV R12,#DATA16 04A1AH
         MOV R13,opg_av_isa
         MOV R14,n_C93C
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XWord_YWord
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XWord_YWord, SOF Get_IP_Word_3D_Table_DWord_XWord_YWord
         MOV ar_red_bas_isa,R4
         MOV R12,ar_red_bas_thr
         MOV R13,R4
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV ar_red_bas,R4
         RETS
 
@@ -56,7 +56,7 @@ Calc_AR_Red_Bas_Thr:
         MOV R12,#DATA16 04A26H
         MOV R13,tps_av
         MOV R14,n_C93C
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XWord_YWord
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XWord_YWord, SOF Get_IP_Word_3D_Table_DWord_XWord_YWord
         MOV ar_red_bas_thr_ivs,R4
         RETS
 
@@ -100,25 +100,25 @@ L_C35BE:                 ; 0xc35be
         MOV maf_acc2_hi,ZEROS
         MOV maf_acc2_cnt,ZEROS
 L_C35E2:                 ; 0xc35e2
-        CALLS 00DH,Calc_MAF_Kgh_Fac
+        CALLS SEG Calc_MAF_Kgh_Fac, SOF Calc_MAF_Kgh_Fac
         MOV R4,maf_kgh_mes
         MOV lv_maf_cc26,R4
         MOV R12,maf_kgh_mes_bas
         MOVBZ R13,maf_kgh_mes_fac
-        CALLS 00FH,Mul_Frac_Sat_x2
+        CALLS SEG Mul_Frac_Sat_x2, SOF Mul_Frac_Sat_x2
         MOV maf_kgh_mes,R4
         MOV R12,R4
         MOV R13,#DATA16 0C000H
         MOV R14,n_C93C
         SHL R14,#02H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV maf_mes,R4
         MOV R12,maf_max
         SUB R12,maf_min
         MOV R13,#DATA16 0C000H
         MOV R14,n_C93C
         SHL R14,#03H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV maf_puls,R4
         MOV maf_min,ONES
         MOV maf_max,ZEROS
@@ -141,14 +141,14 @@ Detect_MAF_Puls:
         MOV R12,#DATA16 POF ldpm_n_32_ar_red
         MOV R13,#DATA16 PAG ldpm_n_32_ar_red
         MOVBZ R14,RL4
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         JNB lv_maf_puls.00H,L_C369A
         MOV R12,#DATA16 POF ip_maf_puls_max__n
         MOV R13,#DATA16 PAG ip_maf_puls_max__n
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV R12,R4
         MOV R13,DPP0:c_maf_puls_hys
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         CMP R4,maf_puls
         JMPR cc_ULE,L_C3694
         MOVB RL4,lv_maf_c31f
@@ -165,12 +165,12 @@ L_C3694:                 ; 0xc3694
         RETS
 L_C369A:                 ; 0xc369a
         MOV R12,maf_dif
-        CALLS 00DH,Abs_S16_Simple
+        CALLS SEG Abs_S16_Simple, SOF Abs_S16_Simple
         CMP R4,DPP0:c_maf_dif_max
         JMPR cc_NC,L_C36D2
         MOV R12,#DATA16 POF ip_maf_puls_max__n
         MOV R13,#DATA16 PAG ip_maf_puls_max__n
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         CMP R4,maf_puls
         JMPR cc_NC,L_C36D2
         MOVB RL4,lv_maf_c31f

@@ -74,7 +74,7 @@ L_B9AEC:                 ; 0xb9aec
         ADD R13,#DATA16 08000H
         MOV R14,tq_add_ch
         ADD R14,#DATA16 08000H
-        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YWord
+        CALLS SEG Get_IP_Byte_3D_Table_DWord_XWord_YWord, SOF Get_IP_Byte_3D_Table_DWord_XWord_YWord
         ADDB RL4,#DATA16 00080H
         MOVB ti_is,RL4
         JMPR cc_UC,L_B9B46
@@ -84,7 +84,7 @@ L_B9B20:                 ; 0xb9b20
         ADD R13,#DATA16 08000H
         MOV R14,tq_add_ch
         ADD R14,#DATA16 08000H
-        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YWord
+        CALLS SEG Get_IP_Byte_3D_Table_DWord_XWord_YWord, SOF Get_IP_Byte_3D_Table_DWord_XWord_YWord
         ADDB RL4,#DATA16 00080H
         MOVB ti_is,RL4
         JMPR cc_UC,L_B9B46
@@ -106,7 +106,7 @@ L_B9B5E:                 ; 0xb9b5e
         SHL R13,#08H
         MOVBZ R14,DPP0:c_ti_is_crlc_pos
         SHL R14,#08H
-        CALLS 00FH,Interp_S16
+        CALLS SEG Interp_S16, SOF Interp_S16
         ASHR R4,#08H
         MOVB st_ti_is,RL4
         JMPR cc_UC,L_B9BB6
@@ -128,13 +128,13 @@ L_B9B9A:                 ; 0xb9b9a
         SHL R13,#08H
         MOVBZ R14,DPP0:c_ti_is_crlc_neg
         SHL R14,#08H
-        CALLS 00FH,Interp_S16
+        CALLS SEG Interp_S16, SOF Interp_S16
         ASHR R4,#08H
         MOVB st_ti_is,RL4
 L_B9BB6:                 ; 0xb9bb6
         JNB lv_err_pres_mwss.0CH,L_B9BD4
         MOVBS R12,st_ti_is
-        CALLS 00FH,Abs_S16_Safe
+        CALLS SEG Abs_S16_Safe, SOF Abs_S16_Safe
         MOVBS R5,DPP0:c_ti_is_mmv_min
         CMP R4,R5
         JMPR cc_SLE,L_B9BD4

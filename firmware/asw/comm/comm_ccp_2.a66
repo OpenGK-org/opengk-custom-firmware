@@ -43,7 +43,7 @@ CCP_Daq_SetPtr_0x0b:
         MOVB ccp_e156,RL4
         MOV R12,R9
         ADD R12,#04H
-        CALLS 00AH,CCP_Lookup_DaqObject_Idx
+        CALLS SEG CCP_Lookup_DaqObject_Idx, SOF CCP_Lookup_DaqObject_Idx
         MOVB RL6,RL4
         MOVBZ R4,RL6
         SHL R4,#01H
@@ -52,7 +52,7 @@ CCP_Daq_SetPtr_0x0b:
         MOVB RL4,#03H
         MOVB ccp_e15a,RL4
         MOV R12,#DATA16 0E156H
-        CALLS 00AH,CCP_Svc_Prog_DAQ
+        CALLS SEG CCP_Svc_Prog_DAQ, SOF CCP_Svc_Prog_DAQ
         EXTR #01H
         BCLR XP1IC.06H
         MOV R4,[R9+#04H]
@@ -82,11 +82,11 @@ CCP_Daq_Prepare_0x0a:
         MOVB RL4,#0EH
         MOVB ccp_e164,RL4
         MOV R12,#DATA16 0E164H
-        CALLS 00AH,CCP_Resp_Dispatch
+        CALLS SEG CCP_Resp_Dispatch, SOF CCP_Resp_Dispatch
 L_A5C12:                 ; 0xa5c12
         MOV R12,R7
         ADD R12,#06H
-        CALLS 00AH,CCP_Lookup_DaqObject_Idx
+        CALLS SEG CCP_Lookup_DaqObject_Idx, SOF CCP_Lookup_DaqObject_Idx
         MOVB RL6,RL4
         MOVB RL4,#0FH
         MOVB ccp_e156,RL4
@@ -103,13 +103,13 @@ L_A5C12:                 ; 0xa5c12
         MOV R13,R9
         ADD R13,#07H
         MOV R14,#08H
-        CALLS 00AH,Move_xFF_items__from_PTR_R12_to_PTR_R13
+        CALLS SEG Move_xFF_items__from_PTR_R12_to_PTR_R13, SOF Move_xFF_items__from_PTR_R12_to_PTR_R13
         CMPB RL6,#DATA16 0000EH
         JMPR cc_NE,L_A5C70
         MOV R4,[R9+#02H]
         MOV ccp_fafc,R4
         MOV R12,#DATA16 0E156H
-        CALLS 00AH,CCP_Svc_Prog_DAQ
+        CALLS SEG CCP_Svc_Prog_DAQ, SOF CCP_Svc_Prog_DAQ
         MOV R4,#DATA16 055DFH
         MOV [R9],R4
         MOV R4,#DATA16 0FFFDH
@@ -117,7 +117,7 @@ L_A5C12:                 ; 0xa5c12
         JMPR cc_UC,L_A5C78
 L_A5C70:                 ; 0xa5c70
         MOV R12,#DATA16 0E156H
-        CALLS 00AH,CCP_Svc_Prog_DAQ
+        CALLS SEG CCP_Svc_Prog_DAQ, SOF CCP_Svc_Prog_DAQ
 L_A5C78:                 ; 0xa5c78
         EXTR #01H
         BCLR XP1IC.06H
@@ -176,7 +176,7 @@ L_A5CEE:                 ; 0xa5cee
         EXTR #01H
         BSET CC11IC.06H
         MOV R12,#DATA16 0E164H
-        CALLS 00AH,CCP_Resp_Dispatch
+        CALLS SEG CCP_Resp_Dispatch, SOF CCP_Resp_Dispatch
         MOVB RL4,#00H
         MOV R9,[R0+]
         RETS
@@ -235,7 +235,7 @@ L_A5D5E:                 ; 0xa5d5e
         JMPR cc_NE,L_A5D74
         MOV R4,#DATA16 00020H
         MOV ccp_security_state,R4
-        CALLS 00AH,CCP_Connect_ArmCanObjects
+        CALLS SEG CCP_Connect_ArmCanObjects, SOF CCP_Connect_ArmCanObjects
         JMPA cc_UC,L_A5E8A
 L_A5D74:                 ; 0xa5d74
         SUBB ccp_security_err_cnt,ONES
@@ -261,38 +261,38 @@ L_A5D7C:                 ; 0xa5d7c
 L_A5DAE:                 ; 0xa5dae
         MOV ccp_security_state,ZEROS
         MOV R12,R9
-        CALLS 00AH,CAN_wipe_recurring_msg_obj_from_buffer_
+        CALLS SEG CAN_wipe_recurring_msg_obj_from_buffer_, SOF CAN_wipe_recurring_msg_obj_from_buffer_
         JMPA cc_UC,L_A5E8A
 L_A5DBC:                 ; 0xa5dbc
         MOV R12,R9
-        CALLS 00AH,CCP_GetSeed_0x12
+        CALLS SEG CCP_GetSeed_0x12, SOF CCP_GetSeed_0x12
         MOVB RL6,RL4
         JMPR cc_UC,L_A5E8A
 L_A5DC6:                 ; 0xa5dc6
         MOV R12,R9
-        CALLS 00AH,CCP_Unlock_0x13
+        CALLS SEG CCP_Unlock_0x13, SOF CCP_Unlock_0x13
         MOVB RL6,RL4
         JMPR cc_UC,L_A5E8A
 L_A5DD0:                 ; 0xa5dd0
         MOV R12,R9
-        CALLS 00AH,CCP_GetCalPageStatus_0x1c
+        CALLS SEG CCP_GetCalPageStatus_0x1c, SOF CCP_GetCalPageStatus_0x1c
         MOVB RL6,RL4
         JMPR cc_UC,L_A5E8A
 L_A5DDA:                 ; 0xa5dda
         MOV R12,R9
-        CALLS 00AH,CCP_Daq_SetPtr_0x0b
+        CALLS SEG CCP_Daq_SetPtr_0x0b, SOF CCP_Daq_SetPtr_0x0b
         MOVB RL6,RL4
         JMPR cc_UC,L_A5E8A
 L_A5DE4:                 ; 0xa5de4
         MOV R12,R9
-        CALLS 00AH,CCP_Daq_Prepare_0x0a
+        CALLS SEG CCP_Daq_Prepare_0x0a, SOF CCP_Daq_Prepare_0x0a
         MOVB RL6,RL4
         JMPR cc_UC,L_A5E8A
 L_A5DEE:                 ; 0xa5dee
         MOV R4,#DATA16 00030H
         MOV ccp_security_state,R4
         MOV R12,R9
-        CALLS 00AH,CCP_Daq_StartStop_0x0c
+        CALLS SEG CCP_Daq_StartStop_0x0c, SOF CCP_Daq_StartStop_0x0c
         MOVB RL6,RL4
         JMPR cc_UC,L_A5E8A
 L_A5E00:                 ; 0xa5e00
@@ -324,21 +324,21 @@ L_A5E1C:                 ; 0xa5e1c
 L_A5E3C:                 ; 0xa5e3c
         MOV ccp_security_state,ZEROS
         MOV R12,R9
-        CALLS 00AH,CAN_wipe_recurring_msg_obj_from_buffer_
+        CALLS SEG CAN_wipe_recurring_msg_obj_from_buffer_, SOF CAN_wipe_recurring_msg_obj_from_buffer_
         JMPR cc_UC,L_A5E8A
 L_A5E48:                 ; 0xa5e48
-        CALLS 00AH,CCP_Rebuild_CanDaqObjects
+        CALLS SEG CCP_Rebuild_CanDaqObjects, SOF CCP_Rebuild_CanDaqObjects
         JMPR cc_UC,L_A5E8A
 L_A5E4E:                 ; 0xa5e4e
         MOV R12,R9
-        CALLS 00AH,CCP_GetCalPageStatus_0x1c
+        CALLS SEG CCP_GetCalPageStatus_0x1c, SOF CCP_GetCalPageStatus_0x1c
         MOVB RL6,RL4
         JMPR cc_UC,L_A5E8A
 L_A5E58:                 ; 0xa5e58
         MOV R4,#DATA16 00020H
         MOV ccp_security_state,R4
         MOV R12,R9
-        CALLS 00AH,CCP_Daq_StartStop_0x0c
+        CALLS SEG CCP_Daq_StartStop_0x0c, SOF CCP_Daq_StartStop_0x0c
         MOVB RL6,RL4
         JMPR cc_UC,L_A5E8A
 L_A5E6A:                 ; 0xa5e6a

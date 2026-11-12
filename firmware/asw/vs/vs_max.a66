@@ -28,7 +28,7 @@ S_C8E2E SECTION CODE AT 0C8E2EH
 Diag_Cam_N_Max_d194:
         MOV R12,#DATA16 0D194H
         MOV R13,#DATA16 05362H
-        CALLS 00DH,DTC_Update_Imm_V2
+        CALLS SEG DTC_Update_Imm_V2, SOF DTC_Update_Imm_V2
         BMOV lv_cam_err.0EH,dtc_status_work.06H
         MOVBZ R4,g_d19e
         AND R4,#DATA16 00020H
@@ -107,7 +107,7 @@ L_C8ED2:                 ; 0xc8ed2
         BSET lv_n_max_isa_err.0DH
         MOV R12,#DATA16 0D194H
         MOV R13,#DATA16 05362H
-        CALLS 00DH,DTC_Update_Imm_V2
+        CALLS SEG DTC_Update_Imm_V2, SOF DTC_Update_Imm_V2
         BMOV lv_cam_err.0EH,dtc_status_work.06H
         MOVBZ R4,g_d19e
         AND R4,#DATA16 00020H
@@ -120,7 +120,7 @@ L_C8EF6:                 ; 0xc8ef6
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D1A2H
         MOV R13,#DATA16 05378H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cam_err.0FH,dtc_status_work.06H
         MOVBZ R4,dtc_done_tco_rat
         AND R4,#DATA16 00020H

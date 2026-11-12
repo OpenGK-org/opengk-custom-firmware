@@ -43,7 +43,7 @@ L_DF12E:                 ; 0xdf12e
         MOV R12,R9
         ADD R12,#01H
         MOV R13,[R0]
-        CALLS 00DH,KWP_CountDTCByStatus
+        CALLS SEG KWP_CountDTCByStatus, SOF KWP_CountDTCByStatus
         MOVB RL6,RL4
         CMPB RL6,#DATA16 000FFH
         JMPR cc_EQ,L_DF148
@@ -94,18 +94,18 @@ KWP_CountDTCByStatus:
         JMPR cc_UC,L_DF1B4
 L_DF19E:                 ; 0xdf19e
         MOV R12,[R0+#0AH]
-        CALLS 00DH,Count_DTC_By_Status_2
+        CALLS SEG Count_DTC_By_Status_2, SOF Count_DTC_By_Status_2
         MOVB RL6,RL4
         JMPR cc_UC,L_DF1B4
 L_DF1AA:                 ; 0xdf1aa
         MOV R12,[R0+#0AH]
-        CALLS 00CH,Count_DTC_By_Status
+        CALLS SEG Count_DTC_By_Status, SOF Count_DTC_By_Status
         MOVB RL6,RL4
 L_DF1B4:                 ; 0xdf1b4
         CMPB RL6,#DATA16 000FFH
         JMPA cc_EQ,L_DF39C
         MOVBZ R12,RL6
-        CALLS 00DH,Get_DTC_Record_1
+        CALLS SEG Get_DTC_Record_1, SOF Get_DTC_Record_1
         SHR R4,#08H
         MOV R5,[R0+#08H]
         ADD R5,#01H
@@ -113,7 +113,7 @@ L_DF1B4:                 ; 0xdf1b4
         SUB R5,#01H
         MOVB [R5],RL4
         MOVBZ R12,RL6
-        CALLS 00DH,Get_DTC_Record_1
+        CALLS SEG Get_DTC_Record_1, SOF Get_DTC_Record_1
         MOV R5,[R0+#08H]
         ADD R5,#01H
         MOV [R0+#08H],R5
@@ -132,7 +132,7 @@ L_DF1F2:                 ; 0xdf1f2
         SUB R5,R4
         SHL R5,#01H
         ADD R12,R5
-        CALLS 00DH,DTC_Status_Proc_4
+        CALLS SEG DTC_Status_Proc_4, SOF DTC_Status_Proc_4
         MOV R5,[R0+#08H]
         ADD R5,#01H
         MOV [R0+#08H],R5
@@ -159,7 +159,7 @@ L_DF234:                 ; 0xdf234
         SUB R5,R4
         SHL R5,#01H
         ADD R12,R5
-        CALLS 00DH,DTC_Status_Proc_4
+        CALLS SEG DTC_Status_Proc_4, SOF DTC_Status_Proc_4
         MOV R5,[R0+#08H]
         ADD R5,#01H
         MOV [R0+#08H],R5

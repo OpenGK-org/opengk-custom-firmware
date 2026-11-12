@@ -38,8 +38,8 @@ CCP_Session_Ctl:
         MOV R4,#01H
         MOV ccp_d756,R4
         MOV R12,#DATA16 00070H
-        CALLS 00AH,CCP_Submit_Cmd
-        CALLS 00AH,Init_KeyBuf_c508
+        CALLS SEG CCP_Submit_Cmd, SOF CCP_Submit_Cmd
+        CALLS SEG Init_KeyBuf_c508, SOF Init_KeyBuf_c508
         BSET ccp_engine_flags.0EH
         MOV R4,#DATA16 00030H
         MOV ccp_session_state,R4
@@ -53,13 +53,13 @@ CCP_Session_Ctl_2:
         MOVB RL4,#DATA16 0001EH
         MOVB ccp_d74c,RL4
         MOV R12,#DATA16 0D74CH
-        CALLS 00AH,CCP_Resp_Dispatch
+        CALLS SEG CCP_Resp_Dispatch, SOF CCP_Resp_Dispatch
         BCLR ccp_engine_flags.0AH
         MOV R12,#DATA16 0006EH
-        CALLS 00AH,CCP_Submit_Cmd
+        CALLS SEG CCP_Submit_Cmd, SOF CCP_Submit_Cmd
         JNB ccp_engine_flags.0EH,L_A657A
         MOV R12,#DATA16 0C50FH
-        CALLS 00AH,Check_Threshold_a6580
+        CALLS SEG Check_Threshold_a6580, SOF Check_Threshold_a6580
         BCLR ccp_engine_flags.0EH
 L_A657A:                 ; 0xa657a
         MOV ccp_session_state,ZEROS
@@ -89,12 +89,12 @@ L_A659A:                 ; 0xa659a
         ; ------------------------------------------------------------
 CCP_Set_Flags_2:
         MOV R12,#DATA16 0C50FH
-        CALLS 00AH,Check_Threshold_a6580
+        CALLS SEG Check_Threshold_a6580, SOF Check_Threshold_a6580
         BCLR ccp_engine_flags.0EH
         MOVB RL4,#DATA16 00023H
         MOVB ccp_d760,RL4
         MOV R12,#DATA16 0D760H
-        CALLS 00AH,CCP_Parse_Cmd
+        CALLS SEG CCP_Parse_Cmd, SOF CCP_Parse_Cmd
         RETS
 
 S_A651A ENDS

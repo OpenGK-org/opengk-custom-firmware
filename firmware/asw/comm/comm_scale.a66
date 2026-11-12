@@ -22,7 +22,7 @@ S_E2736 SECTION CODE AT 0E2736H
         ; ------------------------------------------------------------
 OBD_Build_Mode09_Status:
         MOV R12,#DATA16 0C4D0H
-        CALLS 00BH,OBD_Mode09_CountItems
+        CALLS SEG OBD_Mode09_CountItems, SOF OBD_Mode09_CountItems
         MOVB obd_m09_count,RL4
         CMPB RL4,#00H
         JMPA cc_NE,L_E2858
@@ -185,7 +185,7 @@ Tail_Div_Ratio_U8_Sat_89e:
         MOV R12,[R0]
         MOVBZ R13,DPP0:c_maf_max
         SHL R13,#08H
-        CALLS 00FH,Div_Ratio_U8_Sat
+        CALLS SEG Div_Ratio_U8_Sat, SOF Div_Ratio_U8_Sat
         ADD R0,#02H
         RETS
 
@@ -199,10 +199,10 @@ OBD_Scale_Temp:
         MOVB RL4,[R0]
         MOVBZ R12,RL4
         MOV R13,#DATA16 00060H
-        CALLS 00FH,Mul_S16_Q7_Sat
+        CALLS SEG Mul_S16_Q7_Sat, SOF Mul_S16_Q7_Sat
         MOVBZ R12,RL4
         MOV R13,#08H
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         ADD R0,#02H
         RETS
 

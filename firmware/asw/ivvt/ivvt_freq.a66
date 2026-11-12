@@ -38,26 +38,26 @@ Calc_IVVT_PWM_Freq:
         MOV R12,#DATA16 POF ldpm_vb_ivvtpwm
         MOV R13,#DATA16 PAG ldpm_vb_ivvtpwm
         MOVBZ R14,vb
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_frq_ivvthpwm
         MOV R13,#DATA16 PAG ip_frq_ivvthpwm
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV ivvthpwm_frq,R4
         MOV R12,#DATA16 POF ip_frq_ivvtpwm
         MOV R13,#DATA16 PAG ip_frq_ivvtpwm
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV ivvtepwm_frq,R4
         MOV R12,#DATA16 045BEH
         MOVBZ R13,tmag_ivvt
-        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Byte_2D_Table_DWord_YByte, SOF Get_IP_Byte_2D_Table_DWord_YByte
         MOVBZ R4,RL4
         MOV [-R0],R4
         MOV R12,#DATA16 POF ip_fac_vb_ivvtpwm
         MOV R13,#DATA16 PAG ip_fac_vb_ivvtpwm
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVBZ R12,RL4
         MOV R13,[R0+]
-        CALLS 00FH,Mul_S16_Q7_Sat
+        CALLS SEG Mul_S16_Q7_Sat, SOF Mul_S16_Q7_Sat
         MOVB fac_cor_ivvtpwm,RL4
         MOV R4,[R7+#04H]
         MOVB RL5,[R4]
@@ -103,7 +103,7 @@ L_B0274:                 ; 0xb0274
         MOV R4,[R6+#02H]
         MOVB RL5,[R4]
         MOVBZ R13,RL5
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB RL5,[R8+#04H]
         CMPB RL5,RL4
         JMPR cc_ULE,L_B02AE
@@ -119,11 +119,11 @@ L_B02AE:                 ; 0xb02ae
         MOV R12,#DATA16 POF ldpm_tmag_ivvt_1_ivvt
         MOV R13,#DATA16 PAG ldpm_tmag_ivvt_1_ivvt
         MOVBZ R14,tmag_ivvt
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ldpm_vb_ivvtpwm
         MOV R13,#DATA16 PAG ldpm_vb_ivvtpwm
         MOVBZ R14,vb
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         MOV R4,[R7+#0C0H]
         MOVBZ R5,ip_idx
         SHL R5,#01H
@@ -131,20 +131,20 @@ L_B02AE:                 ; 0xb02ae
         MOV R9,[R4]
         MOV R12,#DATA16 POF ip_ivvthpwm
         MOV R13,#DATA16 PAG ip_ivvthpwm
-        CALLS 00FH,Get_IP_Word_3D_Table
+        CALLS SEG Get_IP_Word_3D_Table, SOF Get_IP_Word_3D_Table
         MOV R12,R4
         MOV R13,[R7+#0B4H]
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV R12,R4
         MOV R4,[R6+#08H]
         MOVB RL5,[R4]
         MOVBS R13,RL5
         SHL R13,#08H
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV R12,R4
         MOV R13,R9
         SUB R13,#DATA16 08000H
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV [R7+#0D4H],R4
         MOV [R7+#0D6H],R9
         JMPR cc_UC,L_B033A
@@ -178,7 +178,7 @@ L_B033A:                 ; 0xb033a
         MOV R5,#DATA16 0016EH
         MOV R10,ivvthpwm_frq
         MOV R11,#00H
-        CALLS 00DH,Div_S32_Signed
+        CALLS SEG Div_S32_Signed, SOF Div_S32_Signed
         SUB R4,#01H
         MOV ivvt_hpwm_div,R4
         MOVB ivvt_hpwm_rng,ZEROS
@@ -188,7 +188,7 @@ L_B037E:                 ; 0xb037e
         MOV R5,#05H
         MOV R10,ivvthpwm_frq
         MOV R11,#00H
-        CALLS 00DH,Div_S32_Signed
+        CALLS SEG Div_S32_Signed, SOF Div_S32_Signed
         SUB R4,#01H
         MOV ivvt_hpwm_div,R4
         MOVB RL4,#01H
@@ -290,7 +290,7 @@ L_B0466:                 ; 0xb0466
         MOV R5,#DATA16 0016EH
         MOV R10,ivvthpwm_frq
         MOV R11,#00H
-        CALLS 00DH,Div_S32_Signed
+        CALLS SEG Div_S32_Signed, SOF Div_S32_Signed
         SUB R4,#01H
         MOV ivvt_hpwm_div,R4
         MOVB ivvt_hpwm_rng,ZEROS
@@ -300,7 +300,7 @@ L_B04AA:                 ; 0xb04aa
         MOV R5,#05H
         MOV R10,ivvthpwm_frq
         MOV R11,#00H
-        CALLS 00DH,Div_S32_Signed
+        CALLS SEG Div_S32_Signed, SOF Div_S32_Signed
         SUB R4,#01H
         MOV ivvt_hpwm_div,R4
         MOVB RL4,#01H
@@ -366,38 +366,38 @@ Calc_IVVT_PWM_Freq_2:
         MOV R12,#DATA16 POF ldpm_vb_ivvtpwm
         MOV R13,#DATA16 PAG ldpm_vb_ivvtpwm
         MOVBZ R14,vb
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_frq_ivvthpwm
         MOV R13,#DATA16 PAG ip_frq_ivvthpwm
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV ivvthpwm_frq,R4
         MOV R12,#DATA16 POF ip_frq_ivvtpwm
         MOV R13,#DATA16 PAG ip_frq_ivvtpwm
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV ivvtepwm_frq,R4
         MOV R12,#DATA16 045BEH
         MOVBZ R13,tmag_ivvt
-        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Byte_2D_Table_DWord_YByte, SOF Get_IP_Byte_2D_Table_DWord_YByte
         MOVBZ R4,RL4
         MOV [-R0],R4
         MOV R12,#DATA16 POF ip_fac_vb_ivvtpwm
         MOV R13,#DATA16 PAG ip_fac_vb_ivvtpwm
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVBZ R12,RL4
         MOV R13,[R0+]
-        CALLS 00FH,Mul_S16_Q7_Sat
+        CALLS SEG Mul_S16_Q7_Sat, SOF Mul_S16_Q7_Sat
         MOVB fac_cor_ivvtpwm,RL4
         MOVBZ R12,RL4
         MOV R4,[R8+#04H]
         MOVB RL5,[R4]
         MOVBZ R13,RL5
-        CALLS 00FH,Mul_S16_Q7_Sat
+        CALLS SEG Mul_S16_Q7_Sat, SOF Mul_S16_Q7_Sat
         MOVB [R9+#012H],RL4
         MOVBZ R12,fac_cor_ivvtpwm
         MOV R4,[R8+#06H]
         MOVB RL5,[R4]
         MOVBZ R13,RL5
-        CALLS 00FH,Mul_S16_Q7_Sat
+        CALLS SEG Mul_S16_Q7_Sat, SOF Mul_S16_Q7_Sat
         MOVB [R9+#013H],RL4
         MOV R8,[R0+]
         MOV R9,[R0+]

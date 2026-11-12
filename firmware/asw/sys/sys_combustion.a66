@@ -38,9 +38,9 @@ Reset_CC28IC_e22:
 Diag_IV_Combustion:
         MOV [-R0],R9
         MOV [-R0],R8
-        CALLS 00AH,Diag_Output_Stage
-        CALLS 00AH,Diag_Output_SecAir
-        CALLS 00AH,Diag_Output_EGR
+        CALLS SEG Diag_Output_Stage, SOF Diag_Output_Stage
+        CALLS SEG Diag_Output_SecAir, SOF Diag_Output_SecAir
+        CALLS SEG Diag_Output_EGR, SOF Diag_Output_EGR
         MOVBZ R9,diag_f59a
         MOV R8,#00H
 L_A4E44:                 ; 0xa4e44
@@ -166,9 +166,9 @@ L_A4F16:                 ; 0xa4f16
         BCLR can_fd58.0CH
         JNB can_fd58.09H,L_A4F28
         BCLR can_fd58.09H
-        CALLS 00EH,write_eeprom_ti_co_is
+        CALLS SEG write_eeprom_ti_co_is, SOF write_eeprom_ti_co_is
 L_A4F28:                 ; 0xa4f28
-        CALLS 00EH,Clr_Diag_fd62_RetStatus
+        CALLS SEG Clr_Diag_fd62_RetStatus, SOF Clr_Diag_fd62_RetStatus
         JMPR cc_UC,L_A4FB0
 L_A4F2E:                 ; 0xa4f2e
         MOVB RL4,lv_sched_diag_inh
@@ -226,9 +226,9 @@ L_A4F9E:                 ; 0xa4f9e
 L_A4FA2:                 ; 0xa4fa2
         JB can_fd58.09H,L_A4FAC
         BSET can_fd58.09H
-        CALLS 00EH,SMARTRA_Phase_Sync
+        CALLS SEG SMARTRA_Phase_Sync, SOF SMARTRA_Phase_Sync
 L_A4FAC:                 ; 0xa4fac
-        CALLS 00EH,vb_sub
+        CALLS SEG vb_sub, SOF vb_sub
 L_A4FB0:                 ; 0xa4fb0
         MOVB RL4,bl_prog_session_state
         CMPB RL4,#05H
@@ -241,44 +241,44 @@ L_A4FB0:                 ; 0xa4fb0
         ; ------------------------------------------------------------
         ; (unclassified) RAM/paged global @0xa4fc6 [dpp]  W:{-}  R:{-}
         ; ------------------------------------------------------------
-        CALLS 00EH,Nop_e5d34
+        CALLS SEG Nop_e5d34, SOF Nop_e5d34
         JB can_fd58.09H,L_A4FE4
-        CALLS 00AH,EngInj_DisableOutputs
-        CALLS 00AH,EngIgn_DisableOutputs
-        CALLS 00EH,c_t_max_ecu_sub
+        CALLS SEG EngInj_DisableOutputs, SOF EngInj_DisableOutputs
+        CALLS SEG EngIgn_DisableOutputs, SOF EngIgn_DisableOutputs
+        CALLS SEG c_t_max_ecu_sub, SOF c_t_max_ecu_sub
         MOVB RL4,#04H
         MOVB bl_prog_session_state,RL4
         JMPA cc_UC,L_A5220
 L_A4FE4:                 ; 0xa4fe4
         MOVB RL4,lv_sched_diag_inh
         JMPA cc_NE,L_A5220
-        CALLS 00AH,EngInj_DisableOutputs
-        CALLS 00AH,EngIgn_DisableOutputs
-        CALLS 00EH,Tail_f0a52cc_b26
-        CALLS 00AH,EngInj_ArmOutputs
-        CALLS 00AH,EngIgn_ArmOutputs
-        CALLS 00AH,EngCrank_ArmTimingCapture
+        CALLS SEG EngInj_DisableOutputs, SOF EngInj_DisableOutputs
+        CALLS SEG EngIgn_DisableOutputs, SOF EngIgn_DisableOutputs
+        CALLS SEG Tail_f0a52cc_b26, SOF Tail_f0a52cc_b26
+        CALLS SEG EngInj_ArmOutputs, SOF EngInj_ArmOutputs
+        CALLS SEG EngIgn_ArmOutputs, SOF EngIgn_ArmOutputs
+        CALLS SEG EngCrank_ArmTimingCapture, SOF EngCrank_ArmTimingCapture
         MOVB bl_prog_session_state,ZEROS
         JMPA cc_UC,L_A5220
         ; ------------------------------------------------------------
         ; (unclassified) RAM/paged global @0xa500c [dpp]  W:{-}  R:{-}
         ; ------------------------------------------------------------
-        CALLS 00EH,Set_Out_FuelReq_4
+        CALLS SEG Set_Out_FuelReq_4, SOF Set_Out_FuelReq_4
         JB can_fd58.09H,L_A502E
-        CALLS 00AH,EngCrank_StopTimingCapture
-        CALLS 00AH,EngInj_DisableOutputs
-        CALLS 00AH,EngIgn_DisableOutputs
-        CALLS 00EH,c_t_max_ecu_sub
+        CALLS SEG EngCrank_StopTimingCapture, SOF EngCrank_StopTimingCapture
+        CALLS SEG EngInj_DisableOutputs, SOF EngInj_DisableOutputs
+        CALLS SEG EngIgn_DisableOutputs, SOF EngIgn_DisableOutputs
+        CALLS SEG c_t_max_ecu_sub, SOF c_t_max_ecu_sub
         MOVB RL4,#04H
         MOVB bl_prog_session_state,RL4
         JMPA cc_UC,L_A5220
 L_A502E:                 ; 0xa502e
         MOVB RL4,lv_sched_diag_inh
         JMPR cc_EQ,L_A504E
-        CALLS 00AH,EngCrank_StopTimingCapture
-        CALLS 00AH,EngInj_DisableOutputs
-        CALLS 00AH,EngIgn_DisableOutputs
-        CALLS 00EH,FuelPump_Out_1
+        CALLS SEG EngCrank_StopTimingCapture, SOF EngCrank_StopTimingCapture
+        CALLS SEG EngInj_DisableOutputs, SOF EngInj_DisableOutputs
+        CALLS SEG EngIgn_DisableOutputs, SOF EngIgn_DisableOutputs
+        CALLS SEG FuelPump_Out_1, SOF FuelPump_Out_1
         MOVB RL4,#05H
         MOVB bl_prog_session_state,RL4
         JMPA cc_UC,L_A5220
@@ -286,13 +286,13 @@ L_A504E:                 ; 0xa504e
         MOVB RL4,stop_eng
         BMOVN PSW.06H,PSW.03H
         JNB PSW.06H,L_A507A
-        CALLS 00AH,EngCrank_StopTimingCapture
-        CALLS 00AH,EngInj_DisableOutputs
-        CALLS 00AH,EngIgn_DisableOutputs
-        CALLS 00EH,Ctl_FuelPump
-        CALLS 00AH,EngInj_ArmOutputs
-        CALLS 00AH,EngIgn_ArmOutputs
-        CALLS 00AH,EngCrank_ArmTimingCapture
+        CALLS SEG EngCrank_StopTimingCapture, SOF EngCrank_StopTimingCapture
+        CALLS SEG EngInj_DisableOutputs, SOF EngInj_DisableOutputs
+        CALLS SEG EngIgn_DisableOutputs, SOF EngIgn_DisableOutputs
+        CALLS SEG Ctl_FuelPump, SOF Ctl_FuelPump
+        CALLS SEG EngInj_ArmOutputs, SOF EngInj_ArmOutputs
+        CALLS SEG EngIgn_ArmOutputs, SOF EngIgn_ArmOutputs
+        CALLS SEG EngCrank_ArmTimingCapture, SOF EngCrank_ArmTimingCapture
         JMPA cc_UC,L_A5220
 L_A507A:                 ; 0xa507a
         MOVB RL4,run_eng
@@ -300,11 +300,11 @@ L_A507A:                 ; 0xa507a
         JB PSW.06H,L_A508A
         JMPA cc_UC,L_A5220
 L_A508A:                 ; 0xa508a
-        CALLS 00EH,Set_FuelPump_Latch
+        CALLS SEG Set_FuelPump_Latch, SOF Set_FuelPump_Latch
         MOVB RL4,syn_eng
         BMOVN PSW.06H,PSW.03H
         JNB PSW.06H,L_A50A8
-        CALLS 00EH,FuelCut_TrailThrottle
+        CALLS SEG FuelCut_TrailThrottle, SOF FuelCut_TrailThrottle
         MOVB RL4,#02H
         MOVB bl_prog_session_state,RL4
         JMPA cc_UC,L_A5220
@@ -315,12 +315,12 @@ L_A50A8:                 ; 0xa50a8
         ; ------------------------------------------------------------
         ; (unclassified) RAM/paged global @0xa50b2 [dpp]  W:{-}  R:{-}
         ; ------------------------------------------------------------
-        CALLS 00EH,Tail_f0c7b8c_d2c
+        CALLS SEG Tail_f0c7b8c_d2c, SOF Tail_f0c7b8c_d2c
         JB can_fd58.09H,L_A50D4
-        CALLS 00AH,EngCrank_StopTimingCapture
-        CALLS 00AH,EngInj_DisableOutputs
-        CALLS 00AH,EngIgn_DisableOutputs
-        CALLS 00EH,FuelPump_Out_2
+        CALLS SEG EngCrank_StopTimingCapture, SOF EngCrank_StopTimingCapture
+        CALLS SEG EngInj_DisableOutputs, SOF EngInj_DisableOutputs
+        CALLS SEG EngIgn_DisableOutputs, SOF EngIgn_DisableOutputs
+        CALLS SEG FuelPump_Out_2, SOF FuelPump_Out_2
         ; ------------------------------------------------------------
         ; (unclassified) RAM/paged global @0xa50ca [dpp]  W:{-}  R:{-}
         ; ------------------------------------------------------------
@@ -330,10 +330,10 @@ L_A50A8:                 ; 0xa50a8
 L_A50D4:                 ; 0xa50d4
         MOVB RL4,lv_sched_diag_inh
         JMPR cc_EQ,L_A50F4
-        CALLS 00AH,EngCrank_StopTimingCapture
-        CALLS 00AH,EngInj_DisableOutputs
-        CALLS 00AH,EngIgn_DisableOutputs
-        CALLS 00EH,FuelPump_Out_3
+        CALLS SEG EngCrank_StopTimingCapture, SOF EngCrank_StopTimingCapture
+        CALLS SEG EngInj_DisableOutputs, SOF EngInj_DisableOutputs
+        CALLS SEG EngIgn_DisableOutputs, SOF EngIgn_DisableOutputs
+        CALLS SEG FuelPump_Out_3, SOF FuelPump_Out_3
         MOVB RL4,#05H
         MOVB bl_prog_session_state,RL4
         JMPA cc_UC,L_A5220
@@ -341,12 +341,12 @@ L_A50F4:                 ; 0xa50f4
         MOVB RL4,stop_eng
         BMOVN PSW.06H,PSW.03H
         JNB PSW.06H,g_a5120
-        CALLS 00AH,EngInj_DisableOutputs
-        CALLS 00AH,EngIgn_DisableOutputs
-        CALLS 00EH,FuelPump_Out_3
-        CALLS 00AH,EngInj_ArmOutputs
-        CALLS 00AH,EngIgn_ArmOutputs
-        CALLS 00AH,EngCrank_ArmTimingCapture
+        CALLS SEG EngInj_DisableOutputs, SOF EngInj_DisableOutputs
+        CALLS SEG EngIgn_DisableOutputs, SOF EngIgn_DisableOutputs
+        CALLS SEG FuelPump_Out_3, SOF FuelPump_Out_3
+        CALLS SEG EngInj_ArmOutputs, SOF EngInj_ArmOutputs
+        CALLS SEG EngIgn_ArmOutputs, SOF EngIgn_ArmOutputs
+        CALLS SEG EngCrank_ArmTimingCapture, SOF EngCrank_ArmTimingCapture
         MOVB bl_prog_session_state,ZEROS
         JMPA cc_UC,L_A5220
         ; ------------------------------------------------------------
@@ -358,7 +358,7 @@ g_a5120:                 ; 0xa5120
         JB PSW.06H,L_A5130
         JMPA cc_UC,L_A5220
 L_A5130:                 ; 0xa5130
-        CALLS 00EH,FuelCut_TrailThrottle
+        CALLS SEG FuelCut_TrailThrottle, SOF FuelCut_TrailThrottle
         MOVB RL4,#02H
         MOVB bl_prog_session_state,RL4
         JMPA cc_UC,L_A5220
@@ -367,16 +367,16 @@ L_A5130:                 ; 0xa5130
         ; ------------------------------------------------------------
         MOVB RL4,lv_sched_diag_inh
         JMPR cc_EQ,L_A515C
-        CALLS 00AH,EngCrank_StopTimingCapture
-        CALLS 00AH,EngInj_DisableOutputs
-        CALLS 00AH,EngIgn_DisableOutputs
-        CALLS 00EH,FuelPump_Out_4
+        CALLS SEG EngCrank_StopTimingCapture, SOF EngCrank_StopTimingCapture
+        CALLS SEG EngInj_DisableOutputs, SOF EngInj_DisableOutputs
+        CALLS SEG EngIgn_DisableOutputs, SOF EngIgn_DisableOutputs
+        CALLS SEG FuelPump_Out_4, SOF FuelPump_Out_4
         MOVB RL4,#05H
         MOVB bl_prog_session_state,RL4
         JMPR cc_UC,L_A5220
 L_A515C:                 ; 0xa515c
         JB can_fd58.09H,L_A5170
-        CALLS 00EH,Set_FuelPump_RunOn
+        CALLS SEG Set_FuelPump_RunOn, SOF Set_FuelPump_RunOn
         MOV g_fbdc,ONES
         MOVB RL4,#03H
         MOVB bl_prog_session_state,RL4
@@ -385,19 +385,19 @@ L_A5170:                 ; 0xa5170
         MOVB RL4,stop_eng
         BMOVN PSW.06H,PSW.03H
         JNB PSW.06H,L_A5220
-        CALLS 00AH,EngInj_DisableOutputs
-        CALLS 00AH,EngIgn_DisableOutputs
-        CALLS 00EH,FuelPump_Out_4
-        CALLS 00AH,EngInj_ArmOutputs
-        CALLS 00AH,EngIgn_ArmOutputs
-        CALLS 00AH,EngCrank_ArmTimingCapture
+        CALLS SEG EngInj_DisableOutputs, SOF EngInj_DisableOutputs
+        CALLS SEG EngIgn_DisableOutputs, SOF EngIgn_DisableOutputs
+        CALLS SEG FuelPump_Out_4, SOF FuelPump_Out_4
+        CALLS SEG EngInj_ArmOutputs, SOF EngInj_ArmOutputs
+        CALLS SEG EngIgn_ArmOutputs, SOF EngIgn_ArmOutputs
+        CALLS SEG EngCrank_ArmTimingCapture, SOF EngCrank_ArmTimingCapture
         MOVB bl_prog_session_state,ZEROS
         JMPR cc_UC,L_A5220
         ; ------------------------------------------------------------
         ; (unclassified) RAM/paged global @0xa519a [dpp]  W:{-}  R:{-}
         ; ------------------------------------------------------------
         JNB can_fd58.09H,L_A51AA
-        CALLS 00EH,Set_FuelPump_Latch_2
+        CALLS SEG Set_FuelPump_Latch_2, SOF Set_FuelPump_Latch_2
         MOVB RL4,#02H
         MOVB bl_prog_session_state,RL4
         JMPR cc_UC,L_A5220
@@ -410,42 +410,42 @@ L_A51AA:                 ; 0xa51aa
         CMP R4,#00H
         JMPR cc_NE,L_A5220
 L_A51C2:                 ; 0xa51c2
-        CALLS 00AH,EngCrank_StopTimingCapture
-        CALLS 00AH,EngInj_DisableOutputs
+        CALLS SEG EngCrank_StopTimingCapture, SOF EngCrank_StopTimingCapture
+        CALLS SEG EngInj_DisableOutputs, SOF EngInj_DisableOutputs
         ; ------------------------------------------------------------
         ; (unclassified) RAM/paged global @0xa51ca [dpp]  W:{-}  R:{-}
         ; ------------------------------------------------------------
-        CALLS 00AH,EngIgn_DisableOutputs
-        CALLS 00EH,FuelPump_Out_5
+        CALLS SEG EngIgn_DisableOutputs, SOF EngIgn_DisableOutputs
+        CALLS SEG FuelPump_Out_5, SOF FuelPump_Out_5
         MOVB RL4,#04H
         MOVB bl_prog_session_state,RL4
         JMPR cc_UC,L_A5220
         ; ------------------------------------------------------------
         ; (unclassified) RAM/paged global @0xa51da [dpp]  W:{-}  R:{-}
         ; ------------------------------------------------------------
-        CALLS 00EH,Nop_e5d32
+        CALLS SEG Nop_e5d32, SOF Nop_e5d32
         JNB can_fd58.09H,L_A5220
         JB sched_flags.00H,L_A5220
-        CALLS 00EH,Calc_Crank_Err_LIH
+        CALLS SEG Calc_Crank_Err_LIH, SOF Calc_Crank_Err_LIH
         MOVB RL4,lv_sched_diag_inh
         JMPR cc_EQ,L_A51F8
         MOVB RL5,#05H
         MOVB bl_prog_session_state,RL5
         JMPR cc_UC,L_A5220
 L_A51F8:                 ; 0xa51f8
-        CALLS 00AH,EngInj_ArmOutputs
-        CALLS 00AH,EngIgn_ArmOutputs
-        CALLS 00AH,EngCrank_ArmTimingCapture
+        CALLS SEG EngInj_ArmOutputs, SOF EngInj_ArmOutputs
+        CALLS SEG EngIgn_ArmOutputs, SOF EngIgn_ArmOutputs
+        CALLS SEG EngCrank_ArmTimingCapture, SOF EngCrank_ArmTimingCapture
         ; ------------------------------------------------------------
         ; (unclassified) RAM/paged global @0xa5204 [dpp]  W:{-}  R:{-}
         ; ------------------------------------------------------------
         MOVB bl_prog_session_state,ZEROS
         JMPR cc_UC,L_A5220
 L_A520A:                 ; 0xa520a
-        CALLS 00AH,EngCrank_StopTimingCapture
-        CALLS 00AH,EngInj_DisableOutputs
-        CALLS 00AH,EngIgn_DisableOutputs
-        CALLS 00EH,FuelPump_Out_6
+        CALLS SEG EngCrank_StopTimingCapture, SOF EngCrank_StopTimingCapture
+        CALLS SEG EngInj_DisableOutputs, SOF EngInj_DisableOutputs
+        CALLS SEG EngIgn_DisableOutputs, SOF EngIgn_DisableOutputs
+        CALLS SEG FuelPump_Out_6, SOF FuelPump_Out_6
         MOVB RL4,#05H
         MOVB bl_prog_session_state,RL4
 L_A5220:                 ; 0xa5220

@@ -57,7 +57,7 @@ KWP_App_SID_18_case:
         MOV R2,0FE0EH
         MOV R12,R2
         ADD R12,#02H
-        CALLS 00BH,Imob_Update_WarnLamp
+        CALLS SEG Imob_Update_WarnLamp, SOF Imob_Update_WarnLamp
 L_E5842:                 ; 0xe5842
         MOVB ctr_imob_nvm_2,ZEROS
         MOVB RL4,#01H
@@ -85,7 +85,7 @@ L_E5858:                 ; 0xe5858
         SUB R12,R4
         SHL R12,#02H
         ADD R12,#02H
-        CALLS 00BH,Imob_Update_WarnLamp
+        CALLS SEG Imob_Update_WarnLamp, SOF Imob_Update_WarnLamp
         MOVBZ R4,DPP0:c_dly_lock_imob
         MOV R5,R4
         SHL R5,#04H
@@ -291,7 +291,7 @@ L_E5A72:                 ; 0xe5a72
         JMPR cc_NE,L_E5A7A
         BCLR lv_fmy_imob.05H
 L_E5A7A:                 ; 0xe5a7a
-        CALLS 00BH,Imob_DTC_update_comms
+        CALLS SEG Imob_DTC_update_comms, SOF Imob_DTC_update_comms
         JMPR cc_UC,L_E5A82
 
 ; ======== ClrBits_kwp_comms_flags_a80  (@0xe5a80) ========

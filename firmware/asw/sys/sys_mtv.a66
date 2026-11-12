@@ -41,7 +41,7 @@ Calc_MTV_Ctr:
         BCLR P8.04H
         BCLR imob_fda0.02H
         BCLR P8.02H
-        CALLS 00BH,Set_lv_inh_fsd_cp
+        CALLS SEG Set_lv_inh_fsd_cp, SOF Set_lv_inh_fsd_cp
 L_B7902:                 ; 0xb7902
         RETS
 
@@ -59,12 +59,12 @@ L_B790E:                 ; 0xb790e
         CMPB RL6,DPP0:c_mtv_ctr_max
         JMPR cc_ULE,L_B7922
         SUBB g_c249,ONES
-        CALLS 00BH,Calc_MTV_Ctr
+        CALLS SEG Calc_MTV_Ctr, SOF Calc_MTV_Ctr
         JMPR cc_UC,L_B7930
 L_B7922:                 ; 0xb7922
         MOVBZ R12,RL6
         MOVBZ R13,DPP0:c_mtv_ctr_max
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         MOV fac_mtv,R4
 L_B7930:                 ; 0xb7930
         MOVB RL4,st_mtv
@@ -243,7 +243,7 @@ L_B7B0A:                 ; 0xb7b0a
         MOV g_c938,R4
         JMPR cc_UC,L_B7B9A
 L_B7B16:                 ; 0xb7b16
-        CALLS 00BH,Calc_MTV_Ctr
+        CALLS SEG Calc_MTV_Ctr, SOF Calc_MTV_Ctr
         SUBB g_c249,ONES
         JMPR cc_UC,L_B7B9A
 L_B7B20:                 ; 0xb7b20
@@ -286,11 +286,11 @@ L_B7B80:                 ; 0xb7b80
         MOV g_c938,R4
         JMPR cc_UC,L_B7B9A
 L_B7B8C:                 ; 0xb7b8c
-        CALLS 00BH,Calc_MTV_Ctr
+        CALLS SEG Calc_MTV_Ctr, SOF Calc_MTV_Ctr
         SUBB g_c249,ONES
         JMPR cc_UC,L_B7B9A
 L_B7B96:                 ; 0xb7b96
-        CALLS 00BH,Calc_MTV_Ctr
+        CALLS SEG Calc_MTV_Ctr, SOF Calc_MTV_Ctr
 L_B7B9A:                 ; 0xb7b9a
         MOV R6,[R0+]
         RETS

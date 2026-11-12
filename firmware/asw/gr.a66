@@ -109,10 +109,10 @@ L_BF48A:                 ; 0xbf48a
         MOV R12,#DATA16 0495AH
         MOV R13,maf_word
         MOVBZ R14,gear
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YWord
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XByte_YWord, SOF Get_IP_Word_3D_Table_DWord_XByte_YWord
         MOV R13,R4
         MOV R12,n_gear_shift_beg
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         CMP R4,n_C93C
         JMPR cc_NC,L_BF4B6
         MOVB RL4,t_n_rise_gear_shift
@@ -166,12 +166,12 @@ L_BF522:                 ; 0xbf522
         CMPB RL4,DPP0:c_pv_av_dt_close_max
         JMPR cc_NC,L_BF54C
         MOV R12,n_dif_ref_lpf_aj
-        CALLS 00FH,Abs_S16
+        CALLS SEG Abs_S16, SOF Abs_S16
         MOV [-R0],R4
         MOV R12,#DATA16 04946H
         MOVBZ R13,gear
         MOVBZ R14,toil
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YByte
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XByte_YByte, SOF Get_IP_Word_3D_Table_DWord_XByte_YByte
         MOV R5,[R0+]
         CMP R5,R4
         JMPR cc_UGT,L_BF550
@@ -211,7 +211,7 @@ L_BF59E:                 ; 0xbf59e
 L_BF5A6:                 ; 0xbf5a6
         MOV R12,#DATA16 04952H
         MOVBZ R13,vs
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YByte, SOF Get_IP_Word_2D_Table_DWord_YByte
         MOV R9,R4
         MOVB RL4,pv_av
         CMPB RL4,DPP0:c_pv_av_dt_open_min
@@ -220,7 +220,7 @@ L_BF5A6:                 ; 0xbf5a6
         CMP R4,DPP0:c_n_vs_ratio_fil_min
         JMPR cc_NC,L_BF5F8
         MOV R12,n_dif_ref_lpf_aj
-        CALLS 00FH,Abs_S16
+        CALLS SEG Abs_S16, SOF Abs_S16
         CMP R4,R9
         JMPR cc_NC,L_BF5F8
         JNB lv_ch.08H,L_BF5DC
@@ -239,7 +239,7 @@ L_BF5F2:                 ; 0xbf5f2
 L_BF5F8:                 ; 0xbf5f8
         MOV R12,n_dif_ref_lpf_aj
         MOV R13,g_ca92
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV R8,R4
         MOVB RL4,pv_av
         CMPB RL4,DPP0:c_pv_av_dt_open_2_min
@@ -376,7 +376,7 @@ L_BF738:                 ; 0xbf738
         MOV R12,n_C93C
         SHR R12,#01H
         MOV R13,R4
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         MOV n_vs_ratio,R4
         CMP R4,#DATA16 0FFFFH
         JMPA cc_NC,L_BF99C
@@ -385,7 +385,7 @@ L_BF738:                 ; 0xbf738
         JB lv_ch.06H,L_BF7FA
         MOV R12,#DATA16 04966H
         MOV R13,n_vs_ratio
-        CALLS 00FH,Get_Byte_2D_Table_DWord_YWord
+        CALLS SEG Get_Byte_2D_Table_DWord_YWord, SOF Get_Byte_2D_Table_DWord_YWord
         MOVB gr_sub,RL4
         CMPB RL4,#00H
         JMPR cc_EQ,L_BF7BA
@@ -436,18 +436,18 @@ L_BF802:                 ; 0xbf802
         MOV R12,#DATA16 0497EH
         MOVBZ R13,n_32
         MOVBZ R14,gr_mt
-        CALLS 00FH,Get_Word_3D_Table_DWord_XByte_YByte
+        CALLS SEG Get_Word_3D_Table_DWord_XByte_YByte, SOF Get_Word_3D_Table_DWord_XByte_YByte
         MOV R9,R4
         MOV R12,n_vs_ratio_fil
         MOV R13,n_vs_ratio
         MOV R14,R9
-        CALLS 00FH,Interp_U16
+        CALLS SEG Interp_U16, SOF Interp_U16
         MOV n_vs_ratio_fil,R4
         MOVB RL4,gr_mt
         JMPR cc_EQ,L_BF8A0
         JB lv_pl.00H,L_BF898
         MOVBS R12,n_grd
-        CALLS 00DH,Abs_S16_Simple
+        CALLS SEG Abs_S16_Simple, SOF Abs_S16_Simple
         MOVBZ R5,DPP0:c_n_grd_gear_max
         CMP R4,R5
         JMPR cc_SLE,L_BF846
@@ -461,7 +461,7 @@ L_BF846:                 ; 0xbf846
         MOVB t_gr_chg_lim,RL4
 L_BF856:                 ; 0xbf856
         MOVBS R12,n_grd
-        CALLS 00DH,Abs_S16_Simple
+        CALLS SEG Abs_S16_Simple, SOF Abs_S16_Simple
         MOVBZ R5,DPP0:c_n_grd_gear_min
         CMP R4,R5
         JMPR cc_SLE,L_BF886
@@ -504,14 +504,14 @@ L_BF8A6:                 ; 0xbf8a6
         MOVB gr_mt,ZEROS
         MOV R12,#DATA16 0496EH
         MOV R13,n_vs_ratio_fil
-        CALLS 00FH,Get_Byte_2D_Table_DWord_YWord
+        CALLS SEG Get_Byte_2D_Table_DWord_YWord, SOF Get_Byte_2D_Table_DWord_YWord
         MOVB gr_sub,RL4
         JMPR cc_UC,L_BF992
 L_BF8D0:                 ; 0xbf8d0
         JNB lv_ch.0CH,L_BF902
         MOV R12,#DATA16 0496EH
         MOV R13,n_vs_ratio_fil
-        CALLS 00FH,Get_Byte_2D_Table_DWord_YWord
+        CALLS SEG Get_Byte_2D_Table_DWord_YWord, SOF Get_Byte_2D_Table_DWord_YWord
         MOVB gr_sub,RL4
         CMPB RL4,g_c2c4
         JMPR cc_NE,L_BF912
@@ -519,13 +519,13 @@ L_BF8D0:                 ; 0xbf8d0
         JMPR cc_NE,L_BF912
         MOV R12,#DATA16 04976H
         MOV R13,n_vs_ratio_fil
-        CALLS 00FH,Get_Byte_2D_Table_DWord_YWord
+        CALLS SEG Get_Byte_2D_Table_DWord_YWord, SOF Get_Byte_2D_Table_DWord_YWord
         MOVB gr_sub,RL4
         JMPR cc_UC,L_BF912
 L_BF902:                 ; 0xbf902
         MOV R12,#DATA16 04976H
         MOV R13,n_vs_ratio_fil
-        CALLS 00FH,Get_Byte_2D_Table_DWord_YWord
+        CALLS SEG Get_Byte_2D_Table_DWord_YWord, SOF Get_Byte_2D_Table_DWord_YWord
         MOVB gr_sub,RL4
 L_BF912:                 ; 0xbf912
         MOVB RL4,gr_sub

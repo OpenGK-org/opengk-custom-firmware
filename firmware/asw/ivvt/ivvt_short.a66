@@ -55,21 +55,21 @@ Diag_IVVT_ShortTrip:
         MOV R12,#DATA16 POF ldpm_toil_3_ivvt
         MOV R13,#DATA16 PAG ldpm_toil_3_ivvt
         MOVBZ R14,toil
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_n_min_diag_cam_dif_ivvt
         MOV R13,#DATA16 PAG ip_n_min_diag_cam_dif_ivvt
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVB lv_ivvt_c2ed,RL4
         MOV R12,#DATA16 POF ip_n_max_diag_cam_dif_ivvt
         MOV R13,#DATA16 PAG ip_n_max_diag_cam_dif_ivvt
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVB lv_ivvt_c2ee,RL4
         MOVB RL5,ctr_cam_sp_chg
         CMPB RL5,DPP0:c_ctr_max_cam_sp_chg
         JMPR cc_NC,L_C153A
         MOVBZ R12,DPP0:c_cam_ini_in
         MOVBZ R13,DPP0:c_cam_hys_ad_ivvt
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL4,ivvt_in_struct_sp_ivvt_cam_sp_ivvt
         JMPR cc_ULE,L_C152E
         BSET lv_diag_trip_avl_ivvt.0CH

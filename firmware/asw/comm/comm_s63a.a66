@@ -43,7 +43,7 @@ NVM_Restore_s63a:
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#02H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV R10,diag_f890
         MOV R11,diag_f892
         EXTP R11, #02H
@@ -96,7 +96,7 @@ NVM_Save_s63a:
         MOV R13,R5
         MOV R14,#DATA16 0C365H
         MOV R15,#01H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 0063BH
@@ -110,7 +110,7 @@ NVM_Save_s63a:
         MOV R13,R5
         MOV R14,#DATA16 0C366H
         MOV R15,#01H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 0063AH
@@ -129,7 +129,7 @@ NVM_Save_s63a:
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#02H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV [R0],R4
         MOV R12,diag_f890
         MOV R13,diag_f892
@@ -144,7 +144,7 @@ NVM_Save_s63a:
         MOV R13,R5
         MOV R14,R0
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         ADD R0,#02H
         RETS
 

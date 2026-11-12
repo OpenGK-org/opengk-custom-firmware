@@ -124,54 +124,54 @@ Diag_IGA_Dif_Max_ER:
         CMPB RL5,#01H
         JMPA cc_NE,L_CFFF0
 L_CFE6E:                 ; 0xcfe6e
-        CALLS 00DH,OBD_Readiness_Grp4
+        CALLS SEG OBD_Readiness_Grp4, SOF OBD_Readiness_Grp4
         MOVB RL4,DPP0:c_clr_fmy
         CMPB RL4,#01H
         JMPR cc_NE,L_CFE7E
-        CALLS 00DH,Reset_Adaptive_LearnedValues
+        CALLS SEG Reset_Adaptive_LearnedValues, SOF Reset_Adaptive_LearnedValues
 L_CFE7E:                 ; 0xcfe7e
         MOVB RL4,DPP0:c_clr_ad_maf
         JMPR cc_NE,L_CFE8A
         MOVB RL5,DPP0:c_clr_ad_all
         JMPR cc_EQ,L_CFE92
 L_CFE8A:                 ; 0xcfe8a
-        CALLS 00DH,Tail_f0c400c_918
-        CALLS 00CH,Set_maf_fac_alti_mmv_7a6
+        CALLS SEG Tail_f0c400c_918, SOF Tail_f0c400c_918
+        CALLS SEG Set_maf_fac_alti_mmv_7a6, SOF Set_maf_fac_alti_mmv_7a6
 L_CFE92:                 ; 0xcfe92
         MOVB RL4,DPP0:c_clr_ad_knk
         JMPR cc_NE,L_CFE9E
         MOVB RL5,DPP0:c_clr_ad_all
         JMPR cc_EQ,L_CFEA2
 L_CFE9E:                 ; 0xcfe9e
-        CALLS 00CH,Init_IGA_Knk_Adapt
+        CALLS SEG Init_IGA_Knk_Adapt, SOF Init_IGA_Knk_Adapt
 L_CFEA2:                 ; 0xcfea2
         MOVB RL4,DPP0:c_clr_ad_tps
         JMPR cc_NE,L_CFEAE
         MOVB RL5,DPP0:c_clr_ad_all
         JMPR cc_EQ,L_CFEB2
 L_CFEAE:                 ; 0xcfeae
-        CALLS 00CH,Calc_TPS_AD_MMV_IS
+        CALLS SEG Calc_TPS_AD_MMV_IS, SOF Calc_TPS_AD_MMV_IS
 L_CFEB2:                 ; 0xcfeb2
         MOVB RL4,DPP0:c_clr_ad_isa
         JMPR cc_NE,L_CFEBE
         MOVB RL5,DPP0:c_clr_ad_all
         JMPR cc_EQ,L_CFEC2
 L_CFEBE:                 ; 0xcfebe
-        CALLS 00AH,Reset_TQ_Dif_IS_Ad
+        CALLS SEG Reset_TQ_Dif_IS_Ad, SOF Reset_TQ_Dif_IS_Ad
 L_CFEC2:                 ; 0xcfec2
         MOVB RL4,DPP0:c_clr_ad_lam
         JMPR cc_NE,L_CFECE
         MOVB RL5,DPP0:c_clr_ad_all
         JMPR cc_EQ,L_CFED2
 L_CFECE:                 ; 0xcfece
-        CALLS 00CH,Reset_ctr_cold_st_b96
+        CALLS SEG Reset_ctr_cold_st_b96, SOF Reset_ctr_cold_st_b96
 L_CFED2:                 ; 0xcfed2
         MOVB RL4,DPP0:c_clr_ad_ivvt
         JMPR cc_NE,L_CFEDE
         MOVB RL5,DPP0:c_clr_ad_all
         JMPR cc_EQ,L_CFEE2
 L_CFEDE:                 ; 0xcfede
-        CALLS 00CH,Calc_Cam_Ref_Edges
+        CALLS SEG Calc_Cam_Ref_Edges, SOF Calc_Cam_Ref_Edges
 L_CFEE2:                 ; 0xcfee2
         MOVB RL4,DPP0:c_clr_ad_mis
         JMPR cc_NE,L_CFEEE
@@ -179,21 +179,21 @@ L_CFEE2:                 ; 0xcfee2
         JMPR cc_EQ,L_CFEF6
 L_CFEEE:                 ; 0xcfeee
         JNB lv_conf_mis.02H,L_CFEF6
-        CALLS 00DH,Calc_ER_Thd_Adapt
+        CALLS SEG Calc_ER_Thd_Adapt, SOF Calc_ER_Thd_Adapt
 L_CFEF6:                 ; 0xcfef6
         MOVB RL4,DPP0:c_clr_ad_ch
         JMPR cc_NE,L_CFF02
         MOVB RL5,DPP0:c_clr_ad_all
         JMPR cc_EQ,L_CFF06
 L_CFF02:                 ; 0xcff02
-        CALLS 00BH,Reset_iga_er_ad_mem_142
+        CALLS SEG Reset_iga_er_ad_mem_142, SOF Reset_iga_er_ad_mem_142
 L_CFF06:                 ; 0xcff06
         MOVB RL4,DPP0:c_clr_ad_cps
         JMPR cc_NE,L_CFF12
         MOVB RL5,DPP0:c_clr_ad_all
         JMPR cc_EQ,L_CFF16
 L_CFF12:                 ; 0xcff12
-        CALLS 00BH,Reset_cppwm_ad_mem_ee0
+        CALLS SEG Reset_cppwm_ad_mem_ee0, SOF Reset_cppwm_ad_mem_ee0
 L_CFF16:                 ; 0xcff16
         MOVB RL4,DPP0:c_clr_ad_knk
         JMPR cc_NE,L_CFF22
@@ -217,8 +217,8 @@ L_CFF3A:                 ; 0xcff3a
 L_CFF46:                 ; 0xcff46
         MOVB toil_stop,ZEROS
 L_CFF4A:                 ; 0xcff4a
-        CALLS 00AH,FuelPump_Out_Init
-        CALLS 00AH,Reset_CC10IC_514
+        CALLS SEG FuelPump_Out_Init, SOF FuelPump_Out_Init
+        CALLS SEG Reset_CC10IC_514, SOF Reset_CC10IC_514
         BCLR can_fd9e.06H
         JB state_out_req.00H,L_CFF5A
         BSET P6.06H
@@ -229,12 +229,12 @@ L_CFF5A:                 ; 0xcff5a
         MOV R12,#DATA16 0005CH
         MOV R13,#DATA16 00028H
         MOV R14,#DATA16 053ACH
-        CALLS 00DH,BL_Set_ExecMagic_NVM
+        CALLS SEG BL_Set_ExecMagic_NVM, SOF BL_Set_ExecMagic_NVM
 L_CFF72:                 ; 0xcff72
-        CALLS 00AH,CCP_Arm_BL_Exec
+        CALLS SEG CCP_Arm_BL_Exec, SOF CCP_Arm_BL_Exec
         BSET PSW.0BH
-        CALLS 00AH,Set_lv_err_com_resp_imob
-        CALLS 00AH,Reset_CC26IC_f1a
+        CALLS SEG Set_lv_err_com_resp_imob, SOF Set_lv_err_com_resp_imob
+        CALLS SEG Reset_CC26IC_f1a, SOF Reset_CC26IC_f1a
         BSET lv_iga_fd92.06H
         BSET lv_iga_fd06.06H
         ATOMIC #03H

@@ -48,7 +48,7 @@ L_DFF1E:                 ; 0xdff1e
         MOV R4,0FE0EH
         JMPR cc_UC,L_DFF3C
 L_DFF38:                 ; 0xdff38
-        CALLS 00DH,Div_S32_S16_b
+        CALLS SEG Div_S32_S16_b, SOF Div_S32_S16_b
 L_DFF3C:                 ; 0xdff3c
         MOV R11,[R0+]
         JNB R11.00H,L_DFF48

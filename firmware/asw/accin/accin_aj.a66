@@ -34,11 +34,11 @@ Set_lv_act_aj_c7b0:
         BCLR lv_act_aj.0DH
         MOV R12,#DATA16 04C3EH
         MOVBZ R13,n_32
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YByte, SOF Get_IP_Word_2D_Table_DWord_YByte
         MOV g_f944,R4
         RETS
 L_C7B22:                 ; 0xc7b22
-        CALLS 00CH,Clr_Out_AJ
+        CALLS SEG Clr_Out_AJ, SOF Clr_Out_AJ
         RETS
 
 ; ======== Clr_Out_AJ_2  (@0xc7b28) ========

@@ -90,7 +90,7 @@ L_B848A:                 ; 0xb848a
         MOV R13,R12
         MOV R12,0FF1CH
         MOV R14,ctr_cdn_rbm_cat_diag
-        CALLS 00FH,Div_U32_U16_Round32
+        CALLS SEG Div_U32_U16_Round32, SOF Div_U32_U16_Round32
         MOV R8,R4
         MOV R9,R5
         MOV R4,R9

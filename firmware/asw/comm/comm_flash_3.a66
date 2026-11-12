@@ -20,7 +20,7 @@ KWP_Flash_Cmd09_arm:
         MOVB RL4,kwp_sec_level
         CMPB RL4,#02H
         JMPR cc_C,L_CBD86
-        CALLS 00BH,RetC_90000_160
+        CALLS SEG RetC_90000_160, SOF RetC_90000_160
         MOV [R0],R4
         MOV [R0+#02H],R5
         MOVB kwp_resp_status2,ZEROS

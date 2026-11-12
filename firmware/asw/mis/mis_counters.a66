@@ -90,7 +90,7 @@ L_BE2AA:                 ; 0xbe2aa
         MOV R13,#DATA16 05848H
         MOVBZ R14,DPP0:c_abc_max_er
         MOVBZ R15,DPP0:c_abc_max_er
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_ecu_err.07H,dtc_status_work.06H
         MOVBZ R4,dtc_flg_mis_cyl0
         AND R4,#DATA16 00020H
@@ -104,7 +104,7 @@ L_BE2DE:                 ; 0xbe2de
         MOV R13,#DATA16 0585EH
         MOVBZ R14,DPP0:c_abc_max_er
         MOVBZ R15,DPP0:c_abc_max_er
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_ecu_err.08H,dtc_status_work.06H
         MOVBZ R4,dtc_flg_mis_cyl1
         AND R4,#DATA16 00020H
@@ -118,7 +118,7 @@ L_BE30E:                 ; 0xbe30e
         MOV R13,#DATA16 05874H
         MOVBZ R14,DPP0:c_abc_max_er
         MOVBZ R15,DPP0:c_abc_max_er
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_ecu_err.09H,dtc_status_work.06H
         MOVBZ R4,dtc_flg_mis_cyl2
         AND R4,#DATA16 00020H
@@ -134,7 +134,7 @@ L_BE33E:                 ; 0xbe33e
         MOV R13,#DATA16 0588AH
         MOVBZ R14,DPP0:c_abc_max_er
         MOVBZ R15,DPP0:c_abc_max_er
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_ecu_err.0AH,dtc_status_work.06H
         MOVBZ R4,dtc_flg_mis_cyl3
         AND R4,#DATA16 00020H
@@ -173,14 +173,14 @@ L_BE38C:                 ; 0xbe38c
         MOV R13,#DATA16 PAG sst_n_kf_wf_auss_a
         MOV R14,mis_crank_seg
         SHR R14,#05H
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF sst_lm_kf_wf_auss_a
         MOV R13,#DATA16 PAG sst_lm_kf_wf_auss_a
         MOVBZ R14,diag_d049
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         MOV R12,#DATA16 POF ip_mis_a_fac__n__maf
         MOV R13,#DATA16 PAG ip_mis_a_fac__n__maf
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVBZ R4,RL4
         MOV R5,#DATA16 0CA7AH
         MOVBZ R2,seg_nr_er
@@ -199,9 +199,9 @@ L_BE38C:                 ; 0xbe38c
         SUB mis_sum_a,ONES
         SUB mis_sum_b,ONES
         MOV R12,#DATA16 0CA68H
-        CALLS 00CH,Check_N_Window
+        CALLS SEG Check_N_Window, SOF Check_N_Window
         MOV R12,#DATA16 0CA6CH
-        CALLS 00CH,Check_N_Window
+        CALLS SEG Check_N_Window, SOF Check_N_Window
 L_BE426:                 ; 0xbe426
         MOVB RL4,n_32
         CMPB RL4,DPP0:c_n_mis_ftp_max
@@ -227,7 +227,7 @@ L_BE460:                 ; 0xbe460
         MOVBZ R4,RL6
         SHL R4,#01H
         MOV R13,[R4+#0CA7AH]
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV R9,R4
         ADDB RL6,#01H
         CMPB RL6,#04H
@@ -236,7 +236,7 @@ L_BE460:                 ; 0xbe460
         JMPA cc_ULE,L_BE72C
         MOV R12,#DATA16 0CA7AH
         MOV R13,#04H
-        CALLS 00FH,ArgMax_U16_Arr
+        CALLS SEG ArgMax_U16_Arr, SOF ArgMax_U16_Arr
         MOVB RL6,RL4
         MOVB RL4,ctr_mis_a
         CMPB RL4,#DATA16 000FFH
@@ -273,9 +273,9 @@ L_BE4BE:                 ; 0xbe4be
         JMPR cc_NE,L_BE510
 L_BE4EC:                 ; 0xbe4ec
         MOV R12,#DATA16 00047H
-        CALLS 00DH,DTC_Status_Proc_1
+        CALLS SEG DTC_Status_Proc_1, SOF DTC_Status_Proc_1
         MOV R12,#DATA16 00047H
-        CALLS 00DH,Calc_Mis_Rate_FromFault
+        CALLS SEG Calc_Mis_Rate_FromFault, SOF Calc_Mis_Rate_FromFault
         JNB PSW.06H,L_BE510
         BSET lv_er_carb_b4.04H
         MOVB RL4,dtc_st_mis_cyl0
@@ -287,7 +287,7 @@ L_BE510:                 ; 0xbe510
         MOV R13,#DATA16 05848H
         MOVBZ R14,DPP0:c_abc_max_er
         MOVBZ R15,DPP0:c_abc_max_er
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_ecu_err.07H,dtc_status_work.06H
         MOVBZ R4,dtc_flg_mis_cyl0
         AND R4,#DATA16 00020H
@@ -302,9 +302,9 @@ L_BE53A:                 ; 0xbe53a
         JMPR cc_NE,L_BE56C
 L_BE548:                 ; 0xbe548
         MOV R12,#DATA16 00048H
-        CALLS 00DH,DTC_Status_Proc_1
+        CALLS SEG DTC_Status_Proc_1, SOF DTC_Status_Proc_1
         MOV R12,#DATA16 00048H
-        CALLS 00DH,Calc_Mis_Rate_FromFault
+        CALLS SEG Calc_Mis_Rate_FromFault, SOF Calc_Mis_Rate_FromFault
         JNB PSW.06H,L_BE56C
         BSET lv_er_carb_b4.04H
         MOVB RL4,dtc_st_mis_cyl1
@@ -316,7 +316,7 @@ L_BE56C:                 ; 0xbe56c
         MOV R13,#DATA16 0585EH
         MOVBZ R14,DPP0:c_abc_max_er
         MOVBZ R15,DPP0:c_abc_max_er
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_ecu_err.08H,dtc_status_work.06H
         MOVBZ R4,dtc_flg_mis_cyl1
         AND R4,#DATA16 00020H
@@ -331,9 +331,9 @@ L_BE596:                 ; 0xbe596
         JMPR cc_NE,L_BE5C8
 L_BE5A4:                 ; 0xbe5a4
         MOV R12,#DATA16 00049H
-        CALLS 00DH,DTC_Status_Proc_1
+        CALLS SEG DTC_Status_Proc_1, SOF DTC_Status_Proc_1
         MOV R12,#DATA16 00049H
-        CALLS 00DH,Calc_Mis_Rate_FromFault
+        CALLS SEG Calc_Mis_Rate_FromFault, SOF Calc_Mis_Rate_FromFault
         JNB PSW.06H,L_BE5C8
         BSET lv_er_carb_b4.04H
         MOVB RL4,dtc_st_mis_cyl2
@@ -345,7 +345,7 @@ L_BE5C8:                 ; 0xbe5c8
         MOV R13,#DATA16 05874H
         MOVBZ R14,DPP0:c_abc_max_er
         MOVBZ R15,DPP0:c_abc_max_er
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_ecu_err.09H,dtc_status_work.06H
         MOVBZ R4,dtc_flg_mis_cyl2
         AND R4,#DATA16 00020H
@@ -360,9 +360,9 @@ L_BE5F2:                 ; 0xbe5f2
         JMPR cc_NE,L_BE624
 L_BE600:                 ; 0xbe600
         MOV R12,#DATA16 0004AH
-        CALLS 00DH,DTC_Status_Proc_1
+        CALLS SEG DTC_Status_Proc_1, SOF DTC_Status_Proc_1
         MOV R12,#DATA16 0004AH
-        CALLS 00DH,Calc_Mis_Rate_FromFault
+        CALLS SEG Calc_Mis_Rate_FromFault, SOF Calc_Mis_Rate_FromFault
         JNB PSW.06H,L_BE624
         BSET lv_er_carb_b4.04H
         MOVB RL4,dtc_st_mis_cyl3
@@ -374,7 +374,7 @@ L_BE624:                 ; 0xbe624
         MOV R13,#DATA16 0588AH
         MOVBZ R14,DPP0:c_abc_max_er
         MOVBZ R15,DPP0:c_abc_max_er
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_ecu_err.0AH,dtc_status_work.06H
         MOVBZ R4,dtc_flg_mis_cyl3
         AND R4,#DATA16 00020H
@@ -464,7 +464,7 @@ L_BE734:                 ; 0xbe734
         MOV R13,#DATA16 05848H
         MOVBZ R14,DPP0:c_abc_max_er
         MOVBZ R15,DPP0:c_abc_max_er
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_ecu_err.07H,dtc_status_work.06H
         MOVBZ R4,dtc_flg_mis_cyl0
         AND R4,#DATA16 00020H
@@ -476,7 +476,7 @@ L_BE75E:                 ; 0xbe75e
         MOV R13,#DATA16 0585EH
         MOVBZ R14,DPP0:c_abc_max_er
         MOVBZ R15,DPP0:c_abc_max_er
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_ecu_err.08H,dtc_status_work.06H
         MOVBZ R4,dtc_flg_mis_cyl1
         AND R4,#DATA16 00020H
@@ -488,7 +488,7 @@ L_BE788:                 ; 0xbe788
         MOV R13,#DATA16 05874H
         MOVBZ R14,DPP0:c_abc_max_er
         MOVBZ R15,DPP0:c_abc_max_er
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_ecu_err.09H,dtc_status_work.06H
         MOVBZ R4,dtc_flg_mis_cyl2
         AND R4,#DATA16 00020H
@@ -500,7 +500,7 @@ L_BE7B2:                 ; 0xbe7b2
         MOV R13,#DATA16 0588AH
         MOVBZ R14,DPP0:c_abc_max_er
         MOVBZ R15,DPP0:c_abc_max_er
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_ecu_err.0AH,dtc_status_work.06H
         MOVBZ R4,dtc_flg_mis_cyl3
         AND R4,#DATA16 00020H
@@ -541,13 +541,13 @@ L_BE822:                 ; 0xbe822
         JMPR cc_C,L_BE860
         JNB obd_sf.0DH,L_BE864
         MOV R12,#DATA16 00047H
-        CALLS 00DH,Eval_DTC_Status
+        CALLS SEG Eval_DTC_Status, SOF Eval_DTC_Status
         MOV R12,#DATA16 00048H
-        CALLS 00DH,Eval_DTC_Status
+        CALLS SEG Eval_DTC_Status, SOF Eval_DTC_Status
         MOV R12,#DATA16 00049H
-        CALLS 00DH,Eval_DTC_Status
+        CALLS SEG Eval_DTC_Status, SOF Eval_DTC_Status
         MOV R12,#DATA16 0004AH
-        CALLS 00DH,Eval_DTC_Status
+        CALLS SEG Eval_DTC_Status, SOF Eval_DTC_Status
         JMPR cc_UC,L_BE864
 L_BE860:                 ; 0xbe860
         SUBB ctr_mis_b_startup,ONES
@@ -570,7 +570,7 @@ L_BE886:                 ; 0xbe886
         JMPA cc_NC,L_BEA80
         MOV R12,#DATA16 0CA84H
         MOV R13,#04H
-        CALLS 00FH,ArgMax_U16_Arr
+        CALLS SEG ArgMax_U16_Arr, SOF ArgMax_U16_Arr
         MOVB RL6,RL4
         MOVB RL4,ctr_mis_b
         CMPB RL4,#DATA16 000FFH
@@ -607,7 +607,7 @@ L_BE8CE:                 ; 0xbe8ce
 L_BE8FC:                 ; 0xbe8fc
         BSET lv_er_carb_b4.05H
         MOV R12,#DATA16 00047H
-        CALLS 00DH,DTC_Status_Proc_2
+        CALLS SEG DTC_Status_Proc_2, SOF DTC_Status_Proc_2
         JNB lv_er_carb_b4.03H,L_BE91A
         MOVB RL4,dtc_st_mis_cyl0
         ANDB RL4,#DATA16 0000FH
@@ -624,7 +624,7 @@ L_BE928:                 ; 0xbe928
         MOV R13,#DATA16 05848H
         MOVBZ R14,DPP0:c_abc_max_er
         MOVBZ R15,DPP0:c_abc_max_er
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_ecu_err.07H,dtc_status_work.06H
         MOVBZ R4,dtc_flg_mis_cyl0
         AND R4,#DATA16 00020H
@@ -640,7 +640,7 @@ L_BE952:                 ; 0xbe952
 L_BE960:                 ; 0xbe960
         BSET lv_er_carb_b4.05H
         MOV R12,#DATA16 00048H
-        CALLS 00DH,DTC_Status_Proc_2
+        CALLS SEG DTC_Status_Proc_2, SOF DTC_Status_Proc_2
         JNB lv_er_carb_b4.03H,L_BE97E
         MOVB RL4,dtc_st_mis_cyl1
         ANDB RL4,#DATA16 0000FH
@@ -657,7 +657,7 @@ L_BE98C:                 ; 0xbe98c
         MOV R13,#DATA16 0585EH
         MOVBZ R14,DPP0:c_abc_max_er
         MOVBZ R15,DPP0:c_abc_max_er
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_ecu_err.08H,dtc_status_work.06H
         MOVBZ R4,dtc_flg_mis_cyl1
         AND R4,#DATA16 00020H
@@ -673,7 +673,7 @@ L_BE9B6:                 ; 0xbe9b6
 L_BE9C4:                 ; 0xbe9c4
         BSET lv_er_carb_b4.05H
         MOV R12,#DATA16 00049H
-        CALLS 00DH,DTC_Status_Proc_2
+        CALLS SEG DTC_Status_Proc_2, SOF DTC_Status_Proc_2
         JNB lv_er_carb_b4.03H,L_BE9E2
         MOVB RL4,dtc_st_mis_cyl2
         ANDB RL4,#DATA16 0000FH
@@ -690,7 +690,7 @@ L_BE9F0:                 ; 0xbe9f0
         MOV R13,#DATA16 05874H
         MOVBZ R14,DPP0:c_abc_max_er
         MOVBZ R15,DPP0:c_abc_max_er
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_ecu_err.09H,dtc_status_work.06H
         MOVBZ R4,dtc_flg_mis_cyl2
         AND R4,#DATA16 00020H
@@ -706,7 +706,7 @@ L_BEA1A:                 ; 0xbea1a
 L_BEA28:                 ; 0xbea28
         BSET lv_er_carb_b4.05H
         MOV R12,#DATA16 0004AH
-        CALLS 00DH,DTC_Status_Proc_2
+        CALLS SEG DTC_Status_Proc_2, SOF DTC_Status_Proc_2
         JNB lv_er_carb_b4.03H,L_BEA46
         MOVB RL4,dtc_st_mis_cyl3
         ANDB RL4,#DATA16 0000FH
@@ -723,7 +723,7 @@ L_BEA54:                 ; 0xbea54
         MOV R13,#DATA16 0588AH
         MOVBZ R14,DPP0:c_abc_max_er
         MOVBZ R15,DPP0:c_abc_max_er
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_ecu_err.0AH,dtc_status_work.06H
         MOVBZ R4,dtc_flg_mis_cyl3
         AND R4,#DATA16 00020H
@@ -737,7 +737,7 @@ L_BEA80:                 ; 0xbea80
         MOV R13,#DATA16 05848H
         MOVBZ R14,DPP0:c_abc_max_er
         MOVBZ R15,DPP0:c_abc_max_er
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_ecu_err.07H,dtc_status_work.06H
         MOVBZ R4,dtc_flg_mis_cyl0
         AND R4,#DATA16 00020H
@@ -749,7 +749,7 @@ L_BEAAC:                 ; 0xbeaac
         MOV R13,#DATA16 0585EH
         MOVBZ R14,DPP0:c_abc_max_er
         MOVBZ R15,DPP0:c_abc_max_er
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_ecu_err.08H,dtc_status_work.06H
         MOVBZ R4,dtc_flg_mis_cyl1
         AND R4,#DATA16 00020H
@@ -761,7 +761,7 @@ L_BEAD6:                 ; 0xbead6
         MOV R13,#DATA16 05874H
         MOVBZ R14,DPP0:c_abc_max_er
         MOVBZ R15,DPP0:c_abc_max_er
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_ecu_err.09H,dtc_status_work.06H
         MOVBZ R4,dtc_flg_mis_cyl2
         AND R4,#DATA16 00020H
@@ -773,7 +773,7 @@ L_BEB00:                 ; 0xbeb00
         MOV R13,#DATA16 0588AH
         MOVBZ R14,DPP0:c_abc_max_er
         MOVBZ R15,DPP0:c_abc_max_er
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_ecu_err.0AH,dtc_status_work.06H
         MOVBZ R4,dtc_flg_mis_cyl3
         AND R4,#DATA16 00020H
@@ -793,7 +793,7 @@ L_BEB2A:                 ; 0xbeb2a
         MOV mis_b_2_,ZEROS
         MOV mis_b_3_,ZEROS
 L_BEB54:                 ; 0xbeb54
-        CALLS 00BH,Diag_DTC_dd4a4
+        CALLS SEG Diag_DTC_dd4a4, SOF Diag_DTC_dd4a4
 L_BEB58:                 ; 0xbeb58
         JB lv_cam_err.05H,L_BEB84
         JB lv_cam_err.06H,L_BEB84
@@ -875,7 +875,7 @@ L_BEC04:                 ; 0xbec04
         MOV R13,#DATA16 0581CH
         MOVBZ R14,DPP0:c_abc_inc_t_seg_diag
         MOVBZ R15,DPP0:c_abc_max_t_seg_diag
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_ecu_err.05H,dtc_status_work.06H
         MOVBZ R4,diag_d4a0
         AND R4,#DATA16 00020H
@@ -912,7 +912,7 @@ L_BEC4C:                 ; 0xbec4c
 L_BEC56:                 ; 0xbec56
         MOV R12,#DATA16 0D4A4H
         MOV R13,#DATA16 05832H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_ecu_err.06H,dtc_status_work.06H
         MOVBZ R4,diag_d4ae
         AND R4,#DATA16 00020H

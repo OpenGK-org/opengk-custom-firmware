@@ -14,13 +14,13 @@ S_A65B8 SECTION CODE AT 0A65B8H
 
 ; ======== Tail_f0a6818_5b8  (@0xa65b8) ========
 Tail_f0a6818_5b8:
-        CALLS 00AH,Init_CommObj_States
+        CALLS SEG Init_CommObj_States, SOF Init_CommObj_States
         RETS
         MOVB RL4,#DATA16 00028H
         MOVB ccp_svc_cmd,RL4
         MOVB ccp_svc_param,ZEROS
         MOV R12,#DATA16 0D740H
-        CALLS 00AH,CCP_Svc_Prog_DAQ
+        CALLS SEG CCP_Svc_Prog_DAQ, SOF CCP_Svc_Prog_DAQ
         MOVB RL4,g_d743
         MOVB kwp_sec_level,RL4
         MOVB RL5,ccp_svc_arg
@@ -48,13 +48,13 @@ Tail_f0a6818_5b8:
         BMOV can_sched_flags0.0DH,can_sched_flags2.0DH
         RETS
         MOV R12,#00H
-        CALLS 008H,CommObj_Tp_TxStateMachine
+        CALLS SEG CommObj_Tp_TxStateMachine, SOF CommObj_Tp_TxStateMachine
         RETS
         MOV R12,#01H
-        CALLS 008H,CommObj_Tp_OnRxFrame
+        CALLS SEG CommObj_Tp_OnRxFrame, SOF CommObj_Tp_OnRxFrame
         RETS
         MOV R12,#02H
-        CALLS 008H,CommObj_Tp_OnRxFrame
+        CALLS SEG CommObj_Tp_OnRxFrame, SOF CommObj_Tp_OnRxFrame
         RETS
         ; ------------------------------------------------------------
         ; (unclassified) RAM/paged global @0xa664a [dpp]  W:{-}  R:{CC3INT_Handler}
@@ -64,7 +64,7 @@ Tail_f0a6818_5b8:
         MOVB RL5,#DATA16 00096H
         MOVB g_d76a,RL5
         MOV R12,#DATA16 0D768H
-        CALLS 00AH,CCP_Set_EngineFlags
+        CALLS SEG CCP_Set_EngineFlags, SOF CCP_Set_EngineFlags
         RETS
 
 ; ======== CCP_DAQ_BuildDTO  (@0xa6664) ========
@@ -200,7 +200,7 @@ L_A675A:                 ; 0xa675a
         MOVB [R2],RL4
 L_A6786:                 ; 0xa6786
         MOV R12,#DATA16 0D740H
-        CALLS 00AH,CCP_Svc_Prog_DAQ
+        CALLS SEG CCP_Svc_Prog_DAQ, SOF CCP_Svc_Prog_DAQ
 L_A678E:                 ; 0xa678e
         MOV R4,[R0+#0EH]
         JMPR cc_EQ,L_A6806
@@ -235,7 +235,7 @@ L_A678E:                 ; 0xa678e
         MOV R4,#DATA16 0E01AH
         MOV ccp_svc_arg,R4
         MOV R12,#DATA16 0D740H
-        CALLS 00AH,CCP_Svc_Prog_DAQ
+        CALLS SEG CCP_Svc_Prog_DAQ, SOF CCP_Svc_Prog_DAQ
 L_A6806:                 ; 0xa6806
         MOVB RL4,[R0+#0EH]
         ADD R0,#02H
@@ -323,7 +323,7 @@ CCP_Check_Checksum:
         MOV R4,ccp_e79e
         AND R4,#DATA16 04000H
         JMPR cc_NE,L_A68D0
-        CALLS 00AH,CCP_Calc_Checksum
+        CALLS SEG CCP_Calc_Checksum, SOF CCP_Calc_Checksum
 L_A68D0:                 ; 0xa68d0
         RETS
 

@@ -73,7 +73,7 @@ L_C336A:                 ; 0xc336a
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#DATA16 000F2H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV R10,diag_f890
         MOV R11,diag_f892
         EXTP R11, #02H
@@ -130,7 +130,7 @@ L_C341C:                 ; 0xc341c
         MOVB iga_ad2_knk,RL4
         JMPR cc_UC,L_C342A
 L_C3426:                 ; 0xc3426
-        CALLS 00CH,Init_IGA_Knk_Adapt
+        CALLS SEG Init_IGA_Knk_Adapt, SOF Init_IGA_Knk_Adapt
 L_C342A:                 ; 0xc342a
         MOV R6,[R0+]
         MOV R7,[R0+]
@@ -145,7 +145,7 @@ L_C342A:                 ; 0xc342a
         ; ------------------------------------------------------------
 Store_IGA_Knk_Ad_NVM:
         SUB R0,#02H
-        CALLS 00CH,Clamp_IGA_Knk_Maps
+        CALLS SEG Clamp_IGA_Knk_Maps, SOF Clamp_IGA_Knk_Maps
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 0000EH
@@ -159,7 +159,7 @@ Store_IGA_Knk_Ad_NVM:
         MOV R13,R5
         MOV R14,#DATA16 0F395H
         MOV R15,#DATA16 000F0H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 000FEH
@@ -173,7 +173,7 @@ Store_IGA_Knk_Ad_NVM:
         MOV R13,R5
         MOV R14,#DATA16 0F485H
         MOV R15,#01H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 0000EH
@@ -192,7 +192,7 @@ Store_IGA_Knk_Ad_NVM:
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#DATA16 000F2H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV [R0],R4
         MOV R12,diag_f890
         MOV R13,diag_f892
@@ -207,7 +207,7 @@ Store_IGA_Knk_Ad_NVM:
         MOV R13,R5
         MOV R14,R0
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         ADD R0,#02H
         RETS
 

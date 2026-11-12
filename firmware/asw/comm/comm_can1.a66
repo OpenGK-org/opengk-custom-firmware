@@ -113,9 +113,9 @@ L_D68C8:                 ; 0xd68c8
         MOVB C1CSR,ZEROS
         MOVB RL4,DPP0:c_tq_stnd
         MOVB tq_stnd,RL4
-        CALLS 00DH,CAN1_SetDefault_TcuSignals
-        CALLS 00DH,CAN1_SetDefault_TcsSignals
-        CALLS 00DH,CAN1_SetDefault_WheelSpeeds
+        CALLS SEG CAN1_SetDefault_TcuSignals, SOF CAN1_SetDefault_TcuSignals
+        CALLS SEG CAN1_SetDefault_TcsSignals, SOF CAN1_SetDefault_TcsSignals
+        CALLS SEG CAN1_SetDefault_WheelSpeeds, SOF CAN1_SetDefault_WheelSpeeds
         MOV R7,[R0+]
         MOV R8,[R0+]
         MOV R9,[R0+]
@@ -156,14 +156,14 @@ L_D6932:                 ; 0xd6932
 L_D6936:                 ; 0xd6936
         MOV R12,tqi_av
         MOV R13,R9
-        CALLS 00FH,Abs_Diff_S16
+        CALLS SEG Abs_Diff_S16, SOF Abs_Diff_S16
         MOV R12,R4
         MOVBZ R4,tq_stnd
         MOV R13,R4
         SHL R13,#02H
         ADD R13,R4
         SHL R13,#06H
-        CALLS 00FH,Div_Ratio_U8_Sat
+        CALLS SEG Div_Ratio_U8_Sat, SOF Div_Ratio_U8_Sat
         MOVB tq_intv_rel_err,RL4
         CMPB RL4,DPP0:c_tq_intv_rel_err_max
         JMPR cc_UGT,L_D6962
@@ -223,7 +223,7 @@ L_D69DA:                 ; 0xd69da
         AND R4,#DATA16 00080H
         JMPR cc_EQ,L_D6A06
         JNB abs_def.00H,L_D69F4
-        CALLS 00DH,CAN1_Init
+        CALLS SEG CAN1_Init, SOF CAN1_Init
         BCLR abs_def.00H
         JMPR cc_UC,L_D69FE
 L_D69F4:                 ; 0xd69f4
@@ -236,7 +236,7 @@ L_D69FE:                 ; 0xd69fe
         JMPR cc_UC,L_D6A10
 L_D6A06:                 ; 0xd6a06
         JNB abs_def.00H,L_D6A10
-        CALLS 00DH,CAN1_Init
+        CALLS SEG CAN1_Init, SOF CAN1_Init
         BCLR abs_def.00H
 L_D6A10:                 ; 0xd6a10
         JNB lv_asr_req.0BH,L_D6A46
@@ -244,7 +244,7 @@ L_D6A10:                 ; 0xd6a10
         MOV R13,#DATA16 0597CH
         MOVBZ R14,DPP0:c_abc_inc_can_bus_off
         MOVBZ R15,DPP0:c_abc_max_can_bus_off
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_can_bus_off_err.05H,dtc_status_work.06H
         MOVBZ R4,can_d580
         AND R4,#DATA16 00020H
@@ -285,7 +285,7 @@ L_D6A7E:                 ; 0xd6a7e
         JMPA cc_UC,L_D6D5C
 L_D6A90:                 ; 0xd6a90
         MOV R12,#00H
-        CALLS 00DH,CAN1_Rx_ReadObject
+        CALLS SEG CAN1_Rx_ReadObject, SOF CAN1_Rx_ReadObject
         CMPB RL4,#00H
         JMPA cc_NE,L_D6CCE
         MOVB ctr_can_tcu_to,ZEROS
@@ -295,7 +295,7 @@ L_D6A90:                 ; 0xd6a90
         MOV R13,#DATA16 05992H
         MOVBZ R14,DPP0:c_abc_inc_timeout_tcu1
         MOVBZ R15,DPP0:c_abc_max_timeout_tcu1
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_can_bus_off_err.06H,dtc_status_work.06H
         MOVBZ R4,can_d58e
         AND R4,#DATA16 00020H
@@ -305,7 +305,7 @@ L_D6A90:                 ; 0xd6a90
 L_D6AD2:                 ; 0xd6ad2
         JNB lv_can_bus_off_err.06H,L_D6AE0
         BSET lv_asr_req.0AH
-        CALLS 00DH,CAN1_SetDefault_TcuSignals
+        CALLS SEG CAN1_SetDefault_TcuSignals, SOF CAN1_SetDefault_TcuSignals
         JMPA cc_UC,L_D6D5C
 L_D6AE0:                 ; 0xd6ae0
         MOVB RL4,can_f83d
@@ -381,7 +381,7 @@ L_D6BA6:                 ; 0xd6ba6
         MOVB RL4,#DATA16 00024H
         MOVB can_d5aa,RL4
         MOV R12,#DATA16 00058H
-        CALLS 00DH,OBD_Readiness_Grp2
+        CALLS SEG OBD_Readiness_Grp2, SOF OBD_Readiness_Grp2
         MOV R4,#DATA16 0FEFFH
         AND can_f85e,R4
         MOVB RL4,#DATA16 00022H
@@ -403,7 +403,7 @@ L_D6BE6:                 ; 0xd6be6
 L_D6BF6:                 ; 0xd6bf6
         MOV R12,#DATA16 0D5A0H
         MOV R13,#DATA16 059BEH
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_can_bus_off_err.08H,dtc_status_work.06H
         MOVBZ R4,can_d5aa
         AND R4,#DATA16 00020H
@@ -438,7 +438,7 @@ L_D6C38:                 ; 0xd6c38
         ADD R13,R4
         SHL R13,#06H
         MOV R14,#DATA16 00100H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV can1_tq_scale_tmp,R4
         CMP R4,#DATA16 07FFFH
         JMPR cc_NC,L_D6C7A
@@ -493,7 +493,7 @@ L_D6CCE:                 ; 0xd6cce
         MOV R13,#DATA16 05992H
         MOVBZ R14,DPP0:c_abc_inc_timeout_tcu1
         MOVBZ R15,DPP0:c_abc_max_timeout_tcu1
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_can_bus_off_err.06H,dtc_status_work.06H
         MOVBZ R4,can_d58e
         AND R4,#DATA16 00020H
@@ -504,7 +504,7 @@ L_D6D22:                 ; 0xd6d22
         MOVB ctr_can_tcu_to,ZEROS
         JNB lv_can_bus_off_err.06H,L_D6D5C
         BSET lv_asr_req.0AH
-        CALLS 00DH,CAN1_SetDefault_TcuSignals
+        CALLS SEG CAN1_SetDefault_TcuSignals, SOF CAN1_SetDefault_TcuSignals
         JMPR cc_UC,L_D6D5C
 L_D6D32:                 ; 0xd6d32
         MOVB ctr_can_tcu_to,ZEROS
@@ -525,7 +525,7 @@ L_D6D5C:                 ; 0xd6d5c
         JMPA cc_UC,L_D7004
 L_D6D64:                 ; 0xd6d64
         MOV R12,#02H
-        CALLS 00DH,CAN1_Rx_ReadObject
+        CALLS SEG CAN1_Rx_ReadObject, SOF CAN1_Rx_ReadObject
         CMPB RL4,#02H
         JMPA cc_NE,L_D6EE2
         MOVB ctr_can_tcs_to,ZEROS
@@ -536,7 +536,7 @@ L_D6D64:                 ; 0xd6d64
         MOV R13,#DATA16 059A8H
         MOVBZ R14,DPP0:c_abc_inc_timeout_tcs1
         MOVBZ R15,DPP0:c_abc_max_timeout_tcs1
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_can_bus_off_err.07H,dtc_status_work.06H
         MOVBZ R4,can_d59c
         AND R4,#DATA16 00020H
@@ -546,7 +546,7 @@ L_D6D64:                 ; 0xd6d64
 L_D6DAA:                 ; 0xd6daa
         JNB lv_can_bus_off_err.07H,L_D6DB8
         BSET lv_asr_req.0AH
-        CALLS 00DH,CAN1_SetDefault_TcsSignals
+        CALLS SEG CAN1_SetDefault_TcsSignals, SOF CAN1_SetDefault_TcsSignals
         JMPA cc_UC,L_D6F80
 L_D6DB8:                 ; 0xd6db8
         MOVBZ R4,can_f83d
@@ -577,7 +577,7 @@ L_D6DE0:                 ; 0xd6de0
         ADD R13,R4
         SHL R13,#06H
         MOV R14,#DATA16 00100H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV can1_tq_scale_tmp,R4
         CMP R4,#DATA16 07FFFH
         JMPR cc_NC,L_D6E22
@@ -600,7 +600,7 @@ L_D6E2A:                 ; 0xd6e2a
         ADD R13,R4
         SHL R13,#06H
         MOV R14,#DATA16 00100H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV can1_tq_scale_tmp,R4
         CMP R4,#DATA16 07FFFH
         JMPR cc_NC,L_D6E64
@@ -619,7 +619,7 @@ L_D6E6E:                 ; 0xd6e6e
         ADD R13,R4
         SHL R13,#06H
         MOV R14,#DATA16 00100H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV can1_tq_scale_tmp,R4
         CMP R4,#DATA16 07FFFH
         JMPR cc_NC,L_D6E98
@@ -642,7 +642,7 @@ L_D6EAA:                 ; 0xd6eaa
         ADD R13,R4
         SHL R13,#06H
         MOV R14,#DATA16 00100H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV can1_tq_scale_tmp,R4
         CMP R4,#DATA16 07FFFH
         JMPR cc_NC,L_D6ED8
@@ -675,7 +675,7 @@ L_D6EF2:                 ; 0xd6ef2
         MOV R13,#DATA16 059A8H
         MOVBZ R14,DPP0:c_abc_inc_timeout_tcs1
         MOVBZ R15,DPP0:c_abc_max_timeout_tcs1
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_can_bus_off_err.07H,dtc_status_work.06H
         MOVBZ R4,can_d59c
         AND R4,#DATA16 00020H
@@ -686,7 +686,7 @@ L_D6F46:                 ; 0xd6f46
         MOVB ctr_can_tcs_arb_to,ZEROS
         JNB lv_can_bus_off_err.07H,L_D6F80
         BSET lv_asr_req.0AH
-        CALLS 00DH,CAN1_SetDefault_TcsSignals
+        CALLS SEG CAN1_SetDefault_TcsSignals, SOF CAN1_SetDefault_TcsSignals
         JMPR cc_UC,L_D6F80
 L_D6F56:                 ; 0xd6f56
         MOVB ctr_can_tcs_arb_to,ZEROS
@@ -704,7 +704,7 @@ L_D6F5C:                 ; 0xd6f5c
         BSET lv_asr_req.0DH
 L_D6F80:                 ; 0xd6f80
         MOV R12,#01H
-        CALLS 00DH,CAN1_Rx_ReadObject
+        CALLS SEG CAN1_Rx_ReadObject, SOF CAN1_Rx_ReadObject
         CMPB RL4,#01H
         JMPR cc_NE,L_D6FB0
         MOVB ctr_can_abs_to,ZEROS
@@ -728,7 +728,7 @@ L_D6FB0:                 ; 0xd6fb0
         CMPB RL4,DPP0:can_90242
         JMPR cc_C,L_D7004
         MOVB ctr_can_abs_to,ZEROS
-        CALLS 00DH,CAN1_SetDefault_WheelSpeeds
+        CALLS SEG CAN1_SetDefault_WheelSpeeds, SOF CAN1_SetDefault_WheelSpeeds
         JMPR cc_UC,L_D7004
 L_D6FDA:                 ; 0xd6fda
         MOVB ctr_can_abs_to,ZEROS
@@ -846,7 +846,7 @@ L_D70CC:                 ; 0xd70cc
         SHL R14,#02H
         ADD R14,R5
         SHL R14,#06H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV can1_tq_scale_tmp,R4
         CMP R4,#DATA16 000FFH
         JMPR cc_NC,L_D710E
@@ -884,7 +884,7 @@ L_D7136:                 ; 0xd7136
         SHL R14,#02H
         ADD R14,R5
         SHL R14,#06H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV can1_tq_scale_tmp,R4
         CMP R4,#DATA16 000FFH
         JMPR cc_NC,L_D7172
@@ -910,7 +910,7 @@ L_D717C:                 ; 0xd717c
         SHL R14,#02H
         ADD R14,R4
         SHL R14,#06H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV can1_tq_scale_tmp,R4
         CMP R4,#DATA16 000FFH
         JMPR cc_NC,L_D71B8
@@ -937,7 +937,7 @@ L_D71E0:                 ; 0xd71e0
         MOVB can_ratio_tx,RL4
         MOVB can1_tx_b7,RL4
         MOV R12,#0DH
-        CALLS 00DH,CAN1_Tx_SendObject
+        CALLS SEG CAN1_Tx_SendObject, SOF CAN1_Tx_SendObject
         MOVB RL4,#DATA16 00078H
         MOVB can1_tx_dlc,RL4
         MOVB RL4,can_statusmux_div
@@ -1058,14 +1058,14 @@ L_D7334:                 ; 0xd7334
 L_D7342:                 ; 0xd7342
         MOVBZ R12,tps
         MOVBZ R13,DPP0:c_tps_is_out
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVBZ R12,RL4
         MOV R4,#DATA16 000D5H
         MULU R12,R4
         MOV R12,0FE0EH
         MOVBZ R13,DPP0:c_tps_max_can
         SHL R13,#08H
-        CALLS 00FH,Div_Ratio_U8_Sat
+        CALLS SEG Div_Ratio_U8_Sat, SOF Div_Ratio_U8_Sat
         ADDB RL4,#DATA16 00020H
         MOVB tps_can,RL4
 L_D736C:                 ; 0xd736c
@@ -1074,13 +1074,13 @@ L_D736C:                 ; 0xd736c
         MOVB can_f839,ONES
         MOV can1_tx_b7,ZEROS
         MOV R12,#0CH
-        CALLS 00DH,CAN1_Tx_SendObject
+        CALLS SEG CAN1_Tx_SendObject, SOF CAN1_Tx_SendObject
         MOVB RL4,#DATA16 00048H
         MOVB can1_tx_dlc,RL4
         MOVBZ R12,maf_fac_alti_mmv
         MOV R13,#DATA16 0004DH
         MOV R14,#DATA16 00085H
-        CALLS 00FH,Clamp_U16_v2
+        CALLS SEG Clamp_U16_v2, SOF Clamp_U16_v2
         MOVB RL6,RL4
         MOVBZ R4,RL6
         MOV R5,R4
@@ -1127,7 +1127,7 @@ L_D73EC:                 ; 0xd73ec
         MOV can1_tx_b5,ZEROS
         MOV can1_tx_b7,ZEROS
         MOV R12,#0BH
-        CALLS 00DH,CAN1_Tx_SendObject
+        CALLS SEG CAN1_Tx_SendObject, SOF CAN1_Tx_SendObject
         MOVB RL4,#DATA16 00088H
         MOVB can1_tx_dlc,RL4
         MOVB can1_tx_b0,ZEROS
@@ -1161,7 +1161,7 @@ L_D7456:                 ; 0xd7456
         SHR R4,#08H
         MOVB can1_tx_b7,RL4
         MOV R12,#0AH
-        CALLS 00DH,CAN1_Tx_SendObject
+        CALLS SEG CAN1_Tx_SendObject, SOF CAN1_Tx_SendObject
         CMPB RL4,#00H
         JMPR cc_EQ,L_D749A
         JMPR cc_UC,L_D749A

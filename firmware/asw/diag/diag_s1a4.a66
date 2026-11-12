@@ -37,7 +37,7 @@ NVM_Restore_s1a4:
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#02H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV R10,diag_f890
         MOV R11,diag_f892
         EXTP R11, #02H
@@ -51,7 +51,7 @@ NVM_Restore_s1a4:
         MOVB maf_fac_alti_mmv,RL4
         RETS
 L_C37A0:                 ; 0xc37a0
-        CALLS 00CH,Set_maf_fac_alti_mmv_7a6
+        CALLS SEG Set_maf_fac_alti_mmv_7a6, SOF Set_maf_fac_alti_mmv_7a6
         RETS
 
 ; ======== Set_maf_fac_alti_mmv_7a6  (@0xc37a6) ========
@@ -80,7 +80,7 @@ NVM_Save_s1a4:
         MOV R13,R5
         MOV R14,#DATA16 0C320H
         MOV R15,#01H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 001A4H
@@ -99,7 +99,7 @@ NVM_Save_s1a4:
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#02H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV [R0],R4
         MOV R12,diag_f890
         MOV R13,diag_f892
@@ -114,7 +114,7 @@ NVM_Save_s1a4:
         MOV R13,R5
         MOV R14,R0
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         ADD R0,#02H
         RETS
 

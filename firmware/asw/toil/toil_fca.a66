@@ -51,10 +51,10 @@ Acq_TOIL_2:
         MOV R12,#DATA16 POF ldp_v_toil__ip_toil
         MOV R13,#DATA16 PAG ldp_v_toil__ip_toil
         MOV R14,g_c97c
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_toil__v_toil
         MOV R13,#DATA16 PAG ip_toil__v_toil
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVB toil_mes,RL4
         MOVB RL5,toil_mdl_byte_3_
         CMPB RL5,g_c26f
@@ -71,7 +71,7 @@ L_B9FA2:                 ; 0xb9fa2
         MOVBZ R12,toil_mes
         MOVBZ R13,toil
         MOVBZ R14,DPP0:c_toil_grd_max
-        CALLS 00FH,Ramp_Toward_U16
+        CALLS SEG Ramp_Toward_U16, SOF Ramp_Toward_U16
         MOVB toil,RL4
         JMPR cc_UC,L_B9FC0
 L_B9FB8:                 ; 0xb9fb8
@@ -119,7 +119,7 @@ L_B9FFE:                 ; 0xb9ffe
         MOV R13,#DATA16 059D4H
         MOVBZ R14,DPP0:c_abc_inc_toil
         MOVBZ R15,DPP0:c_abc_max_toil
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_can_bus_off_err.09H,dtc_status_work.06H
         MOVBZ R4,dtc_done_toil
         AND R4,#DATA16 00020H
@@ -145,7 +145,7 @@ L_BA06A:                 ; 0xba06a
         MOV R13,#DATA16 059D4H
         MOVBZ R14,DPP0:c_abc_inc_toil
         MOVBZ R15,DPP0:c_abc_max_toil
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_can_bus_off_err.09H,dtc_status_work.06H
         MOVBZ R4,dtc_done_toil
         AND R4,#DATA16 00020H
@@ -158,7 +158,7 @@ L_BA09C:                 ; 0xba09c
         MOV R13,#DATA16 059D4H
         MOVBZ R14,DPP0:c_abc_inc_toil
         MOVBZ R15,DPP0:c_abc_max_toil
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_can_bus_off_err.09H,dtc_status_work.06H
         MOVBZ R4,dtc_done_toil
         AND R4,#DATA16 00020H
@@ -222,7 +222,7 @@ L_BA146:                 ; 0xba146
 L_BA154:                 ; 0xba154
         MOVBZ R12,toil_mes_max_diag
         MOVBZ R13,toil_mes_min_diag
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB toil_mes_dif_diag,RL4
         MOVB RL5,toil_mdl_byte_3_
         CMPB RL5,toil_mdl_min_diag
@@ -239,11 +239,11 @@ L_BA178:                 ; 0xba178
 L_BA18A:                 ; 0xba18a
         MOVBZ R12,toil_mdl_max_diag
         MOVBZ R13,toil_mdl_min_diag
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB toil_mdl_dif_diag,RL4
         MOV R12,#DATA16 0485CH
         MOVBZ R13,tco_st
-        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Byte_2D_Table_DWord_YByte, SOF Get_IP_Byte_2D_Table_DWord_YByte
         CMPB RL4,toil_mdl_dif_diag
         JMPR cc_NC,L_BA244
         MOVB RL4,tco_sub_byte_1_
@@ -255,7 +255,7 @@ L_BA18A:                 ; 0xba18a
 L_BA1C0:                 ; 0xba1c0
         MOV R12,#DATA16 04864H
         MOVBZ R13,tco_st
-        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Byte_2D_Table_DWord_YByte, SOF Get_IP_Byte_2D_Table_DWord_YByte
         CMPB RL4,toil_mes_dif_diag
         JMPR cc_ULE,L_BA204
         MOVB RL4,#08H
@@ -264,7 +264,7 @@ L_BA1C0:                 ; 0xba1c0
         MOV R13,#DATA16 059EAH
         MOVBZ R14,DPP0:c_inc_toil_stuck
         MOVBZ R15,DPP0:c_max_toil_stuck
-        CALLS 00DH,DTC_Update_Debounced_OBD
+        CALLS SEG DTC_Update_Debounced_OBD, SOF DTC_Update_Debounced_OBD
         BMOV lv_can_bus_off_err.0AH,dtc_status_work.06H
         MOVBZ R4,dtc_done_toil_stuck
         AND R4,#DATA16 00020H
@@ -278,7 +278,7 @@ L_BA204:                 ; 0xba204
         MOV R13,#DATA16 059EAH
         MOVBZ R14,DPP0:c_inc_toil_stuck
         MOVBZ R15,DPP0:c_max_toil_stuck
-        CALLS 00DH,DTC_Update_Debounced_OBD
+        CALLS SEG DTC_Update_Debounced_OBD, SOF DTC_Update_Debounced_OBD
         BMOV lv_can_bus_off_err.0AH,dtc_status_work.06H
         MOVBZ R4,dtc_done_toil_stuck
         AND R4,#DATA16 00020H
@@ -330,7 +330,7 @@ L_BA2A2:                 ; 0xba2a2
         MOV R13,#DATA16 05A16H
         MOVBZ R14,DPP0:c_abc_inc_toil_plaus_l
         MOVBZ R15,DPP0:c_abc_max_toil_plaus_l
-        CALLS 00DH,DTC_Update_Debounced_OBD
+        CALLS SEG DTC_Update_Debounced_OBD, SOF DTC_Update_Debounced_OBD
         BMOV lv_can_bus_off_err.0CH,dtc_status_work.06H
         MOVBZ R4,dtc_done_toil_plaus_l
         AND R4,#DATA16 00020H
@@ -354,7 +354,7 @@ L_BA2EC:                 ; 0xba2ec
         MOV R13,#DATA16 05A00H
         MOVBZ R14,DPP0:c_abc_inc_toil_plaus_h
         MOVBZ R15,DPP0:c_abc_max_toil_plaus_h
-        CALLS 00DH,DTC_Update_Debounced_OBD
+        CALLS SEG DTC_Update_Debounced_OBD, SOF DTC_Update_Debounced_OBD
         BMOV lv_can_bus_off_err.0BH,dtc_status_work.06H
         MOVBZ R4,dtc_done_toil_plaus_h
         AND R4,#DATA16 00020H
@@ -368,7 +368,7 @@ L_BA316:                 ; 0xba316
         MOVB dtc_test_result,ZEROS
         MOV R12,#DATA16 0D5E6H
         MOV R13,#DATA16 05A2CH
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_can_bus_off_err.0DH,dtc_status_work.06H
         MOVBZ R4,dtc_done_toil_rat
         AND R4,#DATA16 00020H
@@ -381,7 +381,7 @@ L_BA34A:                 ; 0xba34a
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D5E6H
         MOV R13,#DATA16 05A2CH
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_can_bus_off_err.0DH,dtc_status_work.06H
         MOVBZ R4,dtc_done_toil_rat
         AND R4,#DATA16 00020H

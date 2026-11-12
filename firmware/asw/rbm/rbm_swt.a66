@@ -65,7 +65,7 @@ L_B8F4A:                 ; 0xb8f4a
         MOV R13,R12
         MOV R12,0FF1CH
         MOV R14,ctr_cdn_rbm_ls_down_swt
-        CALLS 00FH,Div_U32_U16_Round32
+        CALLS SEG Div_U32_U16_Round32, SOF Div_U32_U16_Round32
         MOV R8,R4
         MOV R9,R5
         MOV R4,R9
@@ -138,7 +138,7 @@ L_B8FDE:                 ; 0xb8fde
         MOV R13,R12
         MOV R12,0FF1CH
         MOV R14,ctr_cdn_rbm_vls_down_plaus
-        CALLS 00FH,Div_U32_U16_Round32
+        CALLS SEG Div_U32_U16_Round32, SOF Div_U32_U16_Round32
         MOV R8,R4
         MOV R9,R5
         MOV R4,R9

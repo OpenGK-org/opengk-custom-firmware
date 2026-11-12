@@ -61,21 +61,21 @@ L_C6810:                 ; 0xc6810
 L_C681A:                 ; 0xc681a
         MOV R12,tqi_ems
         MOV R13,tq_dif_p_d_fast_is
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV [-R0],R4
         MOV R12,tqi_ref_iga
         MOV R13,eff_lamb_av
-        CALLS 00FH,Mul_Q15_Sat_Signed
+        CALLS SEG Mul_Q15_Sat_Signed, SOF Mul_Q15_Sat_Signed
         MOV R12,R4
         MOV R13,[R0+]
-        CALLS 00FH,Min_S16
+        CALLS SEG Min_S16, SOF Min_S16
         MOV R9,R4
         MOV R12,tqi_ref
         MOV R13,eff_iga_min
-        CALLS 00FH,Mul_Q15_Sat_Signed
+        CALLS SEG Mul_Q15_Sat_Signed, SOF Mul_Q15_Sat_Signed
         MOV R12,R4
         MOV R13,R9
-        CALLS 00FH,Max_S16
+        CALLS SEG Max_S16, SOF Max_S16
         MOV tqi_av_ems,R4
 L_C6856:                 ; 0xc6856
         MOV R4,tqi_av_ems
@@ -161,14 +161,14 @@ L_C6918:                 ; 0xc6918
         MOV R12,#DATA16 POF ldp_tia__tq_loss_acc_1
         MOV R13,#DATA16 PAG ldp_tia__tq_loss_acc_1
         MOVBZ R14,tia
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ldp_acp__tq_loss_acc_1
         MOV R13,#DATA16 PAG ldp_acp__tq_loss_acc_1
         MOVBZ R14,acp
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         MOV R12,#DATA16 POF ip_tq_loss_acc_1__tia__acp
         MOV R13,#DATA16 PAG ip_tq_loss_acc_1__tia__acp
-        CALLS 00FH,Get_IP_Word_3D_Table
+        CALLS SEG Get_IP_Word_3D_Table, SOF Get_IP_Word_3D_Table
         MOV R9,R4
         ADD R9,#DATA16 08000H
         JMPR cc_UC,L_C6988
@@ -176,16 +176,16 @@ L_C6952:                 ; 0xc6952
         MOV R12,#DATA16 POF ldp_tia__tq_loss_acc
         MOV R13,#DATA16 PAG ldp_tia__tq_loss_acc
         MOVBZ R14,tia
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ldp_lv_prs_acc__tq_loss_acc
         MOV R13,#DATA16 PAG ldp_lv_prs_acc__tq_loss_acc
         MOVB RL4,#00H
         BMOV R4.00H,lv_im_acin.06H
         MOVBZ R14,RL4
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         MOV R12,#DATA16 POF ip_tq_loss_acc_0__tia__lv_prs_acc
         MOV R13,#DATA16 PAG ip_tq_loss_acc_0__tia__lv_prs_acc
-        CALLS 00FH,Get_IP_Word_3D_Table
+        CALLS SEG Get_IP_Word_3D_Table, SOF Get_IP_Word_3D_Table
         MOV R9,R4
         ADD R9,#DATA16 08000H
 L_C6988:                 ; 0xc6988
@@ -194,7 +194,7 @@ L_C6988:                 ; 0xc6988
         MOV R13,tq_loss_acc_ramp
         EXTP #024H, #01H
         MOV R14,DPP0:c_tq_loss_acc_lgrd
-        CALLS 00FH,Ramp_Toward_S16
+        CALLS SEG Ramp_Toward_S16, SOF Ramp_Toward_S16
         MOV tq_loss_acc_ramp,R4
         CMP R9,tq_loss_acc_ramp
         JMPR cc_NE,L_C69B0
@@ -206,50 +206,50 @@ L_C69B0:                 ; 0xc69b0
         MOV R12,#DATA16 POF ldp_n_32__tq_loss_acc
         MOV R13,#DATA16 PAG ldp_n_32__tq_loss_acc
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_tq_loss_acc_fac
         MOV R13,#DATA16 PAG ip_tq_loss_acc_fac
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVBZ R4,RL4
         SHL R4,#02H
         MOV [-R0],R4
         MOV R12,tq_loss_acc_ramp
         MOV R13,tq_dif_is_ad_acc
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV R12,R4
         MOV R13,[R0+]
-        CALLS 00FH,Mul_S16_Q23
+        CALLS SEG Mul_S16_Q23, SOF Mul_S16_Q23
         MOV R9,R4
         JNB lv_asr_act.0DH,L_C6A14
         MOV R12,#DATA16 POF ldp_t_acc__tq_loss_acc_on_fast
         MOV R13,#DATA16 PAG ldp_t_acc__tq_loss_acc_on_fast
         MOVBZ R14,t_acc_fast
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_fac_tq_loss_acc_on_fast
         MOV R13,#DATA16 PAG ip_fac_tq_loss_acc_on_fast
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVBZ R13,RL4
         SHL R13,#04H
         MOV R12,R9
-        CALLS 00FH,Mul_S16_Q23
+        CALLS SEG Mul_S16_Q23, SOF Mul_S16_Q23
         MOV R9,R4
 L_C6A14:                 ; 0xc6a14
         JNB lv_asr_act.0EH,L_C6A84
         MOV R12,#DATA16 POF ldp_t_acc__tq_loss_acc_on_slow
         MOV R13,#DATA16 PAG ldp_t_acc__tq_loss_acc_on_slow
         MOVBZ R14,t_acc_slow
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ldp_n_32__fac_tq_loss_acc_on
         MOV R13,#DATA16 PAG ldp_n_32__fac_tq_loss_acc_on
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         MOV R12,#DATA16 POF ip_fac_tq_loss_acc_on_slow
         MOV R13,#DATA16 PAG ip_fac_tq_loss_acc_on_slow
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVBZ R13,RL4
         SHL R13,#02H
         MOV R12,R9
-        CALLS 00FH,Mul_S16_Q23
+        CALLS SEG Mul_S16_Q23, SOF Mul_S16_Q23
         MOV R9,R4
         JMPR cc_UC,L_C6A84
 L_C6A52:                 ; 0xc6a52
@@ -257,14 +257,14 @@ L_C6A52:                 ; 0xc6a52
         MOV R12,#DATA16 POF ldp_t_acc__fac_tq_loss_acc_off
         MOV R13,#DATA16 PAG ldp_t_acc__fac_tq_loss_acc_off
         MOVBZ R14,t_acc_fast
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_fac_tq_loss_acc_off
         MOV R13,#DATA16 PAG ip_fac_tq_loss_acc_off
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVBZ R13,RL4
         SHL R13,#02H
         MOV R12,tq_loss_acc_z
-        CALLS 00FH,Mul_S16_Q23
+        CALLS SEG Mul_S16_Q23, SOF Mul_S16_Q23
         MOV R9,R4
         JMPR cc_UC,L_C6A84
 L_C6A82:                 ; 0xc6a82

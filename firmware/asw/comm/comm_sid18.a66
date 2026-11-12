@@ -80,7 +80,7 @@ L_DF4A2:                 ; 0xdf4a2
         MOV R12,R9
         MOVBZ R13,RL6
         MOV R14,#DATA16 000FFH
-        CALLS 00DH,KWP_GetDTCRecordByStatus
+        CALLS SEG KWP_GetDTCRecordByStatus, SOF KWP_GetDTCRecordByStatus
         MOV R8,R4
         CMPB RL4,#DATA16 000FFH
         JMPR cc_EQ,L_DF4F6
@@ -96,7 +96,7 @@ L_DF4CE:                 ; 0xdf4ce
         MOV R12,R9
         MOVBZ R13,RL6
         MOVBZ R14,RL7
-        CALLS 00DH,KWP_GetDTCRecordByStatus
+        CALLS SEG KWP_GetDTCRecordByStatus, SOF KWP_GetDTCRecordByStatus
         ADD R9,#03H
         MOV R4,#03H
         ADD kwp_msg_len,R4
@@ -202,7 +202,7 @@ L_DF5AA:                 ; 0xdf5aa
         CMPB RL6,#00H
         JMPR cc_EQ,L_DF62A
         MOVBZ R12,RL7
-        CALLS 00DH,Get_DTC_Record_1
+        CALLS SEG Get_DTC_Record_1, SOF Get_DTC_Record_1
         SHR R4,#08H
         MOV R5,[R0+#08H]
         ADD R5,#01H
@@ -210,7 +210,7 @@ L_DF5AA:                 ; 0xdf5aa
         SUB R5,#01H
         MOVB [R5],RL4
         MOVBZ R12,RL7
-        CALLS 00DH,Get_DTC_Record_1
+        CALLS SEG Get_DTC_Record_1, SOF Get_DTC_Record_1
         MOV R5,[R0+#08H]
         ADD R5,#01H
         MOV [R0+#08H],R5
@@ -229,7 +229,7 @@ L_DF5E4:                 ; 0xdf5e4
         SUB R5,R4
         SHL R5,#01H
         ADD R12,R5
-        CALLS 00DH,DTC_Status_Proc_4
+        CALLS SEG DTC_Status_Proc_4, SOF DTC_Status_Proc_4
         MOV R5,[R0+#08H]
         MOVB [R5],RL4
         JMPR cc_UC,L_DF62A
@@ -245,7 +245,7 @@ L_DF600:                 ; 0xdf600
         SHL R5,#01H
         MOV R12,#DATA16 0CE00H
         ADD R12,R5
-        CALLS 00DH,DTC_Status_Proc_4
+        CALLS SEG DTC_Status_Proc_4, SOF DTC_Status_Proc_4
         MOV R5,[R0+#08H]
         MOVB [R5],RL4
         JMPR cc_UC,L_DF62A

@@ -193,7 +193,7 @@ L_BCA34:                 ; 0xbca34
         MOV R4,0FE0EH
         MOV R12,R4
         ADD R12,#02H
-        CALLS 00BH,Imob_Update_WarnLamp
+        CALLS SEG Imob_Update_WarnLamp, SOF Imob_Update_WarnLamp
         JMPR cc_UC,L_BCA94
 L_BCA72:                 ; 0xbca72
         MOVB diag_c293,ZEROS
@@ -206,7 +206,7 @@ L_BCA72:                 ; 0xbca72
         MOV R4,0FE0EH
         MOV R12,R4
         ADD R12,#02H
-        CALLS 00BH,Imob_Update_WarnLamp
+        CALLS SEG Imob_Update_WarnLamp, SOF Imob_Update_WarnLamp
 L_BCA94:                 ; 0xbca94
         BCLR lv_fmy_imob.0FH
         JMPR cc_UC,L_BCA9C
@@ -252,7 +252,7 @@ Imob_LockState:
         MOV R2,0FE0EH
         MOV R12,R2
         ADD R12,#02H
-        CALLS 00BH,Imob_Update_WarnLamp
+        CALLS SEG Imob_Update_WarnLamp, SOF Imob_Update_WarnLamp
         MOVB ctr_imob_nvm_2,ZEROS
         JMPR cc_UC,L_BCB4C
 L_BCAFC:                 ; 0xbcafc
@@ -272,7 +272,7 @@ L_BCAFC:                 ; 0xbcafc
         SUB R12,R4
         SHL R12,#02H
         ADD R12,#02H
-        CALLS 00BH,Imob_Update_WarnLamp
+        CALLS SEG Imob_Update_WarnLamp, SOF Imob_Update_WarnLamp
         MOVBZ R4,DPP0:c_dly_lock_imob
         MOV R5,R4
         SHL R5,#04H
@@ -304,7 +304,7 @@ L_BCB5A:                 ; 0xbcb5a
         MOV R5,0FE0EH
         MOV R12,R5
         ADD R12,#02H
-        CALLS 00BH,Imob_Update_WarnLamp
+        CALLS SEG Imob_Update_WarnLamp, SOF Imob_Update_WarnLamp
 L_BCB84:                 ; 0xbcb84
         JNB lv_fmy_imob.01H,L_BCBA2
         JB lv_fmy_imob.07H,L_BCBA2
@@ -395,7 +395,7 @@ L_BCC22:                 ; 0xbcc22
         JNB lv_err_com_resp_imob.00H,L_BCC50
 L_BCC42:                 ; 0xbcc42
         ADDB imob_c28f,ONES
-        CALLS 00AH,SMARTRA_clear_comms_timeout_flags
+        CALLS SEG SMARTRA_clear_comms_timeout_flags, SOF SMARTRA_clear_comms_timeout_flags
         MOVB RL4,#01H
         MOVB smartra_cmd,RL4
 L_BCC50:                 ; 0xbcc50
@@ -432,7 +432,7 @@ L_BCC84:                 ; 0xbcc84
 
 ; ======== SMARTRA_eval_comms_result  (@0xbcc90) ========
 SMARTRA_eval_comms_result:
-        CALLS 00AH,SMARTRA_flush_RX_buffers
+        CALLS SEG SMARTRA_flush_RX_buffers, SOF SMARTRA_flush_RX_buffers
         MOVB RL4,#02H
         MOVB smartra_cmd,RL4
         MOVB RL5,#01H
@@ -445,7 +445,7 @@ SMARTRA_eval_comms_result:
         ; SMARTRA_runtime_auth_sm; sets ans_err_com_imob.
         ; ------------------------------------------------------------
 SMARTRA_cmd_RuntimeAuth:
-        CALLS 00BH,SMARTRA_runtime_auth_sm      ; -> SMARTRA_runtime_auth_sm (run-time immobilizer auth dispatched from here)
+        CALLS SEG SMARTRA_runtime_auth_sm, SOF SMARTRA_runtime_auth_sm      ; -> SMARTRA_runtime_auth_sm (run-time immobilizer auth dispatched from here)
         JMPA cc_UC,L_BCF16
 
 S_BC8E8 ENDS

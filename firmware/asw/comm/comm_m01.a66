@@ -366,7 +366,7 @@ L_E0306:                 ; 0xe0306
 L_E0308:                 ; 0xe0308
         MOV R12,lam_bank_1_lam_up_lam_up_carrier
         MOVBZ R13,RL6
-        CALLS 00EH,OBD_Scale_FuelSys
+        CALLS SEG OBD_Scale_FuelSys, SOF OBD_Scale_FuelSys
         MOV R5,R9
         ADD R9,#01H
         MOVB [R5],RL4
@@ -412,7 +412,7 @@ L_E0352:                 ; 0xe0352
         JMPR cc_UC,L_E0370
 L_E0366:                 ; 0xe0366
         MOV R12,maf_mes
-        CALLS 00EH,Tail_Div_Ratio_U8_Sat_89e
+        CALLS SEG Tail_Div_Ratio_U8_Sat_89e, SOF Tail_Div_Ratio_U8_Sat_89e
         MOVB [R9],RL4
 L_E0370:                 ; 0xe0370
         MOVB RL7,#01H
@@ -425,7 +425,7 @@ L_E0370:                 ; 0xe0370
         ; ------------------------------------------------------------
 OBD_M01_PID05_CoolantTemp:
         MOVBZ R12,tco_mes
-        CALLS 00EH,OBD_Scale_Temp
+        CALLS SEG OBD_Scale_Temp, SOF OBD_Scale_Temp
         MOVB [R9],RL4
         MOVB RL7,#01H
         JMPA cc_UC,L_E0940
@@ -438,7 +438,7 @@ OBD_M01_PID05_CoolantTemp:
 OBD_M01_PID06_STFT_B1:
         JNB lv_conf_mis.00H,L_E039A
         MOV R12,lam_bank_1_lam_up_ti_lam
-        CALLS 00EH,OBD_Scale_FuelTrim
+        CALLS SEG OBD_Scale_FuelTrim, SOF OBD_Scale_FuelTrim
         MOVB [R9],RL4
         MOVB RL7,#01H
         JMPA cc_UC,L_E0940
@@ -454,7 +454,7 @@ L_E039A:                 ; 0xe039a
 OBD_M01_PID07_LTFT_B1:
         JNB lv_conf_mis.00H,L_E03B6
         MOV R12,lam_bank_1_lam_up_ti_ad_fac_mmv
-        CALLS 00EH,OBD_Scale_FuelTrim
+        CALLS SEG OBD_Scale_FuelTrim, SOF OBD_Scale_FuelTrim
         MOVB [R9],RL4
         MOVB RL7,#01H
         JMPA cc_UC,L_E0940
@@ -479,7 +479,7 @@ OBD_M01_PID0B_IntakeMAP_Unsupported:
 OBD_M01_PID0C_EngineRPM:
         MOV R12,R9
         MOV R13,n_C93C
-        CALLS 00EH,OBD_Scale_RPM
+        CALLS SEG OBD_Scale_RPM, SOF OBD_Scale_RPM
         MOVB RL7,#02H
         JMPA cc_UC,L_E0940
 
@@ -507,10 +507,10 @@ OBD_M01_PID0E_TimingAdvance:
 L_E03F0:                 ; 0xe03f0
         MOVBZ R12,RL6
         MOV R13,#DATA16 000C0H
-        CALLS 00FH,Ret_Const_fe0f
+        CALLS SEG Ret_Const_fe0f, SOF Ret_Const_fe0f
         MOVBZ R13,RL4
         MOV R12,#DATA16 00110H
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOVB [R9],RL4
         MOVB RL7,#01H
         JMPA cc_UC,L_E0940
@@ -522,7 +522,7 @@ L_E03F0:                 ; 0xe03f0
         ; ------------------------------------------------------------
 OBD_M01_PID0F_IntakeAirTemp:
         MOVBZ R12,tia_mes
-        CALLS 00EH,OBD_Scale_Temp
+        CALLS SEG OBD_Scale_Temp, SOF OBD_Scale_Temp
         MOVB [R9],RL4
         MOVB RL7,#01H
         JMPA cc_UC,L_E0940
@@ -535,7 +535,7 @@ OBD_M01_PID0F_IntakeAirTemp:
 OBD_M01_PID10_MAF:
         MOV R12,maf_kgh_mes
         MOV R13,#DATA16 000DEH
-        CALLS 00FH,Read_MulDiv_MD
+        CALLS SEG Read_MulDiv_MD, SOF Read_MulDiv_MD
         MOV [R0+#04H],R4
         SHR R4,#08H
         MOV R5,R9

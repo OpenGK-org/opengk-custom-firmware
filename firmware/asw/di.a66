@@ -61,10 +61,10 @@ L_B201A:                 ; 0xb201a
         MOV R12,#DATA16 POF ldpm_maf_cyl_ip_rel_flow_inc_cp
         MOV R13,#DATA16 PAG ldpm_maf_cyl_ip_rel_flow_inc_cp
         MOV R14,maf_cyl
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_t_dly_cp__maf_cyl
         MOV R13,#DATA16 PAG ip_t_dly_cp__maf_cyl
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         SHR R4,#0AH
         ADDB RL4,DPP0:c_t_dly_cp_cl
         MOVB lam_sum_cp,RL4
@@ -114,10 +114,10 @@ L_B20AA:                 ; 0xb20aa
         MOV R12,#DATA16 POF ldpm_maf_cyl_ip_rel_flow_inc_cp
         MOV R13,#DATA16 PAG ldpm_maf_cyl_ip_rel_flow_inc_cp
         MOV R14,maf_cyl
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_t_dly_cp__maf_cyl
         MOV R13,#DATA16 PAG ip_t_dly_cp__maf_cyl
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         SHR R4,#0AH
         ADDB RL4,DPP0:c_t_dly_cp_cl
         MOVB lam_sum_cp,RL4

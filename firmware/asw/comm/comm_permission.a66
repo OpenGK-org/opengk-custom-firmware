@@ -42,14 +42,14 @@ L_DFC24:                 ; 0xdfc24
         MOV R12,R8
         MOV R13,R9
         ADD R12,#05H
-        CALLS 008H,KWP_Check_ServicePermission
+        CALLS SEG KWP_Check_ServicePermission, SOF KWP_Check_ServicePermission
         MOVB RL4,kwp_nrc
         JMPR cc_NE,L_DFC50
         BSET kwp_comms_flags.0FH
         EXTP R9, #02H
         MOV R5,[R8+#02H]
         MOV R4,[R8]
-        CALLS 000H,rt_callfar_via_r5r4
+        CALLS SEG rt_callfar_via_r5r4, SOF rt_callfar_via_r5r4
 L_DFC50:                 ; 0xdfc50
         MOVB RL6,#01H
         JMPR cc_UC,L_DFC70
@@ -91,7 +91,7 @@ Tail_rt_callfar_via_r5r4_c98:
         EXTP #00H, #02H
         MOV R4,g_202
         MOV R5,g_204
-        CALLS 000H,rt_callfar_via_r5r4
+        CALLS SEG rt_callfar_via_r5r4, SOF rt_callfar_via_r5r4
         RETS
 
 ; ======== KWP_Copy_Resp_Buffer  (@0xdfcaa) ========

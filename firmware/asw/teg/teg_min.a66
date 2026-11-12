@@ -47,7 +47,7 @@ L_C071C:                 ; 0xc071c
 L_C0724:                 ; 0xc0724
         MOV R12,#DATA16 049CEH
         MOV R13,teg_dyn_hys
-        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YWord
+        CALLS SEG Get_IP_Byte_2D_Table_DWord_YWord, SOF Get_IP_Byte_2D_Table_DWord_YWord
         MOVB iga_dif_min_teg_bas,RL4
 L_C0734:                 ; 0xc0734
         RETS
@@ -72,11 +72,11 @@ L_C0756:                 ; 0xc0756
         MOVB iga_dif_min_teg,RL4
         MOVBZ R12,iga_ref_cor
         MOVBZ R13,RL4
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB iga_min_teg,RL4
         MOV R12,#DATA16 049D6H
         MOVBZ R13,iga_dif_min_teg
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YByte, SOF Get_IP_Word_2D_Table_DWord_YByte
         MOV eff_iga_min_teg,R4
 L_C0778:                 ; 0xc0778
         RETS

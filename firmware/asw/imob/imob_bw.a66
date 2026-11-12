@@ -54,7 +54,7 @@ L_BC33A:                 ; 0xbc33a
         MOV lv_imob_init_done,R4
         MOV R5,#DATA16 0CA08H
         MOV R4,R5
-        CALLS 00DH,Read_DPP_Reg
+        CALLS SEG Read_DPP_Reg, SOF Read_DPP_Reg
         MOV [R0+#02H],R4
         MOV [R0+#04H],R5
         MOVB RL4,#00H
@@ -209,7 +209,7 @@ L_BC4A8:                 ; 0xbc4a8
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#08H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         CMP R4,cks_imob_nvm
         JMPR cc_NE,L_BC50E
         MOV R4,cks_imob_nvm
@@ -267,7 +267,7 @@ L_BC554:                 ; 0xbc554
         MOVB RL5,#DATA16 00039H
         MOVB imob_eeprom_block_sig,RL5
         MOVB imob_data_ram_ctr_key_fast_imob,ZEROS
-        CALLS 00BH,SMARTRA_disable
+        CALLS SEG SMARTRA_disable, SOF SMARTRA_disable
         BCLR imob_bw.09H
         MOV imob_data_ram_ctr_sdr_1_imob,ZEROS
         MOV imob_data_ram_ctr_sdr_2_imob,ZEROS
@@ -384,7 +384,7 @@ Imob_BW_Update_2:
         BCLR imob_bw.08H
         MOVB imob_ca2a,ZEROS
 L_BC68E:                 ; 0xbc68e
-        CALLS 00BH,Imob_DTC_update_comms
+        CALLS SEG Imob_DTC_update_comms, SOF Imob_DTC_update_comms
         ADD R0,#DATA16 00008H
         MOV R6,[R0+]
         MOV R7,[R0+]

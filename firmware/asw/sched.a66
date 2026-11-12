@@ -27,15 +27,15 @@ S_E5D36 SECTION CODE AT 0E5D36H
         ; Fuel-pump relay output handler (variant).
         ; ------------------------------------------------------------
 FuelPump_Out_6:
-        CALLS 00AH,Output_CC5_P2_5_Enable
-        CALLS 00AH,Output_CC12_P2_12_Disable
-        CALLS 00AH,Read_Coding_Nibble
+        CALLS SEG Output_CC5_P2_5_Enable, SOF Output_CC5_P2_5_Enable
+        CALLS SEG Output_CC12_P2_12_Disable, SOF Output_CC12_P2_12_Disable
+        CALLS SEG Read_Coding_Nibble, SOF Read_Coding_Nibble
         MOV R4,DPP0:c_t_efp
         MOV sw_timer_b,R4
-        CALLS 00DH,Diag_MAF_TPS_Ratio_d1be
-        CALLS 00AH,Init_CC5_Output
-        CALLS 00BH,Set_TOIL_Stop
-        CALLS 00CH,Set_TCO_Stop
+        CALLS SEG Diag_MAF_TPS_Ratio_d1be, SOF Diag_MAF_TPS_Ratio_d1be
+        CALLS SEG Init_CC5_Output, SOF Init_CC5_Output
+        CALLS SEG Set_TOIL_Stop, SOF Set_TOIL_Stop
+        CALLS SEG Set_TCO_Stop, SOF Set_TCO_Stop
         RETS
 
 ; ======== vb_sub  (@0xe5d5c) ========
@@ -77,12 +77,12 @@ Clr_Diag_fd62_RetStatus:
         ; smartra_comms_status / lv_err_com_resp_imob.
         ; ------------------------------------------------------------
 SMARTRA_Phase_Sync:
-        CALLS 00AH,Check_VIN_Programmed
+        CALLS SEG Check_VIN_Programmed, SOF Check_VIN_Programmed
         MOVB RL4,lv_sched_diag_inh
         ANDB RL4,#01H
         JMPR cc_NE,L_E5DEC
-        CALLS 00CH,Calc_Inj_Pattern
-        CALLS 00AH,SMARTRA_tx_begin
+        CALLS SEG Calc_Inj_Pattern, SOF Calc_Inj_Pattern
+        CALLS SEG SMARTRA_tx_begin, SOF SMARTRA_tx_begin
         BCLR smartra_comms_status.0DH
         BCLR smartra_comms_status.0EH
         BCLR smartra_comms_status.0FH
@@ -90,19 +90,19 @@ SMARTRA_Phase_Sync:
         MOV smartra_byte_timer,ZEROS
         MOVB RL4,#01H
         MOVB smartra_comms_phase,RL4
-        CALLS 00BH,SMARTRA_auth_begin
+        CALLS SEG SMARTRA_auth_begin, SOF SMARTRA_auth_begin
         JNB lv_conf_mis.02H,L_E5DC8
-        CALLS 00BH,ClrBits_lv_er_carb_b4_c7c
+        CALLS SEG ClrBits_lv_er_carb_b4_c7c, SOF ClrBits_lv_er_carb_b4_c7c
 L_E5DC8:                 ; 0xe5dc8
-        CALLS 00CH,Reset_ISA
-        CALLS 00BH,Reset_Dc5dc_b9c
-        CALLS 00CH,Reset_ar_red_bas_thr_ivs_522
-        CALLS 00BH,Init_GearRatio
-        CALLS 00BH,Init_ISC_State
-        CALLS 00BH,Reset_TI_IS
-        CALLS 00CH,Set_lv_cps_err
-        CALLS 00CH,ClrBits_lv_asr_act_30e
-        CALLS 00CH,ClrBits_Dfd66_a1a
+        CALLS SEG Reset_ISA, SOF Reset_ISA
+        CALLS SEG Reset_Dc5dc_b9c, SOF Reset_Dc5dc_b9c
+        CALLS SEG Reset_ar_red_bas_thr_ivs_522, SOF Reset_ar_red_bas_thr_ivs_522
+        CALLS SEG Init_GearRatio, SOF Init_GearRatio
+        CALLS SEG Init_ISC_State, SOF Init_ISC_State
+        CALLS SEG Reset_TI_IS, SOF Reset_TI_IS
+        CALLS SEG Set_lv_cps_err, SOF Set_lv_cps_err
+        CALLS SEG ClrBits_lv_asr_act_30e, SOF ClrBits_lv_asr_act_30e
+        CALLS SEG ClrBits_Dfd66_a1a, SOF ClrBits_Dfd66_a1a
 L_E5DEC:                 ; 0xe5dec
         RETS
 
@@ -111,12 +111,12 @@ write_eeprom_ti_co_is:
         MOVB RL4,lv_sched_diag_inh
         ANDB RL4,#01H
         JMPR cc_NE,L_E5E06
-        CALLS 00CH,Calc_Inj_Pattern
+        CALLS SEG Calc_Inj_Pattern, SOF Calc_Inj_Pattern
         MOV R4,lv_ti_c97a
         MOV ti_co_is,R4
-        CALLS 00BH,SMARTRA_auth_post_update
+        CALLS SEG SMARTRA_auth_post_update, SOF SMARTRA_auth_post_update
 L_E5E06:                 ; 0xe5e06
-        CALLS 00AH,BL_Set_ExecMagic_Full_2
+        CALLS SEG BL_Set_ExecMagic_Full_2, SOF BL_Set_ExecMagic_Full_2
         RETS
 
 S_E5D36 ENDS

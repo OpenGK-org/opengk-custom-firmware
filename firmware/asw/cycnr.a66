@@ -80,10 +80,10 @@ L_D3F4A:                 ; 0xd3f4a
         MOV R12,#DATA16 POF ldpm_maf_kgh_vls_cycnr
         MOV R13,#DATA16 PAG ldpm_maf_kgh_vls_cycnr
         MOV R14,maf_kgh
-        CALLS 00FH,Get_Word_Y_Axis
+        CALLS SEG Get_Word_Y_Axis, SOF Get_Word_Y_Axis
         MOV R12,#DATA16 POF id_t_vls_cycnr_afl_max__maf_kgh
         MOV R13,#DATA16 PAG id_t_vls_cycnr_afl_max__maf_kgh
-        CALLS 00FH,Read_Byte_Far
+        CALLS SEG Read_Byte_Far, SOF Read_Byte_Far
         MOVB RL6,RL4
         MOV R4,R9
         ADD R4,#DATA16 0015EH
@@ -92,22 +92,22 @@ L_D3F4A:                 ; 0xd3f4a
         MOV [R4],R5
         MOV R12,[R9+#016AH]
         MOV R13,[R9+#015CH]
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV [R9+#016AH],R4
         MOV R12,[R9+#016CH]
         MOVBZ R13,RL6
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV [R9+#016CH],R4
         MOV R12,[R9+#015CH]
         MOVBZ R13,RL6
         SHL R13,#01H
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         SHR R4,#09H
         MOVB [R9+#0162H],RL4
         MOV R12,[R9+#0164H]
         MOVB RL4,[R9+#0162H]
         MOVBZ R13,RL4
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV [R9+#0164H],R4
         MOVB RL4,#01H
         MOVB [R9+#014AH],RL4
@@ -115,7 +115,7 @@ L_D3F4A:                 ; 0xd3f4a
 L_D3FD6:                 ; 0xd3fd6
         MOV R12,[R9+#06AH]
         MOV R13,DPP0:c_vls_hys
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV R5,[R9+#014CH]
         CMP R5,R4
         JMPR cc_ULE,L_D3FFA
@@ -156,10 +156,10 @@ L_D4030:                 ; 0xd4030
         MOV R12,#DATA16 POF ldpm_maf_kgh_vls_cycnr
         MOV R13,#DATA16 PAG ldpm_maf_kgh_vls_cycnr
         MOV R14,maf_kgh
-        CALLS 00FH,Get_Word_Y_Axis
+        CALLS SEG Get_Word_Y_Axis, SOF Get_Word_Y_Axis
         MOV R12,#DATA16 POF id_t_vls_cycnr_afr_max__maf_kgh
         MOV R13,#DATA16 PAG id_t_vls_cycnr_afr_max__maf_kgh
-        CALLS 00FH,Read_Byte_Far
+        CALLS SEG Read_Byte_Far, SOF Read_Byte_Far
         MOVB RL6,RL4
         MOV R4,R9
         ADD R4,#DATA16 00160H
@@ -168,22 +168,22 @@ L_D4030:                 ; 0xd4030
         MOV [R4],R5
         MOV R12,[R9+#016EH]
         MOV R13,[R9+#015CH]
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV [R9+#016EH],R4
         MOV R12,[R9+#0170H]
         MOVBZ R13,RL6
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV [R9+#0170H],R4
         MOV R12,[R9+#015CH]
         MOVBZ R13,RL6
         SHL R13,#01H
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         SHR R4,#09H
         MOVB [R9+#0163H],RL4
         MOV R12,[R9+#0166H]
         MOVB RL4,[R9+#0163H]
         MOVBZ R13,RL4
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV [R9+#0166H],R4
         MOVB RL4,#02H
         MOVB [R9+#014AH],RL4
@@ -191,7 +191,7 @@ L_D4030:                 ; 0xd4030
 L_D40BA:                 ; 0xd40ba
         MOV R12,[R9+#06AH]
         MOV R13,DPP0:c_vls_hys
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV R5,[R9+#014CH]
         CMP R5,R4
         JMPR cc_NC,L_D40DC
@@ -261,7 +261,7 @@ L_D414E:                 ; 0xd414e
         MOVBZ R12,RL4
         MOVB RL4,[R9+#0169H]
         MOVBZ R13,RL4
-        CALLS 00FH,Sat_Sub_S8
+        CALLS SEG Sat_Sub_S8, SOF Sat_Sub_S8
         MOVB [R9+#017CH],RL4
         MOVB RL4,[R9+#0169H]
         CMPB RL4,DPP0:c_vls_cycnr_afr_ratio_mv_max
@@ -279,7 +279,7 @@ L_D41B6:                 ; 0xd41b6
         BSET lv_act_diagcps.0AH
 L_D41B8:                 ; 0xd41b8
         BSET state_cat_diag.01H
-        CALLS 00CH,Diag_DTC_dd290
+        CALLS SEG Diag_DTC_dd290, SOF Diag_DTC_dd290
 L_D41BE:                 ; 0xd41be
         MOV R6,[R0+]
         MOV R9,[R0+]
@@ -308,14 +308,14 @@ L_D41DE:                 ; 0xd41de
         MOV R12,#DATA16 POF ldpm_n_32_vls_cyc
         MOV R13,#DATA16 PAG ldpm_n_32_vls_cyc
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ldpm_maf_vls_cyc
         MOV R13,#DATA16 PAG ldpm_maf_vls_cyc
         MOV R14,maf_word
-        CALLS 00FH,Get_IP_Word_X_Axis
+        CALLS SEG Get_IP_Word_X_Axis, SOF Get_IP_Word_X_Axis
         MOV R12,#DATA16 POF ip_t_vls_cyc_afr_max__n_32__maf
         MOV R13,#DATA16 PAG ip_t_vls_cyc_afr_max__n_32__maf
-        CALLS 00FH,Get_IP_Word_3D_Table
+        CALLS SEG Get_IP_Word_3D_Table, SOF Get_IP_Word_3D_Table
         MOV R8,R4
         MOVB RL4,[R7+#06DH]
         MOVBZ R9,RL4
@@ -330,14 +330,14 @@ L_D41DE:                 ; 0xd41de
         JMPR cc_SLE,L_D4258
         MOV R12,[R7+#030H]
         MOV R13,[R7+#02EH]
-        CALLS 00FH,Sat_Sub_S16_Min
+        CALLS SEG Sat_Sub_S16_Min, SOF Sat_Sub_S16_Min
         MOV R12,R4
         MOVBZ R13,DPP0:c_fac_t_dly_i_ad_ls_frq_diag
         SHL R13,#07H
-        CALLS 00FH,Mul_S16_Hi_EAA0
+        CALLS SEG Mul_S16_Hi_EAA0, SOF Mul_S16_Hi_EAA0
         MOV R13,R4
         MOV R12,R9
-        CALLS 00FH,Sub_Floor0_S16
+        CALLS SEG Sub_Floor0_S16, SOF Sub_Floor0_S16
         MOV R9,R4
 L_D4258:                 ; 0xd4258
         CMP R8,#00H
@@ -364,20 +364,20 @@ L_D4288:                 ; 0xd4288
         MOV R12,[R7+#0154H]
         MOVB RL4,[R7+#0151H]
         MOVBZ R13,RL4
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV [R7+#0154H],R4
         MOV R12,[R7+#0172H]
         MOVB RL4,[R7+#06DH]
         MOVBZ R13,RL4
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV [R7+#0172H],R4
         MOV R12,[R7+#0174H]
         MOV R13,R8
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV [R7+#0174H],R4
         MOV R12,#DATA16 POF ip_t_vls_cyc_afl_max__n_32__maf
         MOV R13,#DATA16 PAG ip_t_vls_cyc_afl_max__n_32__maf
-        CALLS 00FH,Get_IP_Word_3D_Table
+        CALLS SEG Get_IP_Word_3D_Table, SOF Get_IP_Word_3D_Table
         MOV R8,R4
         MOV R4,[R7+#02CH]
         CMP R4,#00H
@@ -385,24 +385,24 @@ L_D4288:                 ; 0xd4288
         MOV R12,[R7+#032H]
         MOVBZ R13,DPP0:c_fac_t_dly_i_ad_ls_frq_diag
         SHL R13,#07H
-        CALLS 00FH,Mul_S16_Hi_EAA0
+        CALLS SEG Mul_S16_Hi_EAA0, SOF Mul_S16_Hi_EAA0
         MOV R13,R4
         MOVB RL4,[R7+#06EH]
         MOVBZ R12,RL4
         SHL R12,#08H
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV R9,R4
         JMPR cc_UC,L_D430E
 L_D42F0:                 ; 0xd42f0
         MOV R12,[R7+#02EH]
         MOVBZ R13,DPP0:c_fac_t_dly_i_ad_ls_frq_diag
         SHL R13,#07H
-        CALLS 00FH,Mul_S16_Hi_EAA0
+        CALLS SEG Mul_S16_Hi_EAA0, SOF Mul_S16_Hi_EAA0
         MOV R13,R4
         MOVB RL4,[R7+#06EH]
         MOVBZ R12,RL4
         SHL R12,#08H
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV R9,R4
 L_D430E:                 ; 0xd430e
         CMP R8,#00H
@@ -429,7 +429,7 @@ L_D433E:                 ; 0xd433e
         MOV R12,[R7+#0152H]
         MOVB RL4,[R7+#0150H]
         MOVBZ R13,RL4
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV [R7+#0152H],R4
         MOV R4,[R7+#014EH]
         CMP R4,DPP0:c_sum_cyc_min_diag
@@ -460,7 +460,7 @@ L_D436E:                 ; 0xd436e
         MOVBZ R12,RL4
         MOVB RL4,[R7+#0157H]
         MOVBZ R13,RL4
-        CALLS 00FH,Sat_Sub_S8
+        CALLS SEG Sat_Sub_S8, SOF Sat_Sub_S8
         MOVB [R7+#017BH],RL4
         MOVB RL4,[R7+#0157H]
         CMPB RL4,DPP0:c_vls_cyc_afr_ratio_mv_max
@@ -481,7 +481,7 @@ L_D43E8:                 ; 0xd43e8
         BSET lv_act_diagcps.09H
 L_D43EA:                 ; 0xd43ea
         BSET state_cat_diag.00H
-        CALLS 00CH,Diag_DTC_dd29e
+        CALLS SEG Diag_DTC_dd29e, SOF Diag_DTC_dd29e
 L_D43F0:                 ; 0xd43f0
         MOV R7,[R0+]
         MOV R8,[R0+]

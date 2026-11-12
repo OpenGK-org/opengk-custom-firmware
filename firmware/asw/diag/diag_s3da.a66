@@ -42,7 +42,7 @@ NVM_Restore_s3da:
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#DATA16 00098H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV R10,diag_f890
         MOV R11,diag_f892
         EXTP R11, #02H
@@ -110,7 +110,7 @@ L_CAA1A:                 ; 0xcaa1a
         MOVB diag_c35f,RL3
         JMPR cc_UC,L_CAA6C
 L_CAA68:                 ; 0xcaa68
-        CALLS 00CH,Init_DTC_Shadow_Table
+        CALLS SEG Init_DTC_Shadow_Table, SOF Init_DTC_Shadow_Table
 L_CAA6C:                 ; 0xcaa6c
         MOV R6,[R0+]
         MOV R7,[R0+]

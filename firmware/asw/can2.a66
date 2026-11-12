@@ -71,7 +71,7 @@ L_A594A:                 ; 0xa594a
         ; ------------------------------------------------------------
         ; (unclassified) RAM/paged global @0xa595c [dpp]  W:{-}  R:{-}
         ; ------------------------------------------------------------
-        CALLS 00AH,Move_xFF_items__from_PTR_R12_to_PTR_R13
+        CALLS SEG Move_xFF_items__from_PTR_R12_to_PTR_R13, SOF Move_xFF_items__from_PTR_R12_to_PTR_R13
         MOVB RL4,can_c196
         CMPB RL4,#DATA16 00008H
         JMPR cc_ULE,L_A5970
@@ -166,7 +166,7 @@ L_A59FC:                 ; 0xa59fc
         MOV R13,R9
         ADD R13,#07H
         MOVBZ R14,RL4
-        CALLS 00AH,Move_xFF_items__from_PTR_R12_to_PTR_R13
+        CALLS SEG Move_xFF_items__from_PTR_R12_to_PTR_R13, SOF Move_xFF_items__from_PTR_R12_to_PTR_R13
         JMPR cc_UC,L_A5A54
 L_A5A38:                 ; 0xa5a38
         MOV R8,#00H
@@ -306,7 +306,7 @@ L_A5B60:                 ; 0xa5b60
         MOV [R8],R4
         MOVB RL4,#01H
         MOVB can_c1a1,RL4
-        CALLS 00AH,CCP_Rebuild_CanDaqObjects
+        CALLS SEG CCP_Rebuild_CanDaqObjects, SOF CCP_Rebuild_CanDaqObjects
 L_A5B76:                 ; 0xa5b76
         MOV R8,[R0+]
         MOV R9,[R0+]

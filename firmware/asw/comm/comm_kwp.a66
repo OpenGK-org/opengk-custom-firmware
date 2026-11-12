@@ -137,7 +137,7 @@ L_E5304:                 ; 0xe5304
         MOVB RL4,#01H
         MOVB imob_ca2a,RL4
         MOVB imob_key_wr_idx,ZEROS
-        CALLS 00BH,SMARTRA_disable
+        CALLS SEG SMARTRA_disable, SOF SMARTRA_disable
         MOVB RL4,#01H
         MOVB smartra_proto_step,RL4
         MOVB RL5,#DATA16 00078H

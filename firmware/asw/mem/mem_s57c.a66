@@ -40,7 +40,7 @@ L_BC0CE:                 ; 0xbc0ce
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#04H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV R10,diag_f890
         MOV R11,diag_f892
         EXTP R11, #02H
@@ -62,7 +62,7 @@ L_BC0CE:                 ; 0xbc0ce
         MOVB er_ad_state,RL4
         RETS
 L_BC13C:                 ; 0xbc13c
-        CALLS 00BH,Reset_iga_er_ad_mem_142
+        CALLS SEG Reset_iga_er_ad_mem_142, SOF Reset_iga_er_ad_mem_142
         RETS
 
 ; ======== Reset_iga_er_ad_mem_142  (@0xbc142) ========
@@ -92,7 +92,7 @@ NVM_Save_s57c:
         MOV R13,R5
         MOV R14,#DATA16 0C280H
         MOV R15,#01H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 0057CH
@@ -106,7 +106,7 @@ NVM_Save_s57c:
         MOV R13,R5
         MOV R14,#DATA16 0CA06H
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 0057EH
@@ -120,7 +120,7 @@ NVM_Save_s57c:
         MOV R13,R5
         MOV R14,#DATA16 0C27FH
         MOV R15,#01H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 0057CH
@@ -139,7 +139,7 @@ NVM_Save_s57c:
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#04H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV [R0],R4
         MOV R12,diag_f890
         MOV R13,diag_f892
@@ -154,7 +154,7 @@ NVM_Save_s57c:
         MOV R13,R5
         MOV R14,R0
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         ADD R0,#02H
         RETS
 

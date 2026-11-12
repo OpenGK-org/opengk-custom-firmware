@@ -143,7 +143,7 @@ L_C11A4:                 ; 0xc11a4
         MOVB RL6,#00H
 L_C11A6:                 ; 0xc11a6
         MOVBZ R12,RL6
-        CALLS 00CH,Diag_DTC_dd62c
+        CALLS SEG Diag_DTC_dd62c, SOF Diag_DTC_dd62c
         BMOV lv_iga_tra_knk.0FH,PSW.06H
         JMPR cc_UC,L_C11B6
 L_C11B2:                 ; 0xc11b2
@@ -173,7 +173,7 @@ Diag_IVVT_Trip_d62c:
         MOV R13,#DATA16 05A9AH
         MOVBZ R14,DPP0:c_abc_inc_slv_ivvt
         MOVBZ R15,DPP0:c_abc_max_slv_ivvt
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_acp_err.02H,dtc_status_work.06H
         MOVBZ R4,g_d636
         AND R4,#DATA16 00020H
@@ -226,7 +226,7 @@ L_C124E:                 ; 0xc124e
         MOV R13,#DATA16 05A9AH
         MOVBZ R14,DPP0:c_abc_inc_slv_ivvt
         MOVBZ R15,DPP0:c_abc_max_slv_ivvt
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_acp_err.02H,dtc_status_work.06H
         MOVBZ R4,g_d636
         AND R4,#DATA16 00020H

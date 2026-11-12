@@ -29,14 +29,14 @@ Calc_IGA_ST_FF28:
         MOV R12,#DATA16 POF sstm_n_2_5
         MOV R13,#DATA16 PAG sstm_n_2_5
         MOV R14,n_C93C
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF sstm_tkw_1_5
         MOV R13,#DATA16 PAG sstm_tkw_1_5
         MOVBZ R14,tco
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         MOV R12,#DATA16 POF ip_iga_st__n__tco_st
         MOV R13,#DATA16 PAG ip_iga_st__n__tco_st
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVB iga_st,RL4
         RETS
 
@@ -49,14 +49,14 @@ Calc_IGA_St:
         MOV R12,#DATA16 POF sstm_n_2_5
         MOV R13,#DATA16 PAG sstm_n_2_5
         MOV R14,n_C93C
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF sstm_tkw_1_5
         MOV R13,#DATA16 PAG sstm_tkw_1_5
         MOVBZ R14,tco
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         MOV R12,#DATA16 POF ip_iga_st__n__tco_st
         MOV R13,#DATA16 PAG ip_iga_st__n__tco_st
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVB iga_st,RL4
 L_BFF8E:                 ; 0xbff8e
         RETS
@@ -97,7 +97,7 @@ Calc_lamb_sp:
         JB lv_cdn_diag_maf_dif_ch_int.0BH,L_BFFE0
         MOV R12,#DATA16 00040H
         MOV R13,ti_fac_cor
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         MOV lamb_sp,R4
         CMP R4,#DATA16 07FFFH
         JMPR cc_ULE,L_BFFE8

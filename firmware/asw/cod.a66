@@ -141,112 +141,112 @@ L_DB320:                 ; 0xdb320
         JMPR cc_C,L_DB320
 L_DB336:                 ; 0xdb336
         MOV R12,#DATA16 00038H
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_knk_1,RL4
         MOV R12,#07H
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_vs,RL4
         MOV R12,#0AH
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_tia,RL4
         MOV R12,#0CH
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_tco,RL4
         MOV R12,#DATA16 00013H
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_vls_up_1,RL4
         MOV R12,#DATA16 00015H
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_vls_up_1_puc,RL4
         MOV R12,#DATA16 00016H
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_vls_up_1_stk,RL4
         MOV R12,#DATA16 00014H
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_vls_up_1_plaus,RL4
         MOV R12,#DATA16 00020H
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB lv_maf_c4b4,RL4
         MOV R12,#DATA16 00021H
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_vls_frq_1,RL4
         MOV R12,#DATA16 00018H
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_vls_down_1,RL4
         MOV R12,#DATA16 00019H
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_vls_down_1_puc,RL4
         MOV R12,#DATA16 0001CH
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_lsh_down_1,RL4
         MOV R12,#DATA16 0001EH
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_lsh_down_obd2_1,RL4
         MOV R12,#DATA16 00023H
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_vls_down_plaus_pue_1,RL4
         MOV R12,#DATA16 0001AH
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_vls_down_plaus_1,RL4
         MOV R12,#DATA16 00022H
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_ls_down_swt_1,RL4
         MOV R12,#03H
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_maf_plaus,RL4
         MOV R12,#DATA16 00017H
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_lam_lim_1,RL4
         MOV R12,#01H
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_tps_plaus,RL4
         MOV R12,#DATA16 00028H
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_dtp_con,RL4
         MOV R12,#DATA16 00029H
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_dtp_noise,RL4
         MOV R12,#DATA16 00026H
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_cps_mecha,RL4
         MOV R12,#DATA16 0002DH
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_tc,RL4
         MOV R12,#DATA16 0002CH
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_leak_large,RL4
         MOV R12,#DATA16 0002BH
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_leak_small_1mm,RL4
         MOV R12,#DATA16 0002AH
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_leak_small_05mm,RL4
         MOV R12,#DATA16 00040H
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_isapwm_h,RL4
         MOV R12,#DATA16 0003FH
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_isapwm_l,RL4
         MOV R12,#DATA16 00011H
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_tco_plaus,RL4
         MOV R12,#DATA16 0001BH
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_lsh_up_1,RL4
         MOV R12,#DATA16 00012H
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_th,RL4
         MOV R12,#DATA16 0001FH
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_cat_diag_1,RL4
         MOV R12,#DATA16 0001DH
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_lsh_up_obd2_1,RL4
         MOV R12,#0DH
-        CALLS 00DH,Get_Diag_Status_Bits
+        CALLS SEG Get_Diag_Status_Bits, SOF Get_Diag_Status_Bits
         MOVB carb_cod_tco_stuck,RL4
         JNB lv_pl.0FH,L_DB4D6
-        CALLS 00EH,OBD_Build_DTC_List
+        CALLS SEG OBD_Build_DTC_List, SOF OBD_Build_DTC_List
 L_DB4D6:                 ; 0xdb4d6
         MOV R6,[R0+]
         RETS

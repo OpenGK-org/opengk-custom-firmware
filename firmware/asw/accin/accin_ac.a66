@@ -28,7 +28,7 @@ AcComp_AccIn_Dly5:
 L_C7A94:                 ; 0xc7a94
         BCLR lv_act_aj.0BH
         MOVBZ R12,DPP0:c_accin_dly_5
-        CALLS 00CH,AccInDelay_SetIfLonger
+        CALLS SEG AccInDelay_SetIfLonger, SOF AccInDelay_SetIfLonger
         JNB PSW.06H,L_C7AA8
         MOVB RL4,#04H
         MOVB state_acc_dly,RL4
@@ -58,10 +58,10 @@ L_C7ABC:                 ; 0xc7abc
         MOV R12,#DATA16 POF ldpm_n_32__accin_dly
         MOV R13,#DATA16 PAG ldpm_n_32__accin_dly
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_accin_dly_2__n_32
         MOV R13,#DATA16 PAG ip_accin_dly_2__n_32
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV sw_timer_a,R4
 L_C7AF6:                 ; 0xc7af6
         RETS

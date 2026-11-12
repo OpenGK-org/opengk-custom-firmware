@@ -42,7 +42,7 @@ CAN1_SetDefault_TcuSignals:
         ADD R13,R4
         SHL R13,#06H
         MOV R14,#DATA16 00100H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV can1_tq_scale_tmp,R4
         CMP R4,#DATA16 07FFFH
         JMPR cc_NC,L_D7836
@@ -76,7 +76,7 @@ CAN1_SetDefault_TcsSignals:
         ADD R13,R4
         SHL R13,#06H
         MOV R14,#DATA16 00100H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV can1_tq_scale_tmp,R4
         CMP R4,#DATA16 07FFFH
         JMPR cc_NC,L_D7884
@@ -94,7 +94,7 @@ L_D788C:                 ; 0xd788c
         ADD R13,R4
         SHL R13,#06H
         MOV R14,#DATA16 00100H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV can1_tq_scale_tmp,R4
         CMP R4,#DATA16 07FFFH
         JMPR cc_NC,L_D78B6
@@ -112,7 +112,7 @@ L_D78BE:                 ; 0xd78be
         ADD R13,R4
         SHL R13,#06H
         MOV R14,#DATA16 00100H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV can1_tq_scale_tmp,R4
         CMP R4,#DATA16 07FFFH
         JMPR cc_NC,L_D78EA

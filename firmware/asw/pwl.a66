@@ -41,9 +41,9 @@ L_C0BF8:                 ; 0xc0bf8
         MOV lv_isc_f98e,ZEROS
         JMPR cc_UC,L_C0C08
 L_C0C04:                 ; 0xc0c04
-        CALLS 00CH,Calc_ISA_PWL
+        CALLS SEG Calc_ISA_PWL, SOF Calc_ISA_PWL
 L_C0C08:                 ; 0xc0c08
-        CALLS 00CH,Calc_ISA_Opening_Sp
+        CALLS SEG Calc_ISA_Opening_Sp, SOF Calc_ISA_Opening_Sp
         RETS
 
 ; ======== Set_Df38d_c0e  (@0xc0c0e) ========
@@ -80,7 +80,7 @@ L_C0C40:                 ; 0xc0c40
         JB lv_iga_tra_knk.08H,L_C0C80
         MOV R12,opg_sp_pwl_isa
         MOV R13,DPP0:c_lgrd_isa_pwl
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV opg_sp_pwl_isa,R4
         CMP R4,#00H
         JMPR cc_UGT,L_C0C9C
@@ -101,7 +101,7 @@ L_C0C7C:                 ; 0xc0c7c
 L_C0C80:                 ; 0xc0c80
         MOV R12,opg_sp_pwl_isa
         MOV R13,DPP0:c_lgrd_isa_pwl
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV opg_sp_pwl_isa,R4
         CMP R4,#DATA16 0FFFFH
         JMPR cc_C,L_C0C9C

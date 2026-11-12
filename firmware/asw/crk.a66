@@ -88,7 +88,7 @@ L_C7BF0:                 ; 0xc7bf0
 L_C7C00:                 ; 0xc7c00
         MOVBZ R12,crank_tim_0
         MOV R13,#01H
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB crank_tim_0,RL4
         JMPR cc_UC,L_C7C60
 L_C7C10:                 ; 0xc7c10
@@ -98,7 +98,7 @@ L_C7C10:                 ; 0xc7c10
         JMPR cc_NE,L_C7C2C
         MOVBZ R12,crank_tim_0
         MOV R13,#01H
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB crank_tim_0,RL4
         JMPR cc_UC,L_C7C60
 L_C7C2C:                 ; 0xc7c2c
@@ -113,13 +113,13 @@ L_C7C3C:                 ; 0xc7c3c
         JMPR cc_EQ,L_C7C52
         MOVBZ R12,crank_tim_0
         MOVBZ R13,RL4
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB crank_tim_0,RL4
         JMPR cc_UC,L_C7C60
 L_C7C52:                 ; 0xc7c52
         MOVBZ R12,crank_tim_0
         MOV R13,#01H
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB crank_tim_0,RL4
 L_C7C60:                 ; 0xc7c60
         MOVB RL4,diag_faaf
@@ -150,7 +150,7 @@ L_C7C9C:                 ; 0xc7c9c
 L_C7CA2:                 ; 0xc7ca2
         MOV R12,#DATA16 0D116H
         MOV R13,#DATA16 0529CH
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cam_err.05H,dtc_status_work.06H
         MOVBZ R4,diag_d120
         AND R4,#DATA16 00020H
@@ -163,7 +163,7 @@ L_C7CC6:                 ; 0xc7cc6
         JMPR cc_NE,L_C7CEE
         MOV R12,#DATA16 0D116H
         MOV R13,#DATA16 0529CH
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cam_err.05H,dtc_status_work.06H
         MOVBZ R4,diag_d120
         AND R4,#DATA16 00020H
@@ -193,7 +193,7 @@ L_C7D0E:                 ; 0xc7d0e
         ; ------------------------------------------------------------
 Set_lv_crk_tooth_err:
         JB lv_cdn_diag_maf_dif_ch_int.0BH,L_C7D36
-        CALLS 00CH,Diag_DTC_dd116
+        CALLS SEG Diag_DTC_dd116, SOF Diag_DTC_dd116
         JNB lv_crk_tooth_err.0AH,L_C7D26
         CALLA cc_UC,Diag_DTC_dd124
         CALLA cc_UC,Calc_Crank_Tooth_Pattern

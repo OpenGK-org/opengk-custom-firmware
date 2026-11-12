@@ -33,25 +33,25 @@ Calc_TQI_Min_Pu:
         MOV R12,#DATA16 04BA2H
         MOVBZ R13,n_32
         MOVBZ R14,tco
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YByte
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XByte_YByte, SOF Get_IP_Word_3D_Table_DWord_XByte_YByte
         MOV tqi_min_pu_1,R4
         MOV R12,#DATA16 04BB6H
         MOV R13,amp
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YWord
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YWord, SOF Get_IP_Word_2D_Table_DWord_YWord
         MOV R13,R4
         ADD R13,#DATA16 08000H
         MOV R12,tqi_min_pu_1
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV tqi_min_pu_1,R4
         JNB lv_pl.02H,L_C6294
         MOV R12,#DATA16 04BAEH
         MOVBZ R13,n_32
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YByte, SOF Get_IP_Word_2D_Table_DWord_YByte
         ADD R4,#DATA16 08000H
         MOV tqi_add_puc,R4
         MOV R12,tqi_min_pu_1
         MOV R13,R4
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV R9,R4
         CMP R9,#00H
         JMPR cc_SLE,L_C628C
@@ -68,7 +68,7 @@ L_C6294:                 ; 0xc6294
 L_C629C:                 ; 0xc629c
         MOV R12,tqi_ref_lamb_scc
         MOV R13,eff_iga_min
-        CALLS 00FH,Mul_Q15_Sat_Signed
+        CALLS SEG Mul_Q15_Sat_Signed, SOF Mul_Q15_Sat_Signed
         MOV tqi_bol,R4
         MOV R5,tqi_sp
         CMP R5,tqi_bol
@@ -79,7 +79,7 @@ L_C629C:                 ; 0xc629c
 L_C62BC:                 ; 0xc62bc
         MOV R12,tqi_bol
         MOV R13,DPP0:c_tqi_bol_set_hys
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         CMP R4,tqi_sp
         JMPR cc_SGE,L_C62D2
         BCLR lv_asr_act.02H
@@ -136,7 +136,7 @@ Calc_TQI_ASR_FAST:
         JB lv_cps_err.05H,L_C6366
         MOV R12,n_sp_is
         MOV R13,DPP0:c_n_add_asr
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         CMP R4,n_C93C
         JMPR cc_NC,L_C6366
         MOVB RL4,tqi_tcs_can
@@ -172,7 +172,7 @@ L_C637A:                 ; 0xc637a
         JB lv_asr_act.0AH,L_C63C8
         MOV R12,#DATA16 04BBEH
         MOVBZ R13,n_32
-        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Byte_2D_Table_DWord_YByte, SOF Get_IP_Byte_2D_Table_DWord_YByte
         CMPB RL4,tqi_msr_can
         JMPR cc_ULE,L_C63C8
         MOVB RL4,DPP0:lc_inh_msr
@@ -193,7 +193,7 @@ L_C63CA:                 ; 0xc63ca
         JNB lv_asr_act.08H,L_C63F0
         MOVBZ R12,tqi_tcs_can
         MOVBZ R13,tqi_msr_can
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         CMP R4,#DATA16 000FFH
         JMPR cc_NE,L_C63F0
         BSET lv_asr_act.09H
@@ -211,11 +211,11 @@ L_C63F6:                 ; 0xc63f6
 L_C6404:                 ; 0xc6404
         MOV R12,tqi_msr_req
         MOV R13,tq_loss
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV R13,R4
         ASHR R13,#05H
         MOV R12,tq_msr_int
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV tq_msr_int,R4
 L_C6420:                 ; 0xc6420
         MOV R4,tq_msr_int
@@ -233,7 +233,7 @@ L_C6432:                 ; 0xc6432
 L_C643C:                 ; 0xc643c
         MOV R12,t_msr
         MOV R13,#01H
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV t_msr,R4
 L_C644A:                 ; 0xc644a
         MOV R4,t_msr

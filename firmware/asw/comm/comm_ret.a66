@@ -39,7 +39,7 @@ Diag_CAN_BusOff:
         JB state_out_req.00H,L_BEE8A
         BSET P6.06H
 L_BEE8A:                 ; 0xbee8a
-        CALLS 00BH,Reset_Dc2b4_028
+        CALLS SEG Reset_Dc2b4_028, SOF Reset_Dc2b4_028
 L_BEE8E:                 ; 0xbee8e
         JB lv_er_carb_b4.0DH,L_BEE96
         JMPA cc_UC,L_BF026
@@ -62,7 +62,7 @@ L_BEEAA:                 ; 0xbeeaa
         MOV R13,#DATA16 05966H
         MOV R14,#01H
         MOV R15,#01H
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_can_bus_off_err.04H,dtc_status_work.06H
         MOVBZ R4,can_d572
         AND R4,#DATA16 00020H
@@ -78,7 +78,7 @@ L_BEEE8:                 ; 0xbeee8
         MOV R13,#DATA16 05966H
         MOV R14,#01H
         MOV R15,#01H
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_can_bus_off_err.04H,dtc_status_work.06H
         MOVBZ R4,can_d572
         AND R4,#DATA16 00020H
@@ -92,7 +92,7 @@ L_BEF16:                 ; 0xbef16
         MOVB pwl_dly_ctr,RL4
 L_BEF22:                 ; 0xbef22
         BCLR lv_er_carb_b4.0DH
-        CALLS 00BH,Reset_Dc2b4_028
+        CALLS SEG Reset_Dc2b4_028, SOF Reset_Dc2b4_028
         RETS
 L_BEF2A:                 ; 0xbef2a
         ADDB can_c2b2,ONES
@@ -106,7 +106,7 @@ L_BEF36:                 ; 0xbef36
         JB state_out_req.00H,L_BEF42
         BCLR P6.06H
 L_BEF42:                 ; 0xbef42
-        CALLS 00BH,Reset_Dc2b4_028
+        CALLS SEG Reset_Dc2b4_028, SOF Reset_Dc2b4_028
         JMPR cc_UC,L_BEF64
 L_BEF48:                 ; 0xbef48
         JB P6.06H,L_BEF5C
@@ -145,7 +145,7 @@ L_BEF8A:                 ; 0xbef8a
         MOV R13,#DATA16 05966H
         MOV R14,#01H
         MOV R15,#01H
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_can_bus_off_err.04H,dtc_status_work.06H
         MOVBZ R4,can_d572
         AND R4,#DATA16 00020H
@@ -161,7 +161,7 @@ L_BEFC8:                 ; 0xbefc8
         MOV R13,#DATA16 05966H
         MOV R14,#01H
         MOV R15,#01H
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_can_bus_off_err.04H,dtc_status_work.06H
         MOVBZ R4,can_d572
         AND R4,#DATA16 00020H
@@ -180,7 +180,7 @@ L_BF00A:                 ; 0xbf00a
         ADDB can_c2b4,ONES
         JMPR cc_UC,L_BF014
 L_BF010:                 ; 0xbf010
-        CALLS 00BH,Reset_Dc2b4_028
+        CALLS SEG Reset_Dc2b4_028, SOF Reset_Dc2b4_028
 L_BF014:                 ; 0xbf014
         JB lv_er_carb_b4.0DH,L_BF026
         SUBB pwl_dly_ctr,ONES
@@ -247,18 +247,18 @@ L_BF0AC:                 ; 0xbf0ac
         MOV R12,#DATA16 POF sstm_tkw_1_8
         MOV R13,#DATA16 PAG sstm_tkw_1_8
         MOVBZ R14,tco_st
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         JB lv_cdn_diag_maf_dif_ch_int.0EH,L_BF0DA
         MOV R12,#DATA16 POF ip_tco_lam_min__tco_st
         MOV R13,#DATA16 PAG ip_tco_lam_min__tco_st
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         CMPB RL4,tco_mes
         JMPR cc_C,L_BF0F0
 L_BF0DA:                 ; 0xbf0da
         JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_BF11C
         MOV R12,#DATA16 POF ip_tco_lam_min_is__tco_st
         MOV R13,#DATA16 PAG ip_tco_lam_min_is__tco_st
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         CMPB RL4,tco_mes
         JMPR cc_NC,L_BF11C
 L_BF0F0:                 ; 0xbf0f0
@@ -268,7 +268,7 @@ L_BF0F0:                 ; 0xbf0f0
 L_BF0FA:                 ; 0xbf0fa
         MOV R12,#DATA16 0D1CCH
         MOV R13,#DATA16 053BAH
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_lam_lim_1_err.02H,dtc_status_work.06H
         MOVBZ R4,lv_lam_d1d6
         AND R4,#DATA16 00020H

@@ -44,7 +44,7 @@ L_B933A:                 ; 0xb933a
 L_B9348:                 ; 0xb9348
         MOVBZ R12,v_max_mwss_diag
         MOVBZ R13,v_min_mwss_diag
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB v_dif_mwss_diag,RL4
         CMPB RL4,v_dif_max_mwss_diag
         JMPR cc_ULE,L_B9362
@@ -62,7 +62,7 @@ L_B9370:                 ; 0xb9370
         CMPB RL5,DPP0:c_v_thd_mwss
         JMPR cc_ULE,L_B9388
         BSET lv_err_pres_mwss.03H
-        CALLS 00BH,Diag_DTC_dd140
+        CALLS SEG Diag_DTC_dd140, SOF Diag_DTC_dd140
         JMPR cc_UC,L_B93B4
 L_B9388:                 ; 0xb9388
         MOVB RL4,vs
@@ -75,12 +75,12 @@ L_B9388:                 ; 0xb9388
         JMPR cc_ULE,L_B93AA
 L_B93A2:                 ; 0xb93a2
         BSET lv_err_pres_mwss.03H
-        CALLS 00BH,Diag_DTC_dd140
+        CALLS SEG Diag_DTC_dd140, SOF Diag_DTC_dd140
         JMPR cc_UC,L_B93B4
 L_B93AA:                 ; 0xb93aa
         BCLR lv_err_pres_mwss.03H
         JB lv_cam_err.08H,L_B93B4
-        CALLS 00BH,Diag_DTC_dd140
+        CALLS SEG Diag_DTC_dd140, SOF Diag_DTC_dd140
 L_B93B4:                 ; 0xb93b4
         MOVB RL4,DPP0:c_nr_mwss_sample
         MOVB nr_mwss_diag_sample,RL4
@@ -107,7 +107,7 @@ L_B93F0:                 ; 0xb93f0
 L_B93FA:                 ; 0xb93fa
         MOV R4,DPP0:c_t_mwss_min_cnl
         MOV diag_f6d8,R4
-        CALLS 00BH,Diag_DTC_dd140
+        CALLS SEG Diag_DTC_dd140, SOF Diag_DTC_dd140
 L_B9406:                 ; 0xb9406
         RETS
 

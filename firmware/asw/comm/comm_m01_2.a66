@@ -128,7 +128,7 @@ OBD_M01_PID33_BaroPressure:
         MOV 0FE0EH,R12
         DIVU R4
         MOV R12,0FE0EH
-        CALLS 00FH,Sat_HiByte_ff
+        CALLS SEG Sat_HiByte_ff, SOF Sat_HiByte_ff
         MOVB [R9],RL4
         MOVB RL7,#01H
         JMPA cc_UC,L_E0940
@@ -381,7 +381,7 @@ OBD_M01_PID42_CtrlModuleVoltage:
         MOV R4,0FE0EH
         MOV R10,#DATA16 000FFH
         MOV R11,#00H
-        CALLS 00DH,Calc_CtrlModule_Voltage
+        CALLS SEG Calc_CtrlModule_Voltage, SOF Calc_CtrlModule_Voltage
         MOV R8,R4
         SHR R4,#08H
         MOV R5,R9
@@ -428,10 +428,10 @@ L_E0890:                 ; 0xe0890
         SHR R4,#08H
         OR R13,R4
         MOV R14,maf_max_cor
-        CALLS 00FH,Div_U32_U16_Round32
+        CALLS SEG Div_U32_U16_Round32, SOF Div_U32_U16_Round32
         MOV R12,R4
         MOV R13,R5
-        CALLS 00FH,Sel_Ovf_U16
+        CALLS SEG Sel_Ovf_U16, SOF Sel_Ovf_U16
         MOV R8,R4
 L_E08B2:                 ; 0xe08b2
         MOV R4,R8
@@ -477,7 +477,7 @@ L_E08D8:                 ; 0xe08d8
 OBD_M01_PID45_RelThrottlePos:
         MOV R12,tps_av
         MOV R13,#DATA16 032E0H
-        CALLS 00FH,Div_Ratio_U8_Sat
+        CALLS SEG Div_Ratio_U8_Sat, SOF Div_Ratio_U8_Sat
         MOVB [R9],RL4
         MOVB RL7,#01H
         JMPR cc_UC,L_E0940
@@ -489,7 +489,7 @@ OBD_M01_PID45_RelThrottlePos:
         ; ------------------------------------------------------------
 OBD_M01_PID46_AmbientAirTemp:
         MOVBZ R12,tam
-        CALLS 00EH,OBD_Scale_Temp
+        CALLS SEG OBD_Scale_Temp, SOF OBD_Scale_Temp
         MOVB [R9],RL4
         MOVB RL7,#01H
         JMPR cc_UC,L_E0940
@@ -641,7 +641,7 @@ L_E0A6C:                 ; 0xe0a6c
         JMPR cc_EQ,L_E0A9C
         JNB obd_sf.04H,L_E0A90
         MOVBZ R12,RL4
-        CALLS 00DH,Get_DTC_Record_2
+        CALLS SEG Get_DTC_Record_2, SOF Get_DTC_Record_2
         MOV [R0],R4
         SHR R4,#08H
         MOV R5,R9
@@ -671,7 +671,7 @@ L_E0AAC:                 ; 0xe0aac
         JNB lv_conf_mis.00H,L_E0AD0
         MOV R12,obd_ff_lam_carrier
         MOVBZ R13,obd_ff_lam_ready
-        CALLS 00EH,OBD_Scale_FuelSys
+        CALLS SEG OBD_Scale_FuelSys, SOF OBD_Scale_FuelSys
         MOV R5,R9
         ADD R9,#01H
         MOVB [R5],RL4
@@ -696,7 +696,7 @@ L_E0AEE:                 ; 0xe0aee
 L_E0AF6:                 ; 0xe0af6
         JNB obd_sf.04H,L_E0B0A
         MOVBZ R12,obd_ff_tco
-        CALLS 00EH,OBD_Scale_Temp
+        CALLS SEG OBD_Scale_Temp, SOF OBD_Scale_Temp
         MOVB [R9],RL4
         MOVB RL6,#02H
         JMPA cc_UC,L_E0E1A
@@ -707,7 +707,7 @@ L_E0B12:                 ; 0xe0b12
         JNB obd_sf.04H,L_E0B32
         JNB lv_conf_mis.00H,L_E0B2A
         MOV R12,obd_ff_ti_lam
-        CALLS 00EH,OBD_Scale_FuelTrim
+        CALLS SEG OBD_Scale_FuelTrim, SOF OBD_Scale_FuelTrim
         MOVB [R9],RL4
         MOVB RL6,#02H
         JMPA cc_UC,L_E0E1A
@@ -721,7 +721,7 @@ L_E0B3A:                 ; 0xe0b3a
         JNB obd_sf.04H,L_E0B5A
         JNB lv_conf_mis.00H,L_E0B52
         MOV R12,obd_ff_lam_ad
-        CALLS 00EH,OBD_Scale_FuelTrim
+        CALLS SEG OBD_Scale_FuelTrim, SOF OBD_Scale_FuelTrim
         MOVB [R9],RL4
         MOVB RL6,#02H
         JMPA cc_UC,L_E0E1A
@@ -752,7 +752,7 @@ L_E0B92:                 ; 0xe0b92
         JNB obd_sf.04H,L_E0BA6
         MOV R12,R9
         MOV R13,obd_ff_rpm
-        CALLS 00EH,OBD_Scale_RPM
+        CALLS SEG OBD_Scale_RPM, SOF OBD_Scale_RPM
         MOVB RL6,#03H
         JMPA cc_UC,L_E0E1A
 L_E0BA6:                 ; 0xe0ba6
@@ -776,10 +776,10 @@ L_E0BC6:                 ; 0xe0bc6
 L_E0BD8:                 ; 0xe0bd8
         MOVBZ R12,RL7
         MOV R13,#DATA16 000C0H
-        CALLS 00FH,Ret_Const_fe0f
+        CALLS SEG Ret_Const_fe0f, SOF Ret_Const_fe0f
         MOVBZ R13,RL4
         MOV R12,#DATA16 00110H
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOVB [R9],RL4
         MOVB RL6,#02H
         JMPA cc_UC,L_E0E1A
@@ -789,7 +789,7 @@ L_E0BF4:                 ; 0xe0bf4
 L_E0BFC:                 ; 0xe0bfc
         JNB obd_sf.04H,L_E0C10
         MOVBZ R12,obd_ff_tia
-        CALLS 00EH,OBD_Scale_Temp
+        CALLS SEG OBD_Scale_Temp, SOF OBD_Scale_Temp
         MOVB [R9],RL4
         MOVB RL6,#02H
         JMPA cc_UC,L_E0E1A
@@ -800,7 +800,7 @@ L_E0C18:                 ; 0xe0c18
         JNB obd_sf.04H,L_E0C40
         MOV R12,obd_ff_maf
         MOV R13,#DATA16 000DEH
-        CALLS 00FH,Read_MulDiv_MD
+        CALLS SEG Read_MulDiv_MD, SOF Read_MulDiv_MD
         MOV [R0+#02H],R4
         SHR R4,#08H
         MOV R5,R9
@@ -896,7 +896,7 @@ L_E0D04:                 ; 0xe0d04
         MOV 0FE0EH,R12
         DIVU R4
         MOV R12,0FE0EH
-        CALLS 00FH,Sat_HiByte_ff
+        CALLS SEG Sat_HiByte_ff, SOF Sat_HiByte_ff
         MOVB [R9],RL4
         MOVB RL6,#02H
         JMPA cc_UC,L_E0E1A
@@ -927,7 +927,7 @@ L_E0D4E:                 ; 0xe0d4e
         MOV R4,0FE0EH
         MOV R10,#DATA16 000FFH
         MOV R11,#00H
-        CALLS 00DH,Calc_CtrlModule_Voltage
+        CALLS SEG Calc_CtrlModule_Voltage, SOF Calc_CtrlModule_Voltage
         MOV R8,R4
         SHR R4,#08H
         MOV R5,R9
@@ -981,7 +981,7 @@ L_E0DD6:                 ; 0xe0dd6
         JNB obd_sf.04H,L_E0DEC
         MOV R12,obd_ff_tps
         MOV R13,#DATA16 032E0H
-        CALLS 00FH,Div_Ratio_U8_Sat
+        CALLS SEG Div_Ratio_U8_Sat, SOF Div_Ratio_U8_Sat
         MOVB [R9],RL4
         MOVB RL6,#02H
         JMPR cc_UC,L_E0E1A
@@ -991,7 +991,7 @@ L_E0DEC:                 ; 0xe0dec
 L_E0DF2:                 ; 0xe0df2
         JNB obd_sf.04H,L_E0E04
         MOVBZ R12,obd_ff_tam
-        CALLS 00EH,OBD_Scale_Temp
+        CALLS SEG OBD_Scale_Temp, SOF OBD_Scale_Temp
         MOVB [R9],RL4
         MOVB RL6,#02H
         JMPR cc_UC,L_E0E1A
@@ -1142,7 +1142,7 @@ L_E0F1C:                 ; 0xe0f1c
         ANDB RL5,#DATA16 00010H
         JMPR cc_EQ,L_E1022
         MOVBZ R12,RL6
-        CALLS 00DH,Read_FreezeFrame_2
+        CALLS SEG Read_FreezeFrame_2, SOF Read_FreezeFrame_2
         MOV R9,R4
         SHR R4,#08H
         MOV R5,[R0+#0AH]
@@ -1206,7 +1206,7 @@ L_E0FF2:                 ; 0xe0ff2
         CMPB RL4,#01H
         JMPR cc_NE,L_E1022
         MOVBZ R12,RL6
-        CALLS 00DH,Read_FreezeFrame_1
+        CALLS SEG Read_FreezeFrame_1, SOF Read_FreezeFrame_1
         MOV R9,R4
         SHR R4,#08H
         MOV R5,[R0+#0AH]
@@ -1267,7 +1267,7 @@ KWP_ClearLearnedValues:
         JNB lv_conf_mis.04H,L_E1088
         JNB can_fd58.09H,L_E1082
         JNB lv_cdn_diag_maf_dif_ch_int.0BH,L_E1082
-        CALLS 00DH,Reset_Adaptive_LearnedValues
+        CALLS SEG Reset_Adaptive_LearnedValues, SOF Reset_Adaptive_LearnedValues
         MOVB RL6,#00H
         JMPR cc_UC,L_E108C
 L_E1082:                 ; 0xe1082
@@ -1557,7 +1557,7 @@ L_E1268:                 ; 0xe1268
         MOV R4,0FE0EH
         MOV R10,#DATA16 00040H
         MOV R11,#00H
-        CALLS 00DH,Div_S32_Signed
+        CALLS SEG Div_S32_Signed, SOF Div_S32_Signed
         ASHR R4,#08H
         MOV R5,R12
         ADD R12,#01H
@@ -1569,7 +1569,7 @@ L_E1268:                 ; 0xe1268
         MOV R4,0FE0EH
         MOV R10,#DATA16 00040H
         MOV R11,#00H
-        CALLS 00DH,Div_S32_Signed
+        CALLS SEG Div_S32_Signed, SOF Div_S32_Signed
         MOV R5,R12
         ADD R12,#01H
         MOVB [R5],RL4
@@ -1580,7 +1580,7 @@ L_E1268:                 ; 0xe1268
         MOV R4,0FE0EH
         MOV R10,#DATA16 00040H
         MOV R11,#00H
-        CALLS 00DH,Div_S32_Signed
+        CALLS SEG Div_S32_Signed, SOF Div_S32_Signed
         ASHR R4,#08H
         MOV R5,R12
         ADD R12,#01H
@@ -1592,7 +1592,7 @@ L_E1268:                 ; 0xe1268
         MOV R4,0FE0EH
         MOV R10,#DATA16 00040H
         MOV R11,#00H
-        CALLS 00DH,Div_S32_Signed
+        CALLS SEG Div_S32_Signed, SOF Div_S32_Signed
         MOV R5,R12
         ADD R12,#01H
         MOVB [R5],RL4
@@ -1603,7 +1603,7 @@ L_E1268:                 ; 0xe1268
         MOV R4,0FE0EH
         MOV R10,#DATA16 00040H
         MOV R11,#00H
-        CALLS 00DH,Div_S32_Signed
+        CALLS SEG Div_S32_Signed, SOF Div_S32_Signed
         ASHR R4,#08H
         MOV R5,R12
         ADD R12,#01H
@@ -1615,7 +1615,7 @@ L_E1268:                 ; 0xe1268
         MOV R4,0FE0EH
         MOV R10,#DATA16 00040H
         MOV R11,#00H
-        CALLS 00DH,Div_S32_Signed
+        CALLS SEG Div_S32_Signed, SOF Div_S32_Signed
         MOV R5,R12
         ADD R12,#01H
         MOVB [R5],RL4

@@ -112,7 +112,7 @@ L_D3A7E:                 ; 0xd3a7e
         MOV R13,#DATA16 05588H
         MOVBZ R14,DPP0:c_abc_inc_dtp_sens
         MOVBZ R15,DPP0:c_abc_max_dtp_sens
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_cps_err.07H,dtc_status_work.06H
         MOVBZ R4,g_d2fc
         AND R4,#DATA16 00020H
@@ -136,7 +136,7 @@ L_D3ABE:                 ; 0xd3abe
         MOV R13,#DATA16 05588H
         MOVBZ R14,DPP0:c_abc_inc_dtp_sens
         MOVBZ R15,DPP0:c_abc_max_dtp_sens
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_cps_err.07H,dtc_status_work.06H
         MOVBZ R4,g_d2fc
         AND R4,#DATA16 00020H
@@ -166,7 +166,7 @@ L_D3B42:                 ; 0xd3b42
         MOV R13,#DATA16 05638H
         MOVBZ R14,DPP0:c_abc_inc_sov_mecha
         MOVBZ R15,DPP0:c_abc_max_sov_mecha
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_cps_err.0FH,dtc_status_work.06H
         MOVBZ R4,g_d36c
         AND R4,#DATA16 00020H
@@ -186,7 +186,7 @@ L_D3B76:                 ; 0xd3b76
         MOV R13,#DATA16 05588H
         MOVBZ R14,DPP0:c_abc_inc_dtp_sens
         MOVBZ R15,DPP0:c_abc_max_dtp_sens
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_cps_err.07H,dtc_status_work.06H
         MOVBZ R4,g_d2fc
         AND R4,#DATA16 00020H
@@ -198,7 +198,7 @@ L_D3BB0:                 ; 0xd3bb0
         MOV R13,#DATA16 05638H
         MOVBZ R14,DPP0:c_abc_inc_sov_mecha
         MOVBZ R15,DPP0:c_abc_max_sov_mecha
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_cps_err.0FH,dtc_status_work.06H
         MOVBZ R4,g_d36c
         AND R4,#DATA16 00020H
@@ -231,7 +231,7 @@ L_D3C0C:                 ; 0xd3c0c
 L_D3C1A:                 ; 0xd3c1a
         MOV R12,v_dtp_max_diag
         MOV R13,v_dtp_min_diag
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV v_dtp_dif_diag,R4
         MOVB RL4,vs
         CMPB RL4,vs_dtp_max_diag
@@ -251,7 +251,7 @@ L_D3C48:                 ; 0xd3c48
 L_D3C56:                 ; 0xd3c56
         MOV R12,maf_cps_max_diag
         MOV R13,maf_cps_min_diag
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV maf_cps_dif_diag,R4
         JB lv_cps_err.07H,L_D3CF8
         JB lv_cps_err.09H,L_D3CF8
@@ -276,12 +276,12 @@ L_D3C56:                 ; 0xd3c56
         JMPR cc_C,L_D3CBA
         MOV R12,#00H
         MOV R13,#00H
-        CALLS 00DH,DiagCP_SetDTC_d300
+        CALLS SEG DiagCP_SetDTC_d300, SOF DiagCP_SetDTC_d300
         JMPR cc_UC,L_D3CC2
 L_D3CBA:                 ; 0xd3cba
         MOV R12,#00H
         MOV R13,#01H
-        CALLS 00DH,DiagCP_SetDTC_d300
+        CALLS SEG DiagCP_SetDTC_d300, SOF DiagCP_SetDTC_d300
 L_D3CC2:                 ; 0xd3cc2
         MOVB RL4,DPP0:c_nr_dtp_con_diag_sample
         MOVB nr_dtp_con_diag_sample,RL4
@@ -325,14 +325,14 @@ L_D3D3A:                 ; 0xd3d3a
         JMPR cc_NE,L_D3D72
         MOV R12,#01H
         MOV R13,#01H
-        CALLS 00DH,DiagCP_SetDTC_d300
+        CALLS SEG DiagCP_SetDTC_d300, SOF DiagCP_SetDTC_d300
         MOVB RL4,#04H
         MOVB cdn_dtp_noise_state_diag,RL4
         JMPR cc_UC,L_D3D72
 L_D3D5A:                 ; 0xd3d5a
         MOV R12,#01H
         MOV R13,#00H
-        CALLS 00DH,DiagCP_SetDTC_d300
+        CALLS SEG DiagCP_SetDTC_d300, SOF DiagCP_SetDTC_d300
         MOVB RL4,#03H
         MOVB cdn_dtp_noise_state_diag,RL4
         JMPR cc_UC,L_D3D72
@@ -345,14 +345,14 @@ L_D3D72:                 ; 0xd3d72
         MOV R12,#DATA16 POF ldp_v_dtp_ip_dtp
         MOV R13,#DATA16 PAG ldp_v_dtp_ip_dtp
         MOV R14,v_dtp
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_dtp__v_dtp
         MOV R13,#DATA16 PAG ip_dtp__v_dtp
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV R12,R4
         ADD R12,#DATA16 08000H
         MOV R13,dtp_ofs
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV dtp_sword,R4
         MOV R4,dtp_sword
         MOVBZ R5,g_c397
@@ -381,7 +381,7 @@ L_D3DCE:                 ; 0xd3dce
         MOV R5,g_cfc8
         MOV R10,#04H
         MOV R11,#00H
-        CALLS 00DH,Div_S32_Signed
+        CALLS SEG Div_S32_Signed, SOF Div_S32_Signed
         MOV dtp_mv,R4
 L_D3DFE:                 ; 0xd3dfe
         MOV R6,[R0+]
@@ -410,7 +410,7 @@ L_D3E16:                 ; 0xd3e16
         MOV R13,#DATA16 0559EH
         MOVBZ R14,DPP0:c_abc_inc_dtp_con
         MOVBZ R15,DPP0:c_abc_max_dtp_con
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_cps_err.08H,dtc_status_work.06H
         MOVBZ R4,diag_d30a
         AND R4,#DATA16 00020H
@@ -425,7 +425,7 @@ L_D3E4A:                 ; 0xd3e4a
         MOV R13,#DATA16 0559EH
         MOVBZ R14,DPP0:c_abc_inc_dtp_con
         MOVBZ R15,DPP0:c_abc_max_dtp_con
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_cps_err.08H,dtc_status_work.06H
         MOVBZ R4,diag_d30a
         AND R4,#DATA16 00020H
@@ -440,7 +440,7 @@ L_D3E7C:                 ; 0xd3e7c
         MOVB dtc_test_result,ZEROS
         MOV R12,#DATA16 0D30EH
         MOV R13,#DATA16 055B4H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cps_err.09H,dtc_status_work.06H
         MOVBZ R4,diag_d318
         AND R4,#DATA16 00020H
@@ -451,7 +451,7 @@ L_D3E7C:                 ; 0xd3e7c
 L_D3EAC:                 ; 0xd3eac
         MOVBZ R12,diag_c39f
         MOVBZ R13,DPP0:c_abc_inc_dtp_noise
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB diag_c39f,RL4
         CMPB RL4,DPP0:c_abc_max_dtp_noise
         JMPR cc_NC,L_D3EC4
@@ -467,7 +467,7 @@ L_D3ECC:                 ; 0xd3ecc
         MOVB dtc_test_result,RL5
         MOV R12,#DATA16 0D30EH
         MOV R13,#DATA16 055B4H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cps_err.09H,dtc_status_work.06H
         MOVBZ R4,diag_d318
         AND R4,#DATA16 00020H

@@ -66,7 +66,7 @@ Reset_T1_f44:
         MOV R8,[R12]
         MOV R9,[R12+#02H]
         MOV R12,[R0+#08H]
-        CALLS 00AH,Read_T1_Extended
+        CALLS SEG Read_T1_Extended, SOF Read_T1_Extended
         MOV R4,[R0+#08H]
         MOV R6,[R4+]
         MOV R7,[R4]
@@ -223,7 +223,7 @@ L_A40FA:                 ; 0xa40fa
         EXTP #00H, #02H
         MOV R4,lv_isc_25e
         MOV R5,lv_isc_260
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
         BSET lv_err_com_resp_imob.07H
         MOVB RL4,lv_sched_diag_inh
         ANDB RL4,#01H
@@ -290,11 +290,11 @@ L_A41A8:                 ; 0xa41a8
         MOV R3,#00H
         ADD R4,R2
         ADDC R5,R3
-        CALLS 00DH,Add32_Carry
+        CALLS SEG Add32_Carry, SOF Add32_Carry
         MOV DPP0,#DATA16 00024H
         MOV R4,R10
         MOV R5,R11
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
         JMPR cc_UC,L_A41EA
 L_A41E2:                 ; 0xa41e2
         MOVBZ R4,RL6
@@ -477,7 +477,7 @@ L_A43E4:                 ; 0xa43e4
         ANDB RL4,#DATA16 0001FH
         MOVB tq_mid_rd,RL4
 L_A4416:                 ; 0xa4416
-        CALLS 00DH,Calc_FCO
+        CALLS SEG Calc_FCO, SOF Calc_FCO
         MOVB RL4,#DATA16 0001AH
         MOVBZ R5,tq_mid_wr
         MOVB [R5+#0F64EH],RL4
@@ -639,11 +639,11 @@ L_A45BC:                 ; 0xa45bc
         ; ------------------------------------------------------------
         ADD R4,R2
         ADDC R5,R3
-        CALLS 00DH,Add32_Carry
+        CALLS SEG Add32_Carry, SOF Add32_Carry
         MOV DPP0,#DATA16 00024H
         MOV R4,R10
         MOV R5,R11
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
         ; ------------------------------------------------------------
         ; (unclassified) RAM/paged global @0xa45f4 [dpp]  W:{-}  R:{-}
         ; ------------------------------------------------------------
@@ -664,7 +664,7 @@ L_A4606:                 ; 0xa4606
         MOVB div_sched_med,RL4
         MOV R12,ctr_cpu_idle
         MOV R13,#DATA16 073CFH
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         NEG R4
         MOV cpu_load,R4
         MOV ctr_cpu_idle,ZEROS
@@ -679,9 +679,9 @@ L_A4606:                 ; 0xa4606
         ADD R4,#01H
         MOV t_ast,R4
 L_A4652:                 ; 0xa4652
-        CALLS 00CH,Calc_N_SP_Add_Cat
-        CALLS 00AH,Calc_IGA_ER_Adapt
-        CALLS 00AH,Calc_Lamb_ER_Adapt
+        CALLS SEG Calc_N_SP_Add_Cat, SOF Calc_N_SP_Add_Cat
+        CALLS SEG Calc_IGA_ER_Adapt, SOF Calc_IGA_ER_Adapt
+        CALLS SEG Calc_Lamb_ER_Adapt, SOF Calc_Lamb_ER_Adapt
         MOVB RL4,#DATA16 00019H
         MOVBZ R5,tq_mid_wr
         MOVB [R5+#0F64EH],RL4
@@ -796,11 +796,11 @@ L_A4792:                 ; 0xa4792
         MOV R3,#00H
         ADD R4,R2
         ADDC R5,R3
-        CALLS 00DH,Add32_Carry
+        CALLS SEG Add32_Carry, SOF Add32_Carry
         MOV DPP0,#DATA16 00024H
         MOV R4,R10
         MOV R5,R11
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
         JMPR cc_UC,L_A47D4
 L_A47CC:                 ; 0xa47cc
         MOVBZ R4,RL6
@@ -885,11 +885,11 @@ L_A4894:                 ; 0xa4894
         MOV R3,#00H
         ADD R4,R2
         ADDC R5,R3
-        CALLS 00DH,Add32_Carry
+        CALLS SEG Add32_Carry, SOF Add32_Carry
         MOV DPP0,#DATA16 00024H
         MOV R4,R10
         MOV R5,R11
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
         JMPR cc_UC,L_A48D6
 L_A48CE:                 ; 0xa48ce
         MOVBZ R4,RL6
@@ -911,7 +911,7 @@ L_A48E0:                 ; 0xa48e0
         MOV R10,R4
         MOV R4,[R10+#06324H]
         MOV R5,[R10+#06326H]
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
 L_A4902:                 ; 0xa4902
         MOV R4,can_sched_flags0
         JMPR cc_NE,L_A48E0
@@ -929,7 +929,7 @@ L_A4902:                 ; 0xa4902
         MOV R10,R4
         MOV R4,[R10+#06218H]
         MOV R5,[R10+#0621AH]
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
         JMPA cc_UC,L_A40F2
 L_A493A:                 ; 0xa493a
         MOVB RL6,tq_mid_rd
@@ -946,7 +946,7 @@ L_A493A:                 ; 0xa493a
         MOV R10,R4
         MOV R4,[R10+#06218H]
         MOV R5,[R10+#0621AH]
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
         JMPA cc_UC,L_A40F2
 L_A496C:                 ; 0xa496c
         MOVB RL6,tq_lo_rd
@@ -963,11 +963,11 @@ L_A496C:                 ; 0xa496c
         MOV R10,R4
         MOV R4,[R10+#06218H]
         MOV R5,[R10+#0621AH]
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
         JMPA cc_UC,L_A40F2
 L_A499E:                 ; 0xa499e
         SUB ctr_cpu_idle,ONES
-        CALLS 00CH,Diag_CRC16
+        CALLS SEG Diag_CRC16, SOF Diag_CRC16
         JMPA cc_UC,L_A40F2
         RETS
 
@@ -987,65 +987,65 @@ Reset_Df68f_9ac:
         ; sequence and finally CCP_Cmd_Entry(channel) to receive/dispatch the next CRO into
         ; CCP_Cmd_StateMachine.
 CCP_Main_Task:
-        CALLS 00AH,CCP_Check_Checksum
-        CALLS 00AH,CCP_Init
-        CALLS 00AH,Init_ECU_Ports
-        CALLS 00AH,Reset_T1_f44
-        CALLS 00AH,Set_lv_err_com_resp_imob
-        CALLS 00AH,SpinHalt_a3eae
-        CALLS 00AH,Reset_Dfbae_e8e
-        CALLS 00AH,Reset_Dfba4_e0a
-        CALLS 00AH,Reset_Dfd62_8ca
-        CALLS 00AH,Reset_Dfd62_830
-        CALLS 00AH,Reset_Dfd62_338
-        CALLS 00AH,Diag_Output_SecAir
-        CALLS 00AH,Reset_CC26IC_f1a
-        CALLS 00AH,Reset_CC10IC_514
+        CALLS SEG CCP_Check_Checksum, SOF CCP_Check_Checksum
+        CALLS SEG CCP_Init, SOF CCP_Init
+        CALLS SEG Init_ECU_Ports, SOF Init_ECU_Ports
+        CALLS SEG Reset_T1_f44, SOF Reset_T1_f44
+        CALLS SEG Set_lv_err_com_resp_imob, SOF Set_lv_err_com_resp_imob
+        CALLS SEG SpinHalt_a3eae, SOF SpinHalt_a3eae
+        CALLS SEG Reset_Dfbae_e8e, SOF Reset_Dfbae_e8e
+        CALLS SEG Reset_Dfba4_e0a, SOF Reset_Dfba4_e0a
+        CALLS SEG Reset_Dfd62_8ca, SOF Reset_Dfd62_8ca
+        CALLS SEG Reset_Dfd62_830, SOF Reset_Dfd62_830
+        CALLS SEG Reset_Dfd62_338, SOF Reset_Dfd62_338
+        CALLS SEG Diag_Output_SecAir, SOF Diag_Output_SecAir
+        CALLS SEG Reset_CC26IC_f1a, SOF Reset_CC26IC_f1a
+        CALLS SEG Reset_CC10IC_514, SOF Reset_CC10IC_514
         BSET PSW.0BH
-        CALLS 00AH,Reset_P3_4f0
+        CALLS SEG Reset_P3_4f0, SOF Reset_P3_4f0
         MOVB RL4,#05H
         MOVB bl_prog_session_state,RL4
-        CALLS 00AH,SpinHalt_a3d48
-        CALLS 00DH,Calc_TRT_Word
-        CALLS 00AH,EngIgn_DisableOutputs
-        CALLS 00AH,EngInj_DisableOutputs
+        CALLS SEG SpinHalt_a3d48, SOF SpinHalt_a3d48
+        CALLS SEG Calc_TRT_Word, SOF Calc_TRT_Word
+        CALLS SEG EngIgn_DisableOutputs, SOF EngIgn_DisableOutputs
+        CALLS SEG EngInj_DisableOutputs, SOF EngInj_DisableOutputs
         MOV R12,#DATA16 0E7ECH
         MOV R13,#DATA16 0E7EEH
-        CALLS 00AH,Compare_Buffers_Eq
+        CALLS SEG Compare_Buffers_Eq, SOF Compare_Buffers_Eq
         JNB PSW.06H,L_A4A38
         MOV R12,#DATA16 0E7ECH
         MOV R13,#DATA16 0E7EEH
         MOV R14,#DATA16 056A9H
-        CALLS 00AH,Nop_a535e
-        CALLS 00AH,Read_Coding_Nibble
+        CALLS SEG Nop_a535e, SOF Nop_a535e
+        CALLS SEG Read_Coding_Nibble, SOF Read_Coding_Nibble
 L_A4A38:                 ; 0xa4a38
-        CALLS 00AH,Output_CC5_P2_5_Enable
-        CALLS 00AH,IVVT_Hold_Adjust
-        CALLS 00AH,Reset_Dfba4_e0a
+        CALLS SEG Output_CC5_P2_5_Enable, SOF Output_CC5_P2_5_Enable
+        CALLS SEG IVVT_Hold_Adjust, SOF IVVT_Hold_Adjust
+        CALLS SEG Reset_Dfba4_e0a, SOF Reset_Dfba4_e0a
         MOV R12,#00H
-        CALLS 00AH,CCP_Cmd_Entry
+        CALLS SEG CCP_Cmd_Entry, SOF CCP_Cmd_Entry
         BSET can_sched_flags2.0CH
         BSET can_sched_flags2.0DH
-        CALLS 00AH,Reset_CC29IC_2b4
+        CALLS SEG Reset_CC29IC_2b4, SOF Reset_CC29IC_2b4
         BSET can_sched_flags2.0BH
         BSET can_sched_flags2.0AH
         BSET can_sched_flags2.09H
         BSET can_sched_flags2.08H
-        CALLS 00AH,Reset_Df68f_9ac
+        CALLS SEG Reset_Df68f_9ac, SOF Reset_Df68f_9ac
         MOV R12,#DATA16 0286EH
         MOV R13,#DATA16 00028H
         EXTP #00H, #02H
         MOV R4,ccp_25a
         MOV R5,ccp_25c
-        CALLS 00CH,Push_To_System_Stack
-        CALLS 00DH,KWP_Session_Setup
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
+        CALLS SEG KWP_Session_Setup, SOF KWP_Session_Setup
         MOV R4,#DATA16 0FFEEH
         MOV c_p3_max_kwp,R4
         MOV R12,#00H
         EXTP #00H, #02H
         MOV R4,ccp_206
         MOV R5,ccp_208
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
         BCLR sched_flags.04H
 L_A4A96:                 ; 0xa4a96
         JNB sched_flags.04H,L_A4A96
@@ -1089,7 +1089,7 @@ L_A4B00:                 ; 0xa4b00
         MOV R4,0FE0EH
         SHR R4,#01H
         MOV ctr_wdt_service,R4
-        CALLS 00AH,Calc_CPU_Load_Idle
+        CALLS SEG Calc_CPU_Load_Idle, SOF Calc_CPU_Load_Idle
         RETS
 
 S_A3F1A ENDS

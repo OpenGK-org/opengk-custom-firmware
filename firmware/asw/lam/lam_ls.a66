@@ -104,7 +104,7 @@ CanPurge_Set_Close_4:
         BCLR lv_cp_set_close.0DH
         MOV R12,#DATA16 04FEEH
         MOVBZ R13,tco_st
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YByte, SOF Get_IP_Word_2D_Table_DWord_YByte
         MOV lv_cp_f95c,R4
         BCLR lv_cp_set_close.0CH
 L_D00B4:                 ; 0xd00b4
@@ -151,7 +151,7 @@ L_D00F6:                 ; 0xd00f6
 L_D00FE:                 ; 0xd00fe
         MOV R12,[R7+#06AH]
         MOV R13,[R7+#082H]
-        CALLS 00FH,Sat_Sub_S16_v2
+        CALLS SEG Sat_Sub_S16_v2, SOF Sat_Sub_S16_v2
         MOV R9,R4
         SHL R9,#06H
         MOV R4,[R7+#06AH]
@@ -211,7 +211,7 @@ L_D0190:                 ; 0xd0190
         SHL R5,#01H
         ADD R4,R5
         MOV R12,[R4]
-        CALLS 00DH,Abs_S16_Simple
+        CALLS SEG Abs_S16_Simple, SOF Abs_S16_Simple
         MOV R8,R4
         MOV R4,[R7+#080H]
         CMP R8,R4
@@ -237,7 +237,7 @@ L_D01D4:                 ; 0xd01d4
         MOV R13,[R7+#06AH]
         SHL R13,#06H
         MOV R14,R8
-        CALLS 00FH,Interp_U16
+        CALLS SEG Interp_U16, SOF Interp_U16
         MOV [R7+#078H],R4
         MOV R4,[R7+#06AH]
         MOV R5,[R7+#074H]
@@ -261,23 +261,23 @@ L_D0218:                 ; 0xd0218
         MOV R13,[R7+#06AH]
         SHL R13,#06H
         MOV R14,R8
-        CALLS 00FH,Interp_U16
+        CALLS SEG Interp_U16, SOF Interp_U16
         MOV [R7+#076H],R4
         MOV R12,[R7+#076H]
         MOV R13,[R7+#078H]
-        CALLS 00FH,Abs_Diff_U16
+        CALLS SEG Abs_Diff_U16, SOF Abs_Diff_U16
         MOV R12,R4
         MOVBZ R13,DPP0:c_fac_vls_up_mmv_hys
-        CALLS 00FH,Read_MulDiv_MD
+        CALLS SEG Read_MulDiv_MD, SOF Read_MulDiv_MD
         MOV [R7+#07AH],R4
         MOV R12,[R7+#07AH]
         MOV R13,DPP0:c_vls_up_mmv_hys_min
         MOV R14,#DATA16 03333H
-        CALLS 00FH,Clamp_U16
+        CALLS SEG Clamp_U16, SOF Clamp_U16
         MOV [R7+#07AH],R4
         MOV R12,[R7+#076H]
         MOV R13,[R7+#078H]
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV R8,R4
         MOV R4,[R7+#07AH]
         SHL R4,#01H
@@ -286,7 +286,7 @@ L_D0218:                 ; 0xd0218
         BSET state_lam_ctl2.0CH
         MOV R12,[R7+#076H]
         MOV R13,[R7+#078H]
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV R8,R4
         SHR R4,#01H
         SHR R4,#06H
@@ -295,24 +295,24 @@ L_D0218:                 ; 0xd0218
         MOV R12,[R7+#074H]
         SHL R12,#06H
         MOV R13,[R7+#07AH]
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV [R7+#076H],R4
         MOV R12,[R7+#072H]
         SHL R12,#06H
         MOV R13,[R7+#07AH]
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV [R7+#078H],R4
         JMPR cc_UC,L_D02E2
 L_D02B4:                 ; 0xd02b4
         BCLR state_lam_ctl2.0CH
         MOV R12,[R7+#076H]
         MOV R13,[R7+#07AH]
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         SHR R4,#06H
         MOV [R7+#074H],R4
         MOV R12,[R7+#078H]
         MOV R13,[R7+#07AH]
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         SHR R4,#06H
         MOV [R7+#072H],R4
         JMPR cc_UC,L_D02E2
@@ -492,14 +492,14 @@ L_D046C:                 ; 0xd046c
         MOV R12,#DATA16 POF ldpm_n_32__ti_lam
         MOV R13,#DATA16 PAG ldpm_n_32__ti_lam
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ldpm_maf__ti_lam
         MOV R13,#DATA16 PAG ldpm_maf__ti_lam
         MOVBZ R14,lv_iga_cc2b
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         MOV R12,#DATA16 POF ip_t_afl_lock__n_32__maf
         MOV R13,#DATA16 PAG ip_t_afl_lock__n_32__maf
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVB RL5,[R9+#093H]
         CMPB RL5,RL4
         JMPR cc_C,L_D04A8

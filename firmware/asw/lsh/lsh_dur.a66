@@ -117,14 +117,14 @@ IGC_Dur_Arm_2:
         MOV R12,#DATA16 POF ldp_n_v_efc_lsh_ctl
         MOV R13,#DATA16 PAG ldp_n_v_efc_lsh_ctl
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ldp_teg_dyn_v_efc_lsh_ctl
         MOV R13,#DATA16 PAG ldp_teg_dyn_v_efc_lsh_ctl
         MOV R14,teg_dyn
-        CALLS 00FH,Get_IP_Word_X_Axis
+        CALLS SEG Get_IP_Word_X_Axis, SOF Get_IP_Word_X_Axis
         MOV R12,#DATA16 POF ip_v_efc_lsh_up_ctl__n__teg_dyn
         MOV R13,#DATA16 PAG ip_v_efc_lsh_up_ctl__n__teg_dyn
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVB RL7,RL4
         MOVB RL4,[R9+#04H]
         CMPB RL4,RL7
@@ -164,7 +164,7 @@ IGC_Dur_Arm_4:
         MOVB RL4,[R9+#04H]
         MOVBZ R12,RL4
         MOVBZ R13,DPP0:c_inc_v_efc
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB [R9+#04H],RL4
         MOVB RL4,DPP0:c_v_efc_lsh_up_max
         CMPB RL4,vb
@@ -191,7 +191,7 @@ IGC_Dur_Arm_5:
         MOVB RL4,[R9+#04H]
         MOVBZ R12,RL4
         MOVBZ R13,DPP0:c_dec_v_efc
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB [R9+#04H],RL4
         JMPR cc_UC,L_B6A08
 
@@ -203,14 +203,14 @@ IGC_Dur_Arm_6:
         MOV R12,#DATA16 POF ldp_n_v_efc_lsh_ctl
         MOV R13,#DATA16 PAG ldp_n_v_efc_lsh_ctl
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ldp_teg_dyn_v_efc_lsh_ctl
         MOV R13,#DATA16 PAG ldp_teg_dyn_v_efc_lsh_ctl
         MOV R14,teg_dyn
-        CALLS 00FH,Get_IP_Word_X_Axis
+        CALLS SEG Get_IP_Word_X_Axis, SOF Get_IP_Word_X_Axis
         MOV R12,#DATA16 POF ip_v_efc_lsh_up_ctl__n__teg_dyn
         MOV R13,#DATA16 PAG ip_v_efc_lsh_up_ctl__n__teg_dyn
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVB RL7,RL4
         MOVB [R9+#04H],RL7
         MOVB RL4,#00H

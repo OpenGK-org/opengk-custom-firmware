@@ -36,7 +36,7 @@ Diag_MAF_TPS_Plaus_1:
         JMPR cc_NC,L_D0E44
         MOV R12,R4
         MOV R13,DPP0:c_inc_maf_tps_plaus_1
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV sum_maf_tps_plaus_1,R4
 L_D0E44:                 ; 0xd0e44
         MOV R4,sum_maf_tps_plaus_diag_1
@@ -74,7 +74,7 @@ L_D0E8C:                 ; 0xd0e8c
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D0DEH
         MOV R13,#DATA16 05244H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cam_err.01H,dtc_status_work.06H
         MOVBZ R4,obd_d0e8
         AND R4,#DATA16 00020H
@@ -87,7 +87,7 @@ L_D0EC2:                 ; 0xd0ec2
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D0FAH
         MOV R13,#DATA16 05270H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cam_err.03H,dtc_status_work.06H
         MOVBZ R4,lv_maf_d104
         AND R4,#DATA16 00020H
@@ -110,7 +110,7 @@ L_D0F04:                 ; 0xd0f04
         MOVB dtc_test_result,ZEROS
         MOV R12,#DATA16 0D0FAH
         MOV R13,#DATA16 05270H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cam_err.03H,dtc_status_work.06H
         MOVBZ R4,lv_maf_d104
         AND R4,#DATA16 00020H
@@ -120,7 +120,7 @@ L_D0F04:                 ; 0xd0f04
 L_D0F34:                 ; 0xd0f34
         MOV R12,#DATA16 0D0DEH
         MOV R13,#DATA16 05244H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cam_err.01H,dtc_status_work.06H
         MOVBZ R4,obd_d0e8
         AND R4,#DATA16 00020H
@@ -156,7 +156,7 @@ Diag_MAF_TPS_Plaus_2:
         JMPR cc_NC,L_D0F92
         MOV R12,R4
         MOV R13,DPP0:c_inc_maf_tps_plaus_2
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV sum_maf_tps_plaus_2,R4
 L_D0F92:                 ; 0xd0f92
         MOV R4,sum_maf_tps_plaus_diag_2
@@ -199,7 +199,7 @@ L_D0FDE:                 ; 0xd0fde
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D0FAH
         MOV R13,#DATA16 05270H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cam_err.03H,dtc_status_work.06H
         MOVBZ R4,lv_maf_d104
         AND R4,#DATA16 00020H
@@ -215,7 +215,7 @@ L_D1024:                 ; 0xd1024
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D0DEH
         MOV R13,#DATA16 05244H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cam_err.01H,dtc_status_work.06H
         MOVBZ R4,obd_d0e8
         AND R4,#DATA16 00020H
@@ -232,7 +232,7 @@ L_D1052:                 ; 0xd1052
         MOVB dtc_test_result,ZEROS
         MOV R12,#DATA16 0D0FAH
         MOV R13,#DATA16 05270H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cam_err.03H,dtc_status_work.06H
         MOVBZ R4,lv_maf_d104
         AND R4,#DATA16 00020H
@@ -242,7 +242,7 @@ L_D1052:                 ; 0xd1052
 L_D107E:                 ; 0xd107e
         MOV R12,#DATA16 0D0DEH
         MOV R13,#DATA16 05244H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cam_err.01H,dtc_status_work.06H
         MOVBZ R4,obd_d0e8
         AND R4,#DATA16 00020H
@@ -268,10 +268,10 @@ L_D10A4:                 ; 0xd10a4
         ; Named by caller-context + body analysis (push to 100pct).
         ; ------------------------------------------------------------
 DiagCP_Task_Group:
-        CALLS 00DH,DiagCP_Acq_Dtp
+        CALLS SEG DiagCP_Acq_Dtp, SOF DiagCP_Acq_Dtp
         CALLA cc_UC,DiagCP_CDN_Check
         JNB lv_err_maf_tps_ratio_2.0AH,L_D10CE
-        CALLS 00DH,DiagCP_State_Dispatch
+        CALLS SEG DiagCP_State_Dispatch, SOF DiagCP_State_Dispatch
 L_D10CE:                 ; 0xd10ce
         CALLA cc_UC,DiagCP_Calc_ClMmv
         RETS

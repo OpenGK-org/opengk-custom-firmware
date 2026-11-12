@@ -51,7 +51,7 @@ Diag_IVVT_Elec_SetDTC:
         MOVB RL6,#DATA16 00011H
 L_B50BA:                 ; 0xb50ba
         MOVBZ R12,RL6
-        CALLS 00CH,Diag_IVVT_SetDTC_d602
+        CALLS SEG Diag_IVVT_SetDTC_d602, SOF Diag_IVVT_SetDTC_d602
         MOVB RL4,#00H
         BMOV R4.00H,PSW.06H
         MOVB [R9+#0E7H],RL4
@@ -62,7 +62,7 @@ L_B50CA:                 ; 0xb50ca
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D610H
         MOV R13,#DATA16 05A6EH
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_acp_err.00H,dtc_status_work.06H
         MOVBZ R4,g_d61a
         AND R4,#DATA16 00020H
@@ -103,7 +103,7 @@ L_B512E:                 ; 0xb512e
         MOV R4,[R8]
         MOVB RL5,[R4]
         MOVBZ R13,RL5
-        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CALLS SEG subtract_r12_r13_negate_if_not_rets_r4, SOF subtract_r12_r13_negate_if_not_rets_r4
         CMPB RL4,DPP0:c_cam_hys_ref_ivvt
         JMPR cc_UGT,L_B5184
 L_B5144:                 ; 0xb5144
@@ -119,7 +119,7 @@ L_B5144:                 ; 0xb5144
         SUB R12,R4
         MOVBZ R4,DPP0:c_cam_hys_diag_mec_ivvt
         SUB R12,R4
-        CALLS 00FH,Max0_S16
+        CALLS SEG Max0_S16, SOF Max0_S16
         MOVB RL5,[R9+#014H]
         CMPB RL5,RL4
         JMPR cc_C,L_B5184
@@ -127,7 +127,7 @@ L_B5144:                 ; 0xb5144
         MOVB RL5,[R4]
         MOVBZ R12,RL5
         MOVBZ R13,DPP0:c_cam_hys_diag_mec_ivvt
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB RL5,[R9+#014H]
         CMPB RL5,RL4
         JMPR cc_ULE,L_B5188
@@ -135,7 +135,7 @@ L_B5184:                 ; 0xb5184
         MOVB RL6,#DATA16 00011H
 L_B5188:                 ; 0xb5188
         MOVBZ R12,RL6
-        CALLS 00CH,Diag_DTC_dd5f4
+        CALLS SEG Diag_DTC_dd5f4, SOF Diag_DTC_dd5f4
         MOVB RL4,#00H
         BMOV R4.00H,PSW.06H
         MOVB [R9+#0E2H],RL4
@@ -145,7 +145,7 @@ L_B5188:                 ; 0xb5188
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D610H
         MOV R13,#DATA16 05A6EH
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_acp_err.00H,dtc_status_work.06H
         MOVBZ R4,g_d61a
         AND R4,#DATA16 00020H
@@ -166,7 +166,7 @@ L_B51C6:                 ; 0xb51c6
         MOVB dtc_test_result,ZEROS
         MOV R12,#DATA16 0D610H
         MOV R13,#DATA16 05A6EH
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_acp_err.00H,dtc_status_work.06H
         MOVBZ R4,g_d61a
         AND R4,#DATA16 00020H
@@ -219,7 +219,7 @@ L_B5258:                 ; 0xb5258
         MOV R4,[R7+#08H]
         MOVB RL5,[R4]
         MOVBZ R13,RL5
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB state_ivvt_cammeas,RL4
         MOVB RL5,[R9+#04H]
         CMPB RL5,state_ivvt_cammeas
@@ -248,7 +248,7 @@ L_B5296:                 ; 0xb5296
         MOV R12,#DATA16 04788H
         MOVBZ R13,n_32
         MOVBZ R14,toil
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YByte
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XByte_YByte, SOF Get_IP_Word_3D_Table_DWord_XByte_YByte
         MOV R5,[R9+#014H]
         CMP R5,R4
         JMPR cc_C,L_B538C
@@ -256,14 +256,14 @@ L_B52CA:                 ; 0xb52ca
         MOVB RL4,[R9+#04H]
         MOVBZ R12,RL4
         MOVBZ R13,DPP0:c_cam_hys_int_rst_diag_ivvt
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB RL5,[R8+#014H]
         CMPB RL5,RL4
         JMPR cc_UGT,L_B52F6
         MOVB RL4,[R9+#04H]
         MOVBZ R12,RL4
         MOVBZ R13,DPP0:c_cam_hys_int_rst_diag_ivvt
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB RL5,[R8+#014H]
         CMPB RL5,RL4
         JMPR cc_NC,L_B531C
@@ -271,12 +271,12 @@ L_B52F6:                 ; 0xb52f6
         MOV R12,[R8+#03AH]
         MOV R13,t_seg_av
         MOV R14,#DATA16 00400H
-        CALLS 00FH,MulDiv_S16_Sat
+        CALLS SEG MulDiv_S16_Sat, SOF MulDiv_S16_Sat
         MOV R12,R4
-        CALLS 00FH,Abs_S16
+        CALLS SEG Abs_S16, SOF Abs_S16
         MOV R13,R4
         MOV R12,[R8+#0D8H]
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV [R8+#0D8H],R4
         JMPR cc_UC,L_B533E
 L_B531C:                 ; 0xb531c
@@ -285,10 +285,10 @@ L_B531C:                 ; 0xb531c
         MOV R12,t_seg_av
         MOVBZ R13,DPP0:c_cam_hys_int_rst_diag_ivvt
         MOV R14,#0AH
-        CALLS 00FH,Mul_Shift_U16_Sat32
+        CALLS SEG Mul_Shift_U16_Sat32, SOF Mul_Shift_U16_Sat32
         MOV R13,R4
         MOV R12,[R8+#0DAH]
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV [R8+#0DAH],R4
 L_B533E:                 ; 0xb533e
         MOV R4,[R8+#0D8H]
@@ -319,7 +319,7 @@ L_B5386:                 ; 0xb5386
         MOVB [R8+#0E4H],RL4
 L_B538C:                 ; 0xb538c
         MOVBZ R12,RL6
-        CALLS 00CH,Diag_IVVT_SetDTC_d61e
+        CALLS SEG Diag_IVVT_SetDTC_d61e, SOF Diag_IVVT_SetDTC_d61e
         MOVB RL4,#00H
         BMOV R4.00H,PSW.06H
         MOVB [R8+#0E3H],RL4

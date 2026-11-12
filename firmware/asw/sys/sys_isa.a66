@@ -77,11 +77,11 @@ L_C0D00:                 ; 0xc0d00
         MOV R12,#DATA16 049F2H
         MOV R13,n_C93C
         MOVBZ R14,tco
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YWord
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XByte_YWord, SOF Get_IP_Word_3D_Table_DWord_XByte_YWord
         MOV R9,R4
         MOV R12,opg_sp_tra_st_mdl_isa
         MOV R13,opg_sp_mdl_isa
-        CALLS 00FH,Abs_Diff_U16
+        CALLS SEG Abs_Diff_U16, SOF Abs_Diff_U16
         CMP R4,R9
         JMPR cc_C,L_C0D46
         JNB lv_iga_tra_knk.0BH,L_C0D34
@@ -108,14 +108,14 @@ L_C0D56:                 ; 0xc0d56
         JMPR cc_ULE,L_C0D70
         MOV R12,R4
         MOV R13,R9
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV opg_sp_tra_st_mdl_isa,R4
         BSET lv_iga_tra_knk.0BH
         JMPR cc_UC,L_C0D80
 L_C0D70:                 ; 0xc0d70
         MOV R12,opg_sp_tra_st_mdl_isa
         MOV R13,R9
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV opg_sp_tra_st_mdl_isa,R4
         BSET lv_iga_tra_knk.0AH
 L_C0D80:                 ; 0xc0d80
@@ -147,7 +147,7 @@ L_C0DBC:                 ; 0xc0dbc
         JB lv_ct.00H,L_C0DD4
         MOV R12,#DATA16 049EAH
         MOV R13,n_C93C
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YWord
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YWord, SOF Get_IP_Word_2D_Table_DWord_YWord
         MOV R9,R4
         JMPR cc_UC,L_C0DDE
 L_C0DD4:                 ; 0xc0dd4
@@ -157,7 +157,7 @@ L_C0DD4:                 ; 0xc0dd4
 L_C0DDE:                 ; 0xc0dde
         MOV R12,R9
         MOV R13,DPP0:c_opg_ofs_isa_man
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV opg_sp_isa,R4
 L_C0DEC:                 ; 0xc0dec
         JNB lv_cat_diag_inh_1.0FH,L_C0DFE
@@ -169,7 +169,7 @@ L_C0DFE:                 ; 0xc0dfe
         MOV R12,#DATA16 049FEH
         MOV R13,opg_sp_isa
         MOVBZ R14,vb
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YWord
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XByte_YWord, SOF Get_IP_Word_3D_Table_DWord_XByte_YWord
         MOV isapwm_isa,R4
         MOV R9,opg_sp_isa
 L_C0E16:                 ; 0xc0e16
@@ -195,7 +195,7 @@ L_C0E34:                 ; 0xc0e34
         MOV R13,R9
         MOVBZ R14,DPP0:c_crlc_opg_av_isa
         SHL R14,#08H
-        CALLS 00FH,Interp_U16
+        CALLS SEG Interp_U16, SOF Interp_U16
         MOV opg_av_isa,R4
         MOV R9,[R0+]
         RETS

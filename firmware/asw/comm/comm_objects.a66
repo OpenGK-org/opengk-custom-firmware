@@ -16,7 +16,7 @@ S_A56DE SECTION CODE AT 0A56DEH
         ; (CCP_Rebuild_CanDaqObjects), clears DAT_00fd62 bit2, sets CAN interrupt priority XP1IC=9 and enables
         ; the CC11 CAN-object interrupt (CC11IC |= 0x40).
 CCP_Connect_ArmCanObjects:
-        CALLS 00AH,CCP_Rebuild_CanDaqObjects
+        CALLS SEG CCP_Rebuild_CanDaqObjects, SOF CCP_Rebuild_CanDaqObjects
         BCLR sched_flags2.02H
         EXTR #02H
         MOV XP1IC,#DATA16 00009H
@@ -105,7 +105,7 @@ L_A5770:                 ; 0xa5770
         ADD R12,#07H
         MOV R13,#DATA16 06428H
         MOV R14,#08H
-        CALLS 00AH,Move_xFF_items__from_PTR_R12_to_PTR_R13
+        CALLS SEG Move_xFF_items__from_PTR_R12_to_PTR_R13, SOF Move_xFF_items__from_PTR_R12_to_PTR_R13
         MOV R4,#00H
         MOVBZ R5,RL6
         SHL R5,#01H
@@ -127,7 +127,7 @@ CAN_clear_out_a_message_box_: ; 0xa57c6
         ADD R12,#07H
         MOV R13,#DATA16 06428H
         MOV R14,#08H
-        CALLS 00AH,Move_xFF_items__from_PTR_R12_to_PTR_R13
+        CALLS SEG Move_xFF_items__from_PTR_R12_to_PTR_R13, SOF Move_xFF_items__from_PTR_R12_to_PTR_R13
 L_A57EC:                 ; 0xa57ec
         ADD R8,#DATA16 00010H
         ADDB RL6,#01H

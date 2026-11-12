@@ -47,7 +47,7 @@ L_C97CA:                 ; 0xc97ca
 L_C97DC:                 ; 0xc97dc
         MOV R12,tco_sub_word
         MOV R13,R9
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV tco_sub_word,R4
         JB lv_cdn_diag_maf_dif_ch_int.0EH,L_C97F2
         JMPA cc_UC,L_C99B6
@@ -81,7 +81,7 @@ L_C981E:                 ; 0xc981e
         JMPR cc_EQ,L_C983E
         MOV R12,tco_sub_word
         MOV R13,R9
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV tco_sub_word,R4
         JMPA cc_UC,L_C99B6
 L_C983E:                 ; 0xc983e
@@ -93,7 +93,7 @@ L_C983E:                 ; 0xc983e
 L_C9850:                 ; 0xc9850
         MOV R12,tco_sub_word
         MOV R13,R9
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV tco_sub_word,R4
         MOVB tco_sub_state,ZEROS
         JMPA cc_UC,L_C99B6
@@ -122,7 +122,7 @@ L_C9880:                 ; 0xc9880
         JMPA cc_NE,L_C99B6
         MOV R12,tco_sub_word
         MOV R13,R9
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV tco_sub_word,R4
         MOVB RL4,#03H
         MOVB tco_sub_state,RL4
@@ -130,7 +130,7 @@ L_C9880:                 ; 0xc9880
 L_C98A8:                 ; 0xc98a8
         MOV R12,tco_sub_word
         MOV R13,R9
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV tco_sub_word,R4
         MOVB tco_sub_state,ZEROS
         JMPA cc_UC,L_C99B6
@@ -154,7 +154,7 @@ L_C98C6:                 ; 0xc98c6
 L_C98D8:                 ; 0xc98d8
         MOV R12,tco_sub_word
         MOV R13,R9
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV tco_sub_word,R4
         JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_C98EE
         JMPA cc_UC,L_C99B6
@@ -179,7 +179,7 @@ L_C98FC:                 ; 0xc98fc
         JMPR cc_NE,L_C99B6
         MOV R12,tco_sub_word
         MOV R13,R9
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV tco_sub_word,R4
         MOVBZ R5,tco_st
         SHL R5,#08H
@@ -195,7 +195,7 @@ L_C9928:                 ; 0xc9928
 L_C9930:                 ; 0xc9930
         MOV R12,tco_sub_word
         MOV R13,R9
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV tco_sub_word,R4
         JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_C9952
         MOV R4,DPP0:c_t_tco_sub_is_1
@@ -221,7 +221,7 @@ tco_sub_St5_PUC_Subst:
 L_C9960:                 ; 0xc9960
         MOV R12,tco_sub_word
         MOV R13,R9
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV tco_sub_word,R4
         MOVBZ R5,tco_st
         SHL R5,#08H
@@ -234,7 +234,7 @@ L_C9960:                 ; 0xc9960
 L_C9984:                 ; 0xc9984
         MOV R12,tco_sub_word
         MOV R13,R9
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV tco_sub_word,R4
         JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_C99A6
         MOV R4,DPP0:c_t_tco_sub_is_1
@@ -323,15 +323,15 @@ L_C9A50:                 ; 0xc9a50
         MOV R12,#DATA16 POF ldpm_tco_st__ip_tco_dif_diag
         MOV R13,#DATA16 PAG ldpm_tco_st__ip_tco_dif_diag
         MOVBZ R14,tco_st
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_tco_sub_dif_min_diag__tco_st
         MOV R13,#DATA16 PAG ip_tco_sub_dif_min_diag__tco_st
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         CMP R4,tco_sub_dif_diag
         JMPR cc_NC,L_C9AF0
         MOV R12,#DATA16 POF ip_tco_mes_dif_min_diag__tco_st
         MOV R13,#DATA16 PAG ip_tco_mes_dif_min_diag__tco_st
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         CMPB RL4,tco_mes_dif_diag
         JMPR cc_ULE,L_C9A96
         MOVB RL4,#02H
@@ -339,7 +339,7 @@ L_C9A50:                 ; 0xc9a50
 L_C9A96:                 ; 0xc9a96
         MOV R12,#DATA16 0D186H
         MOV R13,#DATA16 0534CH
-        CALLS 00DH,DTC_Update_Imm_V2
+        CALLS SEG DTC_Update_Imm_V2, SOF DTC_Update_Imm_V2
         BMOV lv_cam_err.0DH,dtc_status_work.06H
         MOVBZ R4,dtc_done_tco_sub
         AND R4,#DATA16 00020H
@@ -352,7 +352,7 @@ L_C9AB8:                 ; 0xc9ab8
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D1A2H
         MOV R13,#DATA16 05378H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cam_err.0FH,dtc_status_work.06H
         MOVBZ R4,dtc_done_tco_rat
         AND R4,#DATA16 00020H
@@ -392,39 +392,39 @@ L_C9B18:                 ; 0xc9b18
         SHL R12,#08H
         MOVBZ R13,tia_st
         SHL R13,#08H
-        CALLS 00FH,Abs_Diff_U16
+        CALLS SEG Abs_Diff_U16, SOF Abs_Diff_U16
         CMP R4,DPP0:c_tia_tco_dif_min_tco_sub
         JMPR cc_NC,L_C9B72
         MOV R12,#DATA16 04C46H
         MOV R13,maf_kgh
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YWord
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YWord, SOF Get_IP_Word_2D_Table_DWord_YWord
         MOV R8,R4
         MOV R12,#DATA16 04C56H
         MOV R13,tco_sub_word
         MOV R14,maf_kgh
-        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YWord
+        CALLS SEG Get_IP_Byte_3D_Table_DWord_XWord_YWord, SOF Get_IP_Byte_3D_Table_DWord_XWord_YWord
         MOVBZ R13,RL4
         MOV R12,R8
-        CALLS 00FH,Read_MulDiv_MD
+        CALLS SEG Read_MulDiv_MD, SOF Read_MulDiv_MD
         MOV R9,R4
         JMPR cc_UC,L_C9B9A
 L_C9B72:                 ; 0xc9b72
         MOV R12,#DATA16 04C4EH
         MOV R13,maf_kgh
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YWord
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YWord, SOF Get_IP_Word_2D_Table_DWord_YWord
         MOV R8,R4
         MOV R12,#DATA16 04C62H
         MOV R13,tco_sub_word
         MOV R14,maf_kgh
-        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YWord
+        CALLS SEG Get_IP_Byte_3D_Table_DWord_XWord_YWord, SOF Get_IP_Byte_3D_Table_DWord_XWord_YWord
         MOVBZ R13,RL4
         MOV R12,R8
-        CALLS 00FH,Read_MulDiv_MD
+        CALLS SEG Read_MulDiv_MD, SOF Read_MulDiv_MD
         MOV R9,R4
 L_C9B9A:                 ; 0xc9b9a
         MOV R12,tco_sub_word
         MOV R13,R9
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV tco_sub_word,R4
         MOVB RL4,tco_sub_byte_1_
         CMPB RL4,DPP0:c_tco_sub_tol_diag
@@ -477,7 +477,7 @@ L_C9C12:                 ; 0xc9c12
         JB lv_cam_err.0EH,L_C9C50
         MOV R12,#DATA16 0D1A2H
         MOV R13,#DATA16 05378H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cam_err.0FH,dtc_status_work.06H
         MOVBZ R4,dtc_done_tco_rat
         AND R4,#DATA16 00020H

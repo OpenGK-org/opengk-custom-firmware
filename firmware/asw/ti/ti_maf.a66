@@ -605,13 +605,13 @@ L_E4C8C:                 ; 0xe4c8c
         JMPR cc_NE,L_E4CB2
         MOVBZ R12,n_sp_is_adj_asa
         MOV R13,#01H
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB n_sp_is_adj_asa,RL4
         JMPR cc_UC,L_E4CF4
 L_E4CB2:                 ; 0xe4cb2
         MOVBZ R12,n_sp_is_adj_asa
         MOV R13,#01H
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB n_sp_is_adj_asa,RL4
         JMPR cc_UC,L_E4CF4
 L_E4CC2:                 ; 0xe4cc2
@@ -713,7 +713,7 @@ L_E4D94:                 ; 0xe4d94
         JMPR cc_EQ,L_E4E2E
         JMPR cc_UC,L_E4DB0
 L_E4DAA:                 ; 0xe4daa
-        CALLS 00DH,Reset_lv_conf_mis_69a
+        CALLS SEG Reset_lv_conf_mis_69a, SOF Reset_lv_conf_mis_69a
         JMPR cc_UC,L_E4E2E
 L_E4DB0:                 ; 0xe4db0
         MOVB RL6,#DATA16 00031H
@@ -735,7 +735,7 @@ L_E4DC2:                 ; 0xe4dc2
         JMPR cc_EQ,L_E4E2E
         JMPR cc_UC,L_E4DDE
 L_E4DD8:                 ; 0xe4dd8
-        CALLS 00DH,Reset_lv_conf_mis_59c
+        CALLS SEG Reset_lv_conf_mis_59c, SOF Reset_lv_conf_mis_59c
         JMPR cc_UC,L_E4E2E
 L_E4DDE:                 ; 0xe4dde
         MOVB RL6,#DATA16 00031H
@@ -761,7 +761,7 @@ L_E4DF0:                 ; 0xe4df0
 L_E4E0C:                 ; 0xe4e0c
         MOVB RL4,#03H
         MOVB conf_vs,RL4
-        CALLS 00CH,Calc_VS
+        CALLS SEG Calc_VS, SOF Calc_VS
         JMPR cc_UC,L_E4E2E
 L_E4E18:                 ; 0xe4e18
         MOVB RL6,#DATA16 00031H

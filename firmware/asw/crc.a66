@@ -22,7 +22,7 @@ Diag_CRC16:
         EXTP #00H, #02H
         MOV R4,diag_27e
         MOV R5,diag_280
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
         MOV R4,crc_status
         AND R4,#DATA16 02000H
         JMPR cc_EQ,L_C7DF2
@@ -38,7 +38,7 @@ L_C7DC4:                 ; 0xc7dc4
         OR ecu_diag_sf_word,R4
 L_C7DCC:                 ; 0xc7dcc
         MOV R12,#DATA16 00080H
-        CALLS 00DH,DTC_Calc_Activation_MIL
+        CALLS SEG DTC_Calc_Activation_MIL, SOF DTC_Calc_Activation_MIL
         BMOV lv_ecu_err.03H,dtc_status_work.06H
         MOVBZ R4,dtc_ecu_flags
         AND R4,#DATA16 00020H
@@ -64,7 +64,7 @@ L_C7E14:                 ; 0xc7e14
         OR ecu_diag_sf_word,R4
 L_C7E1C:                 ; 0xc7e1c
         MOV R12,#DATA16 00100H
-        CALLS 00DH,DTC_Calc_Activation_MIL
+        CALLS SEG DTC_Calc_Activation_MIL, SOF DTC_Calc_Activation_MIL
         BMOV lv_ecu_err.03H,dtc_status_work.06H
         MOVBZ R4,dtc_ecu_flags
         AND R4,#DATA16 00020H
@@ -92,7 +92,7 @@ L_C7E6A:                 ; 0xc7e6a
         OR ecu_diag_sf_word,R4
 L_C7E72:                 ; 0xc7e72
         MOV R12,#DATA16 00200H
-        CALLS 00DH,DTC_Calc_Activation_MIL
+        CALLS SEG DTC_Calc_Activation_MIL, SOF DTC_Calc_Activation_MIL
         BMOV lv_ecu_err.03H,dtc_status_work.06H
         MOVBZ R4,dtc_ecu_flags
         AND R4,#DATA16 00020H

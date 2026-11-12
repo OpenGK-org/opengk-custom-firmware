@@ -26,7 +26,7 @@ KWP_Flash_Cmd23_arm:
         MOV kwp_dl_count,R5
         MOV R12,#DATA16 0CEC6H
         MOV R13,#DATA16 04C98H
-        CALLS 00CH,Flash_Compare_Block
+        CALLS SEG Flash_Compare_Block, SOF Flash_Compare_Block
         MOVBZ R9,RL4
         MOV R4,R9
         MOVB kwp_resp_status2,RL4

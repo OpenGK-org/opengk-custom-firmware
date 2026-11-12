@@ -68,13 +68,13 @@ L_C8486:                 ; 0xc8486
         ; ------------------------------------------------------------
 Task_IV_Combustion:
         JB state_out_act.0EH,L_C8492
-        CALLS 00AH,Diag_IV_Combustion
+        CALLS SEG Diag_IV_Combustion, SOF Diag_IV_Combustion
         JMPR cc_UC,L_C8494
 L_C8492:                 ; 0xc8492
         BCLR state_out_act.0EH
 L_C8494:                 ; 0xc8494
-        CALLS 00AH,SpinHalt_a3d48
-        CALLS 00AH,ProgSession_StateMachine_VbGated
+        CALLS SEG SpinHalt_a3d48, SOF SpinHalt_a3d48
+        CALLS SEG ProgSession_StateMachine_VbGated, SOF ProgSession_StateMachine_VbGated
         RETS
 
 S_C840C ENDS

@@ -101,7 +101,7 @@ L_DB59C:                 ; 0xdb59c
         AND R5,#DATA16 00020H
         JMPA cc_EQ,L_DBA2E
         MOVBZ R12,RL6
-        CALLS 00DH,Get_DTC_StatusBits
+        CALLS SEG Get_DTC_StatusBits, SOF Get_DTC_StatusBits
         MOV R8,R4
         CMPB RL4,#04H
         JMPA cc_NC,L_DBBE0
@@ -127,7 +127,7 @@ L_DB5F0:                 ; 0xdb5f0
         MOVBZ R4,RL4
         SHL R4,#03H
         ADD R13,R4
-        CALLS 00DH,Sort3_Bytes
+        CALLS SEG Sort3_Bytes, SOF Sort3_Bytes
         JB PSW.06H,L_DB610
         JMPA cc_UC,L_DB6F2
 L_DB610:                 ; 0xdb610
@@ -168,7 +168,7 @@ L_DB656:                 ; 0xdb656
         MOVBZ R4,RL4
         SHL R4,#03H
         ADD R13,R4
-        CALLS 00DH,Sort3_Bytes
+        CALLS SEG Sort3_Bytes, SOF Sort3_Bytes
         JNB PSW.06H,L_DB6B8
         MOV R4,dtc_status_work
         AND R4,#02H
@@ -191,7 +191,7 @@ L_DB686:                 ; 0xdb686
         MOVBZ R4,RL4
         SHL R4,#03H
         ADD R12,R4
-        CALLS 00DH,Nop_db00c
+        CALLS SEG Nop_db00c, SOF Nop_db00c
         MOV R4,R8
         MOVBZ R4,RL4
         SHL R4,#03H
@@ -216,7 +216,7 @@ L_DB6B8:                 ; 0xdb6b8
         MOVBZ R4,RL4
         SHL R4,#03H
         ADD R12,R4
-        CALLS 00DH,Nop_db00c
+        CALLS SEG Nop_db00c, SOF Nop_db00c
         MOV R4,R8
         MOVBZ R4,RL4
         SHL R4,#03H
@@ -252,7 +252,7 @@ L_DB72C:                 ; 0xdb72c
         MOVBZ R4,RL4
         SHL R4,#03H
         ADD R13,R4
-        CALLS 00DH,Sort3_Bytes
+        CALLS SEG Sort3_Bytes, SOF Sort3_Bytes
         JB PSW.06H,L_DB74C
         JMPA cc_UC,L_DB82E
 L_DB74C:                 ; 0xdb74c
@@ -293,7 +293,7 @@ L_DB792:                 ; 0xdb792
         MOVBZ R4,RL4
         SHL R4,#03H
         ADD R13,R4
-        CALLS 00DH,Sort3_Bytes
+        CALLS SEG Sort3_Bytes, SOF Sort3_Bytes
         JNB PSW.06H,L_DB7F4
         MOV R4,dtc_status_work
         AND R4,#02H
@@ -316,7 +316,7 @@ L_DB7C2:                 ; 0xdb7c2
         MOVBZ R4,RL4
         SHL R4,#03H
         ADD R12,R4
-        CALLS 00DH,Nop_db00c
+        CALLS SEG Nop_db00c, SOF Nop_db00c
         MOV R4,R8
         MOVBZ R4,RL4
         SHL R4,#03H
@@ -341,7 +341,7 @@ L_DB7F4:                 ; 0xdb7f4
         MOVBZ R4,RL4
         SHL R4,#03H
         ADD R12,R4
-        CALLS 00DH,Nop_db00c
+        CALLS SEG Nop_db00c, SOF Nop_db00c
         MOV R4,R8
         MOVBZ R4,RL4
         SHL R4,#03H
@@ -382,7 +382,7 @@ L_DB874:                 ; 0xdb874
         MOVBZ R4,RL4
         SHL R4,#03H
         ADD R13,R4
-        CALLS 00DH,Sort3_Bytes
+        CALLS SEG Sort3_Bytes, SOF Sort3_Bytes
         JB PSW.06H,L_DB894
         JMPA cc_UC,L_DB976
 L_DB894:                 ; 0xdb894
@@ -423,7 +423,7 @@ L_DB8DA:                 ; 0xdb8da
         MOVBZ R4,RL4
         SHL R4,#03H
         ADD R13,R4
-        CALLS 00DH,Sort3_Bytes
+        CALLS SEG Sort3_Bytes, SOF Sort3_Bytes
         JNB PSW.06H,L_DB93C
         MOV R4,dtc_status_work
         AND R4,#02H
@@ -446,7 +446,7 @@ L_DB90A:                 ; 0xdb90a
         MOVBZ R4,RL4
         SHL R4,#03H
         ADD R12,R4
-        CALLS 00DH,Nop_db00c
+        CALLS SEG Nop_db00c, SOF Nop_db00c
         MOV R4,R8
         MOVBZ R4,RL4
         SHL R4,#03H
@@ -471,7 +471,7 @@ L_DB93C:                 ; 0xdb93c
         MOVBZ R4,RL4
         SHL R4,#03H
         ADD R12,R4
-        CALLS 00DH,Nop_db00c
+        CALLS SEG Nop_db00c, SOF Nop_db00c
         MOV R4,R8
         MOVBZ R4,RL4
         SHL R4,#03H
@@ -561,7 +561,7 @@ L_DBA2E:                 ; 0xdba2e
         AND R5,#DATA16 00040H
         JMPA cc_EQ,L_DBBE0
         MOVBZ R12,RL6
-        CALLS 00DH,Get_DTC_StatusBits
+        CALLS SEG Get_DTC_StatusBits, SOF Get_DTC_StatusBits
         SUBB RL4,#04H
         MOV R8,R4
         CMPB RL4,#02H
@@ -588,7 +588,7 @@ L_DBA84:                 ; 0xdba84
         MOVBZ R4,RL4
         SHL R4,#03H
         ADD R13,R4
-        CALLS 00DH,Sort3_Bytes
+        CALLS SEG Sort3_Bytes, SOF Sort3_Bytes
         JB PSW.06H,L_DBAA4
         JMPA cc_UC,L_DBB90
 L_DBAA4:                 ; 0xdbaa4
@@ -629,7 +629,7 @@ L_DBAEC:                 ; 0xdbaec
         MOVBZ R4,RL4
         SHL R4,#03H
         ADD R13,R4
-        CALLS 00DH,Sort3_Bytes
+        CALLS SEG Sort3_Bytes, SOF Sort3_Bytes
         JNB PSW.06H,L_DBB4E
         MOV R4,dtc_status_work
         AND R4,#02H
@@ -652,7 +652,7 @@ L_DBB1C:                 ; 0xdbb1c
         MOVBZ R4,RL4
         SHL R4,#03H
         ADD R12,R4
-        CALLS 00DH,Nop_db00c
+        CALLS SEG Nop_db00c, SOF Nop_db00c
         MOV R4,R8
         MOVBZ R4,RL4
         SHL R4,#03H
@@ -680,7 +680,7 @@ L_DBB4E:                 ; 0xdbb4e
         MOVBZ R4,RL4
         SHL R4,#03H
         ADD R12,R4
-        CALLS 00DH,Nop_db00c
+        CALLS SEG Nop_db00c, SOF Nop_db00c
         MOV R4,R8
         MOVBZ R4,RL4
         SHL R4,#03H
@@ -806,7 +806,7 @@ L_DBC84:                 ; 0xdbc84
         ADDB RL6,#01H
         CMPB RL6,#02H
         JMPR cc_C,L_DBC84
-        CALLS 00BH,Diag_DTC_dd4a4
+        CALLS SEG Diag_DTC_dd4a4, SOF Diag_DTC_dd4a4
         MOV R6,[R0+]
         RETS
 

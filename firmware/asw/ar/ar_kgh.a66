@@ -22,7 +22,7 @@ S_D0744 SECTION CODE AT 0D0744H
         ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
         ; ------------------------------------------------------------
 Set_lv_cp_set_close_d074:
-        CALLS 00CH,Detect_MAF_Puls
+        CALLS SEG Detect_MAF_Puls, SOF Detect_MAF_Puls
         JB lv_amp_ad_rst.0BH,L_D0758
         JB lv_maf_puls.00H,L_D0758
         JB lv_cam_err.03H,L_D0758
@@ -41,29 +41,29 @@ Calc_MAF_Kgh_Fac:
         MOV R12,#DATA16 04FF6H
         MOV R13,n_C93C
         MOV R14,tps_seg
-        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YWord
+        CALLS SEG Get_IP_Byte_3D_Table_DWord_XWord_YWord, SOF Get_IP_Byte_3D_Table_DWord_XWord_YWord
         MOVB RL6,RL4
         MOV R12,#DATA16 05002H
         MOV R13,maf_bas
-        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YWord
+        CALLS SEG Get_IP_Byte_2D_Table_DWord_YWord, SOF Get_IP_Byte_2D_Table_DWord_YWord
         MOVBZ R4,RL4
         MOV [-R0],R4
         MOV R12,#DATA16 00080H
         MOVBZ R13,fac_maf_trim
-        CALLS 00FH,Sat_Sub_S16_v2
+        CALLS SEG Sat_Sub_S16_v2, SOF Sat_Sub_S16_v2
         MOV R12,R4
         MOV R13,[R0+]
-        CALLS 00FH,Mul_S16_S32
+        CALLS SEG Mul_S16_S32, SOF Mul_S16_S32
         MOV R12,R4
         MOV R13,R5
         MOVBZ R14,RL6
-        CALLS 00FH,MulDiv_S16_PSW
+        CALLS SEG MulDiv_S16_PSW, SOF MulDiv_S16_PSW
         MOV R10,#00H
         MOV R11,#01H
-        CALLS 00DH,Div_S32_Signed
+        CALLS SEG Div_S32_Signed, SOF Div_S32_Signed
         MOVBS R13,RL4
         MOVBZ R12,RL6
-        CALLS 00FH,Add_Clamp_U8
+        CALLS SEG Add_Clamp_U8, SOF Add_Clamp_U8
         MOVB maf_kgh_mes_fac,RL4
         MOV R6,[R0+]
         RETS
@@ -126,12 +126,12 @@ L_D0820:                 ; 0xd0820
         JNB lv_amp_ad_rst.09H,L_D0856
         MOV R12,maf_tqi_ref
         MOV R13,lv_maf_f7ec
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         CMP R4,DPP0:c_maf_tqi_ref_lgrd
         JMPR cc_ULE,L_D0848
         MOV R12,maf_tqi_ref
         MOV R13,DPP0:c_maf_tqi_ref_lgrd
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV maf_tqi_ref,R4
         JMPR cc_UC,L_D0890
 L_D0848:                 ; 0xd0848
@@ -143,12 +143,12 @@ L_D0848:                 ; 0xd0848
 L_D0856:                 ; 0xd0856
         MOV R12,lv_maf_f7ec
         MOV R13,maf_tqi_ref
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         CMP R4,DPP0:c_maf_tqi_ref_lgrd
         JMPR cc_ULE,L_D087A
         MOV R12,maf_tqi_ref
         MOV R13,DPP0:c_maf_tqi_ref_lgrd
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV maf_tqi_ref,R4
         JMPR cc_UC,L_D0890
 L_D087A:                 ; 0xd087a

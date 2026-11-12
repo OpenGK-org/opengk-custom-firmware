@@ -18,7 +18,7 @@ S_B9BDA SECTION CODE AT 0B9BDAH
 Calc_TI_CO_IS:
         JB lv_conf_mis.00H,L_B9C06
         JNB can_fd58.02H,L_B9BE8
-        CALLS 00BH,Reset_Dc97a_c38
+        CALLS SEG Reset_Dc97a_c38, SOF Reset_Dc97a_c38
         RETS
 L_B9BE8:                 ; 0xb9be8
         EXTP #03H, #02H
@@ -31,7 +31,7 @@ L_B9BE8:                 ; 0xb9be8
         MOV ti_co_is,R2
         RETS
 L_B9C06:                 ; 0xb9c06
-        CALLS 00BH,Reset_Dc97a_c38
+        CALLS SEG Reset_Dc97a_c38, SOF Reset_Dc97a_c38
         RETS
 
 ; ======== NVM_Save_s63e  (@0xb9c0c) ========
@@ -54,7 +54,7 @@ NVM_Save_s63e:
         MOV R13,R5
         MOV R14,#DATA16 0C97AH
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         RETS
 
 ; ======== Reset_Dc97a_c38  (@0xb9c38) ========

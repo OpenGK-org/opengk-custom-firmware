@@ -33,19 +33,19 @@ Calc_FuelFlow_Add_CP_v2:
 L_B18BE:                 ; 0xb18be
         MOV R12,cl_mmv_old
         MOV R13,rel_flow_cps_old_min
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV R8,R4
         MOV R12,R8
         MOV R13,maf_cyl
         SHR R13,#01H
         MOV R14,#04H
-        CALLS 00FH,Mul_Shift_U16_Sat32
+        CALLS SEG Mul_Shift_U16_Sat32, SOF Mul_Shift_U16_Sat32
         MOV fuel_flow_add_ad_cp,R4
         MOV R12,R8
         MOV R13,maf_dly_mmv
         SHR R13,#01H
         MOV R14,#04H
-        CALLS 00FH,Mul_Shift_U16_Sat32
+        CALLS SEG Mul_Shift_U16_Sat32, SOF Mul_Shift_U16_Sat32
         MOV fuel_flow_add_ad_dly,R4
         JMPR cc_UC,L_B19C6
 L_B18F2:                 ; 0xb18f2
@@ -62,7 +62,7 @@ L_B1908:                 ; 0xb1908
         MOV R12,maf_cps_dly
         MOV R13,cl_mmv_di
         MOV R14,#0DH
-        CALLS 00FH,Mul_Shift_U16_Sat32
+        CALLS SEG Mul_Shift_U16_Sat32, SOF Mul_Shift_U16_Sat32
         MOV fuel_flow_add_ad_cp,R4
         JMPR cc_UC,L_B19C6
 L_B191C:                 ; 0xb191c
@@ -77,19 +77,19 @@ L_B191C:                 ; 0xb191c
 Calc_FuelFlow_Add_CP_3:
         MOV R12,cl_mmv_old
         MOV R13,rel_flow_cps_old_min
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV R8,R4
         MOV R12,R8
         MOV R13,maf_cyl
         SHR R13,#01H
         MOV R14,#04H
-        CALLS 00FH,Mul_Shift_U16_Sat32
+        CALLS SEG Mul_Shift_U16_Sat32, SOF Mul_Shift_U16_Sat32
         MOV R9,R4
         MOV R12,R8
         MOV R13,maf_dly_mmv
         SHR R13,#01H
         MOV R14,#04H
-        CALLS 00FH,Mul_Shift_U16_Sat32
+        CALLS SEG Mul_Shift_U16_Sat32, SOF Mul_Shift_U16_Sat32
         MOV R8,R4
         JNB lv_fcut_fast.06H,L_B1962
         MOV fuel_flow_add_ad_cp,R9
@@ -111,7 +111,7 @@ Reset_uVar1_980:
         MOV R12,cl_mmv
         MOV R13,maf_cps_dly
         MOV R14,#0DH
-        CALLS 00FH,Mul_Shift_U16_Sat32
+        CALLS SEG Mul_Shift_U16_Sat32, SOF Mul_Shift_U16_Sat32
         MOV R8,R4
         MOV R12,R8
         MOV R13,fuel_flow_add_ad_cp
@@ -120,7 +120,7 @@ Reset_uVar1_980:
         MOV R12,cl_mmv
         MOV R13,maf_cps_dly_2_mmv
         MOV R14,#0DH
-        CALLS 00FH,Mul_Shift_U16_Sat32
+        CALLS SEG Mul_Shift_U16_Sat32, SOF Mul_Shift_U16_Sat32
         MOV R8,R4
         MOV R12,R8
         MOV R13,fuel_flow_add_ad_dly
@@ -138,7 +138,7 @@ L_B19C6:                 ; 0xb19c6
         MOV R13,DPP0:c_iv_cp
         SHR R13,#05H
         MOV R14,n_C93C
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV ti_add_ad_cp_1,R4
         JMPR cc_UC,L_B19EC
 
@@ -165,34 +165,34 @@ Calc_FuelFlow_Lgrd:
         MOV R12,#DATA16 POF ldpm_maf_cyl_ip_rel_flow_inc_cp
         MOV R13,#DATA16 PAG ldpm_maf_cyl_ip_rel_flow_inc_cp
         MOV R14,maf_cyl
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_fuel_flow_lgrd_pos_cp__maf_cyl
         MOV R13,#DATA16 PAG ip_fuel_flow_lgrd_pos_cp__maf_cyl
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV R9,R4
         MOV R12,R7
         MOV R13,R8
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         CMP R4,R9
         JMPR cc_ULE,L_B1A32
         MOV R12,R8
         MOV R13,R9
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV R9,R4
         JMPR cc_UC,L_B1A5A
 L_B1A32:                 ; 0xb1a32
         MOV R12,#DATA16 POF ip_fuel_flow_lgrd_neg_cp__maf_cyl
         MOV R13,#DATA16 PAG ip_fuel_flow_lgrd_neg_cp__maf_cyl
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV R9,R4
         MOV R12,R8
         MOV R13,R7
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         CMP R4,R9
         JMPR cc_ULE,L_B1A58
         MOV R12,R8
         MOV R13,R9
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV R9,R4
         JMPR cc_UC,L_B1A5A
 L_B1A58:                 ; 0xb1a58

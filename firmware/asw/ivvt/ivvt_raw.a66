@@ -41,10 +41,10 @@ Acq_Cam_Raw:
         MOV R12,#DATA16 POF ldp_n_32_ip_cam_cor
         MOV R13,#DATA16 PAG ldp_n_32_ip_cam_cor
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_cam_cor_n_32
         MOV R13,#DATA16 PAG ip_cam_cor_n_32
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV R9,R4
         ADD R9,#DATA16 08000H
         MOVB RL4,cam_1_level
@@ -63,15 +63,15 @@ Acq_Cam_Raw:
 L_C173C:                 ; 0xc173c
         MOV R12,R8
         MOV R13,DPP0:c_cam_ref_cor_ivvt_in_1
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV R12,R4
         MOV R13,R9
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV R12,R4
         MOV R13,#DATA16 0809FH
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV R12,R4
-        CALLS 00FH,Sat_HiByte_ff
+        CALLS SEG Sat_HiByte_ff, SOF Sat_HiByte_ff
         MOVB ivvt_in_1_struct_raw_ivvt_cam_raw,RL4
         BMOV lv_diag_trip_avl_ivvt.0FH,lv_cam_err.06H
         MOV R8,[R0+]
@@ -88,53 +88,53 @@ Snapshot_MAF_IVVT:
         MOV R12,#DATA16 POF ldpm_n_1_1
         MOV R13,#DATA16 PAG ldpm_n_1_1
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ldp_isapwm_ip_maf_add_isapwm
         MOV R13,#DATA16 PAG ldp_isapwm_ip_maf_add_isapwm
         MOV R14,opg_av_isa
-        CALLS 00FH,Get_IP_Word_X_Axis
+        CALLS SEG Get_IP_Word_X_Axis, SOF Get_IP_Word_X_Axis
         MOV R12,#DATA16 POF ip_maf_add_isapwm__n_32__isapwm
         MOV R13,#DATA16 PAG ip_maf_add_isapwm__n_32__isapwm
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVB RL6,RL4
         MOV R12,#DATA16 POF ldpm_tps_ip_maf_ivvt
         MOV R13,#DATA16 PAG ldpm_tps_ip_maf_ivvt
         MOVBZ R14,tps
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         MOV R12,#DATA16 POF ip_maf_tps_fac__n_32__tps
         MOV R13,#DATA16 PAG ip_maf_tps_fac__n_32__tps
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVBZ R13,RL4
         MOVBZ R12,RL6
-        CALLS 00FH,Ret_Const_fe0f
+        CALLS SEG Ret_Const_fe0f, SOF Ret_Const_fe0f
         MOVB maf_add_isa,RL4
         JB lv_cam_err.00H,L_C17DC
         JB lv_cam_err.01H,L_C17DC
         MOV R12,#DATA16 POF ip_maf_ivvt_1__n_32__tps
         MOV R13,#DATA16 PAG ip_maf_ivvt_1__n_32__tps
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVB RL6,RL4
         JMPR cc_UC,L_C17EA
 L_C17DC:                 ; 0xc17dc
         MOV R12,#DATA16 POF ip_maf_ivvt_2__n_32
         MOV R13,#DATA16 PAG ip_maf_ivvt_2__n_32
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVB RL6,RL4
 L_C17EA:                 ; 0xc17ea
         MOVBZ R12,RL6
         MOVBZ R13,maf_add_isa
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV R12,R4
         SHL R12,#07H
         MOVBZ R13,lv_cyl_f393
         SHL R13,#08H
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         MOV maf_sub_ivvt,R4
         MOV R12,maf_ivvt
         MOV R13,maf_sub_ivvt
         MOVBZ R14,DPP0:c_crlc_maf_ivvt
         SHL R14,#08H
-        CALLS 00FH,Interp_U16
+        CALLS SEG Interp_U16, SOF Interp_U16
         MOV maf_ivvt,R4
         MOV R6,[R0+]
         RETS
@@ -164,7 +164,7 @@ L_C1848:                 ; 0xc1848
         MOV vo_1,R4
         MOV R12,#DATA16 04A0AH
         MOV R13,R4
-        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YWord
+        CALLS SEG Get_IP_Byte_2D_Table_DWord_YWord, SOF Get_IP_Byte_2D_Table_DWord_YWord
         MOVB fac_vvt_1,RL4
         MOV R4,vo_1
         MOV vo,R4

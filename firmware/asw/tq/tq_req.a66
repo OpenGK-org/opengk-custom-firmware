@@ -29,17 +29,17 @@ L_B1A76:                 ; 0xb1a76
 L_B1A7E:                 ; 0xb1a7e
         MOV R12,tq_max_clu
         MOV R13,tq_min_clu
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV R12,R4
         MOV R13,fac_tq_req_clu
-        CALLS 00FH,Mul_Q15_Sat_Signed
+        CALLS SEG Mul_Q15_Sat_Signed, SOF Mul_Q15_Sat_Signed
         MOV R12,R4
         MOV R13,tq_min_clu
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV tq_req_clu,R4
         MOV R12,tq_min_clu
         MOV R13,tq_loss
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV R9,R4
         CMP R9,#00H
         JMPR cc_SLT,L_B1ABE

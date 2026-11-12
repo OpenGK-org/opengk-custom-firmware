@@ -104,7 +104,7 @@ L_B60FC:                 ; 0xb60fc
 L_B6104:                 ; 0xb6104
         MOV R12,[R7+#096H]
         MOV R13,[R7+#0ACH]
-        CALLS 00FH,Sat_Sub_S16_v2
+        CALLS SEG Sat_Sub_S16_v2, SOF Sat_Sub_S16_v2
         MOV R9,R4
         SHL R9,#06H
         MOV R4,[R7+#096H]
@@ -164,7 +164,7 @@ L_B6196:                 ; 0xb6196
         SHL R5,#01H
         ADD R4,R5
         MOV R12,[R4]
-        CALLS 00DH,Abs_S16_Simple
+        CALLS SEG Abs_S16_Simple, SOF Abs_S16_Simple
         MOV R8,R4
         MOV R4,[R7+#0A8H]
         CMP R8,R4
@@ -193,7 +193,7 @@ L_B61E4:                 ; 0xb61e4
         MOV R13,[R7+#096H]
         SHL R13,#06H
         MOV R14,R8
-        CALLS 00FH,Interp_U16
+        CALLS SEG Interp_U16, SOF Interp_U16
         MOV [R7+#0A0H],R4
         MOV R4,[R7+#096H]
         MOV R5,[R7+#09CH]
@@ -217,23 +217,23 @@ L_B6228:                 ; 0xb6228
         MOV R13,[R7+#096H]
         SHL R13,#06H
         MOV R14,R8
-        CALLS 00FH,Interp_U16
+        CALLS SEG Interp_U16, SOF Interp_U16
         MOV [R7+#09EH],R4
         MOV R12,[R7+#09EH]
         MOV R13,[R7+#0A0H]
-        CALLS 00FH,Abs_Diff_U16
+        CALLS SEG Abs_Diff_U16, SOF Abs_Diff_U16
         MOV R12,R4
         MOVBZ R13,DPP0:c_fac_vls_down_mmv_hys
-        CALLS 00FH,Read_MulDiv_MD
+        CALLS SEG Read_MulDiv_MD, SOF Read_MulDiv_MD
         MOV [R7+#0A2H],R4
         MOV R12,[R7+#0A2H]
         MOV R13,DPP0:c_vls_down_mmv_hys_min
         MOV R14,#DATA16 03333H
-        CALLS 00FH,Clamp_U16
+        CALLS SEG Clamp_U16, SOF Clamp_U16
         MOV [R7+#0A2H],R4
         MOV R12,[R7+#09EH]
         MOV R13,[R7+#0A0H]
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV R8,R4
         MOV R4,[R7+#0A2H]
         SHL R4,#01H
@@ -242,7 +242,7 @@ L_B6228:                 ; 0xb6228
         BSET diag_fd68.01H
         MOV R12,[R7+#09EH]
         MOV R13,[R7+#0A0H]
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV R8,R4
         SHR R4,#01H
         SHR R4,#06H
@@ -251,24 +251,24 @@ L_B6228:                 ; 0xb6228
         MOV R12,[R7+#09CH]
         SHL R12,#06H
         MOV R13,[R7+#0A2H]
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV [R7+#09EH],R4
         MOV R12,[R7+#09AH]
         SHL R12,#06H
         MOV R13,[R7+#0A2H]
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV [R7+#0A0H],R4
         JMPR cc_UC,L_B6312
 L_B62C4:                 ; 0xb62c4
         BCLR diag_fd68.01H
         MOV R12,[R7+#09EH]
         MOV R13,[R7+#0A2H]
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         SHR R4,#06H
         MOV [R7+#09CH],R4
         MOV R12,[R7+#0A0H]
         MOV R13,[R7+#0A2H]
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         SHR R4,#06H
         MOV [R7+#09AH],R4
         JMPR cc_UC,L_B6312

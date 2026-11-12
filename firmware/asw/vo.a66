@@ -37,7 +37,7 @@ Calc_iga_bas_amp_cor:
         MOV R12,#DATA16 0470CH
         MOVBZ R13,n_32
         MOV R14,amp
-        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YByte
+        CALLS SEG Get_IP_Byte_3D_Table_DWord_XWord_YByte, SOF Get_IP_Byte_3D_Table_DWord_XWord_YByte
         SUBB RL4,#DATA16 00080H
         MOVB iga_bas_amp_cor,RL4
         RETS
@@ -69,14 +69,14 @@ L_B3772:                 ; 0xb3772
         MOV R12,#DATA16 POF ldpm_n_1_ivvt
         MOV R13,#DATA16 PAG ldpm_n_1_ivvt
         MOV R14,n_C93C
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ldpm_maf_ivvt_2_ivvt
         MOV R13,#DATA16 PAG ldpm_maf_ivvt_2_ivvt
         MOV R14,maf_ivvt
-        CALLS 00FH,Get_IP_Word_X_Axis
+        CALLS SEG Get_IP_Word_X_Axis, SOF Get_IP_Word_X_Axis
         MOV R12,#DATA16 POF ip_cam_sp_tco_2_pl_ivvt_in
         MOV R13,#DATA16 PAG ip_cam_sp_tco_2_pl_ivvt_in
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVBZ R4,RL4
         MOVBZ R5,DPP0:c_cam_op_in
         MOVBZ R2,DPP0:c_cam_op_ex
@@ -115,7 +115,7 @@ L_B3808:                 ; 0xb3808
         OR R13,R4
         MOV R14,vo_ini
         SUB R14,vo_sp
-        CALLS 00FH,Div_S32_S16_Round
+        CALLS SEG Div_S32_S16_Round, SOF Div_S32_S16_Round
         MOV R9,R4
         ASHR R9,#08H
         MOV R4,#DATA16 00080H
@@ -130,18 +130,18 @@ L_B3844:                 ; 0xb3844
 L_B384A:                 ; 0xb384a
         MOV R12,#DATA16 04724H
         MOVBZ R13,vo_ratio
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YByte, SOF Get_IP_Word_2D_Table_DWord_YByte
         SUB R4,#DATA16 08000H
         MOV [-R0],R4
         MOV R12,#DATA16 04718H
         MOVBZ R13,n_32
         MOVBZ R14,lv_iga_cc2b
-        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XByte_YByte
+        CALLS SEG Get_IP_Byte_3D_Table_DWord_XByte_YByte, SOF Get_IP_Byte_3D_Table_DWord_XByte_YByte
         SUBB RL4,#DATA16 00080H
         MOVBS R12,RL4
         MOV R14,#DATA16 00400H
         MOV R13,[R0+]
-        CALLS 00FH,MulDiv_S16_Sat_v2
+        CALLS SEG MulDiv_S16_Sat_v2, SOF MulDiv_S16_Sat_v2
         MOV R9,R4
         CMP R9,#DATA16 0007FH
         JMPR cc_SLE,L_B388A
@@ -158,18 +158,18 @@ L_B3898:                 ; 0xb3898
         MOVB iga_bas_vvt_cor,RL4
         MOV R12,#DATA16 04738H
         MOVBZ R13,vo_ratio
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YByte, SOF Get_IP_Word_2D_Table_DWord_YByte
         SUB R4,#DATA16 08000H
         MOV [-R0],R4
         MOV R12,#DATA16 0472CH
         MOVBZ R13,n_32
         MOVBZ R14,lv_iga_cc2b
-        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XByte_YByte
+        CALLS SEG Get_IP_Byte_3D_Table_DWord_XByte_YByte, SOF Get_IP_Byte_3D_Table_DWord_XByte_YByte
         SUBB RL4,#DATA16 00080H
         MOVBS R12,RL4
         MOV R14,#DATA16 00400H
         MOV R13,[R0+]
-        CALLS 00FH,MulDiv_S16_Sat_v2
+        CALLS SEG MulDiv_S16_Sat_v2, SOF MulDiv_S16_Sat_v2
         MOV R9,R4
         CMP R9,#DATA16 0007FH
         JMPR cc_SLE,L_B38DC

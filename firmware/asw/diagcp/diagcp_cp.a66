@@ -66,7 +66,7 @@ L_D1FEE:                 ; 0xd1fee
 L_D2000:                 ; 0xd2000
         MOV R12,g_cfd0
         MOV R13,g_cfd2
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV dtp_dif_prs_dyn_sword,R4
         MOV R4,dtp_dif_prs_dyn_sword
         CMP R4,DPP0:c_dtp_dif_max_diagcp
@@ -93,21 +93,21 @@ L_D203C:                 ; 0xd203c
         MOV R12,g_cfd4
         MOV R13,g_cfd6
         MOV R14,ctr_sum_dtp
-        CALLS 00FH,Div_S32_S16_Round
+        CALLS SEG Div_S32_S16_Round, SOF Div_S32_S16_Round
         MOV dtp_mv_per_sword,R4
         MOVB RL4,g_c39a
         CMPB RL4,#02H
         JMPA cc_C,L_D3586
         MOV R12,dtp_mv_per_sword
         MOV R13,g_cff4
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV R12,R4
         MOVBZ R13,DPP0:c_t_1_dif_diagcp
         SUB R13,#01H
-        CALLS 00FH,Div_S16_Round_Sat
+        CALLS SEG Div_S16_Round_Sat, SOF Div_S16_Round_Sat
         MOV dtp_slop,R4
         MOV R12,R4
-        CALLS 00DH,Abs_S16_Simple
+        CALLS SEG Abs_S16_Simple, SOF Abs_S16_Simple
         CMP R4,DPP0:c_dtp_slop_max
         JMPR cc_SLT,L_D2098
         BCLR lv_act_diagcps.06H
@@ -179,7 +179,7 @@ L_D2144:                 ; 0xd2144
         JMPR cc_ULE,L_D215E
         MOV R12,R4
         MOV R13,DPP0:c_maf_cps_sp_close_diagcp
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV flow_sp_cps_ext,R4
         JMPA cc_UC,L_D3586
 L_D215E:                 ; 0xd215e

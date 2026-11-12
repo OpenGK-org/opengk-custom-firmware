@@ -309,7 +309,7 @@ Restore_OBD_Stat:
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#0AH
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         EXTP #03H, #02H
         MOV R10,DPP0:diag_f890
         MOV R11,DPP0:diag_f892
@@ -344,7 +344,7 @@ Restore_OBD_Stat:
         MOV t_dtc_clr,R4
         RETS
 L_E3034:                 ; 0xe3034
-        CALLS 00EH,Reset_OBD_Stat
+        CALLS SEG Reset_OBD_Stat, SOF Reset_OBD_Stat
         RETS
 
 ; ======== Reset_OBD_Stat  (@0xe303a) ========
@@ -386,7 +386,7 @@ NVM_Save_s1c2:
         MOV R13,R5
         MOV R14,#DATA16 0C4F1H
         MOV R15,#01H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         EXTP #03H, #02H
         MOV R12,DPP0:diag_f890
         MOV R13,DPP0:diag_f892
@@ -401,7 +401,7 @@ NVM_Save_s1c2:
         MOV R13,R5
         MOV R14,#DATA16 0D720H
         MOV R15,#04H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         EXTP #03H, #02H
         MOV R12,DPP0:diag_f890
         MOV R13,DPP0:diag_f892
@@ -416,7 +416,7 @@ NVM_Save_s1c2:
         MOV R13,R5
         MOV R14,#DATA16 0D728H
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         EXTP #03H, #02H
         MOV R12,DPP0:diag_f890
         MOV R13,DPP0:diag_f892
@@ -431,7 +431,7 @@ NVM_Save_s1c2:
         MOV R13,R5
         MOV R14,#DATA16 0C4F3H
         MOV R15,#01H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         EXTP #03H, #02H
         MOV R12,DPP0:diag_f890
         MOV R13,DPP0:diag_f892
@@ -446,7 +446,7 @@ NVM_Save_s1c2:
         MOV R13,R5
         MOV R14,#DATA16 0D72AH
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         EXTP #03H, #02H
         MOV R12,DPP0:diag_f890
         MOV R13,DPP0:diag_f892
@@ -466,7 +466,7 @@ NVM_Save_s1c2:
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#0AH
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV [R0],R4
         EXTP #03H, #02H
         MOV R12,DPP0:diag_f890
@@ -482,7 +482,7 @@ NVM_Save_s1c2:
         MOV R13,R5
         MOV R14,R0
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         ADD R0,#02H
         RETS
 
@@ -522,12 +522,12 @@ Set_lv_maf_trim_e31a:
         MOV R13,R12
         MOV R12,0FF1CH
         MOV R14,vs_fac
-        CALLS 00FH,Div_U32_U16_Round32
+        CALLS SEG Div_U32_U16_Round32, SOF Div_U32_U16_Round32
         MOV R14,R4
         MOV R15,R5
         MOV R12,obd_d720
         MOV R13,obd_d722
-        CALLS 00FH,Sat_Add_U32
+        CALLS SEG Sat_Add_U32, SOF Sat_Add_U32
         MOV obd_d720,R4
         MOV obd_d722,R5
         JMPR cc_UC,L_E3214

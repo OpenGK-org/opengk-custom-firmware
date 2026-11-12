@@ -4778,23 +4778,24 @@ P4_FFC8                      EQU  0FFC8H
 P6_FFCC                      EQU  0FFCCH
 P7_FFD0                      EQU  0FFD0H
 
-; --- targets outside the Program segment (segment offset) ---
-rt_callfar_via_r5r4          EQU  02000H
-cstart_reset_selftest_ramtest EQU  08046H
-CommObj_Tp_SubmitSegment     EQU  0A6C0H
-CommObj_SetPendingByHandle   EQU  0A7CCH
-CommObj_ClearPendingFlagByHandle EQU  0A84AH
-CommObj_Tp_OnRxFrame         EQU  0A8A6H
-CommObj_Tp_TxStateMachine    EQU  0B0F6H
+; --- targets in other link units (boot runtime at 0x2000, bootloader in segment 8) ---
+rt_callfar_via_r5r4          EQU  002000H
+cstart_reset_selftest_ramtest EQU  088046H
+CommObj_Tp_SubmitSegment     EQU  08A6C0H
+CommObj_SetPendingByHandle   EQU  08A7CCH
+CommObj_ClearPendingFlagByHandle EQU  08A84AH
+CommObj_Tp_OnRxFrame         EQU  08A8A6H
+CommObj_Tp_TxStateMachine    EQU  08B0F6H
 ;@a2l MEASUREMENT UWORD conv=cv_ms_10 fmt=7.2
 lam_bank_1_lam_up_t_lam_dly_neg EQU  0C778H
-BL_Kline_SetBaudrate_Wrapper EQU  0C790H
-BL_Kline_SetRxErrIrqEnables  EQU  0C7A8H
-KWP_Check_ServicePermission  EQU  0EEE0H
-NMITRAP_handler              EQU  0F42EH
-NMITRAP_handler_F432         EQU  0F432H
-NMITRAP_handler_F436         EQU  0F436H
-NMITRAP_handler_F43A         EQU  0F43AH
+BL_Sub_8C778                 EQU  08C778H
+BL_Kline_SetBaudrate_Wrapper EQU  08C790H
+BL_Kline_SetRxErrIrqEnables  EQU  08C7A8H
+KWP_Check_ServicePermission  EQU  08EEE0H
+NMITRAP_handler              EQU  08F42EH
+NMITRAP_handler_F432         EQU  08F432H
+NMITRAP_handler_F436         EQU  08F436H
+NMITRAP_handler_F43A         EQU  08F43AH
 
 
 

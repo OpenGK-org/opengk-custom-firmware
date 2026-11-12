@@ -69,7 +69,7 @@ SMARTRA_Save_data_to_EEPROM:
         MOV R13,R5
         MOV R14,#DATA16 0CA08H
         MOV R15,#DATA16 00036H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 00138H
@@ -83,7 +83,7 @@ SMARTRA_Save_data_to_EEPROM:
         MOV R13,R5
         MOV R14,#DATA16 0CA08H
         MOV R15,#DATA16 00036H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 0016EH
@@ -97,7 +97,7 @@ SMARTRA_Save_data_to_EEPROM:
         MOV R13,R5
         MOV R14,#DATA16 0CA08H
         MOV R15,#DATA16 00036H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
 L_BDB36:                 ; 0xbdb36
         RETS
 

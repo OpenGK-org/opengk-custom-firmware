@@ -62,7 +62,7 @@ L_D128E:                 ; 0xd128e
         JMPR cc_UGT,L_D12C0
         MOVBZ R12,tam_st
         MOVBZ R13,DPP0:c_tam_st_hys_evap_rbm
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         CMPB RL4,tco_st
         JMPR cc_C,L_D12C0
         BSET lv_err_maf_tps_ratio_2.0EH

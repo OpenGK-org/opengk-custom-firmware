@@ -18,7 +18,7 @@ S_A68D2 SECTION CODE AT 0A68D2H
         ; ------------------------------------------------------------
 CCP_Checksum_Gate:
         JNB ccp_engine_flags.09H,L_A68DA
-        CALLS 00AH,CCP_Validate_Program
+        CALLS SEG CCP_Validate_Program, SOF CCP_Validate_Program
 L_A68DA:                 ; 0xa68da
         RETS
 
@@ -71,7 +71,7 @@ L_A6926:                 ; 0xa6926
 L_A692E:                 ; 0xa692e
         JNB ccp_engine_flags.08H,L_A693E
         JB ccp_engine_flags.07H,L_A693E
-        CALLS 00AH,CCP_Calc_Checksum
+        CALLS SEG CCP_Calc_Checksum, SOF CCP_Calc_Checksum
         BSET ccp_engine_flags.07H
         JMPR cc_UC,L_A6942
 L_A693E:                 ; 0xa693e
@@ -93,10 +93,10 @@ L_A6942:                 ; 0xa6942
         EXTP #00H, #02H
         MOV R4,ccp_282
         MOV R5,ccp_284
-        CALLS 00CH,Push_To_System_Stack
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
         JNB bl_mode_status_flags.08H,L_A69D8
         JNB ccp_engine_flags.07H,L_A6990
-        CALLS 00AH,BL_Set_ExecMagic_Full
+        CALLS SEG BL_Set_ExecMagic_Full, SOF BL_Set_ExecMagic_Full
         BCLR ccp_engine_flags.07H
 L_A6990:                 ; 0xa6990
         JNB ccp_engine_flags.08H,L_A69D8
@@ -115,8 +115,8 @@ L_A6990:                 ; 0xa6990
         EXTP #00H, #02H
         MOV R4,ccp_282
         MOV R5,ccp_284
-        CALLS 00CH,Push_To_System_Stack
-        CALLS 00AH,BL_Set_ExecParams
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
+        CALLS SEG BL_Set_ExecParams, SOF BL_Set_ExecParams
         BCLR ccp_engine_flags.08H
 L_A69D8:                 ; 0xa69d8
         MOV R8,[R0+]

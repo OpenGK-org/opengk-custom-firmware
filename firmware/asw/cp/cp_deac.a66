@@ -49,7 +49,7 @@ L_B1D3C:                 ; 0xb1d3c
 CanPurge_Ctl_Entry:
         MOVB RL4,conf_cp
         JMPR cc_EQ,L_B1D5E
-        CALLS 00CH,CanPurge_SetAct_3
+        CALLS SEG CanPurge_SetAct_3, SOF CanPurge_SetAct_3
         CALLA cc_UC,CanPurge_Lookup_State
         JNB lv_cp_act.05H,L_B1D5A
         CALLA cc_UC,CanPurge_Control_SM

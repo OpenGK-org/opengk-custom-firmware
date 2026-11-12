@@ -37,7 +37,7 @@ Calc_TQ_Add_Coord:
         MOV R12,eff_iga_bas_cor
         MOV R13,tqi_req_tra_slow
         MOV R14,eff_iga_min
-        CALLS 00FH,MulDiv_Round_S16
+        CALLS SEG MulDiv_Round_S16, SOF MulDiv_Round_S16
         MOV R7,R4
         MOV R4,tqi_req_tra_slow
         CMP R7,R4
@@ -50,7 +50,7 @@ L_B1356:                 ; 0xb1356
         MOV tqi_add_max_tol,R4
         MOV R12,R4
         MOV R13,tq_dif_add_is_tol
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV R7,R4
         CMP R7,tqi_max
         JMPR cc_SGE,L_B136E
@@ -69,24 +69,24 @@ L_B137C:                 ; 0xb137c
         MOV R12,tqi_req_tra_slow
         MOV R13,R4
         SHL R13,#01H
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         MOV eff_iga_min_add_max,R4
         MOV R12,tqi_add_max
         MOV R13,tqi_req_tra_slow
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV R12,R4
-        CALLS 00FH,Max0_S16
+        CALLS SEG Max0_S16, SOF Max0_S16
         MOV tq_add_max,R4
         MOV R12,#DATA16 04652H
         MOVBZ R13,n_32
         MOV R14,tqi_add_max
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XWord_YByte
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XWord_YByte, SOF Get_IP_Word_3D_Table_DWord_XWord_YByte
         MOV maf_add_max,R4
         MOV R12,R4
         MOV R13,n_C93C
         SHL R13,#02H
         MOV R14,#DATA16 0C000H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV maf_kgh_add_max,R4
         MOVB RL4,DPP0:lc_inh_tq_add_ch
         JMPR cc_EQ,L_B13DA
@@ -113,7 +113,7 @@ L_B1400:                 ; 0xb1400
 L_B1404:                 ; 0xb1404
         MOV R12,tqi_req_tra_slow
         MOV R13,tq_add_req_ch
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV R7,R4
         CMP R7,tqi_add_max
         JMPR cc_SGE,L_B141C
@@ -126,7 +126,7 @@ L_B1420:                 ; 0xb1420
         MOV R12,eff_iga_bas_cor
         MOV R13,tqi_req_tra_slow
         MOV R14,eff_iga_min_teg
-        CALLS 00FH,MulDiv_Round_S16
+        CALLS SEG MulDiv_Round_S16, SOF MulDiv_Round_S16
         MOV R7,R4
         MOV R4,tqi_req_tra_slow
         CMP R7,R4
@@ -207,7 +207,7 @@ L_B14CE:                 ; 0xb14ce
 L_B14D8:                 ; 0xb14d8
         MOV R13,R8
 L_B14DA:                 ; 0xb14da
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         CMP R7,R4
         JMPR cc_SGT,L_B14E4
         BCLR lv_act_cle_slv_ivvt.0EH
@@ -216,7 +216,7 @@ L_B14E4:                 ; 0xb14e4
         JMPR cc_NE,L_B14FC
         JNB lv_act_cle_slv_ivvt.0EH,L_B14FC
         MOV R12,R7
-        CALLS 00FH,Max0_S16
+        CALLS SEG Max0_S16, SOF Max0_S16
         MOV tq_add_req,R4
         BSET lv_act_cle_slv_ivvt.0DH
         JMPR cc_UC,L_B1502
@@ -226,7 +226,7 @@ L_B14FC:                 ; 0xb14fc
 L_B1502:                 ; 0xb1502
         MOV R12,tqi_req_tra_slow
         MOV R13,tq_add_req
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV R7,R4
         CMP R7,#00H
         JMPR cc_SLE,L_B1516
@@ -258,9 +258,9 @@ L_B1546:                 ; 0xb1546
         MOV tqi_add_act_tmp_1,R4
         MOV R12,tqi_add_act_tmp_2
         MOV R13,tqi_req_tra_slow
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV R12,R4
-        CALLS 00FH,Max0_S16
+        CALLS SEG Max0_S16, SOF Max0_S16
         MOV tq_add_req_max_teg,R4
         JNB lv_ast.06H,L_B156E
         MOV R5,tqi_add_act_tmp_1
@@ -280,13 +280,13 @@ L_B1586:                 ; 0xb1586
 L_B158A:                 ; 0xb158a
         MOV R12,R7
         MOV R13,tqi_req_tra_slow
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV R12,R4
-        CALLS 00FH,Max0_S16
+        CALLS SEG Max0_S16, SOF Max0_S16
         MOV tq_add_req_act,R4
         MOV R12,tqi_add_act
         MOV R13,tq_loss
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV tq_add_act,R4
         MOV R7,[R0+]
         MOV R8,[R0+]
@@ -303,18 +303,18 @@ Calc_TQ_Add_Tra:
         MOV R12,#DATA16 POF ldp_tq_req_dif_tra_fac_tq_tra
         MOV R13,#DATA16 PAG ldp_tq_req_dif_tra_fac_tq_tra
         MOV R14,tq_req_dif_tra
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_fac_tq_tra__tq_req_dif_tra
         MOV R13,#DATA16 PAG ip_fac_tq_tra__tq_req_dif_tra
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV fac_tq_tra,R4
         MOV R12,#DATA16 POF ldp_n_32_tq_add_tra
         MOV R13,#DATA16 PAG ldp_n_32_tq_add_tra
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_tq_add_tra__n_32
         MOV R13,#DATA16 PAG ip_tq_add_tra__n_32
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV tq_add_tra_1,R4
         MOV R5,tq_req_dif_tra
         CMP R5,#00H
@@ -322,7 +322,7 @@ Calc_TQ_Add_Tra:
         MOV R12,R5
         MOV R13,fac_tq_tra
         MOV R14,#0BH
-        CALLS 00FH,Mul_Shift_U16_Sat32
+        CALLS SEG Mul_Shift_U16_Sat32, SOF Mul_Shift_U16_Sat32
         MOV R9,R4
         CMP R9,#DATA16 07FFFH
         JMPR cc_NC,L_B1618

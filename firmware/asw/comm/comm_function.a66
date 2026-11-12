@@ -40,7 +40,7 @@ KWP_App_SubFn_0_case:
         CMP R4,#03H
         JMPR cc_NE,L_E4E76
         MOVBZ R12,RL6
-        CALLS 00EH,Calc_Inh_IV_AS
+        CALLS SEG Calc_Inh_IV_AS, SOF Calc_Inh_IV_AS
         MOVB kwp_nrc,RL4
         JMPR cc_UC,L_E4F00
 L_E4E76:                 ; 0xe4e76
@@ -52,7 +52,7 @@ L_E4E76:                 ; 0xe4e76
 KWP_App_SubFn_1_case:
         MOVBZ R12,RL6
         MOV R13,kwp_req_ptr
-        CALLS 00EH,KWP_App_IOControl_By_LocalId
+        CALLS SEG KWP_App_IOControl_By_LocalId, SOF KWP_App_IOControl_By_LocalId
         MOV R9,R4
         SHR R4,#08H
         MOVB kwp_nrc,RL4
@@ -74,7 +74,7 @@ KWP_App_SubFn_4_case:
         CMP R4,#03H
         JMPR cc_NE,L_E4EBE
         MOVBZ R12,RL6
-        CALLS 00EH,KWP_io_adaptive_values_adjustment
+        CALLS SEG KWP_io_adaptive_values_adjustment, SOF KWP_io_adaptive_values_adjustment
         MOVB kwp_nrc,RL4
         JMPR cc_UC,L_E4F00
 L_E4EBE:                 ; 0xe4ebe
@@ -86,7 +86,7 @@ L_E4EBE:                 ; 0xe4ebe
 KWP_App_SubFn_6_case:
         MOVBZ R12,RL6
         MOV R13,kwp_req_ptr
-        CALLS 00EH,KWP_App_Handler_0e4644
+        CALLS SEG KWP_App_Handler_0e4644, SOF KWP_App_Handler_0e4644
         MOVB kwp_nrc,RL4
         JMPR cc_UC,L_E4F00
 
@@ -94,7 +94,7 @@ KWP_App_SubFn_6_case:
 KWP_App_SubFn_7_case:
         MOVBZ R12,RL6
         MOV R13,kwp_req_ptr
-        CALLS 00EH,KWP_App_Handler_0e46bc
+        CALLS SEG KWP_App_Handler_0e46bc, SOF KWP_App_Handler_0e46bc
         MOVB kwp_nrc,RL4
         JMPR cc_UC,L_E4F00
 
@@ -102,7 +102,7 @@ KWP_App_SubFn_7_case:
 KWP_App_SubFn_8_case:
         MOVBZ R12,RL6
         MOV R13,kwp_req_ptr
-        CALLS 00EH,KWP_App_Handler_0e4d00
+        CALLS SEG KWP_App_Handler_0e4d00, SOF KWP_App_Handler_0e4d00
         MOVB kwp_nrc,RL4
         JMPR cc_UC,L_E4F00
 

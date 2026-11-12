@@ -78,9 +78,9 @@ EngState_TrailThrottle:
         MOVB eng_state,RL4
         MOV R4,#DATA16 04000H
         MOV eng_state_marker,R4
-        CALLS 00CH,Calc_TIA_TCO_Plaus
-        CALLS 00BH,Init_TOil_Model
-        CALLS 00BH,Reset_toil_mes_max_diag_fca
+        CALLS SEG Calc_TIA_TCO_Plaus, SOF Calc_TIA_TCO_Plaus
+        CALLS SEG Init_TOil_Model, SOF Init_TOil_Model
+        CALLS SEG Reset_toil_mes_max_diag_fca, SOF Reset_toil_mes_max_diag_fca
         MOVB RL4,tco
         CMPB RL4,DPP0:c_tco_min_puc_st
         JMPR cc_NC,L_D844C
@@ -95,21 +95,21 @@ L_D844C:                 ; 0xd844c
         MOV R4,DPP0:c_cycnr_hys_puc
         MOV cycnr_hys_pu,R4
 L_D845C:                 ; 0xd845c
-        CALLS 00DH,Calc_AST_Enrich
-        CALLS 00DH,DiagCP_Collect_Samples
-        CALLS 00DH,DiagCP_Precond
-        CALLS 00BH,CanPurge_Reset_Gated
-        CALLS 00CH,CanPurge_SetAct
-        CALLS 00CH,Diag_DTC_dd1da
-        CALLS 00BH,Calc_FSD_Precond
-        CALLS 00CH,exhaust_gas_sub
-        CALLS 00BH,Reset_LS_State_Group_2
-        CALLS 00BH,Reset_sVar1_694
-        CALLS 00BH,Reset_TI_CH
-        CALLS 00AH,Set_ti_er_ad_f5c
-        CALLS 00CH,Reset_n_max_thd_49e
-        CALLS 00CH,AcComp_StartCond
-        CALLS 00CH,Reset_Dc33d_612
+        CALLS SEG Calc_AST_Enrich, SOF Calc_AST_Enrich
+        CALLS SEG DiagCP_Collect_Samples, SOF DiagCP_Collect_Samples
+        CALLS SEG DiagCP_Precond, SOF DiagCP_Precond
+        CALLS SEG CanPurge_Reset_Gated, SOF CanPurge_Reset_Gated
+        CALLS SEG CanPurge_SetAct, SOF CanPurge_SetAct
+        CALLS SEG Diag_DTC_dd1da, SOF Diag_DTC_dd1da
+        CALLS SEG Calc_FSD_Precond, SOF Calc_FSD_Precond
+        CALLS SEG exhaust_gas_sub, SOF exhaust_gas_sub
+        CALLS SEG Reset_LS_State_Group_2, SOF Reset_LS_State_Group_2
+        CALLS SEG Reset_sVar1_694, SOF Reset_sVar1_694
+        CALLS SEG Reset_TI_CH, SOF Reset_TI_CH
+        CALLS SEG Set_ti_er_ad_f5c, SOF Set_ti_er_ad_f5c
+        CALLS SEG Reset_n_max_thd_49e, SOF Reset_n_max_thd_49e
+        CALLS SEG AcComp_StartCond, SOF AcComp_StartCond
+        CALLS SEG Reset_Dc33d_612, SOF Reset_Dc33d_612
         RETS
 
 ; ======== Calc_MAF_Dif_CH_Cond  (@0xd849a) ========
@@ -121,7 +121,7 @@ Calc_MAF_Dif_CH_Cond:
         MOV R12,#DATA16 POF sstm_tkw_1_6
         MOV R13,#DATA16 PAG sstm_tkw_1_6
         MOVBZ R14,tco
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         JB lv_dur_igc_0_err.0DH,L_D852E
         JB lv_dur_igc_0_err.0EH,L_D852E
         JB lv_cam_err.01H,L_D852E
@@ -130,34 +130,34 @@ Calc_MAF_Dif_CH_Cond:
         MOV R12,#DATA16 POF ldpm_tar_gc_ip_n_min_puc
         MOV R13,#DATA16 PAG ldpm_tar_gc_ip_n_min_puc
         MOVBZ R14,tar_gc
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         JNB state_out_fault.0EH,L_D84E4
         MOV R12,#DATA16 POF ip_n_accin_min_puc_at
         MOV R13,#DATA16 PAG ip_n_accin_min_puc_at
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVB n_min_pl_cond,RL4
         JMPR cc_UC,L_D8586
 L_D84E4:                 ; 0xd84e4
         MOV R12,#DATA16 POF ip_n_min_puc_at__tco__tar_gc
         MOV R13,#DATA16 PAG ip_n_min_puc_at__tco__tar_gc
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVB n_min_pl_cond,RL4
         JMPR cc_UC,L_D8586
 L_D84F6:                 ; 0xd84f6
         MOV R12,#DATA16 POF ldpm_gr_mt_ip_n_min_puc
         MOV R13,#DATA16 PAG ldpm_gr_mt_ip_n_min_puc
         MOVBZ R14,gr_mt
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         JNB state_out_fault.0EH,L_D851C
         MOV R12,#DATA16 POF ip_n_accin_min_puc__tco__gr_mt
         MOV R13,#DATA16 PAG ip_n_accin_min_puc__tco__gr_mt
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVB n_min_pl_cond,RL4
         JMPR cc_UC,L_D8586
 L_D851C:                 ; 0xd851c
         MOV R12,#DATA16 POF ip_n_min_puc__tco__gr_mt
         MOV R13,#DATA16 PAG ip_n_min_puc__tco__gr_mt
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVB n_min_pl_cond,RL4
         JMPR cc_UC,L_D8586
 L_D852E:                 ; 0xd852e
@@ -165,20 +165,20 @@ L_D852E:                 ; 0xd852e
         MOV R12,#DATA16 POF ldpm_tar_gc_ip_n_min_puc
         MOV R13,#DATA16 PAG ldpm_tar_gc_ip_n_min_puc
         MOVBZ R14,tar_gc
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         MOV R12,#DATA16 POF ip_n_accin_min_puc_at
         MOV R13,#DATA16 PAG ip_n_accin_min_puc_at
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVB n_min_pl_cond,RL4
         JMPR cc_UC,L_D8574
 L_D8554:                 ; 0xd8554
         MOV R12,#DATA16 POF ldpm_gr_mt_ip_n_min_puc
         MOV R13,#DATA16 PAG ldpm_gr_mt_ip_n_min_puc
         MOVBZ R14,gr_mt
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         MOV R12,#DATA16 POF ip_n_accin_min_puc__tco__gr_mt
         MOV R13,#DATA16 PAG ip_n_accin_min_puc__tco__gr_mt
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVB n_min_pl_cond,RL4
 L_D8574:                 ; 0xd8574
         MOVB RL4,n_min_pl_cond
@@ -204,7 +204,7 @@ L_D8586:                 ; 0xd8586
         BCLR lv_ast.03H
         BCLR lv_ast.04H
         BCLR lv_cdn_diag_maf_dif_ch_int.0DH
-        CALLS 00CH,AcComp_AccIn_Reset
+        CALLS SEG AcComp_AccIn_Reset, SOF AcComp_AccIn_Reset
         RETS
 L_D85BA:                 ; 0xd85ba
         JB lv_ct.00H,L_D85C2
@@ -223,12 +223,12 @@ L_D85C2:                 ; 0xd85c2
 L_D85E0:                 ; 0xd85e0
         MOV R12,maf_mmv
         MOV R13,maf_word
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV maf_mmv_dif,R4
         MOV R12,#DATA16 POF sst_n_kf_lm_gmw_s
         MOV R13,#DATA16 PAG sst_n_kf_lm_gmw_s
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         JNB lv_err_tps_det.07H,L_D8644
         MOVB RL4,tco
         CMPB RL4,DPP0:c_tco_min_pu
@@ -238,7 +238,7 @@ L_D85E0:                 ; 0xd85e0
         JMPR cc_ULE,L_D8644
         MOV R12,#DATA16 POF ip_maf_mmv_min_pu__n
         MOV R13,#DATA16 PAG ip_maf_mmv_min_pu__n
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         CMPB RL4,lv_maf_cc5b
         JMPR cc_NC,L_D8644
         MOVB RL4,n_32
@@ -257,7 +257,7 @@ L_D8644:                 ; 0xd8644
         BSET lv_pl.05H
         MOVB RL4,#04H
         MOVB eng_state,RL4
-        CALLS 00DH,Calc_t_min_pu
+        CALLS SEG Calc_t_min_pu, SOF Calc_t_min_pu
         MOV R4,#DATA16 00400H
         MOV eng_state_marker,R4
         RETS
@@ -384,7 +384,7 @@ L_D878E:                 ; 0xd878e
         BSET lv_pl.01H
         MOVB RL4,#04H
         MOVB eng_state,RL4
-        CALLS 00DH,Calc_t_min_pu
+        CALLS SEG Calc_t_min_pu, SOF Calc_t_min_pu
         MOV R4,#DATA16 00200H
         MOV eng_state_marker,R4
         JMPR cc_UC,L_D87C4
@@ -422,7 +422,7 @@ L_D87D6:                 ; 0xd87d6
         BCLR lv_ast.03H
         BCLR lv_ast.04H
         BCLR lv_cdn_diag_maf_dif_ch_int.0DH
-        CALLS 00CH,AcComp_AccIn_Reset
+        CALLS SEG AcComp_AccIn_Reset, SOF AcComp_AccIn_Reset
         RETS
 L_D880A:                 ; 0xd880a
         JB lv_ct.00H,L_D8822
@@ -442,7 +442,7 @@ L_D8822:                 ; 0xd8822
         BSET lv_pl.05H
         MOVB RL4,#04H
         MOVB eng_state,RL4
-        CALLS 00DH,Calc_t_min_pu
+        CALLS SEG Calc_t_min_pu, SOF Calc_t_min_pu
         MOV R4,#DATA16 00040H
         MOV eng_state_marker,R4
         RETS
@@ -465,7 +465,7 @@ L_D8864:                 ; 0xd8864
         JB lv_pl.04H,L_D886C
         JMPA cc_UC,L_D8A0A
 L_D886C:                 ; 0xd886c
-        CALLS 00BH,Calc_IGA_St
+        CALLS SEG Calc_IGA_St, SOF Calc_IGA_St
         MOV R4,ctr_bol_st
         CMP R4,#DATA16 0FFFFH
         JMPR cc_EQ,L_D8880
@@ -475,15 +475,15 @@ L_D8880:                 ; 0xd8880
         MOV R12,#DATA16 POF ldpm_tco_9
         MOV R13,#DATA16 PAG ldpm_tco_9
         MOVBZ R14,tco
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_n_max_tol_st
         MOV R13,#DATA16 PAG ip_n_max_tol_st
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         CMPB RL4,n_32
         JMPA cc_UGT,L_D8A0A
         MOV R12,#DATA16 POF ip_cyc_max_tol_st
         MOV R13,#DATA16 PAG ip_cyc_max_tol_st
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         CMP R4,ctr_bol_st
         JMPA cc_UGT,L_D8A0A
         JB lv_ct.00H,L_D88CE
@@ -515,21 +515,21 @@ L_D88F0:                 ; 0xd88f0
         MOV R12,#DATA16 POF sst_tal_kf_ti_kns
         MOV R13,#DATA16 PAG sst_tal_kf_ti_kns
         MOVBZ R14,tia
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ldpm_tco_st_ip_ti_deac_cast
         MOV R13,#DATA16 PAG ldpm_tco_st_ip_ti_deac_cast
         MOVBZ R14,tco
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         JNB lv_conf_mis.0AH,L_D8932
         MOV R12,#DATA16 POF ip_ti_cast_at__tia__tco_st
         MOV R13,#DATA16 PAG ip_ti_cast_at__tia__tco_st
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVB maf_as_base,RL4
         JMPR cc_UC,L_D8942
 L_D8932:                 ; 0xd8932
         MOV R12,#DATA16 POF ip_ti_cast__tia__tco_st
         MOV R13,#DATA16 PAG ip_ti_cast__tia__tco_st
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVB maf_as_base,RL4
 L_D8942:                 ; 0xd8942
         BSET lv_ast.01H
@@ -541,51 +541,51 @@ L_D8942:                 ; 0xd8942
         MOV maf_wf_init,ZEROS
         MOV R4,DPP0:c_t_max_rest
         MOV t_max_rest,R4
-        CALLS 00BH,Init_WF_SegCtr
-        CALLS 00BH,Calc_Fac_WF_VO
-        CALLS 00CH,Reset_ctr_cold_st_3c2
-        CALLS 00BH,Calc_LSH_Up_Init
-        CALLS 00BH,LSH_Down_Heater_Start
-        CALLS 00DH,CanPurge_Set_Close_4
-        CALLS 00BH,Nop_b60cc
-        CALLS 00CH,Lookup_TI_AST_CP
-        CALLS 00BH,Calc_Ctr_Stop_FSD
-        CALLS 00BH,Calc_Thermostat_Diag_State
-        CALLS 00BH,Set_Df97e_702
-        CALLS 00BH,CatHeat_Coord
-        CALLS 00BH,Calc_ER_Adapt_State
-        CALLS 00CH,Tail_Calc_N_SP_Add_Cat_b92
-        CALLS 00CH,Reset_Dc2d1_03a
-        CALLS 00DH,LS_Up_OBD2_Freq_Gated
-        CALLS 00CH,AcComp_AccIn_Alt
+        CALLS SEG Init_WF_SegCtr, SOF Init_WF_SegCtr
+        CALLS SEG Calc_Fac_WF_VO, SOF Calc_Fac_WF_VO
+        CALLS SEG Reset_ctr_cold_st_3c2, SOF Reset_ctr_cold_st_3c2
+        CALLS SEG Calc_LSH_Up_Init, SOF Calc_LSH_Up_Init
+        CALLS SEG LSH_Down_Heater_Start, SOF LSH_Down_Heater_Start
+        CALLS SEG CanPurge_Set_Close_4, SOF CanPurge_Set_Close_4
+        CALLS SEG Nop_b60cc, SOF Nop_b60cc
+        CALLS SEG Lookup_TI_AST_CP, SOF Lookup_TI_AST_CP
+        CALLS SEG Calc_Ctr_Stop_FSD, SOF Calc_Ctr_Stop_FSD
+        CALLS SEG Calc_Thermostat_Diag_State, SOF Calc_Thermostat_Diag_State
+        CALLS SEG Set_Df97e_702, SOF Set_Df97e_702
+        CALLS SEG CatHeat_Coord, SOF CatHeat_Coord
+        CALLS SEG Calc_ER_Adapt_State, SOF Calc_ER_Adapt_State
+        CALLS SEG Tail_Calc_N_SP_Add_Cat_b92, SOF Tail_Calc_N_SP_Add_Cat_b92
+        CALLS SEG Reset_Dc2d1_03a, SOF Reset_Dc2d1_03a
+        CALLS SEG LS_Up_OBD2_Freq_Gated, SOF LS_Up_OBD2_Freq_Gated
+        CALLS SEG AcComp_AccIn_Alt, SOF AcComp_AccIn_Alt
         JB obd_sf.0DH,L_D89F6
-        CALLS 00BH,Set_RBM_Cat_Diag_State
-        CALLS 00DH,Reset_lv_err_maf_tps_ratio_2_24e
-        CALLS 00DH,Set_state_rbm_dtp_noise_2c2
-        CALLS 00DH,Set_state_rbm_cps_mecha_34c
-        CALLS 00DH,Set_state_rbm_leak_small_3d0
-        CALLS 00DH,Set_state_rbm_leak_large_46e
-        CALLS 00DH,Reset_state_rbm_lsh_up_obd2_864
-        CALLS 00BH,Reset_state_rbm_lsh_down_obd2_0ac
-        CALLS 00CH,Reset_state_rbm_cam_dif_ivvt_in_654
-        CALLS 00CH,Reset_state_rbm_tco_stuck_04a
-        CALLS 00CH,Reset_state_rbm_tco_stuck_rng_0e2
-        CALLS 00BH,Reset_state_rbm_tco_plaus_86a
-        CALLS 00BH,Reset_state_rbm_th_det_746
-        CALLS 00DH,Reset_state_rbm_vls_up_plaus_50e
-        CALLS 00DH,Reset_state_rbm_vls_up_frq_5bc
-        CALLS 00BH,Reset_state_rbm_ls_down_swt_ef0
-        CALLS 00BH,Reset_state_rbm_vls_down_plaus_f8a
-        CALLS 00BH,Reset_state_rbm_toil_stuck_374
-        CALLS 00DH,Set_state_rbm_maf_dif_ch_204
-        CALLS 00CH,Reset_state_rbm_tia_plaus_16e
-        CALLS 00BH,Reset_RBM_Soft
+        CALLS SEG Set_RBM_Cat_Diag_State, SOF Set_RBM_Cat_Diag_State
+        CALLS SEG Reset_lv_err_maf_tps_ratio_2_24e, SOF Reset_lv_err_maf_tps_ratio_2_24e
+        CALLS SEG Set_state_rbm_dtp_noise_2c2, SOF Set_state_rbm_dtp_noise_2c2
+        CALLS SEG Set_state_rbm_cps_mecha_34c, SOF Set_state_rbm_cps_mecha_34c
+        CALLS SEG Set_state_rbm_leak_small_3d0, SOF Set_state_rbm_leak_small_3d0
+        CALLS SEG Set_state_rbm_leak_large_46e, SOF Set_state_rbm_leak_large_46e
+        CALLS SEG Reset_state_rbm_lsh_up_obd2_864, SOF Reset_state_rbm_lsh_up_obd2_864
+        CALLS SEG Reset_state_rbm_lsh_down_obd2_0ac, SOF Reset_state_rbm_lsh_down_obd2_0ac
+        CALLS SEG Reset_state_rbm_cam_dif_ivvt_in_654, SOF Reset_state_rbm_cam_dif_ivvt_in_654
+        CALLS SEG Reset_state_rbm_tco_stuck_04a, SOF Reset_state_rbm_tco_stuck_04a
+        CALLS SEG Reset_state_rbm_tco_stuck_rng_0e2, SOF Reset_state_rbm_tco_stuck_rng_0e2
+        CALLS SEG Reset_state_rbm_tco_plaus_86a, SOF Reset_state_rbm_tco_plaus_86a
+        CALLS SEG Reset_state_rbm_th_det_746, SOF Reset_state_rbm_th_det_746
+        CALLS SEG Reset_state_rbm_vls_up_plaus_50e, SOF Reset_state_rbm_vls_up_plaus_50e
+        CALLS SEG Reset_state_rbm_vls_up_frq_5bc, SOF Reset_state_rbm_vls_up_frq_5bc
+        CALLS SEG Reset_state_rbm_ls_down_swt_ef0, SOF Reset_state_rbm_ls_down_swt_ef0
+        CALLS SEG Reset_state_rbm_vls_down_plaus_f8a, SOF Reset_state_rbm_vls_down_plaus_f8a
+        CALLS SEG Reset_state_rbm_toil_stuck_374, SOF Reset_state_rbm_toil_stuck_374
+        CALLS SEG Set_state_rbm_maf_dif_ch_204, SOF Set_state_rbm_maf_dif_ch_204
+        CALLS SEG Reset_state_rbm_tia_plaus_16e, SOF Reset_state_rbm_tia_plaus_16e
+        CALLS SEG Reset_RBM_Soft, SOF Reset_RBM_Soft
 L_D89F6:                 ; 0xd89f6
-        CALLS 00DH,OBD_Readiness_Grp3
-        CALLS 00CH,IVVT_CamSp_Group
-        CALLS 00CH,UpdBits_lv_iga_tra_knk_ce6
-        CALLS 00CH,Diag_DTC_dd1a2
-        CALLS 00DH,Calc_Mis_Ctr_Voltage
+        CALLS SEG OBD_Readiness_Grp3, SOF OBD_Readiness_Grp3
+        CALLS SEG IVVT_CamSp_Group, SOF IVVT_CamSp_Group
+        CALLS SEG UpdBits_lv_iga_tra_knk_ce6, SOF UpdBits_lv_iga_tra_knk_ce6
+        CALLS SEG Diag_DTC_dd1a2, SOF Diag_DTC_dd1a2
+        CALLS SEG Calc_Mis_Ctr_Voltage, SOF Calc_Mis_Ctr_Voltage
 L_D8A0A:                 ; 0xd8a0a
         RETS
 
@@ -643,7 +643,7 @@ Calc_t_min_pu:
 L_D8A66:                 ; 0xd8a66
         MOV R12,#DATA16 05226H
         MOVBZ R13,n_32
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YByte, SOF Get_IP_Word_2D_Table_DWord_YByte
         MOV t_min_pu,R4
         RETS
 L_D8A78:                 ; 0xd8a78
@@ -654,7 +654,7 @@ L_D8A78:                 ; 0xd8a78
 L_D8A86:                 ; 0xd8a86
         MOV R12,#DATA16 0521EH
         MOVBZ R13,n_32
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YByte, SOF Get_IP_Word_2D_Table_DWord_YByte
         MOV t_min_pu,R4
         RETS
 

@@ -29,7 +29,7 @@ S_B317C SECTION CODE AT 0B317CH
         ; ------------------------------------------------------------
 Reset_RBM_Full:
         MOV [-R0],R9
-        CALLS 00CH,NVM_Restore_s5dc
+        CALLS SEG NVM_Restore_s5dc, SOF NVM_Restore_s5dc
         BCLR lv_dc_rbm.01H
         BCLR lv_dc_rbm.00H
         MOVB state_dc_rbm,ZEROS
@@ -86,7 +86,7 @@ L_B31FC:                 ; 0xb31fc
         ADD R8,#01H
         CMP R8,#DATA16 00013H
         JMPR cc_C,L_B31CC
-        CALLS 00CH,Set_Cat_Diag_Inh
+        CALLS SEG Set_Cat_Diag_Inh, SOF Set_Cat_Diag_Inh
         MOV R8,[R0+]
         MOV R9,[R0+]
         RETS
@@ -99,7 +99,7 @@ L_B31FC:                 ; 0xb31fc
 RBM_Inc_IgnCyc_Ctr:
         MOV [-R0],R9
         MOV [-R0],R8
-        CALLS 00CH,Set_Cat_Diag_Inh_2
+        CALLS SEG Set_Cat_Diag_Inh_2, SOF Set_Cat_Diag_Inh_2
         JNB obd_sf.0DH,L_B3240
         JB lv_dc_rbm.01H,L_B324C
         MOV R4,t_ast
@@ -118,7 +118,7 @@ L_B323C:                 ; 0xb323c
 L_B3240:                 ; 0xb3240
         JB obd_sf.0DH,L_B324C
         JNB lv_dc_rbm.02H,L_B324C
-        CALLS 00BH,Calc_RBM_DriveCond
+        CALLS SEG Calc_RBM_DriveCond, SOF Calc_RBM_DriveCond
 L_B324C:                 ; 0xb324c
         MOVB RL4,cnt_prescale_rbm
         CMPB RL4,#DATA16 00009H
@@ -304,7 +304,7 @@ L_B3410:                 ; 0xb3410
         RETS
 L_B3416:                 ; 0xb3416
         BSET lv_dc_rbm.00H
-        CALLS 00BH,RBM_Inc_CDN_Ctr
+        CALLS SEG RBM_Inc_CDN_Ctr, SOF RBM_Inc_CDN_Ctr
 L_B341C:                 ; 0xb341c
         RETS
 
@@ -331,7 +331,7 @@ L_B342E:                 ; 0xb342e
 Calc_RBM_DriveCond:
         MOV [-R0],R9
         MOV [-R0],R8
-        CALLS 00CH,Snapshot_RBM_States
+        CALLS SEG Snapshot_RBM_States, SOF Snapshot_RBM_States
         MOV R9,#00H
 L_B343E:                 ; 0xb343e
         MOV R4,R9

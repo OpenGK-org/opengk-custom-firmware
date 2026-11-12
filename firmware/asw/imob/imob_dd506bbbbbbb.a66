@@ -20,7 +20,7 @@ Diag_DTC_dd506bbbbbbb:
         MOVB dtc_test_result,ZEROS
         MOV R12,#DATA16 0D506H
         MOV R13,#DATA16 058CCH
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_ecu_err.0DH,dtc_status_work.06H
         MOVBZ R4,dtc_done_imob_b
         AND R4,#DATA16 00020H
@@ -30,7 +30,7 @@ Diag_DTC_dd506bbbbbbb:
 L_BCCD2:                 ; 0xbccd2
         MOV R12,#DATA16 0D4F8H
         MOV R13,#DATA16 058B6H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_ecu_err.0CH,dtc_status_work.06H
         MOVBZ R4,dtc_done_imob_a
         AND R4,#DATA16 00020H
@@ -40,7 +40,7 @@ L_BCCD2:                 ; 0xbccd2
 L_BCCF4:                 ; 0xbccf4
         MOV R12,#DATA16 0D514H
         MOV R13,#DATA16 058E2H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_ecu_err.0EH,dtc_status_work.06H
         MOVBZ R4,dtc_done_imob_c
         AND R4,#DATA16 00020H
@@ -108,7 +108,7 @@ L_BCD72:                 ; 0xbcd72
         MOVB diag_ca3c,ZEROS
         BCLR imob_bw.0BH
 L_BCD78:                 ; 0xbcd78
-        CALLS 00BH,Imob_DTC_update_comms
+        CALLS SEG Imob_DTC_update_comms, SOF Imob_DTC_update_comms
 L_BCD7C:                 ; 0xbcd7c
         MOVB RL4,ans_err_com_imob
         JMPR cc_NE,L_BCD86
@@ -140,7 +140,7 @@ L_BCDB6:                 ; 0xbcdb6
 L_BCDBC:                 ; 0xbcdbc
         MOV R12,#DATA16 0D522H
         MOV R13,#DATA16 058F8H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_ecu_err.0FH,dtc_status_work.06H
         MOVBZ R4,dtc_done_imob_d
         AND R4,#DATA16 00020H
@@ -151,7 +151,7 @@ L_BCDDE:                 ; 0xbcdde
         JNB imob_bw.02H,L_BCDEA
         BCLR imob_bw.02H
         MOV R12,#00H
-        CALLS 00BH,Imob_Update_WarnLamp
+        CALLS SEG Imob_Update_WarnLamp, SOF Imob_Update_WarnLamp
 L_BCDEA:                 ; 0xbcdea
         MOVB smartra_cmd,ZEROS
         JMPA cc_UC,L_BCF16

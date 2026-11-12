@@ -39,9 +39,9 @@ L_E5C5C:                 ; 0xe5c5c
         ORB dtc_ecu_flags,RL4
         MOV R12,#DATA16 0D47AH
         MOV R13,#DATA16 057F0H
-        CALLS 00DH,DTC_Update_Status_MIL
+        CALLS SEG DTC_Update_Status_MIL, SOF DTC_Update_Status_MIL
 L_E5C74:                 ; 0xe5c74
-        CALLS 00BH,Diag_DTC_dd23c
+        CALLS SEG Diag_DTC_dd23c, SOF Diag_DTC_dd23c
         RETS
 
 ; ======== Calc_Crank_Err_LIH  (@0xe5c7a) ========
@@ -87,11 +87,11 @@ L_E5CD6:                 ; 0xe5cd6
         ORB dtc_ecu_flags,RL4
         MOV R12,#DATA16 0D47AH
         MOV R13,#DATA16 057F0H
-        CALLS 00DH,DTC_Update_Status_MIL
+        CALLS SEG DTC_Update_Status_MIL, SOF DTC_Update_Status_MIL
 L_E5CEE:                 ; 0xe5cee
         BCLR lv_cdn_diag_maf_dif_ch_int.0CH
 L_E5CF0:                 ; 0xe5cf0
-        CALLS 00AH,Init_CC5_Output
+        CALLS SEG Init_CC5_Output, SOF Init_CC5_Output
         RETS
 
 ; ======== Set_Out_FuelReq_4  (@0xe5cf6) ========
@@ -100,7 +100,7 @@ L_E5CF0:                 ; 0xe5cf0
         ; output-request latch bit 0x2000 (variant).
         ; ------------------------------------------------------------
 Set_Out_FuelReq_4:
-        CALLS 00CH,Diag_DTC_dd116
+        CALLS SEG Diag_DTC_dd116, SOF Diag_DTC_dd116
         MOVB RL4,first_vld_tooth
         BMOVN PSW.06H,PSW.03H
         JNB PSW.06H,L_E5D2A
@@ -122,7 +122,7 @@ L_E5D2A:                 ; 0xe5d2a
 
 ; ======== Tail_f0c7b8c_d2c  (@0xe5d2c) ========
 Tail_f0c7b8c_d2c:
-        CALLS 00CH,Diag_DTC_dd116
+        CALLS SEG Diag_DTC_dd116, SOF Diag_DTC_dd116
         RETS
 
 ; ======== Nop_e5d32  (@0xe5d32) ========

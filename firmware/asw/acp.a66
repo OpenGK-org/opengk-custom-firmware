@@ -70,7 +70,7 @@ Calc_ACP:
         JMPR cc_C,L_B1B82
         MOV R12,#DATA16 0469EH
         MOV R13,R4
-        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YWord
+        CALLS SEG Get_IP_Byte_2D_Table_DWord_YWord, SOF Get_IP_Byte_2D_Table_DWord_YWord
         MOVB acp,RL4
         JMPR cc_UC,L_B1B86
 L_B1B82:                 ; 0xb1b82
@@ -81,13 +81,13 @@ L_B1B86:                 ; 0xb1b86
         JMPR cc_C,L_B1B9E
         MOVBZ R12,RL4
         MOVBZ R13,acp
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB RL6,RL4
         JMPR cc_UC,L_B1BAC
 L_B1B9E:                 ; 0xb1b9e
         MOVBZ R12,acp
         MOVBZ R13,g_c21f
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB RL6,RL4
 L_B1BAC:                 ; 0xb1bac
         JB lv_fcut_fast.05H,L_B1BC2
@@ -111,7 +111,7 @@ L_B1BCC:                 ; 0xb1bcc
         JMPR cc_NE,L_B1BF8
         MOVBZ R12,DPP0:c_acp_3_cfa
         MOVBZ R13,DPP0:c_acp_hys_3
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL4,acp
         JMPR cc_ULE,L_B1CB0
         MOVB RL4,#02H
@@ -123,7 +123,7 @@ L_B1BF8:                 ; 0xb1bf8
         JMPR cc_NE,L_B1C18
         MOVBZ R12,DPP0:c_acp_1_cfa
         MOVBZ R13,DPP0:c_acp_hys_1
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL4,acp
         JMPR cc_ULE,L_B1CB0
         MOVB state_acp,ZEROS
@@ -134,7 +134,7 @@ L_B1C18:                 ; 0xb1c18
         JMPR cc_NE,L_B1C3A
         MOVBZ R12,DPP0:c_acp_2_cfa
         MOVBZ R13,DPP0:c_acp_hys_2
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL4,acp
         JMPR cc_ULE,L_B1CB0
         MOVB RL4,#01H
@@ -170,7 +170,7 @@ L_B1C76:                 ; 0xb1c76
         JMPR cc_NE,L_B1C98
         MOVBZ R12,DPP0:c_acp_3_cfa
         MOVBZ R13,DPP0:c_acp_hys_3
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL4,acp
         JMPR cc_ULE,L_B1CB0
         MOVB RL4,#02H
@@ -219,7 +219,7 @@ L_B1CE4:                 ; 0xb1ce4
         MOV R13,#DATA16 05ADCH
         MOVBZ R14,DPP0:c_abc_inc_acp_diag
         MOVBZ R15,DPP0:c_abc_max_acp_diag
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_acp_err.05H,dtc_status_work.06H
         MOVBZ R4,diag_d660
         AND R4,#DATA16 00020H

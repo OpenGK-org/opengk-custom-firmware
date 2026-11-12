@@ -111,7 +111,7 @@ L_D320E:                 ; 0xd320e
         BCLR lv_err_maf_tps_ratio_2.05H
         MOV R12,lam_bank_1_lam_up_ti_lam
         MOV R13,lam_0_cp_vap_chk
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV R8,R4
         CMP R8,DPP0:c_lam_min_vap_chk
         JMPA cc_SLE,L_D3528
@@ -141,7 +141,7 @@ L_D324C:                 ; 0xd324c
 L_D3272:                 ; 0xd3272
         MOV R12,flow_sp_cps_vap_chk
         MOV R13,DPP0:c_maf_cps_sp_dec_vap_chk
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV flow_sp_cps_vap_chk,R4
         JMPA cc_UC,L_D3552
 L_D3286:                 ; 0xd3286
@@ -155,14 +155,14 @@ L_D3286:                 ; 0xd3286
 L_D329A:                 ; 0xd329a
         MOV R12,flow_sp_cps_vap_chk
         MOV R13,DPP0:c_maf_cps_sp_dec_vap_chk
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV flow_sp_cps_vap_chk,R4
         JMPR cc_UC,L_D32DA
 L_D32AC:                 ; 0xd32ac
         SUBB t_vap_chk,ONES
         MOV R12,#DATA16 0504AH
         MOVBZ R13,diagcp_vol_cor
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YByte, SOF Get_IP_Word_2D_Table_DWord_YByte
         MOV R9,R4
         CMP R9,flow_sp_cps_vap_chk
         JMPR cc_UGT,L_D32CA
@@ -171,18 +171,18 @@ L_D32AC:                 ; 0xd32ac
 L_D32CA:                 ; 0xd32ca
         MOV R12,flow_sp_cps_vap_chk
         MOV R13,DPP0:c_maf_cps_sp_inc_vap_chk
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV flow_sp_cps_vap_chk,R4
 L_D32DA:                 ; 0xd32da
         MOV R12,lam_0_cp_vap_chk
         MOV R13,lam_bank_1_lam_up_ti_lam
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV R8,R4
         CMP R8,DPP0:c_lam_cor_min_vap_chk
         JMPR cc_SGT,L_D32FE
         MOV R12,R8
         MOV R13,DPP0:c_lam_cor_min_vap_chk
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV lam_dif_cp_vap_chk,R4
         JMPR cc_UC,L_D3312
 L_D32FE:                 ; 0xd32fe
@@ -190,20 +190,20 @@ L_D32FE:                 ; 0xd32fe
         JMPR cc_SLE,L_D3312
         MOV R12,R8
         MOV R13,DPP0:c_lam_cor_max_vap_chk
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV lam_dif_cp_vap_chk,R4
 L_D3312:                 ; 0xd3312
         MOV R12,lam_dif_cp_vap_chk
         MOV R13,maf_dly_mmv
-        CALLS 00FH,Mul_S16_Hi
+        CALLS SEG Mul_S16_Hi, SOF Mul_S16_Hi
         MOV R12,R4
         MOV R13,DPP0:c_fuel_fac_cp
-        CALLS 00FH,Div_Q16_Round
+        CALLS SEG Div_Q16_Round, SOF Div_Q16_Round
         MOV R13,R4
         ASHR R13,#01H
         MOV R12,fuel_flow_add_ad_dly
         SHR R12,#01H
-        CALLS 00FH,Sat_Add_U16
+        CALLS SEG Sat_Add_U16, SOF Sat_Add_U16
         MOV fuel_flow_cp_vap_chk,R4
         CMP R4,#00H
         JMPR cc_SLE,L_D3344
@@ -216,7 +216,7 @@ L_D334A:                 ; 0xd334a
         MOV R12,fuel_flow_cp_vap_chk
         ASHR R12,#02H
         MOV R13,maf_cps_dly_2_mmv
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         MOV R9,R4
         CMP R9,DPP0:c_cl_max_cp
         JMPR cc_NC,L_D3364
@@ -230,22 +230,22 @@ L_D336C:                 ; 0xd336c
         MOV R12,#DATA16 05052H
         MOVBZ R13,n_32
         MOVBZ R14,lv_iga_cc2b
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YByte
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XByte_YByte, SOF Get_IP_Word_3D_Table_DWord_XByte_YByte
         MOV R9,R4
         MOV R12,cl_mmv_vap_chk
         MOV R13,cl_vap_chk
         MOV R14,R9
-        CALLS 00FH,Interp_U16
+        CALLS SEG Interp_U16, SOF Interp_U16
         MOV cl_mmv_vap_chk,R4
         MOVB RL4,t_dtp_grd_vap_chk
         JMPR cc_NE,L_D33C6
         MOV R12,cl_vap_chk
         MOV R13,cl_vap_chk_tmp
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV cl_mmv_vap_chk_grd,R4
         MOV R12,cl_mmv_vap_chk_grd_sum
         MOV R13,R4
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV cl_mmv_vap_chk_grd_sum,R4
         MOV R5,cl_vap_chk
         MOV cl_vap_chk_tmp,R5
@@ -270,7 +270,7 @@ L_D33E2:                 ; 0xd33e2
         MOVB dtc_test_result,RL5
         MOV R12,#DATA16 0D31CH
         MOV R13,#DATA16 055CAH
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cps_err.0AH,dtc_status_work.06H
         MOVBZ R4,dtc_done_cp_0
         AND R4,#DATA16 00020H
@@ -299,7 +299,7 @@ L_D3446:                 ; 0xd3446
         MOVB dtc_test_result,RL5
         MOV R12,#DATA16 0D338H
         MOV R13,#DATA16 055F6H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cps_err.0CH,dtc_status_work.06H
         MOVBZ R4,dtc_done_cp_2
         AND R4,#DATA16 00020H
@@ -323,7 +323,7 @@ L_D3498:                 ; 0xd3498
         MOVB dtc_test_result,RL5
         MOV R12,#DATA16 0D32AH
         MOV R13,#DATA16 055E0H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cps_err.0BH,dtc_status_work.06H
         MOVBZ R4,dtc_done_cp_1
         AND R4,#DATA16 00020H
@@ -378,7 +378,7 @@ L_D3528:                 ; 0xd3528
 L_D3542:                 ; 0xd3542
         MOV R12,flow_sp_cps_vap_chk
         MOV R13,DPP0:c_maf_cps_sp_dec_vap_chk
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV flow_sp_cps_vap_chk,R4
 L_D3552:                 ; 0xd3552
         MOV R4,flow_sp_cps_vap_chk
@@ -425,10 +425,10 @@ DiagCP_Calc_DtpDyw:
         MOV dtp_mv_dyw,R4
         MOV R12,R4
         MOV R13,dtp_sword
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV dtp_dif_dyw,R4
         MOV R12,R4
-        CALLS 00FH,Abs_S16
+        CALLS SEG Abs_S16, SOF Abs_S16
         MOV R5,[R0]
         CMP R4,R5
         JMPR cc_C,L_D35C0

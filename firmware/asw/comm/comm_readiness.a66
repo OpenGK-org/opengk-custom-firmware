@@ -26,10 +26,10 @@ S_DAE6A SECTION CODE AT 0DAE6AH
 Reset_OBD_Readiness_Group:
         MOV [-R0],R9
         MOV [-R0],R6
-        CALLS 00DH,Calc_Ready_DC_Ctr
-        CALLS 00DH,Init_Fault_Table_2
-        CALLS 00DH,Init_Fault_Table_1
-        CALLS 00DH,OBD_Readiness_Grp1
+        CALLS SEG Calc_Ready_DC_Ctr, SOF Calc_Ready_DC_Ctr
+        CALLS SEG Init_Fault_Table_2, SOF Init_Fault_Table_2
+        CALLS SEG Init_Fault_Table_1, SOF Init_Fault_Table_1
+        CALLS SEG OBD_Readiness_Grp1, SOF OBD_Readiness_Grp1
         MOV R9,#DATA16 0D69AH
         MOVB RL6,#00H
 L_DAE84:                 ; 0xdae84
@@ -121,7 +121,7 @@ Clear_Fault_Slot:
         MOVB [R2+#0D0DCH],RL4
         CMPB RL7,obd_ff_mon_id
         JMPR cc_NE,L_DAF42
-        CALLS 00DH,OBD_Readiness_Grp1
+        CALLS SEG OBD_Readiness_Grp1, SOF OBD_Readiness_Grp1
 L_DAF42:                 ; 0xdaf42
         MOVBZ R4,RL7
         MOV R5,#DATA16 00016H
@@ -132,7 +132,7 @@ L_DAF42:                 ; 0xdaf42
         AND R5,#DATA16 00060H
         JMPR cc_EQ,L_DAFA8
         MOVBZ R12,RL7
-        CALLS 00DH,Get_DTC_StatusBits
+        CALLS SEG Get_DTC_StatusBits, SOF Get_DTC_StatusBits
         MOVB RL6,RL4
         CMPB RL6,#04H
         JMPR cc_NC,L_DAF92
@@ -140,17 +140,17 @@ L_DAF42:                 ; 0xdaf42
         MOVBZ R4,RL6
         SHL R4,#03H
         ADD R12,R4
-        CALLS 00DH,Nop_db00c
+        CALLS SEG Nop_db00c, SOF Nop_db00c
         MOV R12,#DATA16 0D6BAH
         MOVBZ R4,RL6
         SHL R4,#03H
         ADD R12,R4
-        CALLS 00DH,Nop_db00c
+        CALLS SEG Nop_db00c, SOF Nop_db00c
         MOV R12,#DATA16 0D6DAH
         MOVBZ R4,RL6
         SHL R4,#03H
         ADD R12,R4
-        CALLS 00DH,Nop_db00c
+        CALLS SEG Nop_db00c, SOF Nop_db00c
         JMPR cc_UC,L_DAFA8
 L_DAF92:                 ; 0xdaf92
         SUBB RL6,#04H
@@ -161,7 +161,7 @@ L_DAF92:                 ; 0xdaf92
         MOVBZ R4,RL6
         SHL R4,#03H
         ADD R12,R4
-        CALLS 00DH,Nop_db00c
+        CALLS SEG Nop_db00c, SOF Nop_db00c
 L_DAFA8:                 ; 0xdafa8
         MOV R6,[R0+]
         MOV R7,[R0+]
@@ -339,7 +339,7 @@ L_DB11C:                 ; 0xdb11c
         MOV R12,maf_mes
         MOVBZ R13,DPP0:c_maf_max
         SHL R13,#08H
-        CALLS 00FH,Div_Ratio_U8_Sat
+        CALLS SEG Div_Ratio_U8_Sat, SOF Div_Ratio_U8_Sat
         MOVB obd_ff_load,RL4
 L_DB12E:                 ; 0xdb12e
         MOVBZ R4,obd_ff_ctl
@@ -372,10 +372,10 @@ L_DB166:                 ; 0xdb166
         SHR R4,#08H
         OR R13,R4
         MOV R14,maf_max_cor
-        CALLS 00FH,Div_U32_U16_Round32
+        CALLS SEG Div_U32_U16_Round32, SOF Div_U32_U16_Round32
         MOV R12,R4
         MOV R13,R5
-        CALLS 00FH,Sel_Ovf_U16
+        CALLS SEG Sel_Ovf_U16, SOF Sel_Ovf_U16
         MOV obd_ff_maf_ratio,R4
 L_DB18A:                 ; 0xdb18a
         MOV R4,maf_kgh_mes

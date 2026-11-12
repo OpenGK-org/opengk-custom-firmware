@@ -23,33 +23,33 @@ Calc_AR_Red_Avl:
         MOV R12,#DATA16 047E8H
         MOV R13,#DATA16 0FFFFH
         MOV R14,n_C93C
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XWord_YWord
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XWord_YWord, SOF Get_IP_Word_3D_Table_DWord_XWord_YWord
         MOV ar_red_max_avl_isa,R4
         MOV R12,#DATA16 08000H
         MOV R13,ar_red_ad_fac_cor
         ASHR R13,#01H
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV R12,R4
         MOV R13,ar_red_dif_i_rel_mmv
         ASHR R13,#01H
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV R8,R4
         MOV R12,ar_red_bas_thr_ivs
         MOV R13,R8
-        CALLS 00FH,Mul_Q15_Sat
+        CALLS SEG Mul_Q15_Sat, SOF Mul_Q15_Sat
         MOV R12,R4
         MOV R13,ar_red_ad_add
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV ar_red_min_avl,R4
         MOV R12,ar_red_bas_thr_ivs
         MOV R13,ar_red_max_avl_isa
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV R12,R4
         MOV R13,R8
-        CALLS 00FH,Mul_Q15_Sat
+        CALLS SEG Mul_Q15_Sat, SOF Mul_Q15_Sat
         MOV R12,R4
         MOV R13,ar_red_ad_add
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV ar_red_max_avl,R4
         MOV R12,maf_mdl_con_1
         MOV R13,ar_red_min_avl
@@ -60,7 +60,7 @@ Calc_AR_Red_Avl:
         SHL R15,#07H
         SHR R5,#09H
         OR R15,R5
-        CALLS 00FH,MulDiv_U16
+        CALLS SEG MulDiv_U16, SOF MulDiv_U16
         MOV fac_1_pq_min,R4
         MOV R12,maf_mdl_con_1
         MOV R13,ar_red_max_avl
@@ -71,57 +71,57 @@ Calc_AR_Red_Avl:
         SHL R15,#07H
         SHR R5,#09H
         OR R15,R5
-        CALLS 00FH,MulDiv_U16
+        CALLS SEG MulDiv_U16, SOF MulDiv_U16
         MOV fac_1_pq_max,R4
         MOV R12,eff_vol_slop
         MOV R13,prs_up_thr_ivs
         MOV R14,#DATA16 00800H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV R8,R4
         MOV R12,eff_vol_ofs
         MOV R13,R8
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         MOV fac_2_pq,R4
         MOV R12,#DATA16 047DCH
         MOV R13,fac_1_pq_min
         MOV R14,R4
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XWord_YWord
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XWord_YWord, SOF Get_IP_Word_3D_Table_DWord_XWord_YWord
         MOV pq_min_avl,R4
         MOV R12,#DATA16 047DCH
         MOV R13,fac_1_pq_max
         MOV R14,fac_2_pq
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XWord_YWord
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XWord_YWord, SOF Get_IP_Word_3D_Table_DWord_XWord_YWord
         MOV pq_max_avl,R4
         MOV R12,R8
         MOV R13,pq_min_avl
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV R12,R4
         MOV R13,eff_vol_ofs
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV R9,R4
         MOV R12,R9
         MOV R13,#DATA16 0C000H
         MOV R14,n_C93C
         SHL R14,#02H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV maf_min_cor,R4
         MOV R12,R8
         MOV R13,pq_max_avl
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV R12,R4
         MOV R13,eff_vol_ofs
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV R9,R4
         MOV R12,R9
         MOV R13,#DATA16 0C000H
         MOV R14,n_C93C
         SHL R14,#02H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV maf_max_cor,R4
         MOV R12,maf_word
         SHR R12,#01H
         MOV R13,R4
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         MOV fac_maf_max,R4
         MOV R8,[R0+]
         MOV R9,[R0+]
@@ -133,16 +133,16 @@ Reset_uVar1_89c:
         MOV R12,prs_up_thr_max
         MOV R13,eff_vol_slop
         MOV R14,#DATA16 00800H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV R12,R4
         MOV R13,eff_vol_ofs
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV R9,R4
         MOV R12,R9
         MOV R13,#DATA16 0C000H
         MOV R14,n_C93C
         SHL R14,#02H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV maf_max_tot,R4
         MOV R9,[R0+]
         RETS

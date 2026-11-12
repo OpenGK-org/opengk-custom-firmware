@@ -39,7 +39,7 @@ Calc_TQI_Sp:
 L_B0FEE:                 ; 0xb0fee
         MOV R12,tqi_bas
         MOV R13,tq_add_req_act_fil_ch
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV tqi_bas_cor_ch,R4
         MOV R5,tqi_req_fast
         CMP R5,tqi_bas_cor_ch
@@ -52,10 +52,10 @@ L_B1012:                 ; 0xb1012
         MOV tqi_fast,R4
         MOV R12,R4
         MOV R13,tq_dif_p_d_fast_is
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV R12,R4
         MOV R13,tq_dif_aj
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV R9,R4
         CMP R9,#00H
         JMPR cc_SLE,L_B1034
@@ -71,7 +71,7 @@ L_B1036:                 ; 0xb1036
         MOV R12,tqi_req_tra
         MOV R13,tqi_bas
         MOV R14,R5
-        CALLS 00FH,MulDiv_S16_c
+        CALLS SEG MulDiv_S16_c, SOF MulDiv_S16_c
         MOV tqi_bas_cor,R4
         JMPR cc_UC,L_B105A
 L_B1056:                 ; 0xb1056
@@ -79,7 +79,7 @@ L_B1056:                 ; 0xb1056
 L_B105A:                 ; 0xb105a
         MOV R12,tqi_sp_1
         MOV R13,tqi_bas_cor
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV R9,R4
         JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_B10A8
         CMP R9,DPP0:c_tq_dif_is_1
@@ -92,14 +92,14 @@ L_B1078:                 ; 0xb1078
 L_B107C:                 ; 0xb107c
         MOV R12,DPP0:c_tq_dif_is_1
         MOV R13,DPP0:c_tq_dif_hys_is_1
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         CMP R9,R4
         JMPR cc_SGE,L_B1090
         JB lv_act_cle_slv_ivvt.0AH,L_B10E2
 L_B1090:                 ; 0xb1090
         MOV R12,DPP0:c_tq_dif_is_2
         MOV R13,DPP0:c_tq_dif_hys_is_2
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         CMP R9,R4
         JMPR cc_SLE,L_B10A4
         JB lv_act_cle_slv_ivvt.0AH,L_B10E2
@@ -117,14 +117,14 @@ L_B10B4:                 ; 0xb10b4
 L_B10B8:                 ; 0xb10b8
         MOV R12,DPP0:c_tq_dif_1
         MOV R13,DPP0:c_tq_dif_hys_1
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         CMP R9,R4
         JMPR cc_SGE,L_B10CC
         JB lv_act_cle_slv_ivvt.0AH,L_B10E2
 L_B10CC:                 ; 0xb10cc
         MOV R12,DPP0:c_tq_dif_2
         MOV R13,DPP0:c_tq_dif_hys_2
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         CMP R9,R4
         JMPR cc_SLE,L_B10E0
         JB lv_act_cle_slv_ivvt.0AH,L_B10E2
@@ -176,7 +176,7 @@ L_B113E:                 ; 0xb113e
 L_B114E:                 ; 0xb114e
         MOV R12,tqi_req_slow
         MOV R13,tq_dif_p_d_slow_is
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV R9,R4
         CMP R9,#00H
         JMPR cc_SLE,L_B1164
@@ -190,7 +190,7 @@ L_B116A:                 ; 0xb116a
         MOV R12,tqi_sp_maf_1
         ASHR R12,#01H
         MOV R13,eff_tot_bas_slow
-        CALLS 00FH,Div_Q16_Round
+        CALLS SEG Div_Q16_Round, SOF Div_Q16_Round
         MOV tqi_sp_maf_2,R4
         MOV R5,tqi_min_pu
         CMP R5,tqi_sp_maf_2
@@ -204,7 +204,7 @@ L_B1190:                 ; 0xb1190
         MOV R12,#DATA16 0463AH
         MOVBZ R13,n_32
         MOV R14,R4
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XWord_YByte
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XWord_YByte, SOF Get_IP_Word_3D_Table_DWord_XWord_YByte
         MOV maf_sp_tqi,R4
 L_B11A6:                 ; 0xb11a6
         MOV R9,[R0+]
@@ -219,14 +219,14 @@ Calc_TQE:
         JNB lv_ast.06H,L_B11E2
         MOV R12,eff_iga_av
         MOV R13,eff_scc_av
-        CALLS 00FH,Mul_Q15_Sat
+        CALLS SEG Mul_Q15_Sat, SOF Mul_Q15_Sat
         MOV R12,R4
         MOV R13,eff_lamb_av
-        CALLS 00FH,Mul_Q15_Sat
+        CALLS SEG Mul_Q15_Sat, SOF Mul_Q15_Sat
         MOV eff_tot_av,R4
         MOV R12,tqi_ref
         MOV R13,R4
-        CALLS 00FH,Mul_Q15_Sat_Signed
+        CALLS SEG Mul_Q15_Sat_Signed, SOF Mul_Q15_Sat_Signed
         MOV R9,R4
         CMP R9,#00H
         JMPR cc_SGE,L_B11DC
@@ -241,7 +241,7 @@ L_B11E6:                 ; 0xb11e6
         MOV tqi_av,R4
         MOV R12,R4
         MOV R13,tq_loss
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV tq_av,R4
         MOVBS R5,n_grd
         MOVBZ R2,DPP0:c_fac_tqe
@@ -250,7 +250,7 @@ L_B11E6:                 ; 0xb11e6
         MOV R5,0FE0EH
         MOV R12,R4
         MOV R13,R5
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV tqe,R4
         MOV R9,[R0+]
         RETS
@@ -273,72 +273,72 @@ L_B1232:                 ; 0xb1232
         MOV R12,#DATA16 04646H
         MOVBZ R13,n_32
         MOV R14,maf_word
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XWord_YByte
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XWord_YByte, SOF Get_IP_Word_3D_Table_DWord_XWord_YByte
         MOV tqi_ref,R4
         MOV R12,R4
         MOV R13,eff_lamb_bas_cor
-        CALLS 00FH,Mul_Q15_Sat_Signed
+        CALLS SEG Mul_Q15_Sat_Signed, SOF Mul_Q15_Sat_Signed
         MOV tqi_ref_lamb,R4
         MOV R12,R4
         MOV R13,eff_scc_bas
-        CALLS 00FH,Mul_Q15_Sat_Signed
+        CALLS SEG Mul_Q15_Sat_Signed, SOF Mul_Q15_Sat_Signed
         MOV tqi_ref_lamb_scc,R4
         MOV R12,tqi_ref
         MOV R13,eff_iga_bas_cor
-        CALLS 00FH,Mul_Q15_Sat_Signed
+        CALLS SEG Mul_Q15_Sat_Signed, SOF Mul_Q15_Sat_Signed
         MOV tqi_ref_iga,R4
         MOV R12,R4
         MOV R13,eff_scc_bas
-        CALLS 00FH,Mul_Q15_Sat_Signed
+        CALLS SEG Mul_Q15_Sat_Signed, SOF Mul_Q15_Sat_Signed
         MOV tqi_ref_iga_scc,R4
         MOVB RL4,DPP0:lc_mod_eff_av
         JMPR cc_EQ,L_B12AC
         MOV R12,eff_scc_av
         MOV R13,eff_lamb_av
-        CALLS 00FH,Mul_Q15_Sat
+        CALLS SEG Mul_Q15_Sat, SOF Mul_Q15_Sat
         MOV R12,R4
         MOV R13,eff_egr_hom
-        CALLS 00FH,Mul_Q15_Sat
+        CALLS SEG Mul_Q15_Sat, SOF Mul_Q15_Sat
         MOV R13,R4
         MOV R12,tqi_ref_iga
-        CALLS 00FH,Mul_Q15_Sat_Signed
+        CALLS SEG Mul_Q15_Sat_Signed, SOF Mul_Q15_Sat_Signed
         MOV tqi_bas,R4
         JMPR cc_UC,L_B12C6
 L_B12AC:                 ; 0xb12ac
         MOV R12,eff_lamb_sp_bas
         MOV R13,eff_egr_hom
-        CALLS 00FH,Mul_Q15_Sat
+        CALLS SEG Mul_Q15_Sat, SOF Mul_Q15_Sat
         MOV R13,R4
         MOV R12,tqi_ref_iga_scc
-        CALLS 00FH,Mul_Q15_Sat_Signed
+        CALLS SEG Mul_Q15_Sat_Signed, SOF Mul_Q15_Sat_Signed
         MOV tqi_bas,R4
 L_B12C6:                 ; 0xb12c6
         MOV R12,tqi_ref_iga
         MOV R13,eff_lamb_bas_cor
-        CALLS 00FH,Mul_Q15_Sat_Signed
+        CALLS SEG Mul_Q15_Sat_Signed, SOF Mul_Q15_Sat_Signed
         MOV tqi_ref_iga_lamb,R4
         MOV R12,tqi_ref
         MOV R13,eff_scc_bas
-        CALLS 00FH,Mul_Q15_Sat_Signed
+        CALLS SEG Mul_Q15_Sat_Signed, SOF Mul_Q15_Sat_Signed
         MOV tqi_ref_scc,R4
         MOV R12,tqi_ref_lamb
         MOV R13,eff_iga_min
-        CALLS 00FH,Mul_Q15_Sat_Signed
+        CALLS SEG Mul_Q15_Sat_Signed, SOF Mul_Q15_Sat_Signed
         MOV tqi_ref_iga_min_lamb,R4
         MOV R12,eff_lamb_bas_cor
         MOV R13,eff_scc_bas
-        CALLS 00FH,Mul_Q15_Sat
+        CALLS SEG Mul_Q15_Sat, SOF Mul_Q15_Sat
         MOV R12,R4
         MOV R13,eff_egr_hom
-        CALLS 00FH,Mul_Q15_Sat
+        CALLS SEG Mul_Q15_Sat, SOF Mul_Q15_Sat
         MOV R9,R4
         MOV R12,eff_iga_bas_cor
         MOV R13,R9
-        CALLS 00FH,Mul_Q15_Sat
+        CALLS SEG Mul_Q15_Sat, SOF Mul_Q15_Sat
         MOV eff_tot_bas,R4
         MOV R12,eff_iga_bas_cor_knk_fil
         MOV R13,R9
-        CALLS 00FH,Mul_Q15_Sat
+        CALLS SEG Mul_Q15_Sat, SOF Mul_Q15_Sat
         MOV eff_tot_bas_slow,R4
 L_B132A:                 ; 0xb132a
         MOV R9,[R0+]

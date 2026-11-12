@@ -64,10 +64,10 @@ Acq_TIA_Mes:
         MOV R12,#DATA16 POF sst_utal_kf_tal
         MOV R13,#DATA16 PAG sst_utal_kf_tal
         MOVBZ R14,RL4
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_tia__vtia
         MOV R13,#DATA16 PAG ip_tia__vtia
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVB tia_mes,RL4
         CMPB RL4,DPP0:c_tia_max_diag
         JMPR cc_ULE,L_C9284
@@ -80,7 +80,7 @@ L_C9252:                 ; 0xc9252
         MOV R13,#DATA16 0530AH
         MOVBZ R14,DPP0:c_abc_inc_tia
         MOVBZ R15,DPP0:c_abc_max_tia
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_cam_err.0AH,dtc_status_work.06H
         MOVBZ R4,g_d166
         AND R4,#DATA16 00020H
@@ -100,7 +100,7 @@ L_C9284:                 ; 0xc9284
         MOV R13,#DATA16 0530AH
         MOVBZ R14,DPP0:c_abc_inc_tia
         MOVBZ R15,DPP0:c_abc_max_tia
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_cam_err.0AH,dtc_status_work.06H
         MOVBZ R4,g_d166
         AND R4,#DATA16 00020H
@@ -114,7 +114,7 @@ L_C92C8:                 ; 0xc92c8
         MOV R13,#DATA16 0530AH
         MOVBZ R14,DPP0:c_abc_inc_tia
         MOVBZ R15,DPP0:c_abc_max_tia
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_cam_err.0AH,dtc_status_work.06H
         MOVBZ R4,g_d166
         AND R4,#DATA16 00020H
@@ -211,7 +211,7 @@ L_C93D4:                 ; 0xc93d4
 L_C93D8:                 ; 0xc93d8
         MOV R12,#DATA16 04C76H
         MOVBZ R13,tia_st
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YByte, SOF Get_IP_Word_2D_Table_DWord_YByte
         CMP R4,t_is
         JMPR cc_NC,L_C93EC
         BSET lv_n_max_isa_err.0AH
@@ -269,16 +269,16 @@ L_C947E:                 ; 0xc947e
         MOVB g_c355,ZEROS
         MOVBZ R12,tia
         MOVBZ R13,tia_st
-        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CALLS SEG subtract_r12_r13_negate_if_not_rets_r4, SOF subtract_r12_r13_negate_if_not_rets_r4
         CMPB RL4,DPP0:c_tia_plaus_diag
         JMPR cc_NC,L_C94BC
         MOVBZ R12,tia_max_tia_plaus_diag
         MOVBZ R13,tia_min_tia_plaus_diag
-        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CALLS SEG subtract_r12_r13_negate_if_not_rets_r4, SOF subtract_r12_r13_negate_if_not_rets_r4
         MOV [-R0],R4
         MOV R12,#DATA16 04C6EH
         MOVBZ R13,tia_st
-        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Byte_2D_Table_DWord_YByte, SOF Get_IP_Byte_2D_Table_DWord_YByte
         MOV R5,[R0+]
         CMPB RL5,RL4
         JMPR cc_NC,L_C94BC
@@ -292,7 +292,7 @@ L_C94C0:                 ; 0xc94c0
         MOV R13,#DATA16 05320H
         MOVBZ R14,DPP0:c_abc_inc_tia_plaus_diag
         MOVBZ R15,DPP0:c_abc_max_tia_plaus_diag
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_cam_err.0BH,dtc_status_work.06H
         MOVBZ R4,lv_tco_d174
         AND R4,#DATA16 00020H
@@ -303,7 +303,7 @@ L_C94EA:                 ; 0xc94ea
         JB lv_n_max_isa_err.0BH,L_C9518
         MOVBZ R12,DPP0:c_abc_max_tia_plaus_diag
         MOVBZ R13,DPP0:c_abc_inc_tia_plaus_diag
-        CALLS 00FH,Div_Ratio_U8_Sat
+        CALLS SEG Div_Ratio_U8_Sat, SOF Div_Ratio_U8_Sat
         MOVBZ R4,RL4
         SHR R4,#01H
         CMPB RL4,#00H
@@ -349,10 +349,10 @@ Acq_TCO_Mes:
         MOV R12,#DATA16 POF sst_utkw_kf_tkw
         MOV R13,#DATA16 PAG sst_utkw_kf_tkw
         MOV R14,R4
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_tco__vtco
         MOV R13,#DATA16 PAG ip_tco__vtco
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVB tco_mes,RL4
         CMPB RL4,DPP0:c_tco_max_diag
         JMPR cc_ULE,L_C95B2
@@ -365,7 +365,7 @@ L_C957C:                 ; 0xc957c
         MOV R13,#DATA16 05336H
         MOVBZ R14,DPP0:c_abc_inc_tco
         MOVBZ R15,DPP0:c_abc_max_tco
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_cam_err.0CH,dtc_status_work.06H
         MOVBZ R4,dtc_done_tco
         AND R4,#DATA16 00020H
@@ -402,7 +402,7 @@ L_C95F2:                 ; 0xc95f2
         MOV R13,#DATA16 05336H
         MOVBZ R14,DPP0:c_abc_inc_tco
         MOVBZ R15,DPP0:c_abc_max_tco
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_cam_err.0CH,dtc_status_work.06H
         MOVBZ R4,dtc_done_tco
         AND R4,#DATA16 00020H
@@ -416,7 +416,7 @@ L_C9624:                 ; 0xc9624
         MOV R13,#DATA16 05336H
         MOVBZ R14,DPP0:c_abc_inc_tco
         MOVBZ R15,DPP0:c_abc_max_tco
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_cam_err.0CH,dtc_status_work.06H
         MOVBZ R4,dtc_done_tco
         AND R4,#DATA16 00020H
@@ -490,7 +490,7 @@ L_C96F4:                 ; 0xc96f4
         MOV R13,#DATA16 0538EH
         MOVBZ R14,DPP0:c_abc_inc_tco_grd_diag
         MOVBZ R15,DPP0:c_abc_max_tco_grd_diag
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_lam_lim_1_err.00H,dtc_status_work.06H
         MOVBZ R4,dtc_done_tco_grd
         AND R4,#DATA16 00020H
@@ -514,34 +514,34 @@ L_C9730:                 ; 0xc9730
         SHL R12,#08H
         MOVBZ R13,tia_st
         SHL R13,#08H
-        CALLS 00FH,Abs_Diff_U16
+        CALLS SEG Abs_Diff_U16, SOF Abs_Diff_U16
         CMP R4,DPP0:c_tia_tco_dif_min_tco_sub
         JMPR cc_NC,L_C9784
         MOV R12,#DATA16 04C46H
         MOV R13,maf_kgh
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YWord
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YWord, SOF Get_IP_Word_2D_Table_DWord_YWord
         MOV R8,R4
         MOV R12,#DATA16 04C56H
         MOV R13,tco_sub_word
         MOV R14,maf_kgh
-        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YWord
+        CALLS SEG Get_IP_Byte_3D_Table_DWord_XWord_YWord, SOF Get_IP_Byte_3D_Table_DWord_XWord_YWord
         MOVBZ R13,RL4
         MOV R12,R8
-        CALLS 00FH,Read_MulDiv_MD
+        CALLS SEG Read_MulDiv_MD, SOF Read_MulDiv_MD
         MOV R9,R4
         JMPR cc_UC,L_C97AC
 L_C9784:                 ; 0xc9784
         MOV R12,#DATA16 04C4EH
         MOV R13,maf_kgh
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YWord
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YWord, SOF Get_IP_Word_2D_Table_DWord_YWord
         MOV R8,R4
         MOV R12,#DATA16 04C62H
         MOV R13,tco_sub_word
         MOV R14,maf_kgh
-        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YWord
+        CALLS SEG Get_IP_Byte_3D_Table_DWord_XWord_YWord, SOF Get_IP_Byte_3D_Table_DWord_XWord_YWord
         MOVBZ R13,RL4
         MOV R12,R8
-        CALLS 00FH,Read_MulDiv_MD
+        CALLS SEG Read_MulDiv_MD, SOF Read_MulDiv_MD
         MOV R9,R4
 L_C97AC:                 ; 0xc97ac
         MOVB RL4,tco_sub_state

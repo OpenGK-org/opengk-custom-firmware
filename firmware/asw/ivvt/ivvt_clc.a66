@@ -45,7 +45,7 @@ S_AE6B6 SECTION CODE AT 0AE6B6H
         ; ------------------------------------------------------------
 Calc_Cam_Sp_Clc:
         MOVB lv_ivvt_c20f,ZEROS
-        CALLS 00AH,Calc_IVVT_CamSp_Fac
+        CALLS SEG Calc_IVVT_CamSp_Fac, SOF Calc_IVVT_CamSp_Fac
         MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
         JMPR cc_NE,L_AE6D8
         MOVB RL5,DPP0:c_cam_ini_in
@@ -152,7 +152,7 @@ L_AE7C8:                 ; 0xae7c8
 L_AE7D2:                 ; 0xae7d2
         MOV R12,#DATA16 04530H
         MOV R13,n_C93C
-        CALLS 00FH,Get_Byte_2D_Table_DWord_YWord
+        CALLS SEG Get_Byte_2D_Table_DWord_YWord, SOF Get_Byte_2D_Table_DWord_YWord
         CMPB RL4,pv_av
         JMPR cc_NC,L_AE7E8
         BSET lv_ct.0EH
@@ -165,34 +165,34 @@ L_AE7EA:                 ; 0xae7ea
 L_AE7F2:                 ; 0xae7f2
         MOV R12,#DATA16 04538H
         MOV R13,#00H
-        CALLS 00FH,Get_Byte_2D_Table_DWord_YByte
+        CALLS SEG Get_Byte_2D_Table_DWord_YByte, SOF Get_Byte_2D_Table_DWord_YByte
         MOVBZ R9,RL4
         JMPA cc_NE,L_AE98C
         JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_AE860
         MOV R12,#DATA16 POF ldpm_n_2_ivvt
         MOV R13,#DATA16 PAG ldpm_n_2_ivvt
         MOV R14,n_C93C
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ldpm_maf_ivvt_1_ivvt
         MOV R13,#DATA16 PAG ldpm_maf_ivvt_1_ivvt
         MOV R14,maf_ivvt
-        CALLS 00FH,Get_IP_Word_X_Axis
+        CALLS SEG Get_IP_Word_X_Axis, SOF Get_IP_Word_X_Axis
         MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
         JMPR cc_NE,L_AE906
         MOVB RL5,ivvt_in_struct_sp_add_ivvt_lv_cam_sp_add_ivvt
         JMPR cc_EQ,L_AE906
         MOV R12,#DATA16 POF ip_cam_sp_tco_2_is_ivvt_in
         MOV R13,#DATA16 PAG ip_cam_sp_tco_2_is_ivvt_in
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVBZ R4,RL4
         MOV [-R0],R4
         MOV R12,#DATA16 POF ip_cam_sp_tco_1_is_ivvt_in
         MOV R13,#DATA16 PAG ip_cam_sp_tco_1_is_ivvt_in
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVBZ R12,RL4
         MOVBS R14,ivvt_in_struct_sp_ivvt_fac_cam_sp_is_ivvt
         MOV R13,[R0+]
-        CALLS 00FH,Ramp_S16_Q5
+        CALLS SEG Ramp_S16_Q5, SOF Ramp_S16_Q5
         MOVB ivvt_in_struct_sp_ivvt_cam_sp_clc_afs_ivvt,RL4
         JMPR cc_UC,L_AE906
 L_AE860:                 ; 0xae860
@@ -200,63 +200,63 @@ L_AE860:                 ; 0xae860
         MOV R12,#DATA16 POF ldpm_n_1_ivvt
         MOV R13,#DATA16 PAG ldpm_n_1_ivvt
         MOV R14,n_C93C
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
         JMPR cc_NE,L_AE906
         MOVB RL5,ivvt_in_struct_sp_add_ivvt_lv_cam_sp_add_ivvt
         JMPR cc_EQ,L_AE906
         MOV R12,#DATA16 POF ip_cam_sp_tco_2_fl_ivvt_in
         MOV R13,#DATA16 PAG ip_cam_sp_tco_2_fl_ivvt_in
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVBZ R4,RL4
         MOV [-R0],R4
         MOV R12,#DATA16 POF ip_cam_sp_tco_1_fl_ivvt_in
         MOV R13,#DATA16 PAG ip_cam_sp_tco_1_fl_ivvt_in
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVBZ R12,RL4
         MOVBS R14,ivvt_in_struct_sp_ivvt_fac_cam_sp_pl_ivvt
         MOV R13,[R0+]
-        CALLS 00FH,Ramp_S16_Q5
+        CALLS SEG Ramp_S16_Q5, SOF Ramp_S16_Q5
         MOVB ivvt_in_struct_sp_ivvt_cam_sp_clc_afs_ivvt,RL4
         JMPR cc_UC,L_AE906
 L_AE8AE:                 ; 0xae8ae
         MOV R12,#DATA16 POF ldpm_n_1_ivvt
         MOV R13,#DATA16 PAG ldpm_n_1_ivvt
         MOV R14,n_C93C
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ldpm_maf_ivvt_2_ivvt
         MOV R13,#DATA16 PAG ldpm_maf_ivvt_2_ivvt
         MOV R14,maf_ivvt
-        CALLS 00FH,Get_IP_Word_X_Axis
+        CALLS SEG Get_IP_Word_X_Axis, SOF Get_IP_Word_X_Axis
         MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
         JMPR cc_NE,L_AE906
         MOVB RL5,ivvt_in_struct_sp_add_ivvt_lv_cam_sp_add_ivvt
         JMPR cc_EQ,L_AE906
         MOV R12,#DATA16 POF ip_cam_sp_tco_2_pl_ivvt_in
         MOV R13,#DATA16 PAG ip_cam_sp_tco_2_pl_ivvt_in
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVBZ R4,RL4
         MOV [-R0],R4
         MOV R12,#DATA16 POF ip_cam_sp_tco_1_pl_ivvt_in
         MOV R13,#DATA16 PAG ip_cam_sp_tco_1_pl_ivvt_in
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVBZ R12,RL4
         MOVBS R14,ivvt_in_struct_sp_ivvt_fac_cam_sp_pl_ivvt
         MOV R13,[R0+]
-        CALLS 00FH,Ramp_S16_Q5
+        CALLS SEG Ramp_S16_Q5, SOF Ramp_S16_Q5
         MOVB ivvt_in_struct_sp_ivvt_cam_sp_clc_afs_ivvt,RL4
 L_AE906:                 ; 0xae906
         MOVB RL4,DPP0:lc_maf_ivvt_grd_conf
         JMPR cc_EQ,L_AE91E
         MOV R12,maf_ivvt
         MOV R13,lv_ivvt_c57e
-        CALLS 00FH,Sat_Sub_S16_v2
+        CALLS SEG Sat_Sub_S16_v2, SOF Sat_Sub_S16_v2
         MOV maf_ivvt_grd,R4
         JMPR cc_UC,L_AE92E
 L_AE91E:                 ; 0xae91e
         MOV R12,maf_ivvt
         MOV R13,lv_ivvt_c580
-        CALLS 00FH,Sat_Sub_S16_v2
+        CALLS SEG Sat_Sub_S16_v2, SOF Sat_Sub_S16_v2
         MOV maf_ivvt_grd,R4
 L_AE92E:                 ; 0xae92e
         MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
@@ -265,13 +265,13 @@ L_AE92E:                 ; 0xae92e
         MOV R13,n_C93C
         MOV R14,maf_ivvt_grd
         ADD R14,#DATA16 08000H
-        CALLS 00FH,Get_Byte_3D_Table_DWord_XWord_YWord
+        CALLS SEG Get_Byte_3D_Table_DWord_XWord_YWord, SOF Get_Byte_3D_Table_DWord_XWord_YWord
         MOVBZ R13,RL4
         MOVBZ R12,ivvt_in_struct_sp_ivvt_cam_sp_clc_ivvt
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVBZ R13,RL4
         MOVBZ R12,ivvt_in_struct_sp_ivvt_cam_sp_clc_afs_ivvt
-        CALLS 00FH,Max_U16
+        CALLS SEG Max_U16, SOF Max_U16
         MOVB RL6,RL4
 L_AE95E:                 ; 0xae95e
         MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
@@ -280,7 +280,7 @@ L_AE95E:                 ; 0xae95e
         JMPR cc_EQ,L_AE986
         MOVBZ R12,RL6
         MOV R13,ivvt_in_struct_sp_add_ivvt_cam_sp_add_ivvt
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV R9,R4
         CMP R9,#DATA16 000FFH
         JMPR cc_ULE,L_AE982
@@ -308,7 +308,7 @@ L_AE9A6:                 ; 0xae9a6
         JMPR cc_NE,L_AE9F6
         MOVBZ R12,RL6
         MOV R13,DPP0:c_cam_sp_as_ivvt_in
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV R9,R4
         CMP R9,#DATA16 000FFH
         JMPR cc_ULE,L_AE9C4
@@ -342,17 +342,17 @@ L_AE9F6:                 ; 0xae9f6
         JMPR cc_EQ,L_AEA16
         MOVBZ R12,ivvt_in_struct_sp_ivvt_cam_sp_ivvt
         MOVBZ R13,ivvt_in_struct_sp_ivvt_cam_sp_clc_ivvt
-        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CALLS SEG subtract_r12_r13_negate_if_not_rets_r4, SOF subtract_r12_r13_negate_if_not_rets_r4
         CMPB RL4,DPP0:c_cam_sp_dif_max_ivvt
         JMPR cc_ULE,L_AEA34
 L_AEA16:                 ; 0xaea16
         MOVBZ R12,DPP0:c_cam_ini_in
         MOVBZ R13,DPP0:c_cam_adj_rng_max_in
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVBZ R13,RL4
         MOVBZ R12,ivvt_in_struct_sp_ivvt_cam_sp_clc_ivvt
         MOVBZ R14,DPP0:c_cam_ini_in
-        CALLS 00FH,Clamp_U16_v2
+        CALLS SEG Clamp_U16_v2, SOF Clamp_U16_v2
         MOVBZ R9,RL4
         JMPR cc_UC,L_AEA38
 L_AEA34:                 ; 0xaea34
@@ -360,7 +360,7 @@ L_AEA34:                 ; 0xaea34
 L_AEA38:                 ; 0xaea38
         MOVBZ R12,DPP0:c_cam_ini_in
         MOVBZ R13,DPP0:c_cam_sp_hys_neut_ivvt_in
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOV R5,R9
         CMPB RL5,RL4
         JMPR cc_ULE,L_AEA54
@@ -378,7 +378,7 @@ L_AEA5A:                 ; 0xaea5a
         JMPR cc_NE,L_AEAA0
         MOVBZ R12,ivvt_in_struct_sp_ivvt_cam_sp_dyw_ivvt
         MOVBZ R13,ivvt_in_struct_sp_ivvt_cam_sp_ivvt
-        CALLS 00FH,subtract_r12_r13_negate_if_not_rets_r4
+        CALLS SEG subtract_r12_r13_negate_if_not_rets_r4, SOF subtract_r12_r13_negate_if_not_rets_r4
         CMPB RL4,DPP0:c_cam_sp_dif_adh_ivvt
         JMPR cc_UGT,L_AEA82
         MOVB RL4,#01H
@@ -413,21 +413,21 @@ Calc_IVVT_CamSp_Fac:
         MOV R12,#DATA16 POF ldpm_tco_1_ivvt
         MOV R13,#DATA16 PAG ldpm_tco_1_ivvt
         MOVBZ R14,tco
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ldpm_tco_st_1_ivvt
         MOV R13,#DATA16 PAG ldpm_tco_st_1_ivvt
         MOVBZ R14,tco_st
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         MOVB RL4,ivvt_in_1_struct_ivvt_lv_inh_ivvt
         JMPR cc_NE,L_AEB04
         MOV R12,#DATA16 POF ip_fac_cam_sp_is_ivvt_in
         MOV R13,#DATA16 PAG ip_fac_cam_sp_is_ivvt_in
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         SUBB RL4,#DATA16 00080H
         MOVB ivvt_in_struct_sp_ivvt_fac_cam_sp_is_ivvt,RL4
         MOV R12,#DATA16 POF ip_fac_cam_sp_pl_ivvt_in
         MOV R13,#DATA16 PAG ip_fac_cam_sp_pl_ivvt_in
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         SUBB RL4,#DATA16 00080H
         MOVB ivvt_in_struct_sp_ivvt_fac_cam_sp_pl_ivvt,RL4
 L_AEB04:                 ; 0xaeb04

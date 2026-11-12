@@ -24,7 +24,7 @@ Diag_DTC_dd1be:
 L_CF68C:                 ; 0xcf68c
         MOV R12,#DATA16 0D1BEH
         MOV R13,#DATA16 053A4H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_lam_lim_1_err.01H,dtc_status_work.06H
         MOVBZ R4,g_d1c8
         AND R4,#DATA16 00020H
@@ -47,7 +47,7 @@ L_CF6BA:                 ; 0xcf6ba
         JB lv_cam_ad_di_ivvt.09H,L_CF6E0
         MOV R12,#DATA16 0D2ACH
         MOV R13,#DATA16 0551AH
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cps_err.02H,dtc_status_work.06H
         MOVBZ R4,dtc_done_o2_1
         AND R4,#DATA16 00020H
@@ -70,7 +70,7 @@ Diag_CP_FSD_SetDTC:
         JB lv_cam_ad_di_ivvt.09H,L_CF7AE
         MOV R12,#DATA16 0D2BAH
         MOV R13,#DATA16 05530H
-        CALLS 00DH,DTC_Update_Imm_V2
+        CALLS SEG DTC_Update_Imm_V2, SOF DTC_Update_Imm_V2
         BMOV lv_cps_err.03H,dtc_status_work.06H
         MOVBZ R4,dtc_done_o2_2
         AND R4,#DATA16 00020H
@@ -86,7 +86,7 @@ L_CF712:                 ; 0xcf712
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D23CH
         MOV R13,#DATA16 0546AH
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_lam_lim_1_err.0AH,dtc_status_work.06H
         MOVBZ R4,diag_d246
         AND R4,#DATA16 00020H
@@ -98,7 +98,7 @@ L_CF74A:                 ; 0xcf74a
         JB lv_cam_ad_di_ivvt.09H,L_CF7AE
         MOV R12,#DATA16 0D2BAH
         MOV R13,#DATA16 05530H
-        CALLS 00DH,DTC_Update_Imm_V2
+        CALLS SEG DTC_Update_Imm_V2, SOF DTC_Update_Imm_V2
         BMOV lv_cps_err.03H,dtc_status_work.06H
         MOVBZ R4,dtc_done_o2_2
         AND R4,#DATA16 00020H
@@ -116,7 +116,7 @@ L_CF770:                 ; 0xcf770
         JB lv_cps_err.03H,L_CF7AE
         MOV R12,#DATA16 0D23CH
         MOV R13,#DATA16 0546AH
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_lam_lim_1_err.0AH,dtc_status_work.06H
         MOVBZ R4,diag_d246
         AND R4,#DATA16 00020H
@@ -139,7 +139,7 @@ L_CF7BA:                 ; 0xcf7ba
         JB lv_cam_ad_di_ivvt.09H,L_CF7F0
         MOV R12,#DATA16 0D282H
         MOV R13,#DATA16 054D8H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_lam_lim_1_err.0FH,dtc_status_work.06H
         MOVBZ R4,diag_d28c
         AND R4,#DATA16 00020H
@@ -168,7 +168,7 @@ L_CF7FC:                 ; 0xcf7fc
         JB lv_cam_ad_di_ivvt.09H,L_CF822
         MOV R12,#DATA16 0D29EH
         MOV R13,#DATA16 05504H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cps_err.01H,dtc_status_work.06H
         MOVBZ R4,dtc_done_o2_0
         AND R4,#DATA16 00020H
@@ -191,7 +191,7 @@ L_CF82E:                 ; 0xcf82e
         JB lv_cam_ad_di_ivvt.09H,L_CF854
         MOV R12,#DATA16 0D290H
         MOV R13,#DATA16 054EEH
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cps_err.00H,dtc_status_work.06H
         MOVBZ R4,g_d29a
         AND R4,#DATA16 00020H
@@ -214,7 +214,7 @@ L_CF860:                 ; 0xcf860
         JB lv_cam_ad_di_ivvt.09H,L_CF886
         MOV R12,#DATA16 0D266H
         MOV R13,#DATA16 054ACH
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_lam_lim_1_err.0DH,dtc_status_work.06H
         MOVBZ R4,dtc_done_o2h_0
         AND R4,#DATA16 00020H
@@ -237,7 +237,7 @@ L_CF892:                 ; 0xcf892
         JB lv_cam_ad_di_ivvt.09H,L_CF8B8
         MOV R12,#DATA16 0D274H
         MOV R13,#DATA16 054C2H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_lam_lim_1_err.0EH,dtc_status_work.06H
         MOVBZ R4,dtc_done_o2h_1
         AND R4,#DATA16 00020H
@@ -265,7 +265,7 @@ L_CF8D0:                 ; 0xcf8d0
         JB lv_cam_ad_di_ivvt.09H,L_CF8FE
         MOV R12,#DATA16 0D2C8H
         MOV R13,#DATA16 05546H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cps_err.04H,dtc_status_work.06H
         MOVBZ R4,diag_d2d2
         AND R4,#DATA16 00020H
@@ -274,7 +274,7 @@ L_CF8D0:                 ; 0xcf8d0
         AND dtc_st_grp_cp,R4
 L_CF8F6:                 ; 0xcf8f6
         MOV R12,#DATA16 00024H
-        CALLS 00DH,DTC_Status_Proc_3
+        CALLS SEG DTC_Status_Proc_3, SOF DTC_Status_Proc_3
 L_CF8FE:                 ; 0xcf8fe
         RETS
 

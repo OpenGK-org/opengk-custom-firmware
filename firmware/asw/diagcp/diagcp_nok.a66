@@ -112,8 +112,8 @@ L_D11A4:                 ; 0xd11a4
         BCLR lv_act_diagcps.03H
         BCLR lv_err_maf_tps_ratio_2.0AH
         MOV intr_state_diagcp,ZEROS
-        CALLS 00DH,Log_Event_f94a
-        CALLS 00DH,Log_Event_f97a
+        CALLS SEG Log_Event_f94a, SOF Log_Event_f94a
+        CALLS SEG Log_Event_f97a, SOF Log_Event_f97a
         MOV dtp_ofs,ZEROS
         MOVB state_diagcp,ZEROS
         MOVB eol_state_diagcp,ZEROS
@@ -156,7 +156,7 @@ DiagCP_Collect_Samples:
         MOV maf_cps_dif_diag,ZEROS
         MOVB vs_dtp_max_diag,ZEROS
         MOVB cdn_dtp_noise_state_diag,ZEROS
-        CALLS 00DH,DiagCP_Acq_Dtp
+        CALLS SEG DiagCP_Acq_Dtp, SOF DiagCP_Acq_Dtp
 L_D1242:                 ; 0xd1242
         RETS
 
@@ -165,7 +165,7 @@ L_D1242:                 ; 0xd1242
         ; Named by caller-context + body analysis (push to 100pct).
         ; ------------------------------------------------------------
 DiagCP_Collect_Reset:
-        CALLS 00DH,DiagCP_Collect_Samples
+        CALLS SEG DiagCP_Collect_Samples, SOF DiagCP_Collect_Samples
         MOVB diag_c39f,ZEROS
         RETS
 

@@ -45,7 +45,7 @@ L_CFA26:                 ; 0xcfa26
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#0CH
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV R10,diag_f890
         MOV R11,diag_f892
         EXTP R11, #02H
@@ -149,13 +149,13 @@ L_CFB7C:                 ; 0xcfb7c
         MOVB RL4,conf_ad_rst
         CMPB RL4,#02H
         JMPR cc_NE,L_CFB8A
-        CALLS 00CH,Lam_Adapt_Init_NVM
+        CALLS SEG Lam_Adapt_Init_NVM, SOF Lam_Adapt_Init_NVM
         RETS
 L_CFB8A:                 ; 0xcfb8a
-        CALLS 00CH,Reset_ctr_cold_st_b96
+        CALLS SEG Reset_ctr_cold_st_b96, SOF Reset_ctr_cold_st_b96
         RETS
 L_CFB90:                 ; 0xcfb90
-        CALLS 00CH,Reset_ctr_cold_st_b96
+        CALLS SEG Reset_ctr_cold_st_b96, SOF Reset_ctr_cold_st_b96
         RETS
 
 ; ======== Reset_ctr_cold_st_b96  (@0xcfb96) ========
@@ -237,7 +237,7 @@ NVM_Save_s1b4:
         MOV R13,R5
         MOV R14,#DATA16 0F48DH
         MOV R15,#01H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOVB RL4,conf_lam
         JMPR cc_EQ,L_CFD56
         MOV R12,diag_f890
@@ -253,7 +253,7 @@ NVM_Save_s1b4:
         MOV R13,R5
         MOV R14,#DATA16 0C764H
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 001B6H
@@ -267,11 +267,11 @@ NVM_Save_s1b4:
         MOV R13,R5
         MOV R14,#DATA16 0C762H
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOVB RL4,conf_cat_eff
         CMPB RL4,#01H
         JMPR cc_NE,L_CFD56
-        CALLS 00BH,Calc_Ctr_Stop_FSD_2
+        CALLS SEG Calc_Ctr_Stop_FSD_2, SOF Calc_Ctr_Stop_FSD_2
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 001BCH
@@ -285,7 +285,7 @@ NVM_Save_s1b4:
         MOV R13,R5
         MOV R14,#DATA16 0F37CH
         MOV R15,#01H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 001BDH
@@ -299,8 +299,8 @@ NVM_Save_s1b4:
         MOV R13,R5
         MOV R14,#DATA16 0F37DH
         MOV R15,#01H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
-        CALLS 00BH,Filt_Lam_Dly_I_Ad
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Filt_Lam_Dly_I_Ad, SOF Filt_Lam_Dly_I_Ad
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 001B8H
@@ -314,7 +314,7 @@ NVM_Save_s1b4:
         MOV R13,R5
         MOV R14,#DATA16 0C872H
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 001BAH
@@ -328,7 +328,7 @@ NVM_Save_s1b4:
         MOV R13,R5
         MOV R14,#DATA16 0C796H
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
 L_CFD56:                 ; 0xcfd56
         MOV R12,diag_f890
         MOV R13,diag_f892
@@ -348,7 +348,7 @@ L_CFD56:                 ; 0xcfd56
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#0CH
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV [R0],R4
         MOV R12,diag_f890
         MOV R13,diag_f892
@@ -363,7 +363,7 @@ L_CFD56:                 ; 0xcfd56
         MOV R13,R5
         MOV R14,R0
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         ADD R0,#02H
         RETS
 

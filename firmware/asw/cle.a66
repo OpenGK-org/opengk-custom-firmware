@@ -80,10 +80,10 @@ L_AFFA8:                 ; 0xaffa8
         JNB lv_act_cle_slv_ivvt.00H,L_AFFFA
         MOV R12,#DATA16 045A8H
         MOVBZ R13,ctr_step_cle_slv_ivvt
-        CALLS 00FH,Get_Byte_2D_Table_DWord_YByte
+        CALLS SEG Get_Byte_2D_Table_DWord_YByte, SOF Get_Byte_2D_Table_DWord_YByte
         MOVBZ R12,RL4
         MOVBZ R13,fac_cor_ivvtpwm
-        CALLS 00FH,Mul_S16_Q7_Sat
+        CALLS SEG Mul_S16_Q7_Sat, SOF Mul_S16_Q7_Sat
         MOVB ivvtpwm_cle_slv,RL4
         MOVB RL5,ctr_step_cle_slv_ivvt
         CMPB RL5,#DATA16 000FFH

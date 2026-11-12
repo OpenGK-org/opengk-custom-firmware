@@ -109,7 +109,7 @@ L_D8B64:                 ; 0xd8b64
         ORB RL6,#DATA16 0000CH
         MOV R4,R8
         MOVBZ R12,RL4
-        CALLS 00DH,OBD_Readiness_Grp2
+        CALLS SEG OBD_Readiness_Grp2, SOF OBD_Readiness_Grp2
         MOV R4,R8
         MOVBZ R4,RL4
         AND R4,#DATA16 0000FH
@@ -184,7 +184,7 @@ DTC_Update_Debounced:
         MOVBZ R12,RL7
         MOVB RL4,[R0+#0CH]
         MOVBZ R13,RL4
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB RL7,RL4
         MOVB RL4,[R0+#0EH]
         CMPB RL7,RL4
@@ -258,7 +258,7 @@ L_D8CB2:                 ; 0xd8cb2
         MOVB [R5+#01H],RL4
         JMPA cc_UC,L_D8FE2
 L_D8CC0:                 ; 0xd8cc0
-        CALLS 00DH,DTC_Capture_FreezeFrame
+        CALLS SEG DTC_Capture_FreezeFrame, SOF DTC_Capture_FreezeFrame
         MOVB RL4,[R0+#0CH]
         JMPA cc_EQ,L_D8FD4
         MOV R5,R9
@@ -463,7 +463,7 @@ L_D8F28:                 ; 0xd8f28
         MOVB [R5+#03H],RL4
         MOV R12,[R0+#08H]
         MOV R13,[R0+#0AH]
-        CALLS 00DH,DTC_Update_Status_MIL
+        CALLS SEG DTC_Update_Status_MIL, SOF DTC_Update_Status_MIL
         JMPR cc_UC,L_D8FD4
 L_D8F54:                 ; 0xd8f54
         MOVB RL4,[R0+#0EH]
@@ -503,7 +503,7 @@ L_D8FB6:                 ; 0xd8fb6
         MOVB [R5],RL4
         MOV R12,[R0+#08H]
         MOV R13,[R0+#0AH]
-        CALLS 00DH,DTC_Update_Status_MIL
+        CALLS SEG DTC_Update_Status_MIL, SOF DTC_Update_Status_MIL
 L_D8FD4:                 ; 0xd8fd4
         MOV R4,R9
         MOV R5,[R0+#08H]
@@ -661,7 +661,7 @@ DTC_Update_Debounced_OBD:
         MOVBZ R12,RL7
         MOVB RL4,[R0+#0CH]
         MOVBZ R13,RL4
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB RL7,RL4
         MOVB RL4,[R0+#0EH]
         CMPB RL7,RL4
@@ -735,7 +735,7 @@ L_D91CE:                 ; 0xd91ce
         MOVB [R5+#01H],RL4
         JMPA cc_UC,L_D92EC
 L_D91DC:                 ; 0xd91dc
-        CALLS 00DH,DTC_Capture_FreezeFrame
+        CALLS SEG DTC_Capture_FreezeFrame, SOF DTC_Capture_FreezeFrame
         MOV R4,R9
         MOVB RL5,[R0+#0EH]
         CMPB RL4,RL5
@@ -797,7 +797,7 @@ L_D926E:                 ; 0xd926e
         MOVB [R5+#03H],RL4
         MOV R12,[R0+#08H]
         MOV R13,[R0+#0AH]
-        CALLS 00DH,DTC_Debounce_Core
+        CALLS SEG DTC_Debounce_Core, SOF DTC_Debounce_Core
         JMPR cc_UC,L_D92C0
 L_D929A:                 ; 0xd929a
         MOVB RL4,[R0+#0EH]
@@ -810,7 +810,7 @@ L_D929A:                 ; 0xd929a
         MOVB [R4],RL5
         MOV R12,[R0+#08H]
         MOV R13,[R0+#0AH]
-        CALLS 00DH,DTC_Debounce_Core
+        CALLS SEG DTC_Debounce_Core, SOF DTC_Debounce_Core
 L_D92C0:                 ; 0xd92c0
         MOV R4,R9
         MOV R5,[R0+#08H]
@@ -904,7 +904,7 @@ L_D937C:                 ; 0xd937c
         MOVB [R9+#01H],RL4
         JMPR cc_UC,L_D942E
 L_D9392:                 ; 0xd9392
-        CALLS 00DH,DTC_Capture_FreezeFrame
+        CALLS SEG DTC_Capture_FreezeFrame, SOF DTC_Capture_FreezeFrame
         JB dtc_status_work.06H,L_D9422
         JB dtc_status_work.05H,L_D93EC
         MOV R4,[R8+#08H]
@@ -938,7 +938,7 @@ L_D93EC:                 ; 0xd93ec
         MOVB [R9+#01H],RL4
         MOV R12,R9
         MOV R13,R8
-        CALLS 00DH,DTC_Debounce_Core
+        CALLS SEG DTC_Debounce_Core, SOF DTC_Debounce_Core
         MOVB RL4,#DATA16 00028H
         MOVB [R9+#03H],RL4
         MOVB RL4,[R9+#02H]
@@ -953,7 +953,7 @@ L_D93EC:                 ; 0xd93ec
 L_D9422:                 ; 0xd9422
         MOV R12,R9
         MOV R13,R8
-        CALLS 00DH,DTC_Debounce_Core
+        CALLS SEG DTC_Debounce_Core, SOF DTC_Debounce_Core
 L_D942A:                 ; 0xd942a
         MOVB dtc_test_result,ZEROS
 L_D942E:                 ; 0xd942e

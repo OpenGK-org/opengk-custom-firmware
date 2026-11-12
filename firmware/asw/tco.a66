@@ -67,18 +67,18 @@ Calc_FSD_Precond:
         MOV R12,#DATA16 POF ldp_tia_st_ip_t_tco_min
         MOV R13,#DATA16 PAG ldp_tia_st_ip_t_tco_min
         MOVBZ R14,tia_st
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_t_tco_min__tia_st
         MOV R13,#DATA16 PAG ip_t_tco_min__tia_st
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV t_tco_min,R4
         MOV R12,#DATA16 POF ldp_tco_st_ip_t_ast_max_lscl
         MOV R13,#DATA16 PAG ldp_tco_st_ip_t_ast_max_lscl
         MOVBZ R14,tco_st
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_t_ast_max_lscl__tco_st
         MOV R13,#DATA16 PAG ip_t_ast_max_lscl__tco_st
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV t_ast_max_lscl,R4
         MOV R5,#05H
         MOV lv_isc_f956,R5
@@ -130,10 +130,10 @@ L_B88B8:                 ; 0xb88b8
         MOV R12,#DATA16 POF ldp_tco_st_ip_t_ast_max_lscl
         MOV R13,#DATA16 PAG ldp_tco_st_ip_t_ast_max_lscl
         MOVBZ R14,tco_st
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_t_ast_max_lscl__tco_st
         MOV R13,#DATA16 PAG ip_t_ast_max_lscl__tco_st
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         CMP R4,t_ast
         JMPR cc_NC,L_B88E2
         MOV R4,t_ast
@@ -142,17 +142,17 @@ L_B88E2:                 ; 0xb88e2
         MOV R12,#DATA16 POF sstm_tkw_1_8
         MOV R13,#DATA16 PAG sstm_tkw_1_8
         MOVBZ R14,tco_st
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_B8906
         MOV R12,#DATA16 POF ip_tco_lam_min_is__tco_st
         MOV R13,#DATA16 PAG ip_tco_lam_min_is__tco_st
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVB RL6,RL4
         JMPR cc_UC,L_B8914
 L_B8906:                 ; 0xb8906
         MOV R12,#DATA16 POF ip_tco_lam_min__tco_st
         MOV R13,#DATA16 PAG ip_tco_lam_min__tco_st
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVB RL6,RL4
 L_B8914:                 ; 0xb8914
         JNB obd_sf.0DH,L_B8950
@@ -161,7 +161,7 @@ L_B8914:                 ; 0xb8914
         CMPB RL6,tco
         JMPR cc_NC,L_B892E
         BCLR lv_inh_fsd_cp.08H
-        CALLS 00CH,Diag_DTC_dd1be
+        CALLS SEG Diag_DTC_dd1be, SOF Diag_DTC_dd1be
         BSET lv_inh_fsd_cp.09H
         JMPR cc_UC,L_B8962
 L_B892E:                 ; 0xb892e
@@ -170,7 +170,7 @@ L_B892E:                 ; 0xb892e
         MOV R4,t_tco_min
         JMPR cc_NE,L_B8944
         BSET lv_inh_fsd_cp.08H
-        CALLS 00CH,Diag_DTC_dd1be
+        CALLS SEG Diag_DTC_dd1be, SOF Diag_DTC_dd1be
         BSET lv_inh_fsd_cp.09H
         JMPR cc_UC,L_B8962
 L_B8944:                 ; 0xb8944
@@ -232,7 +232,7 @@ L_B89B0:                 ; 0xb89b0
         MOV R13,R12
         MOV R12,0FF1CH
         MOV R14,ctr_cdn_rbm_tco_plaus
-        CALLS 00FH,Div_U32_U16_Round32
+        CALLS SEG Div_U32_U16_Round32, SOF Div_U32_U16_Round32
         MOV R8,R4
         MOV R9,R5
         MOV R4,R9

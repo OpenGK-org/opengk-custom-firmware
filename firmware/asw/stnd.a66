@@ -48,7 +48,7 @@ L_C659A:                 ; 0xc659a
         SHR R4,#08H
         OR R13,R4
         MOV R14,DPP0:c_amp_ratio_tqi_bas_max_stnd
-        CALLS 00FH,Div_U32_U16_Round
+        CALLS SEG Div_U32_U16_Round, SOF Div_U32_U16_Round
         MOV R8,R4
         SHR R8,#01H
         CMP R8,#DATA16 000FFH
@@ -61,11 +61,11 @@ L_C65C2:                 ; 0xc65c2
 L_C65C8:                 ; 0xc65c8
         MOVBZ R12,iga_ref
         MOVBZ R13,iga_bas
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB lv_tq_c32e,RL4
         MOV R12,#DATA16 04BC6H
         MOVBZ R13,RL4
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YByte, SOF Get_IP_Word_2D_Table_DWord_YByte
         MOV eff_iga_bas,R4
         MOV R12,eff_iga_bas_cor
         MOV R13,#00H
@@ -75,7 +75,7 @@ L_C65C8:                 ; 0xc65c8
         SHR R5,#08H
         OR R13,R5
         MOV R14,R4
-        CALLS 00FH,Div_U32_U16_Round
+        CALLS SEG Div_U32_U16_Round, SOF Div_U32_U16_Round
         MOV R9,R4
         SHR R9,#01H
         CMP R9,#DATA16 000FFH
@@ -105,7 +105,7 @@ L_C6618:                 ; 0xc6618
         MOV R13,ratio_tqi_bas_max_stnd_2_inter
         SHL R13,#08H
         MOV R14,DPP0:c_crlc_ratio_tqi_bas_max_stnd
-        CALLS 00FH,Interp_U16
+        CALLS SEG Interp_U16, SOF Interp_U16
         MOV ratio_tqi_bas_max_stnd_2,R4
 L_C6658:                 ; 0xc6658
         MOVB RL4,tia
@@ -113,7 +113,7 @@ L_C6658:                 ; 0xc6658
         JMPR cc_ULE,L_C6692
         MOVBZ R12,RL4
         MOV R13,#DATA16 0012CH
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV R14,R4
         MOVBZ R4,DPP0:c_tia_ratio_tqi_bas_max_stnd
         ADD R4,#DATA16 0012CH
@@ -125,7 +125,7 @@ L_C6658:                 ; 0xc6658
         SHL R13,#08H
         SHR R4,#08H
         OR R13,R4
-        CALLS 00FH,Div_U32_U16_Round
+        CALLS SEG Div_U32_U16_Round, SOF Div_U32_U16_Round
         SHR R4,#01H
         MOV ratio_tqi_bas_max_stnd_3,R4
         JMPR cc_UC,L_C669A
@@ -135,7 +135,7 @@ L_C6692:                 ; 0xc6692
 L_C669A:                 ; 0xc669a
         MOVBZ R12,ratio_tqi_bas_max_stnd_1
         MOV R13,ratio_tqi_bas_max_stnd_2
-        CALLS 00FH,Mul_Q15_Sat
+        CALLS SEG Mul_Q15_Sat, SOF Mul_Q15_Sat
         MOV R2,ratio_tqi_bas_max_stnd_3
         MULU R4,R2
         MOV R5,MDH_FE0C
@@ -149,7 +149,7 @@ L_C669A:                 ; 0xc669a
         MOVBZ R12,RL6
         MOVBZ R13,DPP0:c_ratio_tqi_bas_max_stnd_min
         MOVBZ R14,DPP0:c_ratio_tqi_bas_max_stnd_max
-        CALLS 00FH,Clamp_U16_v2
+        CALLS SEG Clamp_U16_v2, SOF Clamp_U16_v2
         MOVB ratio_tqi_bas_max_stnd,RL4
 L_C66D2:                 ; 0xc66d2
         MOV R6,[R0+]
@@ -190,7 +190,7 @@ L_C66F4:                 ; 0xc66f4
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#02H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV R10,diag_f890
         MOV R11,diag_f892
         EXTP R11, #02H
@@ -204,7 +204,7 @@ L_C66F4:                 ; 0xc66f4
         MOV ratio_tqi_bas_max_stnd_2,R4
         RETS
 L_C674A:                 ; 0xc674a
-        CALLS 00CH,Set_ratio_tqi_bas_max_stnd_2_750
+        CALLS SEG Set_ratio_tqi_bas_max_stnd_2_750, SOF Set_ratio_tqi_bas_max_stnd_2_750
         RETS
 
 ; ======== Set_ratio_tqi_bas_max_stnd_2_750  (@0xc6750) ========
@@ -233,7 +233,7 @@ NVM_Save_s5d8:
         MOV R13,R5
         MOV R14,#DATA16 0CD70H
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 005D8H
@@ -252,7 +252,7 @@ NVM_Save_s5d8:
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#02H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV [R0],R4
         MOV R12,diag_f890
         MOV R13,diag_f892
@@ -267,7 +267,7 @@ NVM_Save_s5d8:
         MOV R13,R5
         MOV R14,R0
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         ADD R0,#02H
         RETS
 

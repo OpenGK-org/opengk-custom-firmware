@@ -137,9 +137,9 @@ L_B9542:                 ; 0xb9542
         MOVBZ R12,tco_mes
         ADD R12,#DATA16 00040H
         MOVBZ R13,RL4
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV R12,R4
-        CALLS 00FH,Sat_HiByte_ff
+        CALLS SEG Sat_HiByte_ff, SOF Sat_HiByte_ff
         MOVB tco_de_th_diag,RL4
         JMPR cc_UC,L_B95A0
 L_B957C:                 ; 0xb957c
@@ -148,9 +148,9 @@ L_B957C:                 ; 0xb957c
         MOVBZ R12,tco_mes
         ADD R12,#DATA16 00040H
         MOVBZ R13,tco_de_ini_th_diag
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV R12,R4
-        CALLS 00FH,Sat_HiByte_ff
+        CALLS SEG Sat_HiByte_ff, SOF Sat_HiByte_ff
         MOVB tco_de_th_diag,RL4
         ADD t_tco_de_th_diag,ONES
 L_B95A0:                 ; 0xb95a0
@@ -162,26 +162,26 @@ L_B95A0:                 ; 0xb95a0
 L_B95B2:                 ; 0xb95b2
         MOV R12,t_puc_th_diag
         MOV R13,t_act_th_diag
-        CALLS 00FH,Div_Ratio_U8_Sat
+        CALLS SEG Div_Ratio_U8_Sat, SOF Div_Ratio_U8_Sat
         MOVB puc_perc_th_diag,RL4
         MOV R12,t_load_min_th_diag
         MOV R13,t_act_th_diag
-        CALLS 00FH,Div_Ratio_U8_Sat
+        CALLS SEG Div_Ratio_U8_Sat, SOF Div_Ratio_U8_Sat
         MOVB load_min_perc_th_diag,RL4
         MOV R12,t_vs_min_th_diag
         MOV R13,t_act_th_diag
-        CALLS 00FH,Div_Ratio_U8_Sat
+        CALLS SEG Div_Ratio_U8_Sat, SOF Div_Ratio_U8_Sat
         MOVB vs_min_perc_th_diag,RL4
         MOV R12,t_vs_max_th_diag
         MOV R13,t_act_th_diag
-        CALLS 00FH,Div_Ratio_U8_Sat
+        CALLS SEG Div_Ratio_U8_Sat, SOF Div_Ratio_U8_Sat
         MOVB vs_max_perc_th_diag,RL4
         MOVBZ R12,tia_min_th_diag
         ADD R12,#DATA16 00040H
         MOVBZ R13,tia_st
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV R12,R4
-        CALLS 00FH,Sat_HiByte_ff
+        CALLS SEG Sat_HiByte_ff, SOF Sat_HiByte_ff
         MOVB tia_de_th_diag,RL4
         MOVB RL5,tco_mes
         CMPB RL5,DPP0:c_tco_wup_min_th_diag
@@ -204,7 +204,7 @@ L_B9634:                 ; 0xb9634
         JMPR cc_UGT,L_B9684
         MOV R12,#DATA16 047FCH
         MOVBZ R13,tia_min_th_diag
-        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Byte_2D_Table_DWord_YByte, SOF Get_IP_Byte_2D_Table_DWord_YByte
         CMPB RL4,load_min_perc_th_diag
         JMPR cc_C,L_B9684
         MOVB RL4,vs_max_perc_th_diag
@@ -212,7 +212,7 @@ L_B9634:                 ; 0xb9634
         JMPR cc_UGT,L_B9684
         MOV R12,#DATA16 047F4H
         MOVBZ R13,tia_min_th_diag
-        CALLS 00FH,Get_IP_Byte_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Byte_2D_Table_DWord_YByte, SOF Get_IP_Byte_2D_Table_DWord_YByte
         CMPB RL4,vs_min_perc_th_diag
         JMPR cc_C,L_B9684
         MOVB RL4,tia_de_th_diag
@@ -235,7 +235,7 @@ L_B9688:                 ; 0xb9688
 L_B9698:                 ; 0xb9698
         MOV R12,t_vs_min_th_diag
         MOV R13,t_act_th_diag
-        CALLS 00FH,Div_Ratio_U8_Sat
+        CALLS SEG Div_Ratio_U8_Sat, SOF Div_Ratio_U8_Sat
         MOVB vs_min_perc_th_diag,RL4
         CMPB RL4,DPP0:c_vs_min_perc_max_th_diag
         JMPR cc_ULE,L_B96B2
@@ -265,7 +265,7 @@ L_B96D8:                 ; 0xb96d8
 L_B96E4:                 ; 0xb96e4
         MOV state_th_diag,ZEROS
 L_B96E8:                 ; 0xb96e8
-        CALLS 00BH,Diag_Lam_Lim_d1cc
+        CALLS SEG Diag_Lam_Lim_d1cc, SOF Diag_Lam_Lim_d1cc
         RETS
 
 ; ======== Calc_Thermostat_Diag_State  (@0xb96ee) ========

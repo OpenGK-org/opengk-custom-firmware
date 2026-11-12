@@ -50,16 +50,16 @@ L_CF93C:                 ; 0xcf93c
         MOV R12,#DATA16 POF ldp_tco_ti_wf_max_lam
         MOV R13,#DATA16 PAG ldp_tco_ti_wf_max_lam
         MOVBZ R14,tco
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R4,[R9+#0AH]
         CMP R4,#00H
         JMPR cc_SGE,L_CF99A
         MOV R12,ti_add_wf
-        CALLS 00DH,Abs_S16_Simple
+        CALLS SEG Abs_S16_Simple, SOF Abs_S16_Simple
         MOV [-R0],R4
         MOV R12,#DATA16 POF ip_ti_wf_max_lam__tco
         MOV R13,#DATA16 PAG ip_ti_wf_max_lam__tco
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV R5,[R0+]
         CMP R5,R4
         JMPR cc_ULE,L_CF99A
@@ -69,10 +69,10 @@ L_CF93C:                 ; 0xcf93c
         MOV R12,#DATA16 POF ldp_tco_t_lam_stop
         MOV R13,#DATA16 PAG ldp_tco_t_lam_stop
         MOVBZ R14,tco
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_t_lam_stop__tco
         MOV R13,#DATA16 PAG ip_t_lam_stop__tco
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV lv_cp_cf94,R4
         JMPR cc_UC,L_CF9CC
 L_CF99A:                 ; 0xcf99a
@@ -82,11 +82,11 @@ L_CF99A:                 ; 0xcf99a
         CMP R4,#00H
         JMPR cc_ULE,L_CF9CA
         MOV R12,ti_add_wf
-        CALLS 00DH,Abs_S16_Simple
+        CALLS SEG Abs_S16_Simple, SOF Abs_S16_Simple
         MOV [-R0],R4
         MOV R12,#DATA16 POF ip_ti_wf_max_lam__tco
         MOV R13,#DATA16 PAG ip_ti_wf_max_lam__tco
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV R5,[R0+]
         CMP R5,R4
         JMPR cc_UGT,L_CF9CA

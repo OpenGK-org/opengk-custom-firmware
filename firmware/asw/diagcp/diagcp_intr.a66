@@ -460,7 +460,7 @@ L_D1EFE:                 ; 0xd1efe
         JMPR cc_ULE,L_D1F1A
         MOV R12,R4
         MOV R13,DPP0:c_maf_cps_sp_dec_diagcp
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV flow_sp_cps_ext,R4
         JMPA cc_UC,L_D3586
 L_D1F1A:                 ; 0xd1f1a

@@ -45,7 +45,7 @@ SMARTRA_load_response_compare:
         ; the response verified in SMARTRA_runtime_auth_sm s5.
 SMARTRA_cipher_clock_bit:
         MOV [-R0],R9
-        CALLS 00BH,SMARTRA_cipher_output_sbox
+        CALLS SEG SMARTRA_cipher_output_sbox, SOF SMARTRA_cipher_output_sbox
         MOVB imob_c2a6,RL4
         JNB lv_er_carb_b4.02H,L_BDFA8
         MOV R9,imob_ca5e

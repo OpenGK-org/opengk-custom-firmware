@@ -66,7 +66,7 @@ Set_lv_cps_err:
         MOVB lv_cps_d2c9,RL4
         MOV R12,#DATA16 0D2C8H
         MOV R13,#DATA16 05546H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cps_err.04H,dtc_status_work.06H
         MOVBZ R4,diag_d2d2
         AND R4,#DATA16 00020H
@@ -117,7 +117,7 @@ L_CE730:                 ; 0xce730
         MOV R13,#DATA16 053D0H
         MOVBZ R14,DPP0:c_abc_inc_vls_up
         MOVBZ R15,DPP0:c_abc_max_vls_up
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_lam_lim_1_err.03H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_up
         AND R4,#DATA16 00020H
@@ -131,7 +131,7 @@ L_CE768:                 ; 0xce768
         MOV R13,#DATA16 053FCH
         MOVBZ R14,DPP0:c_abc_inc_vls_up_puc
         MOVBZ R15,DPP0:c_abc_max_vls_up_puc
-        CALLS 00DH,DTC_Update_Debounced_OBD
+        CALLS SEG DTC_Update_Debounced_OBD, SOF DTC_Update_Debounced_OBD
         BMOV lv_lam_lim_1_err.05H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_up_puc
         AND R4,#DATA16 00020H
@@ -145,7 +145,7 @@ L_CE798:                 ; 0xce798
         MOV R13,#DATA16 05412H
         MOVBZ R14,DPP0:c_abc_inc_vls_up_stk
         MOVBZ R15,DPP0:c_abc_max_vls_up_stk
-        CALLS 00DH,DTC_Update_Debounced_OBD
+        CALLS SEG DTC_Update_Debounced_OBD, SOF DTC_Update_Debounced_OBD
         BMOV lv_lam_lim_1_err.06H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_up_stk
         AND R4,#DATA16 00020H
@@ -157,7 +157,7 @@ L_CE7C8:                 ; 0xce7c8
         MOVB dtc_flg_vls_up_b,RL4
         MOV R12,#DATA16 0D1E8H
         MOV R13,#DATA16 053E6H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_lam_lim_1_err.04H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_up_b
         AND R4,#DATA16 00020H
@@ -169,7 +169,7 @@ L_CE7F0:                 ; 0xce7f0
         MOVB dtc_flg_vls_up_c,RL4
         MOV R12,#DATA16 0D212H
         MOV R13,#DATA16 05428H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_lam_lim_1_err.07H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_up_c
         AND R4,#DATA16 00020H
@@ -211,7 +211,7 @@ L_CE852:                 ; 0xce852
         MOV R13,#DATA16 0543EH
         MOVBZ R14,DPP0:c_abc_inc_vls_down
         MOVBZ R15,DPP0:c_abc_max_vls_down
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_lam_lim_1_err.08H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_down
         AND R4,#DATA16 00020H
@@ -225,7 +225,7 @@ L_CE886:                 ; 0xce886
         MOV R13,#DATA16 05454H
         MOVBZ R14,DPP0:c_abc_inc_vls_down_puc
         MOVBZ R15,DPP0:c_abc_max_vls_down_puc
-        CALLS 00DH,DTC_Update_Debounced_OBD
+        CALLS SEG DTC_Update_Debounced_OBD, SOF DTC_Update_Debounced_OBD
         BMOV lv_lam_lim_1_err.09H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_down_puc
         AND R4,#DATA16 00020H
@@ -275,7 +275,7 @@ L_CE90C:                 ; 0xce90c
         CMPB RL4,#01H
         JMPR cc_NE,L_CE91C
         MOV R12,#DATA16 0C952H
-        CALLS 00CH,Check_N_Window
+        CALLS SEG Check_N_Window, SOF Check_N_Window
 L_CE91C:                 ; 0xce91c
         JB state_lam_ctl.04H,L_CE924
         JMPA cc_UC,L_CEA0A
@@ -294,10 +294,10 @@ L_CE92C:                 ; 0xce92c
         JMPA cc_UC,L_CEA50
 L_CE94A:                 ; 0xce94a
         MOV R12,#DATA16 00017H
-        CALLS 00DH,Eval_DTC_Status
+        CALLS SEG Eval_DTC_Status, SOF Eval_DTC_Status
         MOV R12,#DATA16 0D212H
         MOV R13,#DATA16 05428H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_lam_lim_1_err.07H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_up_c
         AND R4,#DATA16 00020H
@@ -306,7 +306,7 @@ L_CE94A:                 ; 0xce94a
         AND diag_f864,R4
 L_CE974:                 ; 0xce974
         MOV R12,#DATA16 00017H
-        CALLS 00DH,DTC_Status_Proc_3
+        CALLS SEG DTC_Status_Proc_3, SOF DTC_Status_Proc_3
         JMPA cc_UC,L_CEA50
 L_CE980:                 ; 0xce980
         JNB state_lam_ctl.03H,L_CE9E2
@@ -325,10 +325,10 @@ L_CE9A2:                 ; 0xce9a2
         MOVB dtc_test_result,RL4
         JB lv_cam_ad_di_ivvt.09H,L_CEA50
         MOV R12,#DATA16 00017H
-        CALLS 00DH,Eval_DTC_Status
+        CALLS SEG Eval_DTC_Status, SOF Eval_DTC_Status
         MOV R12,#DATA16 0D212H
         MOV R13,#DATA16 05428H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_lam_lim_1_err.07H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_up_c
         AND R4,#DATA16 00020H
@@ -337,15 +337,15 @@ L_CE9A2:                 ; 0xce9a2
         AND diag_f864,R4
 L_CE9D8:                 ; 0xce9d8
         MOV R12,#DATA16 00017H
-        CALLS 00DH,DTC_Status_Proc_3
+        CALLS SEG DTC_Status_Proc_3, SOF DTC_Status_Proc_3
         JMPR cc_UC,L_CEA50
 L_CE9E2:                 ; 0xce9e2
         JB lv_cam_ad_di_ivvt.09H,L_CEA50
         MOV R12,#DATA16 00017H
-        CALLS 00DH,Eval_DTC_Status
+        CALLS SEG Eval_DTC_Status, SOF Eval_DTC_Status
         MOV R12,#DATA16 0D212H
         MOV R13,#DATA16 05428H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_lam_lim_1_err.07H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_up_c
         AND R4,#DATA16 00020H
@@ -354,10 +354,10 @@ L_CE9E2:                 ; 0xce9e2
 L_CEA0A:                 ; 0xcea0a
         JB lv_cam_ad_di_ivvt.09H,L_CEA50
         MOV R12,#DATA16 00017H
-        CALLS 00DH,Eval_DTC_Status
+        CALLS SEG Eval_DTC_Status, SOF Eval_DTC_Status
         MOV R12,#DATA16 0D212H
         MOV R13,#DATA16 05428H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_lam_lim_1_err.07H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_up_c
         AND R4,#DATA16 00020H
@@ -445,7 +445,7 @@ L_CEAFC:                 ; 0xceafc
         MOV R13,#DATA16 053D0H
         MOVBZ R14,DPP0:c_abc_inc_vls_up
         MOVBZ R15,DPP0:c_abc_max_vls_up
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_lam_lim_1_err.03H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_up
         AND R4,#DATA16 00020H
@@ -472,7 +472,7 @@ L_CEB50:                 ; 0xceb50
         MOV R13,#DATA16 053D0H
         MOVBZ R14,DPP0:c_abc_inc_vls_up
         MOVBZ R15,DPP0:c_abc_max_vls_up
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_lam_lim_1_err.03H,dtc_status_work.06H
         JMPR cc_UC,L_CEC04
 L_CEB6E:                 ; 0xceb6e
@@ -550,7 +550,7 @@ L_CEC04:                 ; 0xcec04
         MOV R13,#DATA16 053D0H
         MOVBZ R14,DPP0:c_abc_inc_vls_up
         MOVBZ R15,DPP0:c_abc_max_vls_up
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_lam_lim_1_err.03H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_up
         AND R4,#DATA16 00020H
@@ -565,7 +565,7 @@ L_CEC52:                 ; 0xcec52
         MOV R13,#DATA16 053D0H
         MOVBZ R14,DPP0:c_abc_inc_vls_up
         MOVBZ R15,DPP0:c_abc_max_vls_up
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_lam_lim_1_err.03H,dtc_status_work.06H
         JMPR cc_UC,L_CEC80
 L_CEC78:                 ; 0xcec78
@@ -590,7 +590,7 @@ L_CEC88:                 ; 0xcec88
         MOV R13,#DATA16 053D0H
         MOVBZ R14,DPP0:c_abc_max_vls_up
         MOVBZ R15,DPP0:c_abc_max_vls_up
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_lam_lim_1_err.03H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_up
         AND R4,#DATA16 00020H
@@ -638,7 +638,7 @@ L_CED12:                 ; 0xced12
         MOV R13,#DATA16 053D0H
         MOVBZ R14,DPP0:c_abc_inc_vls_up
         MOVBZ R15,DPP0:c_abc_max_vls_up
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_lam_lim_1_err.03H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_up
         AND R4,#DATA16 00020H
@@ -680,7 +680,7 @@ L_CED9A:                 ; 0xced9a
         MOV R13,#DATA16 053D0H
         MOVBZ R14,DPP0:c_abc_inc_vls_up
         MOVBZ R15,DPP0:c_abc_max_vls_up
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_lam_lim_1_err.03H,dtc_status_work.06H
         JMPR cc_UC,L_CEDEE
 L_CEDD4:                 ; 0xcedd4
@@ -790,7 +790,7 @@ L_CEECC:                 ; 0xceecc
         MOV R13,#DATA16 053FCH
         MOVBZ R14,DPP0:c_abc_inc_vls_up_puc
         MOVBZ R15,DPP0:c_abc_max_vls_up_puc
-        CALLS 00DH,DTC_Update_Debounced_OBD
+        CALLS SEG DTC_Update_Debounced_OBD, SOF DTC_Update_Debounced_OBD
         BMOV lv_lam_lim_1_err.05H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_up_puc
         AND R4,#DATA16 00020H
@@ -806,7 +806,7 @@ L_CEEF6:                 ; 0xceef6
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D1E8H
         MOV R13,#DATA16 053E6H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_lam_lim_1_err.04H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_up_b
         AND R4,#DATA16 00020H
@@ -820,7 +820,7 @@ L_CEF2E:                 ; 0xcef2e
         MOV R13,#DATA16 053FCH
         MOVBZ R14,DPP0:c_abc_inc_vls_up_puc
         MOVBZ R15,DPP0:c_abc_max_vls_up_puc
-        CALLS 00DH,DTC_Update_Debounced_OBD
+        CALLS SEG DTC_Update_Debounced_OBD, SOF DTC_Update_Debounced_OBD
         BMOV lv_lam_lim_1_err.05H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_up_puc
         AND R4,#DATA16 00020H
@@ -838,7 +838,7 @@ L_CEF5C:                 ; 0xcef5c
         JB lv_lam_lim_1_err.06H,L_CEFB0
         MOV R12,#DATA16 0D1E8H
         MOV R13,#DATA16 053E6H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_lam_lim_1_err.04H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_up_b
         AND R4,#DATA16 00020H
@@ -903,7 +903,7 @@ L_CF020:                 ; 0xcf020
 L_CF030:                 ; 0xcf030
         MOV R12,[R9+#076H]
         MOV R13,[R9+#078H]
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         CMP R4,DPP0:c_vls_dif_bol_tol_min
         JMPR cc_NC,L_CF0AA
         MOVB RL4,#08H
@@ -915,7 +915,7 @@ L_CF050:                 ; 0xcf050
         MOV R13,#DATA16 05412H
         MOVBZ R14,DPP0:c_abc_inc_vls_up_stk
         MOVBZ R15,DPP0:c_abc_max_vls_up_stk
-        CALLS 00DH,DTC_Update_Debounced_OBD
+        CALLS SEG DTC_Update_Debounced_OBD, SOF DTC_Update_Debounced_OBD
         BMOV lv_lam_lim_1_err.06H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_up_stk
         AND R4,#DATA16 00020H
@@ -931,7 +931,7 @@ L_CF07A:                 ; 0xcf07a
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D1E8H
         MOV R13,#DATA16 053E6H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_lam_lim_1_err.04H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_up_b
         AND R4,#DATA16 00020H
@@ -943,7 +943,7 @@ L_CF0AA:                 ; 0xcf0aa
         MOV R13,#DATA16 05412H
         MOVBZ R14,DPP0:c_abc_inc_vls_up_stk
         MOVBZ R15,DPP0:c_abc_max_vls_up_stk
-        CALLS 00DH,DTC_Update_Debounced_OBD
+        CALLS SEG DTC_Update_Debounced_OBD, SOF DTC_Update_Debounced_OBD
         BMOV lv_lam_lim_1_err.06H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_up_stk
         AND R4,#DATA16 00020H
@@ -961,7 +961,7 @@ L_CF0D8:                 ; 0xcf0d8
         JB lv_lam_lim_1_err.05H,L_CF136
         MOV R12,#DATA16 0D1E8H
         MOV R13,#DATA16 053E6H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_lam_lim_1_err.04H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_up_b
         AND R4,#DATA16 00020H
@@ -995,7 +995,7 @@ Diag_DTC_dd220:
         MOV R12,[R9+#0AH]
         ASHR R12,#01H
         MOV R13,[R9+#01EH]
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV R8,R4
         JB state_lam_ctl.00H,L_CF15A
         JMPA cc_UC,L_CF2E4
@@ -1054,7 +1054,7 @@ L_CF1F4:                 ; 0xcf1f4
         MOV R13,#DATA16 0543EH
         MOVBZ R14,DPP0:c_abc_inc_vls_down
         MOVBZ R15,DPP0:c_abc_max_vls_down
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_lam_lim_1_err.08H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_down
         AND R4,#DATA16 00020H
@@ -1068,7 +1068,7 @@ L_CF222:                 ; 0xcf222
         MOV R13,#DATA16 0543EH
         MOVBZ R14,DPP0:c_abc_inc_vls_down
         MOVBZ R15,DPP0:c_abc_max_vls_down
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_lam_lim_1_err.08H,dtc_status_work.06H
         JMPR cc_UC,L_CF2EE
 L_CF240:                 ; 0xcf240
@@ -1094,7 +1094,7 @@ L_CF24E:                 ; 0xcf24e
         MOV R13,#DATA16 0543EH
         MOVBZ R14,DPP0:c_abc_inc_vls_down
         MOVBZ R15,DPP0:c_abc_max_vls_down
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_lam_lim_1_err.08H,dtc_status_work.06H
         JMPR cc_UC,L_CF2EE
 L_CF286:                 ; 0xcf286
@@ -1154,7 +1154,7 @@ L_CF2EE:                 ; 0xcf2ee
         MOV R13,#DATA16 0543EH
         MOVBZ R14,DPP0:c_abc_inc_vls_down
         MOVBZ R15,DPP0:c_abc_max_vls_down
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_lam_lim_1_err.08H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_down
         AND R4,#DATA16 00020H
@@ -1171,7 +1171,7 @@ L_CF344:                 ; 0xcf344
         MOV R13,#DATA16 0543EH
         MOVBZ R14,DPP0:c_abc_inc_vls_down
         MOVBZ R15,DPP0:c_abc_max_vls_down
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_lam_lim_1_err.08H,dtc_status_work.06H
         JMPR cc_UC,L_CF37E
 L_CF36A:                 ; 0xcf36a
@@ -1231,7 +1231,7 @@ L_CF3B2:                 ; 0xcf3b2
         MOV R13,#DATA16 0543EH
         MOVBZ R14,DPP0:c_abc_inc_vls_down
         MOVBZ R15,DPP0:c_abc_max_vls_down
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_lam_lim_1_err.08H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_down
         AND R4,#DATA16 00020H
@@ -1248,7 +1248,7 @@ L_CF43A:                 ; 0xcf43a
         MOV R13,#DATA16 0543EH
         MOVBZ R14,DPP0:c_abc_inc_vls_down
         MOVBZ R15,DPP0:c_abc_max_vls_down
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_lam_lim_1_err.08H,dtc_status_work.06H
         JMPR cc_UC,L_CF4CC
 L_CF460:                 ; 0xcf460
@@ -1356,7 +1356,7 @@ L_CF55C:                 ; 0xcf55c
         MOV R13,#DATA16 05454H
         MOVBZ R14,DPP0:c_abc_inc_vls_down_puc
         MOVBZ R15,DPP0:c_abc_max_vls_down_puc
-        CALLS 00DH,DTC_Update_Debounced_OBD
+        CALLS SEG DTC_Update_Debounced_OBD, SOF DTC_Update_Debounced_OBD
         BMOV lv_lam_lim_1_err.09H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_down_puc
         AND R4,#DATA16 00020H
@@ -1372,7 +1372,7 @@ L_CF59A:                 ; 0xcf59a
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D23CH
         MOV R13,#DATA16 0546AH
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_lam_lim_1_err.0AH,dtc_status_work.06H
         MOVBZ R4,diag_d246
         AND R4,#DATA16 00020H
@@ -1386,7 +1386,7 @@ L_CF5D2:                 ; 0xcf5d2
         MOV R13,#DATA16 05454H
         MOVBZ R14,DPP0:c_abc_inc_vls_down_puc
         MOVBZ R15,DPP0:c_abc_max_vls_down_puc
-        CALLS 00DH,DTC_Update_Debounced_OBD
+        CALLS SEG DTC_Update_Debounced_OBD, SOF DTC_Update_Debounced_OBD
         BMOV lv_lam_lim_1_err.09H,dtc_status_work.06H
         MOVBZ R4,dtc_done_vls_down_puc
         AND R4,#DATA16 00020H
@@ -1404,7 +1404,7 @@ L_CF600:                 ; 0xcf600
         JB lv_cps_err.03H,L_CF63E
         MOV R12,#DATA16 0D23CH
         MOV R13,#DATA16 0546AH
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_lam_lim_1_err.0AH,dtc_status_work.06H
         MOVBZ R4,diag_d246
         AND R4,#DATA16 00020H
@@ -1421,7 +1421,7 @@ L_CF64E:                 ; 0xcf64e
         MOVBZ R12,DPP0:c_abc_max_vls_down_puc
         MOV R13,#00H
         MOVBZ R14,DPP0:c_abc_inc_vls_down_puc
-        CALLS 00FH,Div_U32_U16_Round
+        CALLS SEG Div_U32_U16_Round, SOF Div_U32_U16_Round
         CMPB RL4,dtc_vls_down_rst
         JMPR cc_UGT,L_CF666
         BSET lv_cp_set_close.08H

@@ -25,8 +25,8 @@ S_E5A86 SECTION CODE AT 0E5A86H
         ; Library: c167_simk4x 0.0.1 alpha
         ; ------------------------------------------------------------
 c_t_max_ecu_sub:
-        CALLS 00AH,Output_CC5_P2_5_Enable
-        CALLS 00AH,Output_CC12_P2_12_Disable
+        CALLS SEG Output_CC5_P2_5_Enable, SOF Output_CC5_P2_5_Enable
+        CALLS SEG Output_CC12_P2_12_Disable, SOF Output_CC12_P2_12_Disable
         MOVB RL4,lv_sched_diag_inh
         ANDB RL4,#01H
         JMPR cc_NE,L_E5AB2
@@ -47,7 +47,7 @@ L_E5AB8:                 ; 0xe5ab8
         MOVB RL4,lv_sched_diag_inh
         ANDB RL4,#01H
         JMPR cc_NE,L_E5ADA
-        CALLS 00AH,Read_Coding_Nibble
+        CALLS SEG Read_Coding_Nibble, SOF Read_Coding_Nibble
         JNB state_out_fault.0DH,L_E5AD6
         MOV R4,sw_timer_b
         JMPR cc_NE,L_E5AD6
@@ -64,7 +64,7 @@ L_E5ADA:                 ; 0xe5ada
         ; fd98.0x10) + Diag_DTC_dd116.
         ; ------------------------------------------------------------
 Set_FuelPump_Latch:
-        CALLS 00CH,Diag_DTC_dd116
+        CALLS SEG Diag_DTC_dd116, SOF Diag_DTC_dd116
         MOV sw_timer_b,ZEROS
         MOVB RL4,#DATA16 000FEH
         ANDB state_fuel_req,RL4
@@ -87,20 +87,20 @@ L_E5B04:                 ; 0xe5b04
         ; (CC5/P2.5), disables CC12, arms run-on timer DAT_00f954=c_t_efp when fd96.0x2000 set.
         ; ------------------------------------------------------------
 Ctl_FuelPump:
-        CALLS 00AH,Output_CC5_P2_5_Enable
-        CALLS 00AH,Output_CC12_P2_12_Disable
+        CALLS SEG Output_CC5_P2_5_Enable, SOF Output_CC5_P2_5_Enable
+        CALLS SEG Output_CC12_P2_12_Disable, SOF Output_CC12_P2_12_Disable
         JNB state_out_fault.0DH,L_E5B20
         MOV R4,sw_timer_b
         JMPR cc_NE,L_E5B20
         MOV R5,DPP0:c_t_efp
         MOV sw_timer_b,R5
 L_E5B20:                 ; 0xe5b20
-        CALLS 00AH,Init_CC5_Output
+        CALLS SEG Init_CC5_Output, SOF Init_CC5_Output
         RETS
 
 ; ======== Tail_f0a52cc_b26  (@0xe5b26) ========
 Tail_f0a52cc_b26:
-        CALLS 00AH,Init_CC5_Output
+        CALLS SEG Init_CC5_Output, SOF Init_CC5_Output
         RETS
 
 S_E5A86 ENDS

@@ -24,7 +24,7 @@ KWP_Flash_Cmd06_arm:
         AND R4,#02H
         JMPA cc_EQ,L_CBC44
         MOVBZ R12,kwp_dl_data1
-        CALLS 00CH,Find_FlashCmd_Index
+        CALLS SEG Find_FlashCmd_Index, SOF Find_FlashCmd_Index
         MOVBZ R9,RL4
         MOVBZ R8,kwp_dl_data5
         SHL R8,#08H

@@ -28,20 +28,20 @@ Calc_DiagCP_Evac_Slop:
         MOV R13,dtp_sword
         MOVBZ R14,DPP0:c_dtp_evac_mmv_crlc
         SHL R14,#08H
-        CALLS 00FH,Interp_S16
+        CALLS SEG Interp_S16, SOF Interp_S16
         MOV dtp_evac_mmv,R4
         MOV R12,R4
         MOV R13,R9
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV R12,R4
         MOV R13,#02H
-        CALLS 00FH,Mul_S16_Sat16
+        CALLS SEG Mul_S16_Sat16, SOF Mul_S16_Sat16
         MOV dtp_evac_slop,R4
         MOV R12,dtp_evac_slop_mmv
         MOV R13,R4
         MOVBZ R14,DPP0:c_dtp_evac_slop_mmv_crlc
         SHL R14,#08H
-        CALLS 00FH,Interp_S16
+        CALLS SEG Interp_S16, SOF Interp_S16
         MOV dtp_evac_slop_mmv,R4
         JNB lv_diagcp_cdn_nok.04H,L_D39AC
         JNB lv_diagcp_cdn_nok.05H,L_D399A
@@ -56,7 +56,7 @@ L_D3972:                 ; 0xd3972
 L_D3980:                 ; 0xd3980
         MOV R12,dtp_evac_slop_mmv_max
         MOV R13,dtp_evac_slop_mmv_min
-        CALLS 00FH,Abs_Diff_S16
+        CALLS SEG Abs_Diff_S16, SOF Abs_Diff_S16
         MOV dtp_evac_slop_mmv_dif,R4
         CMP R4,DPP0:c_max_dif_slop_mmv
         JMPR cc_ULE,L_D39AC
@@ -80,14 +80,14 @@ Reset_uVar1_9b0:
         MOV R13,dtp_sword
         MOVBZ R14,DPP0:c_dtp_evac_mmv_crlc
         SHL R14,#08H
-        CALLS 00FH,Interp_S16
+        CALLS SEG Interp_S16, SOF Interp_S16
         MOV dtp_evac_mmv,R4
         MOV R12,R4
         MOV R13,R9
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV R12,R4
         MOV R13,#02H
-        CALLS 00FH,Mul_S16_Sat16
+        CALLS SEG Mul_S16_Sat16, SOF Mul_S16_Sat16
         MOV dtp_evac_slop,R4
         MOV dtp_evac_slop_mmv,R4
         MOV R9,[R0+]

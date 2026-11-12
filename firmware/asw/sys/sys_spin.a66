@@ -12,7 +12,7 @@ S_A040C SECTION CODE AT 0A040CH
 
 ; ======== SpinHalt_a040c  (@0xa040c) ========
 SpinHalt_a040c:
-        JMPS 00AH,SpinHalt_a040c
+        JMPS SEG SpinHalt_a040c, SOF SpinHalt_a040c
 
         ; ------------------------------------------------------------
         ; (likely) RAM/paged global @0xa0410 [dpp]  W:{-}  R:{KWP_ServiceTable_Dispatch}

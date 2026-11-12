@@ -51,7 +51,7 @@ S_B2874 SECTION CODE AT 0B2874H
         ; OEM-MATCH (Funktionsrahmen signals, verified): Evaporative Emission Control: canister purge reset
         ; ------------------------------------------------------------
 CanPurge_Reset:
-        CALLS 00BH,Init_CPS_CPPWM
+        CALLS SEG Init_CPS_CPPWM, SOF Init_CPS_CPPWM
         MOV fuel_flow_cp,ZEROS
         MOV rel_flow_cps,ZEROS
         MOV rel_flow_cps_old,ZEROS
@@ -99,7 +99,7 @@ CanPurge_Calc_PWM_Prs:
         JMPR cc_NN,L_B299A
         MOV R12,amp
         MOV R13,map
-        CALLS 00FH,Sat_Sub_S16_v2
+        CALLS SEG Sat_Sub_S16_v2, SOF Sat_Sub_S16_v2
         MOV prs_cps,R4
         JNB lv_cp_act.05H,L_B293A
         JB lv_act_diagcps.03H,L_B291A
@@ -111,16 +111,16 @@ L_B291A:                 ; 0xb291a
         CALLA cc_UC,CPS_CPPWM_Control
         JMPR cc_UC,L_B2928
 L_B2924:                 ; 0xb2924
-        CALLS 00BH,Init_CPS_CPPWM
+        CALLS SEG Init_CPS_CPPWM, SOF Init_CPS_CPPWM
 L_B2928:                 ; 0xb2928
         MOV R12,cppwm
         MOV R13,DPP0:c_cppwm_as
         ASHR R13,#01H
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV R9,R4
         JMPR cc_UC,L_B2942
 L_B293A:                 ; 0xb293a
-        CALLS 00BH,Init_CPS_CPPWM
+        CALLS SEG Init_CPS_CPPWM, SOF Init_CPS_CPPWM
         MOV R9,#DATA16 0024DH
 L_B2942:                 ; 0xb2942
         JNB state_out_act.0BH,L_B294C
@@ -163,7 +163,7 @@ L_B299A:                 ; 0xb299a
 
 ; ======== Tail_f0b28ec_99e  (@0xb299e) ========
 Tail_f0b28ec_99e:
-        CALLS 00BH,CanPurge_Calc_PWM_Prs
+        CALLS SEG CanPurge_Calc_PWM_Prs, SOF CanPurge_Calc_PWM_Prs
         RETS
 
 ; ======== Init_CPS_CPPWM  (@0xb29a4) ========
@@ -212,44 +212,44 @@ L_B2A08:                 ; 0xb2a08
         MOV R12,R9
         MOV R13,maf_cyl
         MOV R14,#08H
-        CALLS 00FH,Mul_Shift_U16_Sat32
+        CALLS SEG Mul_Shift_U16_Sat32, SOF Mul_Shift_U16_Sat32
         MOV flow_sp_cps,R4
 L_B2A18:                 ; 0xb2a18
         MOV R12,#DATA16 POF ldp_amp_ip_fac_amp_cp
         MOV R13,#DATA16 PAG ldp_amp_ip_fac_amp_cp
         MOV R14,amp
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_fac_amp_cp__amp
         MOV R13,#DATA16 PAG ip_fac_amp_cp__amp
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVB RL6,RL4
         MOV R12,#DATA16 POF ldp_tia_ip_fac_tia_cp
         MOV R13,#DATA16 PAG ldp_tia_ip_fac_tia_cp
         MOVBZ R14,tia
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_fac_tia_cp__tia
         MOV R13,#DATA16 PAG ip_fac_tia_cp__tia
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVBZ R13,RL4
         MOVBZ R12,RL6
-        CALLS 00FH,Mul_S16_Q7_Sat
+        CALLS SEG Mul_S16_Q7_Sat, SOF Mul_S16_Q7_Sat
         MOVB RL6,RL4
         MOV R12,flow_sp_cps
         MOVBZ R13,RL6
-        CALLS 00FH,Mul_Frac_Sat_x2
+        CALLS SEG Mul_Frac_Sat_x2, SOF Mul_Frac_Sat_x2
         MOV flow_cor_cps,R4
         MOV R12,#DATA16 POF ldp_flow_cor_cps_ip_cppwm
         MOV R13,#DATA16 PAG ldp_flow_cor_cps_ip_cppwm
         MOV R14,R4
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ldpm_prs_cps_ip_cppwm
         MOV R13,#DATA16 PAG ldpm_prs_cps_ip_cppwm
         MOV R14,prs_cps
         ADD R14,#DATA16 08000H
-        CALLS 00FH,Get_IP_Word_X_Axis
+        CALLS SEG Get_IP_Word_X_Axis, SOF Get_IP_Word_X_Axis
         MOV R12,#DATA16 POF ip_cppwm__flow_cor_cps__prs_cps
         MOV R13,#DATA16 PAG ip_cppwm__flow_cor_cps__prs_cps
-        CALLS 00FH,Get_IP_Word_3D_Table
+        CALLS SEG Get_IP_Word_3D_Table, SOF Get_IP_Word_3D_Table
         MOV R9,R4
         CMP R9,#DATA16 07FFFH
         JMPR cc_ULE,L_B2AA4
@@ -257,21 +257,21 @@ L_B2A18:                 ; 0xb2a18
 L_B2AA4:                 ; 0xb2aa4
         MOV R12,R9                              ; test comment
         MOV R13,cppwm_add_ad
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV cppwm_sp,R4
         MOV R12,#DATA16 POF ldpm_prs_cps_ip_cppwm
         MOV R13,#DATA16 PAG ldpm_prs_cps_ip_cppwm
         MOV R14,prs_cps
         ADD R14,#DATA16 08000H
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_maf_cps__prs_cps
         MOV R13,#DATA16 PAG ip_maf_cps__prs_cps
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV R12,R4
         SHR R12,#01H
         MOVBZ R13,RL6
         SHL R13,#08H
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         MOV R9,R4
         CMP R9,flow_sp_cps
         JMPR cc_NC,L_B2AEA
@@ -288,19 +288,19 @@ L_B2AEE:                 ; 0xb2aee
         MOV R12,R4
         MOV R13,#DATA16 00100H
         MOV R14,maf_cyl
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV rel_flow_cps_av,R4
         MOV R12,#DATA16 POF ldp_vb_ip_cppwm_vb_add
         MOV R13,#DATA16 PAG ldp_vb_ip_cppwm_vb_add
         MOVBZ R14,vb
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_cppwm_vb_add__vb
         MOV R13,#DATA16 PAG ip_cppwm_vb_add__vb
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV R13,R4
         SUB R13,#DATA16 04000H
         MOV R12,cppwm_sp
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV cppwm,R4
         MOV R6,[R0+]
         MOV R9,[R0+]
@@ -318,73 +318,73 @@ CPS_CPPWM_Control:
         MOV R12,#DATA16 POF ldp_n_32_ip_t_dly_cppwm
         MOV R13,#DATA16 PAG ldp_n_32_ip_t_dly_cppwm
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_t_dly_cppwm__n_32
         MOV R13,#DATA16 PAG ip_t_dly_cppwm__n_32
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV lv_cp_c6ee,R4
         MOV R12,R4
         SHR R12,#01H
         MOV R13,R4
         SHR R13,#01H
         MOV R14,#DATA16 04CCCH
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV lv_cp_c6f0,R4
         MOV R12,lv_cp_c6ee
         SHR R12,#07H
         ADD R12,#01H
         MOV R13,R4
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV lv_cp_c6f2,R4
         MOV R12,#01H
         MOV R13,lv_cp_c6ee
         SHR R13,#07H
-        CALLS 00FH,Sat_Sub_S16_v2
+        CALLS SEG Sat_Sub_S16_v2, SOF Sat_Sub_S16_v2
         MOV R13,R4
         MOV R12,lv_cp_c6f0
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV R12,R4
         MOV R13,lv_cp_c6f2
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         MOV [-R0],R4
         MOV R12,rel_flow_cps_av
         MOV R13,lv_cp_c6e8
-        CALLS 00FH,Sat_Sub_S16_v2
+        CALLS SEG Sat_Sub_S16_v2, SOF Sat_Sub_S16_v2
         MOV R12,R4
         MOV R13,[R0+]
-        CALLS 00FH,Mul_S16_Hi
+        CALLS SEG Mul_S16_Hi, SOF Mul_S16_Hi
         MOV R8,R4
         MOV R12,#01H
         MOV R13,lv_cp_c6f0
-        CALLS 00FH,Sat_Sub_S16_v2
+        CALLS SEG Sat_Sub_S16_v2, SOF Sat_Sub_S16_v2
         MOV R12,R4
         MOV R13,lv_cp_c6f2
         SHL R13,#01H
-        CALLS 00FH,Div_Q16_Round
+        CALLS SEG Div_Q16_Round, SOF Div_Q16_Round
         MOV [-R0],R4
         MOV R12,lv_cp_c6ec
         MOV R13,rel_flow_cps_dly
-        CALLS 00FH,Sat_Sub_S16_v2
+        CALLS SEG Sat_Sub_S16_v2, SOF Sat_Sub_S16_v2
         MOV R12,R4
         MOV R13,[R0+]
-        CALLS 00FH,Mul_Q14_Sat_S16
+        CALLS SEG Mul_Q14_Sat_S16, SOF Mul_Q14_Sat_S16
         MOV R9,R4
         MOV R4,rel_flow_cps_dly
         MOV lv_cp_c6e8,R4
         MOV R12,R8
         MOV R13,R9
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV R13,R4
         MOV R12,lv_cp_c6e4
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV rel_flow_cps_dly,R4
         MOV R12,#DATA16 POF ip_rel_flow_cps_dly_crlc__n_32
         MOV R13,#DATA16 PAG ip_rel_flow_cps_dly_crlc__n_32
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV R14,R4
         MOV R12,rel_flow_cps_dly_mmv
         MOV R13,rel_flow_cps_dly
-        CALLS 00FH,Interp_U16
+        CALLS SEG Interp_U16, SOF Interp_U16
         MOV rel_flow_cps_dly_mmv,R4
         MOV R5,lv_cp_c6de
         MOV lv_cp_c6dc,R5
@@ -393,7 +393,7 @@ CPS_CPPWM_Control:
         MOV R12,R4
         MOV R13,maf_cyl
         MOV R14,#08H
-        CALLS 00FH,Mul_Shift_U16_Sat32
+        CALLS SEG Mul_Shift_U16_Sat32, SOF Mul_Shift_U16_Sat32
         MOV R8,R4
         CMP R4,maf_cps
         JMPR cc_NC,L_B2C5C
@@ -406,70 +406,70 @@ L_B2C60:                 ; 0xb2c60
         MOV R12,#DATA16 POF ldpm_maf_cyl_ip_rel_flow_inc_cp
         MOV R13,#DATA16 PAG ldpm_maf_cyl_ip_rel_flow_inc_cp
         MOV R14,maf_cyl
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_t_dly_cp__maf_cyl
         MOV R13,#DATA16 PAG ip_t_dly_cp__maf_cyl
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV lv_cp_c6ee,R4
         MOV R12,R4
         SHR R12,#01H
         MOV R13,R4
         SHR R13,#01H
         MOV R14,#DATA16 04CCCH
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV lv_cp_c6f0,R4
         MOV R12,lv_cp_c6ee
         SHR R12,#07H
         ADD R12,#01H
         MOV R13,R4
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV lv_cp_c6f2,R4
         MOV R12,#01H
         MOV R13,lv_cp_c6ee
         SHR R13,#07H
-        CALLS 00FH,Sat_Sub_S16_v2
+        CALLS SEG Sat_Sub_S16_v2, SOF Sat_Sub_S16_v2
         MOV R13,R4
         MOV R12,lv_cp_c6f0
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV R12,R4
         MOV R13,lv_cp_c6f2
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         MOV [-R0],R4
         MOV R12,maf_cps_dly
         MOV R13,lv_cp_c6e2
-        CALLS 00FH,Sat_Sub_S16_v2
+        CALLS SEG Sat_Sub_S16_v2, SOF Sat_Sub_S16_v2
         MOV R12,R4
         MOV R13,[R0+]
-        CALLS 00FH,Mul_S16_Hi
+        CALLS SEG Mul_S16_Hi, SOF Mul_S16_Hi
         MOV R8,R4
         MOV R12,#01H
         MOV R13,lv_cp_c6f0
-        CALLS 00FH,Sat_Sub_S16_v2
+        CALLS SEG Sat_Sub_S16_v2, SOF Sat_Sub_S16_v2
         MOV R12,R4
         MOV R13,lv_cp_c6f2
         SHL R13,#01H
-        CALLS 00FH,Div_Q16_Round
+        CALLS SEG Div_Q16_Round, SOF Div_Q16_Round
         MOV [-R0],R4
         MOV R12,lv_cp_c6de
         MOV R13,maf_cps_dly_2
-        CALLS 00FH,Sat_Sub_S16_v2
+        CALLS SEG Sat_Sub_S16_v2, SOF Sat_Sub_S16_v2
         MOV R12,R4
         MOV R13,[R0+]
-        CALLS 00FH,Mul_Q14_Sat_S16
+        CALLS SEG Mul_Q14_Sat_S16, SOF Mul_Q14_Sat_S16
         MOV R9,R4
         MOV R4,maf_cps_dly_2
         MOV lv_cp_c6e2,R4
         MOV R12,R8
         MOV R13,R9
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV R13,R4
         MOV R12,lv_cp_c6dc
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV maf_cps_dly_2,R4
         MOV R12,maf_cps_dly_2_mmv
         MOV R13,R4
         MOV R14,DPP0:c_maf_cps_dly_crlc
-        CALLS 00FH,Interp_U16
+        CALLS SEG Interp_U16, SOF Interp_U16
         MOV maf_cps_dly_2_mmv,R4
         MOV R8,[R0+]
         MOV R9,[R0+]
@@ -573,10 +573,10 @@ L_B2E32:                 ; 0xb2e32
         SUB R12,flow_cor_cps
         MOV R13,DPP0:c_flow_ad_max_cps
         SUB R13,flow_cor_cps_old
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         MOV R13,R4
         MOV R12,cppwm_ad_mem
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV R9,R4
         JMPR cc_UC,L_B2E60
 L_B2E5E:                 ; 0xb2e5e

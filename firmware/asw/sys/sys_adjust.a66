@@ -20,9 +20,9 @@ S_A4B22 SECTION CODE AT 0A4B22H
         ; (Reset_CC26IC + Set_lv_err_com_resp_imob).
         ; ------------------------------------------------------------
 CC26INT_Imob_Reset:
-        CALLS 00AH,Reset_CC26IC_f1a
+        CALLS SEG Reset_CC26IC_f1a, SOF Reset_CC26IC_f1a
         BSET PSW.0BH
-        CALLS 00AH,Set_lv_err_com_resp_imob
+        CALLS SEG Set_lv_err_com_resp_imob, SOF Set_lv_err_com_resp_imob
         RETS
 
 ; ======== FuelPump_Out_Init  (@0xa4b2e) ========
@@ -43,8 +43,8 @@ L_A4B3C:                 ; 0xa4b3c
         JMPR cc_C,L_A4B34
 L_A4B48:                 ; 0xa4b48
         MOV state_out_diag,ZEROS
-        CALLS 00AH,Reset_Dfd62_8ca
-        CALLS 00AH,Diag_Output_SecAir
+        CALLS SEG Reset_Dfd62_8ca, SOF Reset_Dfd62_8ca
+        CALLS SEG Diag_Output_SecAir, SOF Diag_Output_SecAir
         MOV R9,T1_FE52
 L_A4B58:                 ; 0xa4b58
         JB capcom_12.0EH,L_A4B60
@@ -56,18 +56,18 @@ L_A4B60:                 ; 0xa4b60
         JMPR cc_C,L_A4B58
 L_A4B6C:                 ; 0xa4b6c
         BCLR PSW.0BH
-        CALLS 00AH,Init_ECU_Ports
-        CALLS 00AH,EngInj_DisableOutputs
-        CALLS 00AH,EngIgn_DisableOutputs
-        CALLS 00AH,EngCrank_StopTimingCapture
-        CALLS 00AH,IVVT_Hold_Adjust_2
-        CALLS 00AH,Output_CC5_P2_5_Enable
-        CALLS 00AH,Output_CC12_P2_12_Disable
-        CALLS 00AH,Reset_CC28IC_e22
-        CALLS 00AH,SpinHalt_a3eae
-        CALLS 00AH,Reset_CC29IC_2b4
-        CALLS 00AH,Reset_ADCIC_4da
-        CALLS 00AH,Reset_CC26IC_f38
+        CALLS SEG Init_ECU_Ports, SOF Init_ECU_Ports
+        CALLS SEG EngInj_DisableOutputs, SOF EngInj_DisableOutputs
+        CALLS SEG EngIgn_DisableOutputs, SOF EngIgn_DisableOutputs
+        CALLS SEG EngCrank_StopTimingCapture, SOF EngCrank_StopTimingCapture
+        CALLS SEG IVVT_Hold_Adjust_2, SOF IVVT_Hold_Adjust_2
+        CALLS SEG Output_CC5_P2_5_Enable, SOF Output_CC5_P2_5_Enable
+        CALLS SEG Output_CC12_P2_12_Disable, SOF Output_CC12_P2_12_Disable
+        CALLS SEG Reset_CC28IC_e22, SOF Reset_CC28IC_e22
+        CALLS SEG SpinHalt_a3eae, SOF SpinHalt_a3eae
+        CALLS SEG Reset_CC29IC_2b4, SOF Reset_CC29IC_2b4
+        CALLS SEG Reset_ADCIC_4da, SOF Reset_ADCIC_4da
+        CALLS SEG Reset_CC26IC_f38, SOF Reset_CC26IC_f38
         MOV R9,[R0+]
         RETS
 

@@ -41,10 +41,10 @@ Calc_TQ_ADD_CP:
         MOV R12,#DATA16 POF ldp_cl_mmv
         MOV R13,#DATA16 PAG ldp_cl_mmv
         MOV R14,cl_mmv
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_tq_add_cp__cl_mmv
         MOV R13,#DATA16 PAG ip_tq_add_cp__cl_mmv
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV R9,R4
         SUB R9,#DATA16 08000H
         JMPR cc_UC,L_B167C
@@ -55,7 +55,7 @@ L_B167C:                 ; 0xb167c
         MOV R13,R9
         MOVBZ R14,DPP0:c_crlc_tq_add_cp
         SHL R14,#08H
-        CALLS 00FH,Interp_S16
+        CALLS SEG Interp_S16, SOF Interp_S16
         MOV tq_add_cp,R4
         MOV R9,[R0+]
         RETS
@@ -64,7 +64,7 @@ L_B167C:                 ; 0xb167c
 Reset_sVar1_694:
         MOV R12,#DATA16 0466AH
         MOVBZ R13,tco_st
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YByte, SOF Get_IP_Word_2D_Table_DWord_YByte
         ADD R4,#DATA16 08000H
         MOV tqfr_st,R4
         RETS
@@ -75,10 +75,10 @@ Reset_sVar1_694:
         ; parasitic + accessory losses fed to the net-torque calc).
         ; ------------------------------------------------------------
 Calc_TQ_Loss_Sum:
-        CALLS 00CH,Calc_TQ_Loss_Trans
+        CALLS SEG Calc_TQ_Loss_Trans, SOF Calc_TQ_Loss_Trans
         MOV R12,tqfr_bas
         MOV R13,tq_loss_add
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV tq_loss_1,R4
         MOV R5,lv_tq_c672
         CMP R5,tq_loss_1
@@ -101,62 +101,62 @@ Calc_TQ_Loss:
         MOV R12,#DATA16 POF ldpm_n_100
         MOV R13,#DATA16 PAG ldpm_n_100
         MOV R14,n_C93C
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ldp_maf_cyl__tqfr
         MOV R13,#DATA16 PAG ldp_maf_cyl__tqfr
         MOV R14,maf_cyl_stk
-        CALLS 00FH,Get_IP_Word_X_Axis
+        CALLS SEG Get_IP_Word_X_Axis, SOF Get_IP_Word_X_Axis
         MOV R12,#DATA16 POF ip_tqfr
         MOV R13,#DATA16 PAG ip_tqfr
-        CALLS 00FH,Get_IP_Word_3D_Table
+        CALLS SEG Get_IP_Word_3D_Table, SOF Get_IP_Word_3D_Table
         ADD R4,#DATA16 08000H
         MOV tqfr,R4
         MOV R12,tqfr_add
         MOV R13,tqfr_st
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV R12,R4
         MOV R13,tq_dif_is_ad
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV R8,R4
         MOV R12,tqfr
         MOV R13,R8
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV tqfr_bas,R4
         MOV R5,DPP0:c_maf_cyl_stk_ref
         JMPR cc_NE,L_B174A
         MOV R12,R4
         MOV R13,tq_loss_add
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV R9,R4
         JMPR cc_UC,L_B1782
 L_B174A:                 ; 0xb174a
         MOV R12,#DATA16 POF ldp_maf_cyl__tqfr
         MOV R13,#DATA16 PAG ldp_maf_cyl__tqfr
         MOV R14,DPP0:c_maf_cyl_stk_ref
-        CALLS 00FH,Get_IP_Word_X_Axis
+        CALLS SEG Get_IP_Word_X_Axis, SOF Get_IP_Word_X_Axis
         MOV R12,#DATA16 POF ip_tqfr
         MOV R13,#DATA16 PAG ip_tqfr
-        CALLS 00FH,Get_IP_Word_3D_Table
+        CALLS SEG Get_IP_Word_3D_Table, SOF Get_IP_Word_3D_Table
         ADD R4,#DATA16 08000H
         MOV tqfr_mec,R4
         MOV R12,R4
         MOV R13,R8
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV R12,R4
         MOV R13,tq_loss_add
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV R9,R4
 L_B1782:                 ; 0xb1782
         MOV R12,tq_loss_req_clu
         MOV R13,R9
         MOVBZ R14,DPP0:c_crlc_tq_loss_req_clu
         SHL R14,#08H
-        CALLS 00FH,Interp_S16
+        CALLS SEG Interp_S16, SOF Interp_S16
         MOV tq_loss_req_clu,R4
         MOV R12,#DATA16 0467AH
         MOV R13,n_C93C
         MOVBZ R14,tco
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YWord
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XByte_YWord, SOF Get_IP_Word_3D_Table_DWord_XByte_YWord
         ADD R4,#DATA16 08000H
         MOV lv_tq_c672,R4
         MOV R5,tq_loss_1
@@ -183,7 +183,7 @@ Calc_TQ_FR_St:
         JNB lv_pl.09H,L_B17F2
         MOV R12,#DATA16 04672H
         MOVBZ R13,tco_st
-        CALLS 00FH,Get_IP_Word_2D_Table_DWord_YByte
+        CALLS SEG Get_IP_Word_2D_Table_DWord_YByte, SOF Get_IP_Word_2D_Table_DWord_YByte
         MOV R9,R4
         ADD R9,#DATA16 08000H
         CMP R9,tqfr_st
@@ -201,7 +201,7 @@ Reset_sVar1_7f6:
         MOV R12,#DATA16 0465EH
         MOVBZ R13,tco
         MOVBZ R14,toil
-        CALLS 00FH,Get_IP_Word_3D_Table_DWord_XByte_YByte
+        CALLS SEG Get_IP_Word_3D_Table_DWord_XByte_YByte, SOF Get_IP_Word_3D_Table_DWord_XByte_YByte
         ADD R4,#DATA16 08000H
         MOV tqfr_add,R4
         RETS

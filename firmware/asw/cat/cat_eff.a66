@@ -95,11 +95,11 @@ L_B7DE4:                 ; 0xb7de4
         MOV R12,[R7+#0128H]
         MOV R13,[R7+#0EH]
         MOV R14,DPP0:c_lam_mv_crlc_cat
-        CALLS 00FH,Interp_S16
+        CALLS SEG Interp_S16, SOF Interp_S16
         MOV [R7+#0128H],R4
         MOV R12,[R7+#0EH]
         MOV R13,[R7+#0128H]
-        CALLS 00FH,Sat_Sub_S16
+        CALLS SEG Sat_Sub_S16, SOF Sat_Sub_S16
         MOV R8,R4
         CMP R4,#00H
         JMPR cc_SGE,L_B7E10
@@ -120,16 +120,16 @@ L_B7E24:                 ; 0xb7e24
         MOV R12,n_mmv_cat
         MOV R13,n_C93C
         MOV R14,DPP0:c_n_crlc_cat
-        CALLS 00FH,Interp_U16
+        CALLS SEG Interp_U16, SOF Interp_U16
         MOV n_mmv_cat,R4
         MOV R12,maf_mmv_cat
         MOV R13,maf_word
         MOV R14,DPP0:c_maf_crlc_cat
-        CALLS 00FH,Interp_U16
+        CALLS SEG Interp_U16, SOF Interp_U16
         MOV maf_mmv_cat,R4
         MOV R12,n_C93C
         MOV R13,n_mmv_cat
-        CALLS 00FH,Abs_Diff_U16
+        CALLS SEG Abs_Diff_U16, SOF Abs_Diff_U16
         CMP R4,DPP0:c_n_dyw_cat
         JMPR cc_NC,L_B7E66
         BSET lv_inh_fsd_cp.03H
@@ -141,7 +141,7 @@ L_B7E66:                 ; 0xb7e66
 L_B7E70:                 ; 0xb7e70
         MOV R12,maf_word
         MOV R13,maf_mmv_cat
-        CALLS 00FH,Abs_Diff_U16
+        CALLS SEG Abs_Diff_U16, SOF Abs_Diff_U16
         CMP R4,DPP0:c_maf_dyw_cat
         JMPR cc_C,L_B7E8C
         MOV R4,maf_word
@@ -155,10 +155,10 @@ L_B7E8C:                 ; 0xb7e8c
         JMPR cc_UGT,L_B7ECA
         MOV R12,maf_kgh
         MOV R13,#DATA16 00199H
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV R13,R4
         MOV R12,[R7+#012AH]
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV [R7+#012AH],R4
         MOV R4,[R7+#012AH]
         CMP R4,DPP0:c_maf_int_min_cat
@@ -176,7 +176,7 @@ L_B7ECA:                 ; 0xb7eca
         JMPR cc_NC,L_B7F2E
         MOV R12,[R7+#012EH]
         MOVBZ R13,lv_tps_f4b6
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV R8,R4
         MOV R4,R7
         ADD R4,#DATA16 0012CH
@@ -190,7 +190,7 @@ L_B7ECA:                 ; 0xb7eca
         MOVB [R7+#012CH],RL4
         MOV R12,R8
         MOVBZ R13,DPP0:c_tps_grd_dec
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV R8,R4
 L_B7F10:                 ; 0xb7f10
         CMP R8,DPP0:c_tps_grd_sum_min
@@ -254,7 +254,7 @@ L_B7F8E:                 ; 0xb7f8e
         MOV R12,#DATA16 POF ldpm_n_33
         MOV R13,#DATA16 PAG ldpm_n_33
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         JNB state_lam_ctl.00H,L_B8058
         JNB state_cat_diag.02H,L_B8058
         MOVB RL4,vs
@@ -264,12 +264,12 @@ L_B7F8E:                 ; 0xb7f8e
         JMPR cc_UGT,L_B8058
         MOV R12,#DATA16 POF ip_maf_lam_cat_min__n
         MOV R13,#DATA16 PAG ip_maf_lam_cat_min__n
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         CMP R4,maf_word
         JMPR cc_NC,L_B8058
         MOV R12,#DATA16 POF ip_maf_lam_cat_max__n
         MOV R13,#DATA16 PAG ip_maf_lam_cat_max__n
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         CMP R4,maf_word
         JMPR cc_ULE,L_B8058
         JB lv_fcut_fast.06H,L_B8058
@@ -281,12 +281,12 @@ L_B7F8E:                 ; 0xb7f8e
         JMPR cc_EQ,L_B8036
         MOVBZ R12,DPP0:c_temp_min_cat
         MOVBZ R13,DPP0:c_temp_hys_cat
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL6,RL4
         JMPR cc_C,L_B8010
         MOVBZ R12,DPP0:c_temp_max_cat
         MOVBZ R13,DPP0:c_temp_hys_cat
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         CMPB RL6,RL4
         JMPR cc_ULE,L_B8082
 L_B8010:                 ; 0xb8010
@@ -340,12 +340,12 @@ L_B8082:                 ; 0xb8082
 L_B8098:                 ; 0xb8098
         MOVB RL4,[R9+#0131H]
         JMPR cc_EQ,L_B80B2
-        CALLS 00DH,DiagCP_SetActive
+        CALLS SEG DiagCP_SetActive, SOF DiagCP_SetActive
         MOVB RL4,[R9+#0131H]
         CMPB RL4,#04H
         JMPR cc_NE,L_B80B2
         JNB state_lam_ctl2.0AH,L_B80B2
-        CALLS 00DH,Set_lv_act_diagcps
+        CALLS SEG Set_lv_act_diagcps, SOF Set_lv_act_diagcps
 L_B80B2:                 ; 0xb80b2
         JB lv_inh_fsd_cp.01H,L_B80BA
         JMPA cc_UC,L_B8378
@@ -403,7 +403,7 @@ L_B8138:                 ; 0xb8138
         JMPA cc_NC,L_B8258
         MOV R12,R7
         MOV R13,[R9+#0134H]
-        CALLS 00FH,Abs_Diff_U16
+        CALLS SEG Abs_Diff_U16, SOF Abs_Diff_U16
         CMP R4,DPP0:c_vls_cat_mv_dif_max
         JMPA cc_NC,L_B8258
         BSET state_cat_diag.05H
@@ -424,33 +424,33 @@ L_B819E:                 ; 0xb819e
         MOV R12,#DATA16 POF ldpm_n_34
         MOV R13,#DATA16 PAG ldpm_n_34
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ldpm_maf_11
         MOV R13,#DATA16 PAG ldpm_maf_11
         MOVBZ R14,lv_iga_cc2b
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         JB abs_def.04H,L_B81D2
         MOV R12,#DATA16 POF ip_vls_cat_int_max_mt__n__maf
         MOV R13,#DATA16 PAG ip_vls_cat_int_max_mt__n__maf
-        CALLS 00FH,Get_IP_Word_3D_Table
+        CALLS SEG Get_IP_Word_3D_Table, SOF Get_IP_Word_3D_Table
         MOV R7,R4
         JMPR cc_UC,L_B81E0
 L_B81D2:                 ; 0xb81d2
         MOV R12,#DATA16 POF ip_vls_cat_int_max_at__n__maf
         MOV R13,#DATA16 PAG ip_vls_cat_int_max_at__n__maf
-        CALLS 00FH,Get_IP_Word_3D_Table
+        CALLS SEG Get_IP_Word_3D_Table, SOF Get_IP_Word_3D_Table
         MOV R7,R4
 L_B81E0:                 ; 0xb81e0
         MOV R12,[R9+#013CH]
         MOV R13,R7
         SHL R13,#01H
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         SHR R4,#09H
         MOVB [R9+#0140H],RL4
         MOV R12,[R9+#0144H]
         MOVB RL4,[R9+#0140H]
         MOVBZ R13,RL4
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV R7,R4
         MOV [R9+#0144H],R7
         MOV R4,R9
@@ -475,7 +475,7 @@ L_B81E0:                 ; 0xb81e0
 L_B8240:                 ; 0xb8240
         BCLR lv_inh_fsd_cp.02H
 L_B8242:                 ; 0xb8242
-        CALLS 00CH,Diag_DTC_dd282
+        CALLS SEG Diag_DTC_dd282, SOF Diag_DTC_dd282
         MOVB RL4,[R9+#0130H]
         MOVB [R9+#0126H],RL4
         MOVB RL4,#DATA16 000FFH
@@ -497,7 +497,7 @@ L_B8262:                 ; 0xb8262
 L_B827A:                 ; 0xb827a
         MOV R12,[R9+#0132H]
         MOV R13,[R9+#096H]
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV [R9+#0132H],R4
         MOV R4,R9
         ADD R4,#DATA16 0013EH
@@ -508,7 +508,7 @@ L_B827A:                 ; 0xb827a
         JMPA cc_EQ,L_B8378
         MOV R12,[R9+#0134H]
         MOV R13,[R9+#096H]
-        CALLS 00FH,Sat_Sub_S16_v2
+        CALLS SEG Sat_Sub_S16_v2, SOF Sat_Sub_S16_v2
         MOV R8,R4
         CMP R8,#00H
         JMPR cc_SGE,L_B82B6
@@ -540,7 +540,7 @@ L_B82D0:                 ; 0xb82d0
 L_B82DE:                 ; 0xb82de
         MOV R13,R8
 L_B82E0:                 ; 0xb82e0
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV [R9+#0138H],R4
         MOV R4,[R9+#013AH]
         JMPR cc_EQ,L_B8310
@@ -606,7 +606,7 @@ L_B8378:                 ; 0xb8378
         MOV R12,#DATA16 POF ldpm_n_33
         MOV R13,#DATA16 PAG ldpm_n_33
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         JNB state_lam_ctl.00H,L_B83F6
         JNB state_cat_diag.02H,L_B83F6
         MOVB RL4,vs
@@ -616,12 +616,12 @@ L_B8378:                 ; 0xb8378
         JMPR cc_UGT,L_B83F6
         MOV R12,#DATA16 POF ip_maf_lam_cat_min__n
         MOV R13,#DATA16 PAG ip_maf_lam_cat_min__n
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         CMP R4,maf_word
         JMPR cc_NC,L_B83F6
         MOV R12,#DATA16 POF ip_maf_lam_cat_max__n
         MOV R13,#DATA16 PAG ip_maf_lam_cat_max__n
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         CMP R4,maf_word
         JMPR cc_ULE,L_B83F6
         JB lv_fcut_fast.06H,L_B83F6
@@ -638,7 +638,7 @@ L_B8378:                 ; 0xb8378
         MOVB RL4,tco
         CMPB RL4,DPP0:c_tco_min_cat
         JMPR cc_ULE,L_B83F6
-        CALLS 00DH,Set_lv_act_diagcps_43F8
+        CALLS SEG Set_lv_act_diagcps_43F8, SOF Set_lv_act_diagcps_43F8
 L_B83F6:                 ; 0xb83f6
         BXOR lv_inh_fsd_cp.01H,ONES.00H
         MOV R6,[R0+]

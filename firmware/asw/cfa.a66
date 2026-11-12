@@ -78,7 +78,7 @@ Calc_VS_STATE_CFA:
         JMPR cc_NE,L_D798E
         MOVBZ R12,DPP0:c_vs_3_cfa
         MOVBZ R13,DPP0:c_vs_hys_2_cfa
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL4,vs
         JMPR cc_ULE,L_D79D4
         MOVB RL4,#01H
@@ -96,7 +96,7 @@ L_D799C:                 ; 0xd799c
         JMPR cc_NE,L_D79BA
         MOVBZ R12,RL6
         MOVBZ R13,DPP0:c_vs_hys_1_cfa
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL4,vs
         JMPR cc_ULE,L_D79D4
         MOVB vs_state_cfa,ZEROS
@@ -146,7 +146,7 @@ L_D7A08:                 ; 0xd7a08
         MOV R12,#DATA16 051A4H
         MOVBZ R13,RL4
         MOVBZ R14,tia
-        CALLS 00FH,Get_Byte_3D_Table_DWord_XByte_YByte
+        CALLS SEG Get_Byte_3D_Table_DWord_XByte_YByte, SOF Get_Byte_3D_Table_DWord_XByte_YByte
         MOVB RL7,RL4
         JMPR cc_EQ,L_D7A40
         MOVBZ R4,RL7
@@ -212,7 +212,7 @@ L_D7ABA:                 ; 0xd7aba
         MOV R12,#DATA16 051ECH
         MOVBZ R13,tco
         MOVBZ R14,vs_state_cfa
-        CALLS 00FH,Get_Byte_3D_Table_DWord_XByte_YByte
+        CALLS SEG Get_Byte_3D_Table_DWord_XByte_YByte, SOF Get_Byte_3D_Table_DWord_XByte_YByte
         MOVB state_cfa_new,RL4
         JMPR cc_UC,L_D7B78
 L_D7AE2:                 ; 0xd7ae2
@@ -222,7 +222,7 @@ L_D7AE2:                 ; 0xd7ae2
         MOV R12,#DATA16 051E0H
         MOVBZ R13,tco
         MOVBZ R14,vs_state_cfa
-        CALLS 00FH,Get_Byte_3D_Table_DWord_XByte_YByte
+        CALLS SEG Get_Byte_3D_Table_DWord_XByte_YByte, SOF Get_Byte_3D_Table_DWord_XByte_YByte
         MOVB state_cfa_new,RL4
         JMPR cc_UC,L_D7B78
 L_D7B00:                 ; 0xd7b00
@@ -232,21 +232,21 @@ L_D7B00:                 ; 0xd7b00
         MOV R12,#DATA16 051D4H
         MOVBZ R13,tco
         MOVBZ R14,vs_state_cfa
-        CALLS 00FH,Get_Byte_3D_Table_DWord_XByte_YByte
+        CALLS SEG Get_Byte_3D_Table_DWord_XByte_YByte, SOF Get_Byte_3D_Table_DWord_XByte_YByte
         MOVB state_cfa_new,RL4
         JMPR cc_UC,L_D7B78
 L_D7B1E:                 ; 0xd7b1e
         MOV R12,#DATA16 051C8H
         MOVBZ R13,tco
         MOVBZ R14,vs_state_cfa
-        CALLS 00FH,Get_Byte_3D_Table_DWord_XByte_YByte
+        CALLS SEG Get_Byte_3D_Table_DWord_XByte_YByte, SOF Get_Byte_3D_Table_DWord_XByte_YByte
         MOVB state_cfa_new,RL4
         JMPR cc_UC,L_D7B78
 L_D7B34:                 ; 0xd7b34
         MOV R12,#DATA16 051B0H
         MOVBZ R13,tco
         MOVBZ R14,vs_state_cfa
-        CALLS 00FH,Get_Byte_3D_Table_DWord_XByte_YByte
+        CALLS SEG Get_Byte_3D_Table_DWord_XByte_YByte, SOF Get_Byte_3D_Table_DWord_XByte_YByte
         MOVB state_cfa_new,RL4
         JMPR cc_UC,L_D7B78
 L_D7B4A:                 ; 0xd7b4a
@@ -254,14 +254,14 @@ L_D7B4A:                 ; 0xd7b4a
         MOV R12,#DATA16 051BCH
         MOVBZ R13,tco
         MOVBZ R14,vs_state_cfa
-        CALLS 00FH,Get_Byte_3D_Table_DWord_XByte_YByte
+        CALLS SEG Get_Byte_3D_Table_DWord_XByte_YByte, SOF Get_Byte_3D_Table_DWord_XByte_YByte
         MOVB state_cfa_new,RL4
         JMPR cc_UC,L_D7B78
 L_D7B64:                 ; 0xd7b64
         MOV R12,#DATA16 051B0H
         MOVBZ R13,tco
         MOVBZ R14,vs_state_cfa
-        CALLS 00FH,Get_Byte_3D_Table_DWord_XByte_YByte
+        CALLS SEG Get_Byte_3D_Table_DWord_XByte_YByte, SOF Get_Byte_3D_Table_DWord_XByte_YByte
         MOVB state_cfa_new,RL4
 L_D7B78:                 ; 0xd7b78
         BCMP lv_cdn_diag_maf_dif_ch_int.00H,lv_im_acin.04H
@@ -317,7 +317,7 @@ L_D7BF2:                 ; 0xd7bf2
         JMPR cc_NE,L_D7C12
         MOVBZ R12,tco
         MOVBZ R13,DPP0:c_tco_hys_cfa
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB tco_hys_cfa,RL4
 L_D7C12:                 ; 0xd7c12
         MOVB RL4,tco

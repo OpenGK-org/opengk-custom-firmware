@@ -40,44 +40,44 @@ Calc_prs_ex_c47b:
         MOV R12,#DATA16 POF ldp_amp
         MOV R13,#DATA16 PAG ldp_amp
         MOV R14,amp
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_fac_prs_ex
         MOV R13,#DATA16 PAG ip_fac_prs_ex
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVB RL6,RL4
         MOV R12,#DATA16 POF ldp_maf_thr
         MOV R13,#DATA16 PAG ldp_maf_thr
         MOV R14,maf_thr
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_fac_load
         MOV R13,#DATA16 PAG ip_fac_load
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV R12,R4
         MOVBZ R13,RL6
-        CALLS 00FH,Mul_Frac_Sat_x2
+        CALLS SEG Mul_Frac_Sat_x2, SOF Mul_Frac_Sat_x2
         MOV R8,R4
         MOV R12,maf_thr
         MOV R13,R8
         MOV R14,#09H
-        CALLS 00FH,Mul_Shift_U16_Sat32
+        CALLS SEG Mul_Shift_U16_Sat32, SOF Mul_Shift_U16_Sat32
         MOV R13,R4
         MOV R12,maf_thr
         MOV R14,#0DH
-        CALLS 00FH,Mul_Shift_U16_Sat32
+        CALLS SEG Mul_Shift_U16_Sat32, SOF Mul_Shift_U16_Sat32
         MOV R8,R4
         MOV R12,amp
         MOV R13,R8
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV R12,R4
         MOV R13,prs_ex
-        CALLS 00FH,Sat_Sub_S16_v2
+        CALLS SEG Sat_Sub_S16_v2, SOF Sat_Sub_S16_v2
         MOV R9,R4
         MOV R12,R9
         MOV R13,DPP0:c_fac_prs_ex
-        CALLS 00FH,Mul_S16_Hi
+        CALLS SEG Mul_S16_Hi, SOF Mul_S16_Hi
         MOV R13,R4
         MOV R12,prs_ex
-        CALLS 00FH,Sat_Add_S16_v2
+        CALLS SEG Sat_Add_S16_v2, SOF Sat_Add_S16_v2
         MOV prs_ex,R4
         MOV R6,[R0+]
         MOV R8,[R0+]
@@ -110,8 +110,8 @@ L_C4882:                 ; 0xc4882
         MOVB RL4,prev_state_iv
         MOVB state_iv,RL4
         MOVB state_iv_mis,RL4
-        CALLS 00DH,Calc_ER_Seg_Nr
-        CALLS 00BH,Calc_Drv0_Er_Osc
+        CALLS SEG Calc_ER_Seg_Nr, SOF Calc_ER_Seg_Nr
+        CALLS SEG Calc_Drv0_Er_Osc, SOF Calc_Drv0_Er_Osc
         RETS
 
 ; ======== Set_state_iv  (@0xc4898) ========

@@ -37,7 +37,7 @@ KWP_Flash_Cmd14_arm:
         MOV R13,kwp_dl_count
         MOV R14,[R0+#04H]
         MOV R15,#00H
-        CALLS 00CH,CanPurge_SetAct_2
+        CALLS SEG CanPurge_SetAct_2, SOF CanPurge_SetAct_2
         MOVBZ R4,RL4
         MOVBZ R5,kwp_dl_mask
         AND R5,R4
@@ -45,7 +45,7 @@ KWP_Flash_Cmd14_arm:
         MOV R12,kwp_dl_addr
         MOV R13,kwp_dl_count
         MOV R14,[R0+#04H]
-        CALLS 00CH,Calc_CRC16_Flash
+        CALLS SEG Calc_CRC16_Flash, SOF Calc_CRC16_Flash
         MOV R9,R4
         MOVB RL4,#02H
         MOVB kwp_resp_status2,RL4
@@ -90,7 +90,7 @@ KWP_Flash_Cmd15_arm:
         MOV R13,[R0+#02H]
         MOVBZ R14,kwp_dl_buf
         MOV R15,#00H
-        CALLS 00CH,CanPurge_SetAct_2
+        CALLS SEG CanPurge_SetAct_2, SOF CanPurge_SetAct_2
         MOVBZ R9,RL4
         JMPR cc_EQ,L_CBF20
         MOVBZ R4,kwp_dl_mask

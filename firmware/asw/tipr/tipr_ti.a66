@@ -64,44 +64,44 @@ L_B0A20:                 ; 0xb0a20
         MOV R12,#DATA16 POF ldp_maf_ip_lamb_ch
         MOV R13,#DATA16 PAG ldp_maf_ip_lamb_ch
         MOV R14,maf_word
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ldp_n_32_ip_lamb_ch
         MOV R13,#DATA16 PAG ldp_n_32_ip_lamb_ch
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         MOV R12,#DATA16 POF ip_lamb_ch__maf__n_32
         MOV R13,#DATA16 PAG ip_lamb_ch__maf__n_32
-        CALLS 00FH,Get_IP_Word_3D_Table
+        CALLS SEG Get_IP_Word_3D_Table, SOF Get_IP_Word_3D_Table
         MOV R9,R4
         JMPR cc_UC,L_B0A84
 L_B0A56:                 ; 0xb0a56
         MOV R12,#DATA16 POF ldp_maf_ip_lamb_ch_is
         MOV R13,#DATA16 PAG ldp_maf_ip_lamb_ch_is
         MOV R14,maf_word
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ldp_n_32_ip_lamb_ch_is
         MOV R13,#DATA16 PAG ldp_n_32_ip_lamb_ch_is
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         MOV R12,#DATA16 POF ip_lamb_ch_is__maf__n_32
         MOV R13,#DATA16 PAG ip_lamb_ch_is__maf__n_32
-        CALLS 00FH,Get_IP_Word_3D_Table
+        CALLS SEG Get_IP_Word_3D_Table, SOF Get_IP_Word_3D_Table
         MOV R9,R4
 L_B0A84:                 ; 0xb0a84
         MOV R12,#DATA16 POF ldp_tco_ip_lamb_ch_fac
         MOV R13,#DATA16 PAG ldp_tco_ip_lamb_ch_fac
         MOVBZ R14,tco
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ldp_t_ast_ip_lamb_ch_fac
         MOV R13,#DATA16 PAG ldp_t_ast_ip_lamb_ch_fac
         MOV R14,t_ast
-        CALLS 00FH,Get_IP_Word_X_Axis
+        CALLS SEG Get_IP_Word_X_Axis, SOF Get_IP_Word_X_Axis
         MOV R12,#DATA16 POF ip_lamb_ch_fac__tco__t_ast
         MOV R13,#DATA16 PAG ip_lamb_ch_fac__tco__t_ast
-        CALLS 00FH,Get_IP_Word_3D_Table
+        CALLS SEG Get_IP_Word_3D_Table, SOF Get_IP_Word_3D_Table
         MOV R13,R4
         MOV R12,R9
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV lamb_ch_av,R4
 L_B0ABC:                 ; 0xb0abc
         MOV R4,lamb_ch_av
@@ -109,7 +109,7 @@ L_B0ABC:                 ; 0xb0abc
         JMPR cc_EQ,L_B0AD6
         MOV R12,#DATA16 00200H
         MOV R13,R4
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         MOV ti_ch,R4
         JMPR cc_UC,L_B0AEA
 L_B0AD6:                 ; 0xb0ad6
@@ -136,7 +136,7 @@ Calc_Cyl_InjPhase:
         MOV [-R0],R6
         MOVBZ R12,DPP0:c_tooth_nr_tipr_fol_ofs
         MOVBZ R13,DPP0:c_tooth_nr_tipr_first
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB tooth_nr_tipr_fol,RL4
         MOVB RL4,DPP0:c_tooth_nr_tipr_first
         MOVB tooth_nr_tipr_first,RL4

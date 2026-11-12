@@ -50,7 +50,7 @@ NVM_Restore_s632:
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#06H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV R10,diag_f890
         MOV R11,diag_f892
         EXTP R11, #02H
@@ -109,7 +109,7 @@ NVM_Save_s632:
         MOV R13,R5
         MOV R14,R0
         MOV R15,#01H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 00634H
@@ -123,7 +123,7 @@ NVM_Save_s632:
         MOV R13,R5
         MOV R14,#DATA16 0D72CH
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 00636H
@@ -137,7 +137,7 @@ NVM_Save_s632:
         MOV R13,R5
         MOV R14,#DATA16 0C4F5H
         MOV R15,#01H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 00633H
@@ -151,7 +151,7 @@ NVM_Save_s632:
         MOV R13,R5
         MOV R14,#DATA16 0C4F6H
         MOV R15,#01H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 00632H
@@ -170,7 +170,7 @@ NVM_Save_s632:
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#06H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV [R0+#02H],R4
         MOV R12,diag_f890
         MOV R13,diag_f892
@@ -186,7 +186,7 @@ NVM_Save_s632:
         MOV R14,#02H
         ADD R14,R0
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         ADD R0,#04H
         RETS
 
@@ -251,10 +251,10 @@ L_DDA78:                 ; 0xdda78
         MOV R12,v_maf_trim
         MOV R13,DPP0:c_v_maf_trim_nom
         SHL R13,#01H
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         MOV R13,R4
         MOV R12,#DATA16 009FEH
-        CALLS 00FH,Mul_U16_Hi
+        CALLS SEG Mul_U16_Hi, SOF Mul_U16_Hi
         MOV R9,R4
         CMP R9,#DATA16 0047FH
         JMPR cc_NC,L_DDAA8
@@ -267,7 +267,7 @@ L_DDAA8:                 ; 0xddaa8
 L_DDAB2:                 ; 0xddab2
         MOV R12,R9
         MOV R13,#DATA16 0047FH
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOVB fac_maf_trim,RL4
         CMPB RL4,DPP0:c_fac_maf_trim_max
         JMPR cc_UGT,L_DDACC
@@ -448,24 +448,24 @@ L_DDC4A:                 ; 0xddc4a
         BSET lv_maf_trim.08H
         MOV R12,#00H
         MOV R13,td_bas
-        CALLS 00AH,Ctl_Ign_Output_CC6
+        CALLS SEG Ctl_Ign_Output_CC6, SOF Ctl_Ign_Output_CC6
         JMPR cc_UC,L_DDC66
 L_DDC5C:                 ; 0xddc5c
         JNB state_out_act.01H,L_DDC66
         MOV R12,#00H
-        CALLS 00AH,Set_Ign_Output_CC6
+        CALLS SEG Set_Ign_Output_CC6, SOF Set_Ign_Output_CC6
 L_DDC66:                 ; 0xddc66
         BMOV state_out_act.01H,lv_maf_trim.0AH
         JNB lv_maf_trim.0BH,L_DDC7C
         BSET lv_maf_trim.08H
         MOV R12,#01H
         MOV R13,td_bas
-        CALLS 00AH,Ctl_Ign_Output_CC6
+        CALLS SEG Ctl_Ign_Output_CC6, SOF Ctl_Ign_Output_CC6
         JMPR cc_UC,L_DDC86
 L_DDC7C:                 ; 0xddc7c
         JNB state_out_act.02H,L_DDC86
         MOV R12,#01H
-        CALLS 00AH,Set_Ign_Output_CC6
+        CALLS SEG Set_Ign_Output_CC6, SOF Set_Ign_Output_CC6
 L_DDC86:                 ; 0xddc86
         BMOV state_out_act.02H,lv_maf_trim.0BH
         JNB state_out_req.07H,L_DDCBE
@@ -533,7 +533,7 @@ L_DDD16:                 ; 0xddd16
         MOV R5,#DATA16 0016EH
         MOV R10,ivvthpwm_frq
         MOV R11,#00H
-        CALLS 00DH,Div_S32_Signed
+        CALLS SEG Div_S32_Signed, SOF Div_S32_Signed
         SUB R4,#01H
         MOV ivvt_hpwm_div,R4
         MOVB ivvt_hpwm_rng,ZEROS
@@ -543,7 +543,7 @@ L_DDD50:                 ; 0xddd50
         MOV R5,#05H
         MOV R10,ivvthpwm_frq
         MOV R11,#00H
-        CALLS 00DH,Div_S32_Signed
+        CALLS SEG Div_S32_Signed, SOF Div_S32_Signed
         SUB R4,#01H
         MOV ivvt_hpwm_div,R4
         MOVB RL4,#01H
@@ -620,7 +620,7 @@ L_DDDFC:                 ; 0xdddfc
         MOV R5,#DATA16 0016EH
         MOV R10,ivvthpwm_frq
         MOV R11,#00H
-        CALLS 00DH,Div_S32_Signed
+        CALLS SEG Div_S32_Signed, SOF Div_S32_Signed
         SUB R4,#01H
         MOV ivvt_hpwm_div,R4
         MOVB ivvt_hpwm_rng,ZEROS
@@ -664,7 +664,7 @@ L_DDEA0:                 ; 0xddea0
         MOV R5,#05H
         MOV R10,ivvthpwm_frq
         MOV R11,#00H
-        CALLS 00DH,Div_S32_Signed
+        CALLS SEG Div_S32_Signed, SOF Div_S32_Signed
         SUB R4,#01H
         MOV ivvt_hpwm_div,R4
         MOVB RL4,#01H
@@ -845,7 +845,7 @@ L_DE064:                 ; 0xde064
         JMPR cc_NE,L_DE07A
         MOVB kwp_e7c3,ZEROS
         MOV ADDRSEL2,#DATA16 0FFF0H
-        CALLS 00AH,FuelPump_Out_Init
+        CALLS SEG FuelPump_Out_Init, SOF FuelPump_Out_Init
         RETS
 L_DE07A:                 ; 0xde07a
         MOVB RL4,#01H

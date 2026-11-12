@@ -69,34 +69,34 @@ KWP_CommObj_SetPending:
         JMPR cc_UC,L_DFBFE
 L_DFBAE:                 ; 0xdfbae
         MOV R12,#02H
-        CALLS 008H,CommObj_SetPendingByHandle
+        CALLS SEG CommObj_SetPendingByHandle, SOF CommObj_SetPendingByHandle
         JMPR cc_UC,L_DFBFE
 L_DFBB6:                 ; 0xdfbb6
         JB bl_mode_status_flags.05H,L_DFBC6
         MOV R4,DPP1:0A0420H
         MOV R5,DPP1:0A0422H
-        CALLS 000H,rt_callfar_via_r5r4
+        CALLS SEG rt_callfar_via_r5r4, SOF rt_callfar_via_r5r4
 L_DFBC6:                 ; 0xdfbc6
         MOV R12,#00H
-        CALLS 008H,CommObj_ClearPendingFlagByHandle
+        CALLS SEG CommObj_ClearPendingFlagByHandle, SOF CommObj_ClearPendingFlagByHandle
         MOV R12,#02H
-        CALLS 008H,CommObj_ClearPendingFlagByHandle
+        CALLS SEG CommObj_ClearPendingFlagByHandle, SOF CommObj_ClearPendingFlagByHandle
         JB bl_mode_status_flags.05H,L_DFBFE
         MOV R4,DPP1:0A0424H
         MOV R5,DPP1:0A0426H
-        CALLS 000H,rt_callfar_via_r5r4
+        CALLS SEG rt_callfar_via_r5r4, SOF rt_callfar_via_r5r4
         JMPR cc_UC,L_DFBFE
 L_DFBE4:                 ; 0xdfbe4
         MOV R12,#01H
-        CALLS 008H,CommObj_SetPendingByHandle
+        CALLS SEG CommObj_SetPendingByHandle, SOF CommObj_SetPendingByHandle
         MOV R12,#02H
-        CALLS 008H,CommObj_SetPendingByHandle
+        CALLS SEG CommObj_SetPendingByHandle, SOF CommObj_SetPendingByHandle
         JMPR cc_UC,L_DFBFE
 L_DFBF2:                 ; 0xdfbf2
         MOV R12,#00H
-        CALLS 008H,CommObj_SetPendingByHandle
+        CALLS SEG CommObj_SetPendingByHandle, SOF CommObj_SetPendingByHandle
         MOV R12,#02H
-        CALLS 008H,CommObj_SetPendingByHandle
+        CALLS SEG CommObj_SetPendingByHandle, SOF CommObj_SetPendingByHandle
 L_DFBFE:                 ; 0xdfbfe
         ADD R0,#06H
         RETS

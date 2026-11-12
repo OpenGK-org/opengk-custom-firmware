@@ -48,18 +48,18 @@ L_ADDC4:                 ; 0xaddc4
         MOV R13,#DATA16 PAG ldpm_er_std_av_lamb_er_ad
         MOV R14,er_std_av_sword_1_
         ADD R14,#DATA16 08000H
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         JNB lv_cdn_diag_maf_dif_ch_int.0EH,L_ADDF6
         MOV R12,#DATA16 POF ip_lamb_er_ad_cor_is__er_std_av
         MOV R13,#DATA16 PAG ip_lamb_er_ad_cor_is__er_std_av
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV R9,R4
         ADD R9,#DATA16 08000H
         JMPR cc_UC,L_ADE08
 L_ADDF6:                 ; 0xaddf6
         MOV R12,#DATA16 POF ip_lamb_er_ad_cor__er_std_av
         MOV R13,#DATA16 PAG ip_lamb_er_ad_cor__er_std_av
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV R9,R4
         ADD R9,#DATA16 08000H
 L_ADE08:                 ; 0xade08
@@ -73,12 +73,12 @@ L_ADE1A:                 ; 0xade1a
         MOV lamb_er_ad_cor,ZEROS
         MOV R12,lamb_er_ad_cor_dly_ctr
         MOVBZ R13,DPP0:c_lamb_er_ad_cor_dec
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV lamb_er_ad_cor_dly_ctr,R4
 L_ADE2E:                 ; 0xade2e
         MOV R12,lamb_er_ad_clc
         MOV R13,lv_lam_c572
-        CALLS 00FH,Mul_Q15_Sat_Signed
+        CALLS SEG Mul_Q15_Sat_Signed, SOF Mul_Q15_Sat_Signed
         MOV R9,R4
         CMP R9,DPP0:c_lamb_er_ad_bol
         JMPR cc_SGT,L_ADE4A
@@ -105,20 +105,20 @@ L_ADE5E:                 ; 0xade5e
         MOV R12,#DATA16 POF ldp_maf_ip_lamb_er_ad_cor_fac
         MOV R13,#DATA16 PAG ldp_maf_ip_lamb_er_ad_cor_fac
         MOV R14,maf_word
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ldp_n_32_ip_lamb_er_ad_cor_fac
         MOV R13,#DATA16 PAG ldp_n_32_ip_lamb_er_ad_cor_fac
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         MOV R12,#DATA16 POF ip_lamb_er_ad_cor_fac__maf__n_32
         MOV R13,#DATA16 PAG ip_lamb_er_ad_cor_fac__maf__n_32
-        CALLS 00FH,Get_IP_Word_3D_Table
+        CALLS SEG Get_IP_Word_3D_Table, SOF Get_IP_Word_3D_Table
         MOV R13,R4
         MOV R12,lamb_er_ad_cor
-        CALLS 00FH,Mul_Q15_Sat_Signed
+        CALLS SEG Mul_Q15_Sat_Signed, SOF Mul_Q15_Sat_Signed
         MOV R13,R4
         MOV R12,lamb_er_ad_clc
-        CALLS 00FH,Sat_Add_S16
+        CALLS SEG Sat_Add_S16, SOF Sat_Add_S16
         MOV lamb_er_ad_clc,R4
         JMPR cc_UC,L_ADEBA
 L_ADEB8:                 ; 0xadeb8
@@ -126,7 +126,7 @@ L_ADEB8:                 ; 0xadeb8
 L_ADEBA:                 ; 0xadeba
         MOV R12,lamb_er_ad_clc
         MOV R13,lv_lam_c572
-        CALLS 00FH,Mul_Q15_Sat_Signed
+        CALLS SEG Mul_Q15_Sat_Signed, SOF Mul_Q15_Sat_Signed
         MOV lamb_er_ad_lim,R4
         CMP R4,DPP0:c_lamb_er_ad_tol
         JMPR cc_SLE,L_ADEDA
@@ -146,10 +146,10 @@ L_ADEEE:                 ; 0xadeee
 L_ADEF6:                 ; 0xadef6
         MOV R12,#DATA16 01000H
         MOV R13,lamb_er_ad_add
-        CALLS 00FH,Sub_Floor0_S16
+        CALLS SEG Sub_Floor0_S16, SOF Sub_Floor0_S16
         MOV R13,R4
         MOV R12,#DATA16 00800H
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         MOV ti_er_ad,R4
         JMPR cc_UC,L_ADF24
 L_ADF12:                 ; 0xadf12
@@ -171,10 +171,10 @@ Lookup_Lamb_ER_Ad_Fac:
         MOV R12,#DATA16 POF ldp_tco_ip_lamb_er_ad_fac
         MOV R13,#DATA16 PAG ldp_tco_ip_lamb_er_ad_fac
         MOVBZ R14,tco
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_lamb_er_ad_fac__tco
         MOV R13,#DATA16 PAG ip_lamb_er_ad_fac__tco
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV lv_lam_c572,R4
         RETS
 

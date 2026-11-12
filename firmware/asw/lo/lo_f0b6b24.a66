@@ -87,14 +87,14 @@ Set_LSH_Up_PWM:
         MOVBZ R4,vb
         MUL R13,R4
         MOV R13,0FE0EH
-        CALLS 00FH,Div_Ratio_U8_Sat
+        CALLS SEG Div_Ratio_U8_Sat, SOF Div_Ratio_U8_Sat
         MOVBZ R12,RL4
         MOVBZ R13,DPP0:c_fac_v_efc_lsh_up_as
-        CALLS 00FH,Mul_S16_Q7_Sat
+        CALLS SEG Mul_S16_Q7_Sat, SOF Mul_S16_Q7_Sat
         MOVB lsh_up_bank_1_lshpwm_up,RL4
         MOVBZ R12,RL4
         MOVBS R13,DPP0:c_lshpwm_as
-        CALLS 00FH,Add_Clamp_U8
+        CALLS SEG Add_Clamp_U8, SOF Add_Clamp_U8
         MOVB lsh_up_bank_1_lshpwm_up,RL4
         MOVBZ R4,RL4
         SHL R4,#08H

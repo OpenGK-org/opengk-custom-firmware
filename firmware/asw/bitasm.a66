@@ -202,63 +202,63 @@ L_E33D6:                 ; 0xe33d6
         MOV R12,maf_kgh_mes
         MOV R13,#0AH
         MOV R14,#05H
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV kwp_m_maf_kgh,R4
         MOV R12,maf_max_cor
         MOV R13,n_C93C
         SHL R13,#02H
         MOV R14,#DATA16 0C000H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV R12,R4
         MOV R13,#0AH
         MOV R14,#05H
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV kwp_m_maf_max,R4
         MOV R12,maf_min_cor
         MOV R13,n_C93C
         SHL R13,#02H
         MOV R14,#DATA16 0C000H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV R12,R4
         MOV R13,#0AH
         MOV R14,#05H
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV kwp_m_maf_min,R4
         MOV R12,map
         MOV R13,#DATA16 00100H
         MOV R14,#DATA16 00078H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV kwp_m_map,R4
         MOV R12,maf_mes
-        CALLS 00EH,Tail_Div_Ratio_U8_Sat_89e
+        CALLS SEG Tail_Div_Ratio_U8_Sat_89e, SOF Tail_Div_Ratio_U8_Sat_89e
         MOVBZ R12,RL4
         MOV R13,#DATA16 00032H
         MOV R14,#03H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV kwp_m_maf_load,R4
         MOV R12,tps_ad_mmv_is
         MOV R13,#DATA16 00400H
         MOV R14,#DATA16 003FFH
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV kwp_m_tps,R4
         MOVBZ R12,n_32
         MOV R13,#DATA16 00020H
         MOV R14,#DATA16 00028H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV R12,R4
-        CALLS 00FH,Sat_HiByte_ff
+        CALLS SEG Sat_HiByte_ff, SOF Sat_HiByte_ff
         MOVB kwp_m_rpm_b,RL4
         MOVBZ R4,maf_fac_alti_mmv
         SHR R4,#01H
         MOV R12,R4
-        CALLS 00FH,Sat_HiByte_ff
+        CALLS SEG Sat_HiByte_ff, SOF Sat_HiByte_ff
         MOVB kwp_m_alti,RL4
         MOVBZ R12,vb
         MOV R13,#03H
         MOV R14,#02H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV R12,R4
-        CALLS 00FH,Sat_HiByte_ff
+        CALLS SEG Sat_HiByte_ff, SOF Sat_HiByte_ff
         MOVB kwp_m_vbat,RL4
         MOV R4,cppwm_cps
         SHL R4,#01H
@@ -270,29 +270,29 @@ L_E33D6:                 ; 0xe33d6
         SHR R12,#08H
         MOV R13,#DATA16 00019H
         MOV R14,#03H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV R12,R4
-        CALLS 00FH,SatNeg_To_7fff
+        CALLS SEG SatNeg_To_7fff, SOF SatNeg_To_7fff
         MOV kwp_m_purge_flow,R4
         MOV R12,ti_cyl_0_
         MOV R13,#05H
         MOV R14,#0AH
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV kwp_m_ti_cyl1,R4
         MOV R12,ti_cyl_0_
         MOV R13,#05H
         MOV R14,#0AH
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV kwp_m_ti_cyl2,R4
         MOV R12,ti_cyl_0_
         MOV R13,#05H
         MOV R14,#0AH
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV kwp_m_ti_cyl3,R4
         MOV R12,ti_cyl_0_
         MOV R13,#05H
         MOV R14,#0AH
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV kwp_m_ti_cyl4,R4
         MOVB RL4,DPP1:0A2101H
         MOVB kwp_lid_len,RL4
@@ -314,14 +314,14 @@ L_E3548:                 ; 0xe3548
         MUL R13,R4
         MOV R13,0FE0EH
         SHR R13,#08H
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV R5,#00H
         MOV R12,R4
         MOV R13,R5
         MOV R14,#0AH
-        CALLS 00FH,Div_U32_U16_Round
+        CALLS SEG Div_U32_U16_Round, SOF Div_U32_U16_Round
         MOV R12,R4
-        CALLS 00FH,Sat_HiByte_ff
+        CALLS SEG Sat_HiByte_ff, SOF Sat_HiByte_ff
         MOVB kwp_m_lshpwm_up,RL4
         MOV R12,#DATA16 00083H
         MOVBZ R13,lam_bank_1_lsh_down_struct_lshpwm_down
@@ -329,27 +329,27 @@ L_E3548:                 ; 0xe3548
         MUL R13,R4
         MOV R13,0FE0EH
         SHR R13,#08H
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV R5,#00H
         MOV R12,R4
         MOV R13,R5
         MOV R14,#0AH
-        CALLS 00FH,Div_U32_U16_Round
+        CALLS SEG Div_U32_U16_Round, SOF Div_U32_U16_Round
         MOV R12,R4
-        CALLS 00FH,Sat_HiByte_ff
+        CALLS SEG Sat_HiByte_ff, SOF Sat_HiByte_ff
         MOVB kwp_m_lshpwm_down,RL4
         MOV R12,lam_bank_1_lam_dly_t_lam_dly
         MOV R13,#DATA16 00200H
-        CALLS 00FH,Div_Q16_Round
+        CALLS SEG Div_Q16_Round, SOF Div_Q16_Round
         MOV R12,R4
-        CALLS 00FH,Sat_S8
+        CALLS SEG Sat_S8, SOF Sat_S8
         MOVB kwp_m_lam_dly,RL4
         MOV R12,n_sp_is
         MOV R4,#0AH
         MOV 0FE0EH,R12
         DIVU R4
         MOV R12,0FE0EH
-        CALLS 00FH,Sat_HiByte_ff
+        CALLS SEG Sat_HiByte_ff, SOF Sat_HiByte_ff
         MOVB kwp_m_n_sp_is,RL4
         MOV R4,maf_ratio_isa
         SHR R4,#01H
@@ -359,13 +359,13 @@ L_E3548:                 ; 0xe3548
         MOV kwp_m_rpm_w,R5
         MOVBZ R12,toil
         MOV R13,#08H
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVBZ R12,RL4
         MOV R13,#04H
         MOV R14,#03H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV R12,R4
-        CALLS 00FH,Sat_HiByte_ff
+        CALLS SEG Sat_HiByte_ff, SOF Sat_HiByte_ff
         MOVB kwp_m_toil,RL4
         MOVBZ R4,toil_mdl_byte_3_
         MOV R12,R4
@@ -375,11 +375,11 @@ L_E3548:                 ; 0xe3548
         ADD R12,#DATA16 01237H
         MOV R13,#DATA16 00020H
         MOV R14,#0FH
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV kwp_m_knk_lvl,R4
         MOVBZ R12,iga_av_0
         MOV R13,#DATA16 0003FH
-        CALLS 00FH,Sat_Sub_S8
+        CALLS SEG Sat_Sub_S8, SOF Sat_Sub_S8
         MOVBS R4,RL4
         MOV R5,#02H
         MOV 0FE0EH,R4
@@ -388,7 +388,7 @@ L_E3548:                 ; 0xe3548
         MOVB kwp_m_iga_cyl1,RL4
         MOVBZ R12,iga_av_1
         MOV R13,#DATA16 0003FH
-        CALLS 00FH,Sat_Sub_S8
+        CALLS SEG Sat_Sub_S8, SOF Sat_Sub_S8
         MOVBS R4,RL4
         MOV R5,#02H
         MOV 0FE0EH,R4
@@ -397,7 +397,7 @@ L_E3548:                 ; 0xe3548
         MOVB kwp_m_iga_cyl2,RL4
         MOVBZ R12,iga_av_2
         MOV R13,#DATA16 0003FH
-        CALLS 00FH,Sat_Sub_S8
+        CALLS SEG Sat_Sub_S8, SOF Sat_Sub_S8
         MOVBS R4,RL4
         MOV R5,#02H
         MOV 0FE0EH,R4
@@ -406,7 +406,7 @@ L_E3548:                 ; 0xe3548
         MOVB kwp_m_iga_cyl3,RL4
         MOVBZ R12,iga_av_3
         MOV R13,#DATA16 0003FH
-        CALLS 00FH,Sat_Sub_S8
+        CALLS SEG Sat_Sub_S8, SOF Sat_Sub_S8
         MOVBS R4,RL4
         MOV R5,#02H
         MOV 0FE0EH,R4
@@ -416,9 +416,9 @@ L_E3548:                 ; 0xe3548
         MOVBZ R12,vs
         MOV R13,#04H
         MOV R14,#05H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV R12,R4
-        CALLS 00FH,Sat_HiByte_ff
+        CALLS SEG Sat_HiByte_ff, SOF Sat_HiByte_ff
         MOVB kwp_m_vs,RL4
         MOVB RL5,DPP1:0A2102H
         MOVB kwp_lid_len,RL5
@@ -437,15 +437,15 @@ L_E36E4:                 ; 0xe36e4
         MOV R12,#DATA16 00019H
         MOV R13,lam_bank_1_lam_up_ti_ad_add_mmv
         MOV R14,#DATA16 00180H
-        CALLS 00FH,MulDiv_Round_S16
+        CALLS SEG MulDiv_Round_S16, SOF MulDiv_Round_S16
         MOV kwp_m_lam_ad,R4
         MOV R12,teg_dyn
         MOV R13,#00H
         MOV R14,#DATA16 00050H
-        CALLS 00FH,Div_U32_U16_Round
+        CALLS SEG Div_U32_U16_Round, SOF Div_U32_U16_Round
         MOV R12,R4
         ADD R12,#DATA16 0000AH
-        CALLS 00FH,Sat_HiByte_ff
+        CALLS SEG Sat_HiByte_ff, SOF Sat_HiByte_ff
         MOVB kwp_m_teg,RL4
         MOV R4,lam_bank_1_cat_eff_struct_sum_cat_diag
         MOV R5,R4
@@ -456,9 +456,9 @@ L_E36E4:                 ; 0xe36e4
         MOVBZ R12,DPP0:c_cat_max_diag
         MOV R13,#DATA16 000FFH
         MOV R14,#06H
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV R12,R4
-        CALLS 00FH,Sat_HiByte_ff
+        CALLS SEG Sat_HiByte_ff, SOF Sat_HiByte_ff
         MOVB kwp_m_cat_max,RL4
         MOVB RL5,DPP1:0A2103H
         MOVB kwp_lid_len,RL5
@@ -477,7 +477,7 @@ L_E3770:                 ; 0xe3770
         MOV R12,DPP0:c_t_dly_i_ad_ls_frq_diag_max
         MOV R13,#DATA16 0007DH
         MOV R14,#0EH
-        CALLS 00FH,Mul_Shift_S16
+        CALLS SEG Mul_Shift_S16, SOF Mul_Shift_S16
         MOV kwp_m_lam_frq_diag,R4
         MOVB RL4,DPP1:0A2104H
         MOVB kwp_lid_len,RL4
@@ -495,15 +495,15 @@ L_E37B6:                 ; 0xe37b6
         MOVB kwp_lid8_id4,RL2
         MOVBZ R12,ivvt_in_1_struct_pos_ivvt_cam
         MOV R13,#DATA16 00018H
-        CALLS 00FH,Mul_U16_Sat16
+        CALLS SEG Mul_U16_Sat16, SOF Mul_U16_Sat16
         ADD R4,#DATA16 00F00H
         MOV kwp_m_cam_pos,R4
         MOVBZ R12,ivvt_in_struct_sp_ivvt_cam_sp_ivvt
         MOV R13,#DATA16 00030H
-        CALLS 00FH,Mul_U16_Sat16
+        CALLS SEG Mul_U16_Sat16, SOF Mul_U16_Sat16
         MOV R12,R4
         ADD R12,#DATA16 01E00H
-        CALLS 00FH,SatNeg_To_7fff
+        CALLS SEG SatNeg_To_7fff, SOF SatNeg_To_7fff
         MOV kwp_m_cam_sp,R4
         MOVB RL4,DPP1:0A2105H
         MOVB kwp_lid_len,RL4
@@ -691,13 +691,13 @@ L_E39D0:                 ; 0xe39d0
         MOV R13,MDH_FE0C
         MOV R12,0FE0EH
         MOV R14,#DATA16 0FFFFH
-        CALLS 00FH,Div_U32_U16_Round
+        CALLS SEG Div_U32_U16_Round, SOF Div_U32_U16_Round
         MOV kwp_m_maf_kgh,R4
         MOVB RL4,pv_av
         MOVB kwp_m_pv_av,RL4
         MOV R12,n_C93C
         MOV R13,#04H
-        CALLS 00FH,Mul_U16_Sat16
+        CALLS SEG Mul_U16_Sat16, SOF Mul_U16_Sat16
         MOV kwp_m_rpm_w,R4
         MOVBZ R12,vb
         MOV R5,#DATA16 000FFH
@@ -705,9 +705,9 @@ L_E39D0:                 ; 0xe39d0
         MOV R13,MDH_FE0C
         MOV R12,0FE0EH
         MOV R14,#DATA16 000ABH
-        CALLS 00FH,Div_U32_U16_Round
+        CALLS SEG Div_U32_U16_Round, SOF Div_U32_U16_Round
         MOV R12,R4
-        CALLS 00FH,Sat_HiByte_ff
+        CALLS SEG Sat_HiByte_ff, SOF Sat_HiByte_ff
         MOVB kwp_m_vbat,RL4
         MOV R12,cppwm
         MOV R4,#DATA16 0FFFFH
@@ -715,31 +715,31 @@ L_E39D0:                 ; 0xe39d0
         MOV R13,MDH_FE0C
         MOV R12,0FE0EH
         MOV R14,#DATA16 07DD3H
-        CALLS 00FH,Div_U32_U16_Round
+        CALLS SEG Div_U32_U16_Round, SOF Div_U32_U16_Round
         MOV kwp_m_cppwm2,R4
         MOV R12,ti_cyl_0_
         MOV R13,#05H
         MOV R14,#0AH
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV kwp_m_ti_cyl1,R4
         MOV R12,ti_cyl_0_
         MOV R13,#05H
         MOV R14,#0AH
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV kwp_m_ti_cyl2,R4
         MOV R12,ti_cyl_0_
         MOV R13,#05H
         MOV R14,#0AH
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV kwp_m_ti_cyl3,R4
         MOV R12,ti_cyl_0_
         MOV R13,#05H
         MOV R14,#0AH
-        CALLS 00FH,Mul_Shift_U16_Sat
+        CALLS SEG Mul_Shift_U16_Sat, SOF Mul_Shift_U16_Sat
         MOV kwp_m_ti_cyl4,R4
         MOVBZ R12,lam_bank_1_ls_up_vls_up_high
         MOV R13,#DATA16 003B4H
-        CALLS 00FH,Mul_U16_SatByte
+        CALLS SEG Mul_U16_SatByte, SOF Mul_U16_SatByte
         MOVB kwp_m_vls_up,RL4
         CMPB RL4,#DATA16 000D8H
         JMPR cc_ULE,L_E3B1A
@@ -752,18 +752,18 @@ L_E3B22:                 ; 0xe3b22
         MOV R12,lam_bank_1_lam_up_t_lam_dly_pos
         MOV R13,#DATA16 00027H
         MOV R14,#DATA16 03D09H
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV R12,R4
-        CALLS 00FH,Sat_HiByte_ff
+        CALLS SEG Sat_HiByte_ff, SOF Sat_HiByte_ff
         MOVB kwp_m_lam_dly_pos,RL4
         MOV R12,lam_bank_1_lam_dly_t_lam_dly
         MOV R13,#DATA16 07FFFH
-        CALLS 00FH,Mul_S16_Hi
+        CALLS SEG Mul_S16_Hi, SOF Mul_S16_Hi
         ASHR R4,#08H
         MOVB kwp_m_lam_dly_t,RL4
         MOV R12,lam_bank_1_lam_dly_t_dly_i_sword_1_
         MOV R13,#DATA16 07FFFH
-        CALLS 00FH,Mul_S16_Hi
+        CALLS SEG Mul_S16_Hi, SOF Mul_S16_Hi
         ASHR R4,#08H
         MOVB kwp_m_lam_dly_i,RL4
         MOV R12,n_sp_is
@@ -772,13 +772,13 @@ L_E3B22:                 ; 0xe3b22
         MOV R13,MDH_FE0C
         MOV R12,0FE0EH
         MOV R14,#DATA16 01FE0H
-        CALLS 00FH,Div_U32_U16_Round
+        CALLS SEG Div_U32_U16_Round, SOF Div_U32_U16_Round
         MOV R12,R4
-        CALLS 00FH,Sat_HiByte_ff
+        CALLS SEG Sat_HiByte_ff, SOF Sat_HiByte_ff
         MOVB kwp_m_n_sp_is,RL4
         MOVBZ R12,vs
         MOV R13,#DATA16 000CCH
-        CALLS 00FH,Ret_Const_fe0f
+        CALLS SEG Ret_Const_fe0f, SOF Ret_Const_fe0f
         MOVB kwp_m_vs,RL4
         MOVB RL5,DPP1:0A210AH
         MOVB kwp_lid_len,RL5
@@ -1547,7 +1547,7 @@ L_E43A6:                 ; 0xe43a6
         SHR R4,#01H
         MOV R12,R4
         MOV R13,#DATA16 00080H
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         MOVB [R8],RL4
         JMPA cc_UC,L_E44D4
 L_E43D6:                 ; 0xe43d6

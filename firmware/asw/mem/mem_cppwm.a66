@@ -42,7 +42,7 @@ L_B2E78:                 ; 0xb2e78
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#04H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV R10,diag_f890
         MOV R11,diag_f892
         EXTP R11, #02H
@@ -60,7 +60,7 @@ L_B2E78:                 ; 0xb2e78
         MOV flow_cor_cps_old,R5
         RETS
 L_B2EDA:                 ; 0xb2eda
-        CALLS 00BH,Reset_cppwm_ad_mem_ee0
+        CALLS SEG Reset_cppwm_ad_mem_ee0, SOF Reset_cppwm_ad_mem_ee0
         RETS
 
 ; ======== Reset_cppwm_ad_mem_ee0  (@0xb2ee0) ========

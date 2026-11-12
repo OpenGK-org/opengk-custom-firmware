@@ -28,7 +28,7 @@ L_DEE66:                 ; 0xdee66
 L_DEE68:                 ; 0xdee68
         MOV R13,#DATA16 000F0H
         MOV R14,#00H
-        CALLS 008H,lam_bank_1_lam_up_t_lam_dly_neg
+        CALLS SEG BL_Sub_8C778, SOF BL_Sub_8C778
         JMPR cc_UC,L_DEE94
 L_DEE74:                 ; 0xdee74
         JNB bl_mode_status_flags.05H,L_DEE7C
@@ -42,7 +42,7 @@ L_DEE7E:                 ; 0xdee7e
         EXTP #00H, #02H
         MOV R4,kwp_24a
         MOV R5,kwp_24c
-        CALLS 000H,rt_callfar_via_r5r4
+        CALLS SEG rt_callfar_via_r5r4, SOF rt_callfar_via_r5r4
 L_DEE94:                 ; 0xdee94
         MOV bl_kline_baud_reload_lo,R4
         MOV bl_kline_baud_reload_hi,R5
@@ -55,7 +55,7 @@ L_DEEA8:                 ; 0xdeea8
 L_DEEAA:                 ; 0xdeeaa
         MOV R13,bl_kline_baud_reload_lo
         MOV R14,bl_kline_baud_reload_hi
-        CALLS 008H,BL_Kline_SetBaudrate_Wrapper
+        CALLS SEG BL_Kline_SetBaudrate_Wrapper, SOF BL_Kline_SetBaudrate_Wrapper
         JMPR cc_UC,L_DEEDA
 L_DEEB8:                 ; 0xdeeb8
         JNB bl_mode_status_flags.05H,L_DEEC0
@@ -69,7 +69,7 @@ L_DEEC2:                 ; 0xdeec2
         EXTP #00H, #02H
         MOV R4,kwp_24e
         MOV R5,kwp_250
-        CALLS 000H,rt_callfar_via_r5r4
+        CALLS SEG rt_callfar_via_r5r4, SOF rt_callfar_via_r5r4
 L_DEEDA:                 ; 0xdeeda
         JNB bl_mode_status_flags.05H,L_DEEF0
         JNB bl_mode_status_flags.05H,L_DEEE6
@@ -79,7 +79,7 @@ L_DEEE6:                 ; 0xdeee6
         MOV R12,#00H
 L_DEEE8:                 ; 0xdeee8
         MOV R13,#06H
-        CALLS 008H,BL_Kline_SetRxErrIrqEnables
+        CALLS SEG BL_Kline_SetRxErrIrqEnables, SOF BL_Kline_SetRxErrIrqEnables
         JMPR cc_UC,L_DEF0C
 L_DEEF0:                 ; 0xdeef0
         JNB bl_mode_status_flags.05H,L_DEEF8
@@ -92,7 +92,7 @@ L_DEEFA:                 ; 0xdeefa
         EXTP #00H, #02H
         MOV R4,kwp_252
         MOV R5,kwp_254
-        CALLS 000H,rt_callfar_via_r5r4
+        CALLS SEG rt_callfar_via_r5r4, SOF rt_callfar_via_r5r4
 L_DEF0C:                 ; 0xdef0c
         RETS
 
@@ -103,7 +103,7 @@ Tail_rt_callfar_via_r5r4_f0e:
         EXTP #00H, #02H
         MOV R4,g_232
         MOV R5,g_234
-        CALLS 000H,rt_callfar_via_r5r4
+        CALLS SEG rt_callfar_via_r5r4, SOF rt_callfar_via_r5r4
         RETS
 
 ; ======== KWP_P3_Timeout_Check  (@0xdef28) ========
@@ -115,19 +115,19 @@ KWP_P3_Timeout_Check:
         JB bl_mode_status_flags.05H,L_DEF3C
         MOV R4,DPP1:0A0420H
         MOV R5,DPP1:0A0422H
-        CALLS 000H,rt_callfar_via_r5r4
+        CALLS SEG rt_callfar_via_r5r4, SOF rt_callfar_via_r5r4
 L_DEF3C:                 ; 0xdef3c
         MOV R4,kwp_timing_counter
         CMP R4,kwp_session_p3_timeout
         JMPR cc_C,L_DEF52
-        CALLS 00DH,KWP_Session_Setup
+        CALLS SEG KWP_Session_Setup, SOF KWP_Session_Setup
         MOV R4,#DATA16 0FFEEH
         MOV c_p3_max_kwp,R4
 L_DEF52:                 ; 0xdef52
         JB bl_mode_status_flags.05H,L_DEF62
         MOV R4,DPP1:0A0424H
         MOV R5,DPP1:0A0426H
-        CALLS 000H,rt_callfar_via_r5r4
+        CALLS SEG rt_callfar_via_r5r4, SOF rt_callfar_via_r5r4
 L_DEF62:                 ; 0xdef62
         RETS
 
@@ -142,7 +142,7 @@ KWP_Session_Setup:
         MOVB RL4,#01H
         MOVB kwp_session_state,RL4
         MOV kwp_comms_flags,ZEROS
-        CALLS 00DH,App_SecAccess_GrantFromFlashFlags
+        CALLS SEG App_SecAccess_GrantFromFlashFlags, SOF App_SecAccess_GrantFromFlashFlags
         MOVB kwp_session_type_idx,ZEROS
         MOVB kwp_e765,ZEROS
         MOVB RL4,#DATA16 00019H
@@ -170,9 +170,9 @@ KWP_Session_Setup:
         EXTP #00H, #02H
         MOV R4,kwp_21a
         MOV R5,kwp_21c
-        CALLS 000H,rt_callfar_via_r5r4
-        CALLS 00DH,BL_KLine_ProtoInit
-        CALLS 00DH,KWP_Set_Buffer
+        CALLS SEG rt_callfar_via_r5r4, SOF rt_callfar_via_r5r4
+        CALLS SEG BL_KLine_ProtoInit, SOF BL_KLine_ProtoInit
+        CALLS SEG KWP_Set_Buffer, SOF KWP_Set_Buffer
         BCLR kwp_comms_flags.08H
         MOVB kwp_session_state,ZEROS
         RETS
@@ -186,18 +186,18 @@ KWP_Set_CommsFlags:
         BSET kwp_comms_flags.08H
         MOVB RL4,kwp_session_state
         JMPR cc_NE,L_DF006
-        CALLS 00DH,Reset_kwp_req_ptr_c98
+        CALLS SEG Reset_kwp_req_ptr_c98, SOF Reset_kwp_req_ptr_c98
         RETS
 L_DF006:                 ; 0xdf006
         MOVBZ R4,kwp_session_state
         AND R4,#04H
         JMPR cc_EQ,L_DF012
-        CALLS 00DH,Reset_kwp_req_ptr_e34
+        CALLS SEG Reset_kwp_req_ptr_e34, SOF Reset_kwp_req_ptr_e34
 L_DF012:                 ; 0xdf012
         MOVBZ R4,kwp_session_state
         AND R4,#02H
         JMPR cc_EQ,L_DF01E
-        CALLS 00DH,Reset_kwp_req_ptr_c98
+        CALLS SEG Reset_kwp_req_ptr_c98, SOF Reset_kwp_req_ptr_c98
 L_DF01E:                 ; 0xdf01e
         RETS
 

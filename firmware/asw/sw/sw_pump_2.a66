@@ -25,9 +25,9 @@ S_E5B2C SECTION CODE AT 0E5B2CH
         ; Fuel-pump relay output handler (CC5/P2.5 enable, CC12/P2.12 disable).
         ; ------------------------------------------------------------
 FuelPump_Out_1:
-        CALLS 00AH,Output_CC5_P2_5_Enable
-        CALLS 00AH,Output_CC12_P2_12_Disable
-        CALLS 00AH,Init_CC5_Output
+        CALLS SEG Output_CC5_P2_5_Enable, SOF Output_CC5_P2_5_Enable
+        CALLS SEG Output_CC12_P2_12_Disable, SOF Output_CC12_P2_12_Disable
+        CALLS SEG Init_CC5_Output, SOF Init_CC5_Output
         RETS
 
 ; ======== FuelPump_Out_2  (@0xe5b3a) ========
@@ -36,8 +36,8 @@ FuelPump_Out_1:
         ; Fuel-pump relay output handler (variant).
         ; ------------------------------------------------------------
 FuelPump_Out_2:
-        CALLS 00AH,Output_CC5_P2_5_Enable
-        CALLS 00AH,Output_CC12_P2_12_Disable
+        CALLS SEG Output_CC5_P2_5_Enable, SOF Output_CC5_P2_5_Enable
+        CALLS SEG Output_CC12_P2_12_Disable, SOF Output_CC12_P2_12_Disable
         MOVB RL4,lv_sched_diag_inh
         ANDB RL4,#01H
         JMPR cc_NE,L_E5B66
@@ -55,12 +55,12 @@ L_E5B66:                 ; 0xe5b66
         MOV R4,#01H
         MOV sw_timer_c,R4
 L_E5B6C:                 ; 0xe5b6c
-        CALLS 00AH,Read_Coding_Nibble
+        CALLS SEG Read_Coding_Nibble, SOF Read_Coding_Nibble
         MOV R4,DPP0:c_t_efp
         MOV sw_timer_b,R4
         MOV crank_tim_13,ZEROS
-        CALLS 00BH,Set_TOIL_Stop
-        CALLS 00CH,Set_TCO_Stop
+        CALLS SEG Set_TOIL_Stop, SOF Set_TOIL_Stop
+        CALLS SEG Set_TCO_Stop, SOF Set_TCO_Stop
         RETS
 
 ; ======== FuelCut_TrailThrottle  (@0xe5b86) ========
@@ -68,8 +68,8 @@ L_E5B6C:                 ; 0xe5b6c
         ; OEM (verified): Overrun/trailing-throttle fuel-cut entry: Diag_DTC_dd116 + EngState_TrailThrottle.
         ; ------------------------------------------------------------
 FuelCut_TrailThrottle:
-        CALLS 00CH,Diag_DTC_dd116
-        CALLS 00DH,EngState_TrailThrottle
+        CALLS SEG Diag_DTC_dd116, SOF Diag_DTC_dd116
+        CALLS SEG EngState_TrailThrottle, SOF EngState_TrailThrottle
         RETS
 
 ; ======== FuelPump_Out_3  (@0xe5b90) ========
@@ -78,15 +78,15 @@ FuelCut_TrailThrottle:
         ; Fuel-pump relay output handler (variant).
         ; ------------------------------------------------------------
 FuelPump_Out_3:
-        CALLS 00AH,Output_CC5_P2_5_Enable
-        CALLS 00AH,Output_CC12_P2_12_Disable
-        CALLS 00DH,Diag_MAF_TPS_Ratio_d1be
+        CALLS SEG Output_CC5_P2_5_Enable, SOF Output_CC5_P2_5_Enable
+        CALLS SEG Output_CC12_P2_12_Disable, SOF Output_CC12_P2_12_Disable
+        CALLS SEG Diag_MAF_TPS_Ratio_d1be, SOF Diag_MAF_TPS_Ratio_d1be
         MOV R4,DPP0:c_t_efp
         MOV sw_timer_b,R4
-        CALLS 00AH,Init_CC5_Output
-        CALLS 00CH,Reset_Dfaae_b84
-        CALLS 00BH,Set_TOIL_Stop
-        CALLS 00CH,Set_TCO_Stop
+        CALLS SEG Init_CC5_Output, SOF Init_CC5_Output
+        CALLS SEG Reset_Dfaae_b84, SOF Reset_Dfaae_b84
+        CALLS SEG Set_TOIL_Stop, SOF Set_TOIL_Stop
+        CALLS SEG Set_TCO_Stop, SOF Set_TCO_Stop
         RETS
 
 ; ======== FuelPump_Out_4  (@0xe5bb6) ========
@@ -95,19 +95,19 @@ FuelPump_Out_3:
         ; Fuel-pump relay output handler (fd96 0x2000 request).
         ; ------------------------------------------------------------
 FuelPump_Out_4:
-        CALLS 00AH,Output_CC5_P2_5_Enable
-        CALLS 00AH,Output_CC12_P2_12_Disable
-        CALLS 00DH,Diag_MAF_TPS_Ratio_d1be
+        CALLS SEG Output_CC5_P2_5_Enable, SOF Output_CC5_P2_5_Enable
+        CALLS SEG Output_CC12_P2_12_Disable, SOF Output_CC12_P2_12_Disable
+        CALLS SEG Diag_MAF_TPS_Ratio_d1be, SOF Diag_MAF_TPS_Ratio_d1be
         JNB state_out_fault.0DH,L_E5BD4
         MOV R4,sw_timer_b
         JMPR cc_NE,L_E5BD4
         MOV R5,DPP0:c_t_efp
         MOV sw_timer_b,R5
 L_E5BD4:                 ; 0xe5bd4
-        CALLS 00CH,Diag_DTC_dd116
-        CALLS 00AH,Init_CC5_Output
-        CALLS 00BH,Set_TOIL_Stop
-        CALLS 00CH,Set_TCO_Stop
+        CALLS SEG Diag_DTC_dd116, SOF Diag_DTC_dd116
+        CALLS SEG Init_CC5_Output, SOF Init_CC5_Output
+        CALLS SEG Set_TOIL_Stop, SOF Set_TOIL_Stop
+        CALLS SEG Set_TCO_Stop, SOF Set_TCO_Stop
         RETS
 
 ; ======== Set_FuelPump_RunOn  (@0xe5be6) ========
@@ -125,8 +125,8 @@ Set_FuelPump_RunOn:
         ; Fuel-pump relay output handler (variant).
         ; ------------------------------------------------------------
 FuelPump_Out_5:
-        CALLS 00AH,Output_CC5_P2_5_Enable
-        CALLS 00AH,Output_CC12_P2_12_Disable
+        CALLS SEG Output_CC5_P2_5_Enable, SOF Output_CC5_P2_5_Enable
+        CALLS SEG Output_CC12_P2_12_Disable, SOF Output_CC12_P2_12_Disable
         MOVB RL4,lv_sched_diag_inh
         ANDB RL4,#01H
         JMPR cc_NE,L_E5C1C
@@ -144,11 +144,11 @@ L_E5C1C:                 ; 0xe5c1c
         MOV R4,#01H
         MOV sw_timer_c,R4
 L_E5C22:                 ; 0xe5c22
-        CALLS 00AH,Read_Coding_Nibble
-        CALLS 00DH,Diag_MAF_TPS_Ratio_d1be
+        CALLS SEG Read_Coding_Nibble, SOF Read_Coding_Nibble
+        CALLS SEG Diag_MAF_TPS_Ratio_d1be, SOF Diag_MAF_TPS_Ratio_d1be
         MOV crank_tim_13,ZEROS
-        CALLS 00BH,Set_TOIL_Stop
-        CALLS 00CH,Set_TCO_Stop
+        CALLS SEG Set_TOIL_Stop, SOF Set_TOIL_Stop
+        CALLS SEG Set_TCO_Stop, SOF Set_TCO_Stop
         RETS
 
 S_E5B2C ENDS

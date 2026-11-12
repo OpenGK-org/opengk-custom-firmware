@@ -52,10 +52,10 @@ Calc_TPS_ErrSubst:
         AND R4,#DATA16 003FFH
         SHR R4,#02H
         MOVB lv_tps_c359,RL4
-        CALLS 00CH,Acq_TPS_Mes_Mon
+        CALLS SEG Acq_TPS_Mes_Mon, SOF Acq_TPS_Mes_Mon
         MOVBZ R12,tps_mes_diag
         MOVBZ R13,lv_tps_f78f
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB tps,RL4
         MOVB lv_tps_f4bc,RL4
         MOVB RL5,tps
@@ -83,11 +83,11 @@ Acq_TPS:
         MOVB lv_tps_f4ba,RL3
         MOVB RL2,tps
         MOVB lv_tps_f4b9,RL2
-        CALLS 00CH,Acq_TPS_Mes_Mon
+        CALLS SEG Acq_TPS_Mes_Mon, SOF Acq_TPS_Mes_Mon
         JB lv_err_tps_det.05H,L_C9D06
         MOVBZ R12,tps_mes_diag
         MOVBZ R13,lv_tps_f78f
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB tps,RL4
         RETS
 L_C9D06:                 ; 0xc9d06
@@ -108,7 +108,7 @@ Calc_TPS_Av:
         SHL R12,#04H
         MOV R13,tps_ad_mmv_is
         SHR R13,#02H
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV tps_av_raw,R4
         JMPR cc_UC,L_C9D4A
 L_C9D30:                 ; 0xc9d30
@@ -124,7 +124,7 @@ L_C9D40:                 ; 0xc9d40
 L_C9D4A:                 ; 0xc9d4a
         MOV R12,tps_av_raw
         MOV R13,DPP0:c_tps_av_hys_pos
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV R9,R4
         CMP R9,tps_av
         JMPR cc_ULE,L_C9D64
@@ -133,7 +133,7 @@ L_C9D4A:                 ; 0xc9d4a
 L_C9D64:                 ; 0xc9d64
         MOV R12,tps_av_raw
         MOV R13,DPP0:c_tps_av_hys_neg
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV R9,R4
         CMP R9,tps_av
         JMPR cc_NC,L_C9D7C
@@ -152,7 +152,7 @@ Calc_TPS_Seg:
         SHL R12,#04H
         MOV R13,tps_ad_mmv_is
         SHR R13,#02H
-        CALLS 00FH,sub_r12_r13_rets_r4
+        CALLS SEG sub_r12_r13_rets_r4, SOF sub_r12_r13_rets_r4
         MOV tps_seg,R4
         RETS
 
@@ -177,21 +177,21 @@ L_C9DB4:                 ; 0xc9db4
         MOV R12,#DATA16 POF sstm_n_2_3
         MOV R13,#DATA16 PAG sstm_n_2_3
         MOV R14,n_C93C
-        CALLS 00FH,Get_Word_Y_Axis
+        CALLS SEG Get_Word_Y_Axis, SOF Get_Word_Y_Axis
         MOV R12,#DATA16 POF id_tps_fl__n
         MOV R13,#DATA16 PAG id_tps_fl__n
-        CALLS 00FH,Read_Byte_Far
+        CALLS SEG Read_Byte_Far, SOF Read_Byte_Far
         MOVB RL7,RL4
         CMPB RL7,tps
         JMPR cc_UGT,L_C9DE8
         JB lv_err_tps_det.06H,L_C9DFA
-        CALLS 00CH,AcComp_AccIn_VS
+        CALLS SEG AcComp_AccIn_VS, SOF AcComp_AccIn_VS
         BSET lv_err_tps_det.06H
         JMPR cc_UC,L_C9DFA
 L_C9DE8:                 ; 0xc9de8
         MOVBZ R12,RL7
         MOVBZ R13,DPP0:c_tps_hys_fl
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL4,tps
         JMPR cc_ULE,L_C9DFA
         BCLR lv_err_tps_det.06H
@@ -241,17 +241,17 @@ L_C9E56:                 ; 0xc9e56
         MOV R12,#DATA16 POF sstm_n_4_4
         MOV R13,#DATA16 PAG sstm_n_4_4
         MOVBZ R14,n_32
-        CALLS 00FH,Get_Byte_Y_Axis
+        CALLS SEG Get_Byte_Y_Axis, SOF Get_Byte_Y_Axis
         JNB lv_conf_mis.0AH,L_C9E8C
         MOV R12,#DATA16 POF id_iga_tps_grd_tra_at__n
         MOV R13,#DATA16 PAG id_iga_tps_grd_tra_at__n
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVB RL6,RL4
         JMPR cc_UC,L_C9E9A
 L_C9E8C:                 ; 0xc9e8c
         MOV R12,#DATA16 POF id_iga_tps_grd_tra__n
         MOV R13,#DATA16 PAG id_iga_tps_grd_tra__n
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVB RL6,RL4
 L_C9E9A:                 ; 0xc9e9a
         CMPB RL6,lv_tps_f4b6
@@ -266,7 +266,7 @@ L_C9EA2:                 ; 0xc9ea2
 L_C9EB0:                 ; 0xc9eb0
         BCLR lv_err_tps_det.09H
 L_C9EB2:                 ; 0xc9eb2
-        CALLS 00CH,AcComp_AccIn_OffDelay
+        CALLS SEG AcComp_AccIn_OffDelay, SOF AcComp_AccIn_OffDelay
         BSET lv_err_tps_det.03H
 L_C9EB8:                 ; 0xc9eb8
         MOV R6,[R0+]

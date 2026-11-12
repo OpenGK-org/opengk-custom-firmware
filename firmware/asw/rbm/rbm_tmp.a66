@@ -49,22 +49,22 @@ L_B34EE:                 ; 0xb34ee
         MOVB [R4],obd_f6ae
         MOV R12,#00H
         MOV R13,R7
-        CALLS 00BH,Calc_RBM_Ratio_Tmp
+        CALLS SEG Calc_RBM_Ratio_Tmp, SOF Calc_RBM_Ratio_Tmp
         ADD R7,#04H
         ADD R7,#04H
         MOV R12,#01H
         MOV R13,R7
-        CALLS 00BH,Calc_RBM_Ratio_Tmp
+        CALLS SEG Calc_RBM_Ratio_Tmp, SOF Calc_RBM_Ratio_Tmp
         ADD R7,#04H
         ADD R7,#04H
         MOV R12,#03H
         MOV R13,R7
-        CALLS 00BH,Calc_RBM_Ratio_Tmp
+        CALLS SEG Calc_RBM_Ratio_Tmp, SOF Calc_RBM_Ratio_Tmp
         ADD R7,#04H
         ADD R7,#04H
         MOV R12,#02H
         MOV R13,R7
-        CALLS 00BH,Calc_RBM_Ratio_Tmp
+        CALLS SEG Calc_RBM_Ratio_Tmp, SOF Calc_RBM_Ratio_Tmp
         MOVB RL6,#00H
         MOVB RL4,RL6
         MOV R6,[R0+]
@@ -113,7 +113,7 @@ L_B3594:                 ; 0xb3594
         MOV R12,[R9]
         MOV R13,#DATA16 02004H
         MOV R14,[R9+#02H]
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV ratio_tmp_rbm,R4
         JMPR cc_UC,L_B35C6
 L_B35C2:                 ; 0xb35c2
@@ -139,7 +139,7 @@ L_B35D0:                 ; 0xb35d0
         MOV R12,[R9]
         MOV R13,#DATA16 02004H
         MOV R14,[R9+#02H]
-        CALLS 00FH,multipied_r12_r13_UGT_r14_rets_r4
+        CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV [R0+#02H],R4
         CMP R4,ratio_tmp_rbm
         JMPR cc_NC,L_B3612

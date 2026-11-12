@@ -24,7 +24,7 @@ Calc_maf_fac_alti_mmv:
         SHR R4,#08H
         OR R13,R4
         MOV R14,#DATA16 02FADH
-        CALLS 00FH,Div_U32_U16_Round
+        CALLS SEG Div_U32_U16_Round, SOF Div_U32_U16_Round
         SHR R4,#01H
         MOV tmp32_lo,R4
         MOV R4,tmp32_lo
@@ -45,7 +45,7 @@ Calc_MAF_Alti_Cor:
         MOV R12,maf_word
         MOV R13,#00H
         MOVBZ R14,maf_fac_alti_mmv
-        CALLS 00FH,Div_U32_U16_Round
+        CALLS SEG Div_U32_U16_Round, SOF Div_U32_U16_Round
         SHR R4,#01H
         MOV tmp32_lo,R4
         MOV R4,tmp32_lo

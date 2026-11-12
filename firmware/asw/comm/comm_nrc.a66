@@ -39,7 +39,7 @@ KWP_SID14_ClearDiagnosticInformation:
         OR R2,R5
         MOV [R0],R2
         MOV R12,R2
-        CALLS 00DH,Compare_r9_to_0xff00_return_rl6_xFE_xFD_or_xFF
+        CALLS SEG Compare_r9_to_0xff00_return_rl6_xFE_xFD_or_xFF, SOF Compare_r9_to_0xff00_return_rl6_xFE_xFD_or_xFF
         CMPB RL4,#DATA16 000FEH
         JMPR cc_EQ,L_DF096
         CMPB RL4,#DATA16 000FFH
@@ -73,7 +73,7 @@ Compare_r9_to_0xff00_return_rl6_xFE_xFD_or_xFF:
         CMP R9,#00H
         JMPR cc_NE,L_DF0E0
 L_DF0CC:                 ; 0xdf0cc
-        CALLS 00DH,Reset_Adaptive_LearnedValues
+        CALLS SEG Reset_Adaptive_LearnedValues, SOF Reset_Adaptive_LearnedValues
         MOVB RL6,RL4
         JMPR cc_NE,L_DF0DA
         MOVB RL6,#DATA16 000FEH

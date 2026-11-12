@@ -32,7 +32,7 @@ L_BEDB0:                 ; 0xbedb0
         MOV R13,#DATA16 052DEH
         MOVBZ R14,DPP0:c_abc_inc_mwss
         MOVBZ R15,DPP0:c_abc_max_mwss
-        CALLS 00DH,DTC_Update_Debounced_OBD
+        CALLS SEG DTC_Update_Debounced_OBD, SOF DTC_Update_Debounced_OBD
         BMOV lv_cam_err.08H,dtc_status_work.06H
         MOVBZ R4,diag_d14a
         AND R4,#DATA16 00020H
@@ -53,7 +53,7 @@ L_BEDE6:                 ; 0xbede6
 L_BEDF8:                 ; 0xbedf8
         MOV R12,#DATA16 0D14EH
         MOV R13,#DATA16 052F4H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_cam_err.09H,dtc_status_work.06H
         MOVBZ R4,diag_d158
         AND R4,#DATA16 00020H
@@ -69,7 +69,7 @@ L_BEE1A:                 ; 0xbee1a
         ; v_dif_max_mwss_diag.
         ; ------------------------------------------------------------
 Calc_MWSS_Vdif:
-        CALLS 00BH,Reset_Df380_408
+        CALLS SEG Reset_Df380_408, SOF Reset_Df380_408
         MOVB v_dif_max_mwss_diag,ZEROS
         RETS
 
@@ -92,7 +92,7 @@ NVM_Save_s642:
         MOV R13,R5
         MOV R14,#DATA16 0F37EH
         MOV R15,#01H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         RETS
 
 ; ======== Calc_MWSS_Vdif_2  (@0xbee4e) ========

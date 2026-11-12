@@ -63,10 +63,10 @@ Lookup_TI_AST_CP:
         MOV R12,#DATA16 POF ldp_tco_st_id_t_ast_cp
         MOV R13,#DATA16 PAG ldp_tco_st_id_t_ast_cp
         MOVBZ R14,tco_st
-        CALLS 00FH,Get_Byte_Y_Axis
+        CALLS SEG Get_Byte_Y_Axis, SOF Get_Byte_Y_Axis
         MOV R12,#DATA16 POF id_t_ast_cp__tco_st
         MOV R13,#DATA16 PAG id_t_ast_cp__tco_st
-        CALLS 00FH,Read_Word_Far
+        CALLS SEG Read_Word_Far, SOF Read_Word_Far
         MOV lv_ti_cf16,R4
 L_CCAFE:                 ; 0xccafe
         RETS
@@ -252,27 +252,27 @@ L_CCC92:                 ; 0xccc92
         MOV R12,#DATA16 POF ldpm_n_32_ip_rel_flow_min_cps
         MOV R13,#DATA16 PAG ldpm_n_32_ip_rel_flow_min_cps
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ldpm_maf_ip_rel_flow_min_cps
         MOV R13,#DATA16 PAG ldpm_maf_ip_rel_flow_min_cps
         MOVBZ R14,lv_iga_cc2b
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         MOV R12,#DATA16 POF ip_fuel_flow_max_cp__n_32__maf
         MOV R13,#DATA16 PAG ip_fuel_flow_max_cp__n_32__maf
-        CALLS 00FH,Get_IP_Word_3D_Table
+        CALLS SEG Get_IP_Word_3D_Table, SOF Get_IP_Word_3D_Table
         ADD R4,#DATA16 08000H
         MOV lv_cp_cf10,R4
         MOV R12,#DATA16 POF ip_rel_flow_max_cps__n_32__maf
         MOV R13,#DATA16 PAG ip_rel_flow_max_cps__n_32__maf
-        CALLS 00FH,Get_IP_Word_3D_Table
+        CALLS SEG Get_IP_Word_3D_Table, SOF Get_IP_Word_3D_Table
         MOV cp_flow_lim,R4
         MOV R12,#DATA16 POF ldpm_tia_ip_ti_lam_max_cp
         MOV R13,#DATA16 PAG ldpm_tia_ip_ti_lam_max_cp
         MOVBZ R14,tia
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_ti_lam_max_cp__tia
         MOV R13,#DATA16 PAG ip_ti_lam_max_cp__tia
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         ADD R4,#DATA16 08000H
         CMP R4,lam_bank_1_lam_up_ti_lam
         JMPR cc_SLT,L_CCD0A
@@ -415,10 +415,10 @@ L_CCE28:                 ; 0xcce28
         MOV R12,#DATA16 POF ldpm_tia_ip_ti_lam_max_cp
         MOV R13,#DATA16 PAG ldpm_tia_ip_ti_lam_max_cp
         MOVBZ R14,tia
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_lam_0_cp_max__tia
         MOV R13,#DATA16 PAG ip_lam_0_cp_max__tia
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         ADD R4,#DATA16 08000H
         CMP R4,cp_flow
         JMPR cc_SLE,L_CCE70
@@ -440,7 +440,7 @@ L_CCE8A:                 ; 0xcce8a
         MOV R12,#DATA16 POF ldpm_n_32_ip_maf_cp_bol
         MOV R13,#DATA16 PAG ldpm_n_32_ip_maf_cp_bol
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         JNB lv_cam_ad_di_ivvt.08H,L_CCEE0
         MOVB RL4,n_32
         CMPB RL4,DPP0:c_n_cp_tol
@@ -452,12 +452,12 @@ L_CCE8A:                 ; 0xcce8a
         JMPR cc_SLE,L_CCEE0
         MOV R12,#DATA16 POF ip_maf_cp_tol__n_32
         MOV R13,#DATA16 PAG ip_maf_cp_tol__n_32
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         CMPB RL4,lv_iga_cc2b
         JMPR cc_ULE,L_CCEE0
         MOV R12,#DATA16 POF ip_maf_cp_bol__n_32
         MOV R13,#DATA16 PAG ip_maf_cp_bol__n_32
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         CMPB RL4,lv_iga_cc2b
         JMPR cc_NC,L_CCEE0
         BSET lv_cp_act.0BH

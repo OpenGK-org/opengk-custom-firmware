@@ -55,22 +55,22 @@ Calc_LSH_Up_Init:
         MOV R12,#DATA16 POF ldp_tco_temp_ls_ini
         MOV R13,#DATA16 PAG ldp_tco_temp_ls_ini
         MOVBZ R14,tco
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ldp_tia_temp_ls_ini
         MOV R13,#DATA16 PAG ldp_tia_temp_ls_ini
         MOVBZ R14,tia
-        CALLS 00FH,Get_IP_Byte_X_Axis
+        CALLS SEG Get_IP_Byte_X_Axis, SOF Get_IP_Byte_X_Axis
         MOV R12,#DATA16 POF ip_temp_ls_ini__tco__tia
         MOV R13,#DATA16 PAG ip_temp_ls_ini__tco__tia
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVB temp_ls_ini,RL4
         MOV R12,#DATA16 POF ldp_temp_ls_ini_v_efc_lsh_ini
         MOV R13,#DATA16 PAG ldp_temp_ls_ini_v_efc_lsh_ini
         MOVBZ R14,RL4
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_v_efc_lsh_up_ini__temp_ls_ini
         MOV R13,#DATA16 PAG ip_v_efc_lsh_up_ini__temp_ls_ini
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVB lv_iga_c246,RL4
         MOVB lsh_up_bank_1_v_efc_lsh_up,RL4
         MOV R4,#01H

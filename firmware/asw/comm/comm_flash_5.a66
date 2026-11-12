@@ -26,7 +26,7 @@ KWP_Flash_Cmd17_arm:
         JMPR cc_EQ,L_CBFC0
         MOV R12,kwp_dl_addr
         MOV R13,kwp_dl_count
-        CALLS 00BH,RetC_1_156
+        CALLS SEG RetC_1_156, SOF RetC_1_156
         CMP R4,#00H
         JMPR cc_EQ,L_CBFC0
         MOVB RL4,#03H
@@ -70,7 +70,7 @@ KWP_Flash_Cmd18_arm:
 L_CC010:                 ; 0xcc010
         MOVB RL4,#01H
         MOVB kwp_resp_status2,RL4
-        CALLS 00BH,Calc_CatHeat_State
+        CALLS SEG Calc_CatHeat_State, SOF Calc_CatHeat_State
         MOV kwp_cec2,R4
         MOV kwp_cec4,R5
 L_CC022:                 ; 0xcc022
@@ -130,7 +130,7 @@ L_CC0B2:                 ; 0xcc0b2
         MOV R13,kwp_cec4
         MOV R14,[R0+#04H]
         MOV R15,[R0+#06H]
-        CALLS 00BH,Is_CCP_Active
+        CALLS SEG Is_CCP_Active, SOF Is_CCP_Active
         MOV R8,R4
         JMPR cc_UC,L_CC0FC
 L_CC0CA:                 ; 0xcc0ca
@@ -138,7 +138,7 @@ L_CC0CA:                 ; 0xcc0ca
         MOV R13,kwp_cec4
         MOV R14,[R0+#04H]
         MOV R15,[R0+#06H]
-        CALLS 00BH,RetC_1_142
+        CALLS SEG RetC_1_142, SOF RetC_1_142
         MOV R8,R4
         JMPR cc_UC,L_CC0FC
 L_CC0E2:                 ; 0xcc0e2
@@ -146,7 +146,7 @@ L_CC0E2:                 ; 0xcc0e2
         MOV R13,kwp_cec4
         MOV R14,[R0+#04H]
         MOV R15,[R0+#06H]
-        CALLS 00BH,RetC_1_14c
+        CALLS SEG RetC_1_14c, SOF RetC_1_14c
         MOV R8,R4
         JMPR cc_UC,L_CC0FC
 L_CC0FA:                 ; 0xcc0fa
@@ -159,7 +159,7 @@ L_CC0FC:                 ; 0xcc0fc
         MOVBZ R4,RL4
         AND R4,#01H
         JMPR cc_EQ,L_CC112
-        CALLS 00BH,Set_ADDRSEL2_15a
+        CALLS SEG Set_ADDRSEL2_15a, SOF Set_ADDRSEL2_15a
 L_CC112:                 ; 0xcc112
         MOVB RL4,kwp_dl_mask
         MOVB kwp_resp_status2,RL4

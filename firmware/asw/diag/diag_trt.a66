@@ -29,7 +29,7 @@ S_DA842 SECTION CODE AT 0DA842H
 Calc_TRT_Word:
         MOV R12,#DATA16 0005CH
         MOV R13,#DATA16 00028H
-        CALLS 00DH,BL_Arm_Exec_Magic
+        CALLS SEG BL_Arm_Exec_Magic, SOF BL_Arm_Exec_Magic
         JNB can_fd58.00H,L_DA864
         MOV R4,bl_cur_addr_lo
         MOV R5,bl_cur_addr_hi
@@ -42,62 +42,62 @@ L_DA864:                 ; 0xda864
         MOV diag_f890,R4
         MOV diag_f892,R5
 L_DA870:                 ; 0xda870
-        CALLS 00DH,NVM_Restore_s00c
+        CALLS SEG NVM_Restore_s00c, SOF NVM_Restore_s00c
         BMOV lv_pl.0DH,lv_im_acin.03H
-        CALLS 00DH,NVM_Restore_s210
+        CALLS SEG NVM_Restore_s210, SOF NVM_Restore_s210
         MOV R4,#DATA16 0FFE0H
         AND ecu_diag_sf_word,R4
         MOV R4,ccp_e79e
         AND R4,#DATA16 0001FH
         OR ecu_diag_sf_word,R4
-        CALLS 00CH,NVM_Restore_s3da
-        CALLS 00CH,Backup_ER_Adapt_Seg
-        CALLS 00DH,Calc_ECU_Diag_SF
+        CALLS SEG NVM_Restore_s3da, SOF NVM_Restore_s3da
+        CALLS SEG Backup_ER_Adapt_Seg, SOF Backup_ER_Adapt_Seg
+        CALLS SEG Calc_ECU_Diag_SF, SOF Calc_ECU_Diag_SF
         MOVB RL4,lv_sched_diag_inh
         ANDB RL4,#01H
         JMPR cc_NE,L_DA94C
-        CALLS 00DH,Set_Conf_VS
+        CALLS SEG Set_Conf_VS, SOF Set_Conf_VS
         JNB lv_pl.0EH,L_DA8B2
         JNB lv_pl.0DH,L_DA8B2
         BSET lv_pl.0CH
 L_DA8B2:                 ; 0xda8b2
-        CALLS 00DH,Calc_TI_AS
-        CALLS 00DH,Calc_TRT_Upd
-        CALLS 00DH,NVM_Restore_s1a8
-        CALLS 00CH,NVM_Restore_s1a4
-        CALLS 00CH,Calc_IGA_Ad2_Knk
-        CALLS 00CH,Restore_Knks_Gain_NVM
-        CALLS 00CH,Restore_TPS_AdMmv_IS
-        CALLS 00DH,NVM_Restore_s56a
+        CALLS SEG Calc_TI_AS, SOF Calc_TI_AS
+        CALLS SEG Calc_TRT_Upd, SOF Calc_TRT_Upd
+        CALLS SEG NVM_Restore_s1a8, SOF NVM_Restore_s1a8
+        CALLS SEG NVM_Restore_s1a4, SOF NVM_Restore_s1a4
+        CALLS SEG Calc_IGA_Ad2_Knk, SOF Calc_IGA_Ad2_Knk
+        CALLS SEG Restore_Knks_Gain_NVM, SOF Restore_Knks_Gain_NVM
+        CALLS SEG Restore_TPS_AdMmv_IS, SOF Restore_TPS_AdMmv_IS
+        CALLS SEG NVM_Restore_s56a, SOF NVM_Restore_s56a
         JNB lv_conf_mis.02H,L_DA8DA
-        CALLS 00CH,Restore_ER_Adapt
+        CALLS SEG Restore_ER_Adapt, SOF Restore_ER_Adapt
 L_DA8DA:                 ; 0xda8da
-        CALLS 00BH,Calc_ER_Adapt_Upd
-        CALLS 00DH,NVM_Restore_s56e
-        CALLS 00DH,NVM_Restore_s574
-        CALLS 00CH,Restore_TQ_Dif_IS_Ad
-        CALLS 00CH,LamAdapt_TI_NVM_Restore
-        CALLS 00BH,CanPurge_Adapt_Flow
-        CALLS 00DH,Restore_Evap_Ctrs
-        CALLS 00BH,Calc_TI_CO_IS
-        CALLS 00BH,Imob_Init
-        CALLS 00BH,Calc_MWSS_Vdif_2
-        CALLS 00CH,Restore_Cam_Ad_NVM
-        CALLS 00CH,Calc_Ratio_TQI_Max_Stnd
-        CALLS 00BH,NVM_Restore_s5c6
-        CALLS 00BH,NVM_Restore_s63a
-        CALLS 00AH,CCP_Checksum_Gate
-        CALLS 00EH,NVM_Restore_s1ce_MisCtr
-        CALLS 00EH,Restore_OBD_Stat
+        CALLS SEG Calc_ER_Adapt_Upd, SOF Calc_ER_Adapt_Upd
+        CALLS SEG NVM_Restore_s56e, SOF NVM_Restore_s56e
+        CALLS SEG NVM_Restore_s574, SOF NVM_Restore_s574
+        CALLS SEG Restore_TQ_Dif_IS_Ad, SOF Restore_TQ_Dif_IS_Ad
+        CALLS SEG LamAdapt_TI_NVM_Restore, SOF LamAdapt_TI_NVM_Restore
+        CALLS SEG CanPurge_Adapt_Flow, SOF CanPurge_Adapt_Flow
+        CALLS SEG Restore_Evap_Ctrs, SOF Restore_Evap_Ctrs
+        CALLS SEG Calc_TI_CO_IS, SOF Calc_TI_CO_IS
+        CALLS SEG Imob_Init, SOF Imob_Init
+        CALLS SEG Calc_MWSS_Vdif_2, SOF Calc_MWSS_Vdif_2
+        CALLS SEG Restore_Cam_Ad_NVM, SOF Restore_Cam_Ad_NVM
+        CALLS SEG Calc_Ratio_TQI_Max_Stnd, SOF Calc_Ratio_TQI_Max_Stnd
+        CALLS SEG NVM_Restore_s5c6, SOF NVM_Restore_s5c6
+        CALLS SEG NVM_Restore_s63a, SOF NVM_Restore_s63a
+        CALLS SEG CCP_Checksum_Gate, SOF CCP_Checksum_Gate
+        CALLS SEG NVM_Restore_s1ce_MisCtr, SOF NVM_Restore_s1ce_MisCtr
+        CALLS SEG Restore_OBD_Stat, SOF Restore_OBD_Stat
         JNB lv_pl.0CH,L_DA926
-        CALLS 00DH,Reset_Adaptive_LearnedValues
+        CALLS SEG Reset_Adaptive_LearnedValues, SOF Reset_Adaptive_LearnedValues
 L_DA926:                 ; 0xda926
-        CALLS 00BH,Restore_TAM_NVM
-        CALLS 00BH,Set_opg_sp_st_isa_7dc
-        CALLS 00BH,NVM_Restore_s62e
-        CALLS 00CH,NVM_Restore_s62eb
-        CALLS 00DH,NVM_Restore_s5ce
-        CALLS 00CH,Set_Dc341_CamErr
+        CALLS SEG Restore_TAM_NVM, SOF Restore_TAM_NVM
+        CALLS SEG Set_opg_sp_st_isa_7dc, SOF Set_opg_sp_st_isa_7dc
+        CALLS SEG NVM_Restore_s62e, SOF NVM_Restore_s62e
+        CALLS SEG NVM_Restore_s62eb, SOF NVM_Restore_s62eb
+        CALLS SEG NVM_Restore_s5ce, SOF NVM_Restore_s5ce
+        CALLS SEG Set_Dc341_CamErr, SOF Set_Dc341_CamErr
         JB lv_conf_mis.09H,L_DA954
         MOV R4,#DATA16 0FFEFH
         AND ecu_diag_sf_word,R4
@@ -107,11 +107,11 @@ L_DA94C:                 ; 0xda94c
         MOVB g_c4a7,ZEROS
 L_DA954:                 ; 0xda954
         JB lv_pl.0CH,L_DA95C
-        CALLS 00DH,NVM_Restore_s4c2
+        CALLS SEG NVM_Restore_s4c2, SOF NVM_Restore_s4c2
 L_DA95C:                 ; 0xda95c
-        CALLS 00DH,DiagCP_Collect_Samples
-        CALLS 00DH,DiagCP_Precond
-        CALLS 00BH,NVM_Restore_s578
+        CALLS SEG DiagCP_Collect_Samples, SOF DiagCP_Collect_Samples
+        CALLS SEG DiagCP_Precond, SOF DiagCP_Precond
+        CALLS SEG NVM_Restore_s578, SOF NVM_Restore_s578
         MOVB eng_state,ZEROS
         BSET lv_cdn_diag_maf_dif_ch_int.0BH
         MOV R4,g_fa80
@@ -119,7 +119,7 @@ L_DA95C:                 ; 0xda95c
         SHL R4,#06H
         MOV v_tco_word,R4
         MOV R12,#DATA16 0003FH
-        CALLS 00DH,DTC_Calc_Activation_MIL
+        CALLS SEG DTC_Calc_Activation_MIL, SOF DTC_Calc_Activation_MIL
         BMOV lv_ecu_err.03H,dtc_status_work.06H
         MOVBZ R4,dtc_ecu_flags
         AND R4,#DATA16 00020H
@@ -156,7 +156,7 @@ NVM_Restore_s00c:
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#02H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         EXTP #03H, #02H
         MOV R10,DPP0:diag_f890
         MOV R11,DPP0:diag_f892
@@ -261,7 +261,7 @@ NVM_Restore_s56a:
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#02H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         EXTP #03H, #02H
         MOV R10,DPP0:diag_f890
         MOV R11,DPP0:diag_f892

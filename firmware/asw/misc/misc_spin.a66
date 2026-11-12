@@ -43,490 +43,490 @@ S_A0214 SECTION CODE AT 0A0214H
 
 ; ======== SpinHalt_a0214  (@0xa0214) ========
 SpinHalt_a0214:
-        JMPS 00AH,SpinHalt_a0214
-        JMPS 008H,NMITRAP_handler
+        JMPS SEG SpinHalt_a0214, SOF SpinHalt_a0214
+        JMPS SEG NMITRAP_handler, SOF NMITRAP_handler
 
 ; ======== SpinHalt_a021c  (@0xa021c) ========
 SpinHalt_a021c:
-        JMPS 00AH,SpinHalt_a021c
-        JMPS 008H,NMITRAP_handler_F432
+        JMPS SEG SpinHalt_a021c, SOF SpinHalt_a021c
+        JMPS SEG NMITRAP_handler_F432, SOF NMITRAP_handler_F432
 
 ; ======== SpinHalt_a0224  (@0xa0224) ========
 SpinHalt_a0224:
-        JMPS 00AH,SpinHalt_a0224
-        JMPS 008H,NMITRAP_handler_F436
+        JMPS SEG SpinHalt_a0224, SOF SpinHalt_a0224
+        JMPS SEG NMITRAP_handler_F436, SOF NMITRAP_handler_F436
 
 ; ======== SpinHalt_a022c  (@0xa022c) ========
 SpinHalt_a022c:
-        JMPS 00AH,SpinHalt_a022c
+        JMPS SEG SpinHalt_a022c, SOF SpinHalt_a022c
 
 ; ======== SpinHalt_a0230  (@0xa0230) ========
 SpinHalt_a0230:
-        JMPS 00AH,SpinHalt_a0230
+        JMPS SEG SpinHalt_a0230, SOF SpinHalt_a0230
 
 ; ======== SpinHalt_a0234  (@0xa0234) ========
 SpinHalt_a0234:
-        JMPS 00AH,SpinHalt_a0234
-        JMPS 008H,NMITRAP_handler_F43A
+        JMPS SEG SpinHalt_a0234, SOF SpinHalt_a0234
+        JMPS SEG NMITRAP_handler_F43A, SOF NMITRAP_handler_F43A
 
 ; ======== SpinHalt_a023c  (@0xa023c) ========
 SpinHalt_a023c:
-        JMPS 00AH,SpinHalt_a023c
+        JMPS SEG SpinHalt_a023c, SOF SpinHalt_a023c
 
 ; ======== SpinHalt_a0240  (@0xa0240) ========
 SpinHalt_a0240:
-        JMPS 00AH,SpinHalt_a0240
+        JMPS SEG SpinHalt_a0240, SOF SpinHalt_a0240
 
 ; ======== SpinHalt_a0244  (@0xa0244) ========
 SpinHalt_a0244:
-        JMPS 00AH,SpinHalt_a0244
+        JMPS SEG SpinHalt_a0244, SOF SpinHalt_a0244
 
 ; ======== SpinHalt_a0248  (@0xa0248) ========
 SpinHalt_a0248:
-        JMPS 00AH,SpinHalt_a0248
+        JMPS SEG SpinHalt_a0248, SOF SpinHalt_a0248
 
 ; ======== SpinHalt_a024c  (@0xa024c) ========
 SpinHalt_a024c:
-        JMPS 00AH,SpinHalt_a024c
+        JMPS SEG SpinHalt_a024c, SOF SpinHalt_a024c
 
 ; ======== CC0INT_Handler  (@0xa0250) ========
 CC0INT_Handler_0250:
-        JMPS 00AH,CC0INT_Handler
+        JMPS SEG CC0INT_Handler, SOF CC0INT_Handler
 
 ; ======== CC1INT_Handler  (@0xa0254) ========
 CC1INT_Handler_0254:
-        JMPS 00AH,CC1INT_Handler
+        JMPS SEG CC1INT_Handler, SOF CC1INT_Handler
 
 ; ======== CC2INT_Handler  (@0xa0258) ========
 CC2INT_Handler_0258:
-        JMPS 00AH,CC2INT_Handler
+        JMPS SEG CC2INT_Handler, SOF CC2INT_Handler
 
 ; ======== CC3INT_Handler  (@0xa025c) ========
 CC3INT_Handler_025C:
-        JMPS 00AH,CC3INT_Handler
+        JMPS SEG CC3INT_Handler, SOF CC3INT_Handler
 
 ; ======== CC4INT_handler  (@0xa0260) ========
 CC4INT_handler_0260:
-        JMPS 00AH,CC4INT_handler
+        JMPS SEG CC4INT_handler, SOF CC4INT_handler
 
 ; ======== CC5INT_handler  (@0xa0264) ========
 CC5INT_handler_0264:
-        JMPS 00AH,CC5INT_handler
+        JMPS SEG CC5INT_handler, SOF CC5INT_handler
 
 ; ======== CC6INT_handler  (@0xa0268) ========
 CC6INT_handler_0268:
-        JMPS 00AH,CC6INT_handler
+        JMPS SEG CC6INT_handler, SOF CC6INT_handler
 
 ; ======== CC7INT_Handler  (@0xa026c) ========
 CC7INT_Handler_026C:
-        JMPS 00AH,CC7INT_Handler
+        JMPS SEG CC7INT_Handler, SOF CC7INT_Handler
 
 ; ======== CC8INT_handler  (@0xa0270) ========
 CC8INT_handler_0270:
-        JMPS 00AH,CC8INT_handler
+        JMPS SEG CC8INT_handler, SOF CC8INT_handler
 
 ; ======== CC9INT_handler  (@0xa0274) ========
 CC9INT_handler_0274:
-        JMPS 00AH,CC9INT_handler
+        JMPS SEG CC9INT_handler, SOF CC9INT_handler
 
 ; ======== CC10INT_handler  (@0xa0278) ========
 CC10INT_handler_0278:
-        JMPS 00AH,CC10INT_handler
+        JMPS SEG CC10INT_handler, SOF CC10INT_handler
 
 ; ======== CC11INT_handler  (@0xa027c) ========
 CC11INT_handler_027C:
-        JMPS 00AH,CC11INT_handler
+        JMPS SEG CC11INT_handler, SOF CC11INT_handler
 
 ; ======== caseD_f0  (@0xa0280) ========
 caseD_f0:
-        JMPS 00AH,CC12INT_handler
+        JMPS SEG CC12INT_handler, SOF CC12INT_handler
 
 ; ======== CC13INT_handler  (@0xa0284) ========
 CC13INT_handler_0284:
-        JMPS 00AH,CC13INT_handler
+        JMPS SEG CC13INT_handler, SOF CC13INT_handler
 
 ; ======== CC14INT_handler  (@0xa0288) ========
 CC14INT_handler_0288:
-        JMPS 00AH,CC14INT_handler
+        JMPS SEG CC14INT_handler, SOF CC14INT_handler
 
 ; ======== CC15INT_handler  (@0xa028c) ========
 CC15INT_handler_028C:
-        JMPS 00AH,CC15INT_handler
+        JMPS SEG CC15INT_handler, SOF CC15INT_handler
 
 ; ======== SpinHalt_a0290  (@0xa0290) ========
 SpinHalt_a0290:
-        JMPS 00AH,SpinHalt_a0290
+        JMPS SEG SpinHalt_a0290, SOF SpinHalt_a0290
 
 ; ======== Inc_Dfbb0_bf2  (@0xa0294) ========
 Inc_Dfbb0_bf2_0294:
-        JMPS 00AH,Inc_Dfbb0_bf2
+        JMPS SEG Inc_Dfbb0_bf2, SOF Inc_Dfbb0_bf2
 
 ; ======== SpinHalt_a0298  (@0xa0298) ========
 SpinHalt_a0298:
-        JMPS 00AH,SpinHalt_a0298
+        JMPS SEG SpinHalt_a0298, SOF SpinHalt_a0298
 
 ; ======== SpinHalt_a029c  (@0xa029c) ========
 SpinHalt_a029c:
-        JMPS 00AH,SpinHalt_a029c
+        JMPS SEG SpinHalt_a029c, SOF SpinHalt_a029c
 
 ; ======== T4INT_handler  (@0xa02a0) ========
 T4INT_handler_02A0:
-        JMPS 00AH,T4INT_handler
+        JMPS SEG T4INT_handler, SOF T4INT_handler
 
 ; ======== T5INT_handler  (@0xa02a4) ========
 T5INT_handler_02A4:
-        JMPS 00AH,T5INT_handler
+        JMPS SEG T5INT_handler, SOF T5INT_handler
 
 ; ======== Acq_Crank_Segment  (@0xa02a8) ========
 Acq_Crank_Segment_02A8:
-        JMPS 00AH,Acq_Crank_Segment
+        JMPS SEG Acq_Crank_Segment, SOF Acq_Crank_Segment
 
 ; ======== CRINT_handler  (@0xa02ac) ========
 CRINT_handler_02AC:
-        JMPS 00AH,CRINT_handler
+        JMPS SEG CRINT_handler, SOF CRINT_handler
 
 ; ======== ADCINT_handler  (@0xa02b0) ========
 ADCINT_handler_02B0:
-        JMPS 00AH,ADCINT_handler
+        JMPS SEG ADCINT_handler, SOF ADCINT_handler
 
 ; ======== SpinHalt_a02b4  (@0xa02b4) ========
 SpinHalt_a02b4:
-        JMPS 00AH,SpinHalt_a02b4
+        JMPS SEG SpinHalt_a02b4, SOF SpinHalt_a02b4
 
 ; ======== Reset_S0TIC_e34  (@0xa02b8) ========
 Reset_S0TIC_e34_02B8:
-        JMPS 00AH,Reset_S0TIC_e34
+        JMPS SEG Reset_S0TIC_e34, SOF Reset_S0TIC_e34
 
 ; ======== SMARTRA_asc0_rx_isr  (@0xa02bc) ========
 SMARTRA_asc0_rx_isr_02BC:
-        JMPS 00AH,SMARTRA_asc0_rx_isr
+        JMPS SEG SMARTRA_asc0_rx_isr, SOF SMARTRA_asc0_rx_isr
 
 ; ======== Reset_S0EIC_e4e  (@0xa02c0) ========
 Reset_S0EIC_e4e_02C0:
-        JMPS 00AH,Reset_S0EIC_e4e
+        JMPS SEG Reset_S0EIC_e4e, SOF Reset_S0EIC_e4e
 
 ; ======== SetBits_SSCTIC_7aa  (@0xa02c4) ========
 SetBits_SSCTIC_7aa_02C4:
-        JMPS 00AH,SetBits_SSCTIC_7aa
+        JMPS SEG SetBits_SSCTIC_7aa, SOF SetBits_SSCTIC_7aa
 
 ; ======== CallVia_62e  (@0xa02c8) ========
 CallVia_62e_02C8:
-        JMPS 00AH,CallVia_62e
+        JMPS SEG CallVia_62e, SOF CallVia_62e
 
 ; ======== CallVia_71e  (@0xa02cc) ========
 CallVia_71e_02CC:
-        JMPS 00AH,CallVia_71e
+        JMPS SEG CallVia_71e, SOF CallVia_71e
 
 ; ======== CC16INT_handler  (@0xa02d0) ========
 CC16INT_handler_02D0:
-        JMPS 00AH,CC16INT_handler
+        JMPS SEG CC16INT_handler, SOF CC16INT_handler
 
 ; ======== CC17INT_handler  (@0xa02d4) ========
 CC17INT_handler_02D4:
-        JMPS 00AH,CC17INT_handler
+        JMPS SEG CC17INT_handler, SOF CC17INT_handler
 
 ; ======== SpinHalt_a02d8  (@0xa02d8) ========
 SpinHalt_a02d8:
-        JMPS 00AH,SpinHalt_a02d8
+        JMPS SEG SpinHalt_a02d8, SOF SpinHalt_a02d8
 
 ; ======== CC19INT_handler  (@0xa02dc) ========
 CC19INT_handler_02DC:
-        JMPS 00AH,CC19INT_handler
+        JMPS SEG CC19INT_handler, SOF CC19INT_handler
 
 ; ======== SpinHalt_a02e0  (@0xa02e0) ========
 SpinHalt_a02e0:
-        JMPS 00AH,SpinHalt_a02e0
+        JMPS SEG SpinHalt_a02e0, SOF SpinHalt_a02e0
 
 ; ======== CC21INT_handler  (@0xa02e4) ========
 CC21INT_handler_02E4:
-        JMPS 00AH,CC21INT_handler
+        JMPS SEG CC21INT_handler, SOF CC21INT_handler
 
 ; ======== CC22INT_handler  (@0xa02e8) ========
 CC22INT_handler_02E8:
-        JMPS 00AH,CC22INT_handler
+        JMPS SEG CC22INT_handler, SOF CC22INT_handler
 
 ; ======== SpinHalt_a02ec  (@0xa02ec) ========
 SpinHalt_a02ec:
-        JMPS 00AH,SpinHalt_a02ec
+        JMPS SEG SpinHalt_a02ec, SOF SpinHalt_a02ec
 
 ; ======== CallVia_368  (@0xa02f0) ========
 CallVia_368_02F0:
-        JMPS 00AH,CallVia_368
+        JMPS SEG CallVia_368, SOF CallVia_368
 
 ; ======== CC25INT_handler  (@0xa02f4) ========
 CC25INT_handler_02F4:
-        JMPS 00AH,CC25INT_handler
+        JMPS SEG CC25INT_handler, SOF CC25INT_handler
 
 ; ======== Calc_MAF_Base  (@0xa02f8) ========
 Calc_MAF_Base_02F8:
-        JMPS 00AH,Calc_MAF_Base
+        JMPS SEG Calc_MAF_Base, SOF Calc_MAF_Base
 
 ; ======== CC27INT_handler  (@0xa02fc) ========
 CC27INT_handler_02FC:
-        JMPS 00AH,CC27INT_handler
+        JMPS SEG CC27INT_handler, SOF CC27INT_handler
 
 ; ======== Reset_CC28IC_f26  (@0xa0300) ========
 Reset_CC28IC_f26_0300:
-        JMPS 00AH,Reset_CC28IC_f26
+        JMPS SEG Reset_CC28IC_f26, SOF Reset_CC28IC_f26
 
 ; ======== SpinHalt_a0304  (@0xa0304) ========
 SpinHalt_a0304:
-        JMPS 00AH,SpinHalt_a0304
+        JMPS SEG SpinHalt_a0304, SOF SpinHalt_a0304
 
 ; ======== Inc_Dfbb2_bf8  (@0xa0308) ========
 Inc_Dfbb2_bf8_0308:
-        JMPS 00AH,Inc_Dfbb2_bf8
-        JMPS 00AH,Ctl_PWM3_Output
+        JMPS SEG Inc_Dfbb2_bf8, SOF Inc_Dfbb2_bf8
+        JMPS SEG Ctl_PWM3_Output, SOF Ctl_PWM3_Output
 L_A0310:                 ; 0xa0310
-        JMPS 00AH,L_A0310
+        JMPS SEG L_A0310, SOF L_A0310
 
 ; ======== CAN_push_message_into_buffer  (@0xa0314) ========
 CAN_push_message_into_buffer_0314:
-        JMPS 00AH,CAN_push_message_into_buffer
+        JMPS SEG CAN_push_message_into_buffer, SOF CAN_push_message_into_buffer
 
 ; ======== XP2INT_handler  (@0xa0318) ========
 XP2INT_handler_0318:
-        JMPS 00AH,XP2INT_handler
+        JMPS SEG XP2INT_handler, SOF XP2INT_handler
 
 ; ======== SpinHalt_a031c  (@0xa031c) ========
 SpinHalt_a031c:
-        JMPS 00AH,SpinHalt_a031c
+        JMPS SEG SpinHalt_a031c, SOF SpinHalt_a031c
 
 ; ======== CC29INT_handler  (@0xa0320) ========
 CC29INT_handler_0320:
-        JMPS 00AH,CC29INT_handler
+        JMPS SEG CC29INT_handler, SOF CC29INT_handler
 
 ; ======== CC30INT_handler  (@0xa0324) ========
 CC30INT_handler_0324:
-        JMPS 00AH,CC30INT_handler
+        JMPS SEG CC30INT_handler, SOF CC30INT_handler
 
 ; ======== SpinHalt_a0328  (@0xa0328) ========
 SpinHalt_a0328:
-        JMPS 00AH,SpinHalt_a0328
+        JMPS SEG SpinHalt_a0328, SOF SpinHalt_a0328
 
 ; ======== Reset_S0TBIC_e40  (@0xa032c) ========
 Reset_S0TBIC_e40_032C:
-        JMPS 00AH,Reset_S0TBIC_e40
+        JMPS SEG Reset_S0TBIC_e40, SOF Reset_S0TBIC_e40
 
 ; ======== SpinHalt_a0330  (@0xa0330) ========
 SpinHalt_a0330:
-        JMPS 00AH,SpinHalt_a0330
+        JMPS SEG SpinHalt_a0330, SOF SpinHalt_a0330
 
 ; ======== SpinHalt_a0334  (@0xa0334) ========
 SpinHalt_a0334:
-        JMPS 00AH,SpinHalt_a0334
+        JMPS SEG SpinHalt_a0334, SOF SpinHalt_a0334
 
 ; ======== SpinHalt_a0338  (@0xa0338) ========
 SpinHalt_a0338:
-        JMPS 00AH,SpinHalt_a0338
+        JMPS SEG SpinHalt_a0338, SOF SpinHalt_a0338
 
 ; ======== SpinHalt_a033c  (@0xa033c) ========
 SpinHalt_a033c:
-        JMPS 00AH,SpinHalt_a033c
+        JMPS SEG SpinHalt_a033c, SOF SpinHalt_a033c
 
 ; ======== SpinHalt_a0340  (@0xa0340) ========
 SpinHalt_a0340:
-        JMPS 00AH,SpinHalt_a0340
+        JMPS SEG SpinHalt_a0340, SOF SpinHalt_a0340
 
 ; ======== SpinHalt_a0344  (@0xa0344) ========
 SpinHalt_a0344:
-        JMPS 00AH,SpinHalt_a0344
+        JMPS SEG SpinHalt_a0344, SOF SpinHalt_a0344
 
 ; ======== SpinHalt_a0348  (@0xa0348) ========
 SpinHalt_a0348:
-        JMPS 00AH,SpinHalt_a0348
+        JMPS SEG SpinHalt_a0348, SOF SpinHalt_a0348
 
 ; ======== SpinHalt_a034c  (@0xa034c) ========
 SpinHalt_a034c:
-        JMPS 00AH,SpinHalt_a034c
+        JMPS SEG SpinHalt_a034c, SOF SpinHalt_a034c
 
 ; ======== SpinHalt_a0350  (@0xa0350) ========
 SpinHalt_a0350:
-        JMPS 00AH,SpinHalt_a0350
+        JMPS SEG SpinHalt_a0350, SOF SpinHalt_a0350
 
 ; ======== SpinHalt_a0354  (@0xa0354) ========
 SpinHalt_a0354:
-        JMPS 00AH,SpinHalt_a0354
+        JMPS SEG SpinHalt_a0354, SOF SpinHalt_a0354
 
 ; ======== SpinHalt_a0358  (@0xa0358) ========
 SpinHalt_a0358:
-        JMPS 00AH,SpinHalt_a0358
+        JMPS SEG SpinHalt_a0358, SOF SpinHalt_a0358
 
 ; ======== SpinHalt_a035c  (@0xa035c) ========
 SpinHalt_a035c:
-        JMPS 00AH,SpinHalt_a035c
+        JMPS SEG SpinHalt_a035c, SOF SpinHalt_a035c
 
 ; ======== SpinHalt_a0360  (@0xa0360) ========
 SpinHalt_a0360:
-        JMPS 00AH,SpinHalt_a0360
+        JMPS SEG SpinHalt_a0360, SOF SpinHalt_a0360
 
 ; ======== SpinHalt_a0364  (@0xa0364) ========
 SpinHalt_a0364:
-        JMPS 00AH,SpinHalt_a0364
+        JMPS SEG SpinHalt_a0364, SOF SpinHalt_a0364
 
 ; ======== SpinHalt_a0368  (@0xa0368) ========
 SpinHalt_a0368:
-        JMPS 00AH,SpinHalt_a0368
+        JMPS SEG SpinHalt_a0368, SOF SpinHalt_a0368
 
 ; ======== SpinHalt_a036c  (@0xa036c) ========
 SpinHalt_a036c:
-        JMPS 00AH,SpinHalt_a036c
+        JMPS SEG SpinHalt_a036c, SOF SpinHalt_a036c
 
 ; ======== SpinHalt_a0370  (@0xa0370) ========
 SpinHalt_a0370:
-        JMPS 00AH,SpinHalt_a0370
+        JMPS SEG SpinHalt_a0370, SOF SpinHalt_a0370
 
 ; ======== SpinHalt_a0374  (@0xa0374) ========
 SpinHalt_a0374:
-        JMPS 00AH,SpinHalt_a0374
+        JMPS SEG SpinHalt_a0374, SOF SpinHalt_a0374
 
 ; ======== SpinHalt_a0378  (@0xa0378) ========
 SpinHalt_a0378:
-        JMPS 00AH,SpinHalt_a0378
+        JMPS SEG SpinHalt_a0378, SOF SpinHalt_a0378
 
 ; ======== SpinHalt_a037c  (@0xa037c) ========
 SpinHalt_a037c:
-        JMPS 00AH,SpinHalt_a037c
+        JMPS SEG SpinHalt_a037c, SOF SpinHalt_a037c
 
 ; ======== SpinHalt_a0380  (@0xa0380) ========
 SpinHalt_a0380:
-        JMPS 00AH,SpinHalt_a0380
+        JMPS SEG SpinHalt_a0380, SOF SpinHalt_a0380
 
 ; ======== SpinHalt_a0384  (@0xa0384) ========
 SpinHalt_a0384:
-        JMPS 00AH,SpinHalt_a0384
+        JMPS SEG SpinHalt_a0384, SOF SpinHalt_a0384
 
 ; ======== SpinHalt_a0388  (@0xa0388) ========
 SpinHalt_a0388:
-        JMPS 00AH,SpinHalt_a0388
+        JMPS SEG SpinHalt_a0388, SOF SpinHalt_a0388
 
 ; ======== SpinHalt_a038c  (@0xa038c) ========
 SpinHalt_a038c:
-        JMPS 00AH,SpinHalt_a038c
+        JMPS SEG SpinHalt_a038c, SOF SpinHalt_a038c
 
 ; ======== Get_Status_Marker_a8350  (@0xa0390) ========
 Get_Status_Marker_a8350_0390:
-        JMPS 00AH,Get_Status_Marker_a8350
+        JMPS SEG Get_Status_Marker_a8350, SOF Get_Status_Marker_a8350
 
 ; ======== SpinHalt_a0394  (@0xa0394) ========
 SpinHalt_a0394:
-        JMPS 00AH,SpinHalt_a0394
+        JMPS SEG SpinHalt_a0394, SOF SpinHalt_a0394
 
 ; ======== SpinHalt_a0398  (@0xa0398) ========
 SpinHalt_a0398:
-        JMPS 00AH,SpinHalt_a0398
+        JMPS SEG SpinHalt_a0398, SOF SpinHalt_a0398
 
 ; ======== SpinHalt_a039c  (@0xa039c) ========
 SpinHalt_a039c:
-        JMPS 00AH,SpinHalt_a039c
+        JMPS SEG SpinHalt_a039c, SOF SpinHalt_a039c
 
 ; ======== SpinHalt_a03a0  (@0xa03a0) ========
 SpinHalt_a03a0:
-        JMPS 00AH,SpinHalt_a03a0
+        JMPS SEG SpinHalt_a03a0, SOF SpinHalt_a03a0
 
 ; ======== SpinHalt_a03a4  (@0xa03a4) ========
 SpinHalt_a03a4:
-        JMPS 00AH,SpinHalt_a03a4
+        JMPS SEG SpinHalt_a03a4, SOF SpinHalt_a03a4
 
 ; ======== SpinHalt_a03a8  (@0xa03a8) ========
 SpinHalt_a03a8:
-        JMPS 00AH,SpinHalt_a03a8
+        JMPS SEG SpinHalt_a03a8, SOF SpinHalt_a03a8
 
 ; ======== EngOut_Scheduler  (@0xa03ac) ========
 EngOut_Scheduler_03AC:
-        JMPS 00AH,EngOut_Scheduler
+        JMPS SEG EngOut_Scheduler, SOF EngOut_Scheduler
 
 ; ======== SpinHalt_a03b0  (@0xa03b0) ========
 SpinHalt_a03b0:
-        JMPS 00AH,SpinHalt_a03b0
+        JMPS SEG SpinHalt_a03b0, SOF SpinHalt_a03b0
 
 ; ======== SpinHalt_a03b4  (@0xa03b4) ========
 SpinHalt_a03b4:
-        JMPS 00AH,SpinHalt_a03b4
+        JMPS SEG SpinHalt_a03b4, SOF SpinHalt_a03b4
 
 ; ======== SpinHalt_a03b8  (@0xa03b8) ========
 SpinHalt_a03b8:
-        JMPS 00AH,SpinHalt_a03b8
+        JMPS SEG SpinHalt_a03b8, SOF SpinHalt_a03b8
 
 ; ======== SpinHalt_a03bc  (@0xa03bc) ========
 SpinHalt_a03bc:
-        JMPS 00AH,SpinHalt_a03bc
+        JMPS SEG SpinHalt_a03bc, SOF SpinHalt_a03bc
 
 ; ======== caseD_ee  (@0xa03c0) ========
 caseD_ee:
-        JMPS 00AH,caseD_ee
+        JMPS SEG caseD_ee, SOF caseD_ee
 
 ; ======== SpinHalt_a03c4  (@0xa03c4) ========
 SpinHalt_a03c4:
-        JMPS 00AH,SpinHalt_a03c4
+        JMPS SEG SpinHalt_a03c4, SOF SpinHalt_a03c4
 
 ; ======== SpinHalt_a03c8  (@0xa03c8) ========
 SpinHalt_a03c8:
-        JMPS 00AH,SpinHalt_a03c8
+        JMPS SEG SpinHalt_a03c8, SOF SpinHalt_a03c8
 
 ; ======== SpinHalt_a03cc  (@0xa03cc) ========
 SpinHalt_a03cc:
-        JMPS 00AH,SpinHalt_a03cc
+        JMPS SEG SpinHalt_a03cc, SOF SpinHalt_a03cc
 
 ; ======== SpinHalt_a03d0  (@0xa03d0) ========
 SpinHalt_a03d0:
-        JMPS 00AH,SpinHalt_a03d0
+        JMPS SEG SpinHalt_a03d0, SOF SpinHalt_a03d0
 
 ; ======== SpinHalt_a03d4  (@0xa03d4) ========
 SpinHalt_a03d4:
-        JMPS 00AH,SpinHalt_a03d4
+        JMPS SEG SpinHalt_a03d4, SOF SpinHalt_a03d4
 
 ; ======== SpinHalt_a03d8  (@0xa03d8) ========
 SpinHalt_a03d8:
-        JMPS 00AH,SpinHalt_a03d8
+        JMPS SEG SpinHalt_a03d8, SOF SpinHalt_a03d8
 
 ; ======== SpinHalt_a03dc  (@0xa03dc) ========
 SpinHalt_a03dc:
-        JMPS 00AH,SpinHalt_a03dc
+        JMPS SEG SpinHalt_a03dc, SOF SpinHalt_a03dc
 
 ; ======== SpinHalt_a03e0  (@0xa03e0) ========
 SpinHalt_a03e0:
-        JMPS 00AH,SpinHalt_a03e0
+        JMPS SEG SpinHalt_a03e0, SOF SpinHalt_a03e0
 
 ; ======== SpinHalt_a03e4  (@0xa03e4) ========
 SpinHalt_a03e4:
-        JMPS 00AH,SpinHalt_a03e4
+        JMPS SEG SpinHalt_a03e4, SOF SpinHalt_a03e4
 
 ; ======== SpinHalt_a03e8  (@0xa03e8) ========
 SpinHalt_a03e8:
-        JMPS 00AH,SpinHalt_a03e8
+        JMPS SEG SpinHalt_a03e8, SOF SpinHalt_a03e8
 
 ; ======== SpinHalt_a03ec  (@0xa03ec) ========
 SpinHalt_a03ec:
-        JMPS 00AH,SpinHalt_a03ec
+        JMPS SEG SpinHalt_a03ec, SOF SpinHalt_a03ec
 
 ; ======== SpinHalt_a03f0  (@0xa03f0) ========
 SpinHalt_a03f0:
-        JMPS 00AH,SpinHalt_a03f0
+        JMPS SEG SpinHalt_a03f0, SOF SpinHalt_a03f0
 
 ; ======== SpinHalt_a03f4  (@0xa03f4) ========
 SpinHalt_a03f4:
-        JMPS 00AH,SpinHalt_a03f4
+        JMPS SEG SpinHalt_a03f4, SOF SpinHalt_a03f4
 
 ; ======== SpinHalt_a03f8  (@0xa03f8) ========
 SpinHalt_a03f8:
-        JMPS 00AH,SpinHalt_a03f8
+        JMPS SEG SpinHalt_a03f8, SOF SpinHalt_a03f8
 
 ; ======== SpinHalt_a03fc  (@0xa03fc) ========
 SpinHalt_a03fc:
-        JMPS 00AH,SpinHalt_a03fc
+        JMPS SEG SpinHalt_a03fc, SOF SpinHalt_a03fc
 
 ; ======== SpinHalt_a0400  (@0xa0400) ========
 SpinHalt_a0400:
-        JMPS 00AH,SpinHalt_a0400
+        JMPS SEG SpinHalt_a0400, SOF SpinHalt_a0400
 
 ; ======== SpinHalt_a0404  (@0xa0404) ========
 SpinHalt_a0404:
-        JMPS 00AH,SpinHalt_a0404
+        JMPS SEG SpinHalt_a0404, SOF SpinHalt_a0404
 
 ; ======== SpinHalt_a0408  (@0xa0408) ========
 SpinHalt_a0408:
-        JMPS 00AH,SpinHalt_a0408
+        JMPS SEG SpinHalt_a0408, SOF SpinHalt_a0408
 
 S_A0214 ENDS
         END

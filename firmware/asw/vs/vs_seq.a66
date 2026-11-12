@@ -182,10 +182,10 @@ L_C85BC:                 ; 0xc85bc
         MOV R12,#DATA16 POF sst_dk_kf_nmax_diag_1
         MOV R13,#DATA16 PAG sst_dk_kf_nmax_diag_1
         MOVBZ R14,tps
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_n_max_isa_err__tps
         MOV R13,#DATA16 PAG ip_n_max_isa_err__tps
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVB lv_vs_c34d,RL4
         JMPR cc_UC,L_C85F8
 L_C85E8:                 ; 0xc85e8
@@ -200,12 +200,12 @@ L_C85F8:                 ; 0xc85f8
         SHL R12,#03H
         MOVBZ R13,vs
         SHL R13,#08H
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         MOV vs_ratio,R4
         MOV R12,n_C93C
         MOV R13,R4
         MOV R14,#0BH
-        CALLS 00FH,Mul_Shift_U16_Sat32
+        CALLS SEG Mul_Shift_U16_Sat32, SOF Mul_Shift_U16_Sat32
         MOV n_max_vs_max,R4
         CMP R4,#DATA16 01FE0H
         JMPR cc_ULE,L_C862A
@@ -670,10 +670,10 @@ L_C8A3C:                 ; 0xc8a3c
         MOV R12,#DATA16 POF ldp_vs_rr_ip_wheel_grd_mmv_thd
         MOV R13,#DATA16 PAG ldp_vs_rr_ip_wheel_grd_mmv_thd
         MOVBZ R14,RL4
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_wheel_grd_mmv_thd__vs_rr
         MOV R13,#DATA16 PAG ip_wheel_grd_mmv_thd__vs_rr
-        CALLS 00FH,Get_IP_Word_2D_Table
+        CALLS SEG Get_IP_Word_2D_Table, SOF Get_IP_Word_2D_Table
         MOV wheel_grd_mmv_thd,R4
         MOV R5,p_vs_meas
         MOV R2,[R5+#06H]
@@ -760,15 +760,15 @@ L_C8B3E:                 ; 0xc8b3e
         JMPR cc_UGT,L_C8B92
         MOV R12,R5
         MOV R13,R4
-        CALLS 00FH,Abs_Diff_U16
+        CALLS SEG Abs_Diff_U16, SOF Abs_Diff_U16
         MOV R12,R4
         MOV R13,seg_t_mes_1_rr
-        CALLS 00FH,Div_Frac_U16_Q16
+        CALLS SEG Div_Frac_U16_Q16, SOF Div_Frac_U16_Q16
         MOV wheel_grd,R4
         MOV R12,wheel_grd_mmv
         MOV R13,R4
         MOV R14,DPP0:c_wheel_grd_crlc_rr
-        CALLS 00FH,Interp_U16
+        CALLS SEG Interp_U16, SOF Interp_U16
         MOV wheel_grd_mmv,R4
         CMP R4,wheel_grd_mmv_thd
         JMPR cc_ULE,L_C8B92
@@ -861,12 +861,12 @@ L_C8C28:                 ; 0xc8c28
         JMPR cc_ULE,L_C8C54
         JB lv_cdn_diag_maf_dif_ch_int.0BH,L_C8C54
         BSET lv_pl.0BH
-        CALLS 00EH,Inc_Ctr_Wup_DTC_Clr
+        CALLS SEG Inc_Ctr_Wup_DTC_Clr, SOF Inc_Ctr_Wup_DTC_Clr
         JMPR cc_UC,L_C8C54
 L_C8C52:                 ; 0xc8c52
         BSET obd_sf.00H
 L_C8C54:                 ; 0xc8c54
-        CALLS 00CH,Tail_f0ae180_90e
+        CALLS SEG Tail_f0ae180_90e, SOF Tail_f0ae180_90e
         JMPR cc_UC,L_C8C74
 
 ; ======== CylSeq_Cyl1  (@0xc8c5a) ========
@@ -874,7 +874,7 @@ L_C8C54:                 ; 0xc8c54
         ; Named by caller-context + body analysis (push to 100pct).
         ; ------------------------------------------------------------
 CylSeq_Cyl1:
-        CALLS 00CH,CylCalc_Group_1
+        CALLS SEG CylCalc_Group_1, SOF CylCalc_Group_1
         JMPR cc_UC,L_C8C74
 
 ; ======== CylSeq_Cyl2  (@0xc8c60) ========
@@ -882,7 +882,7 @@ CylSeq_Cyl1:
         ; Named by caller-context + body analysis (push to 100pct).
         ; ------------------------------------------------------------
 CylSeq_Cyl2:
-        CALLS 00CH,Set_lv_act_aj
+        CALLS SEG Set_lv_act_aj, SOF Set_lv_act_aj
         JMPR cc_UC,L_C8C74
 
 ; ======== CylSeq_Cyl3  (@0xc8c66) ========
@@ -890,8 +890,8 @@ CylSeq_Cyl2:
         ; Named by caller-context + body analysis (push to 100pct).
         ; ------------------------------------------------------------
 CylSeq_Cyl3:
-        CALLS 00DH,Calc_TI_Pos_WallFilm
-        CALLS 00CH,CylCalc_Group_2
+        CALLS SEG Calc_TI_Pos_WallFilm, SOF Calc_TI_Pos_WallFilm
+        CALLS SEG CylCalc_Group_2, SOF CylCalc_Group_2
         JMPR cc_UC,L_C8C74
 
 ; ======== CylSeq_Cyl4  (@0xc8c70) ========
@@ -899,7 +899,7 @@ CylSeq_Cyl3:
         ; Named by caller-context + body analysis (push to 100pct).
         ; ------------------------------------------------------------
 CylSeq_Cyl4:
-        CALLS 00CH,CylCalc_Group_3
+        CALLS SEG CylCalc_Group_3, SOF CylCalc_Group_3
 L_C8C74:                 ; 0xc8c74
         SUBB lv_cyl_f4af,ONES
         MOVB RL4,lv_cyl_f4af
@@ -926,10 +926,10 @@ Acq_TIA_TCO_Inputs:
         MOV R12,#DATA16 POF sst_utal_kf_tal
         MOV R13,#DATA16 PAG sst_utal_kf_tal
         MOVBZ R14,RL4
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_tia__vtia
         MOV R13,#DATA16 PAG ip_tia__vtia
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVB tia_mes,RL4
         CMPB RL4,DPP0:c_tia_max_diag
         JMPR cc_UGT,L_C8CCA
@@ -946,7 +946,7 @@ L_C8CCC:                 ; 0xc8ccc
         MOV R13,#DATA16 05320H
         MOVBZ R14,DPP0:c_abc_inc_tia_plaus_diag
         MOVBZ R15,DPP0:c_abc_max_tia_plaus_diag
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_cam_err.0BH,dtc_status_work.06H
         MOVBZ R4,lv_tco_d174
         AND R4,#DATA16 00020H
@@ -966,10 +966,10 @@ L_C8CFC:                 ; 0xc8cfc
         MOV R12,#DATA16 POF sst_utkw_kf_tkw
         MOV R13,#DATA16 PAG sst_utkw_kf_tkw
         MOV R14,R4
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ip_tco__vtco
         MOV R13,#DATA16 PAG ip_tco__vtco
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVB tco_mes_z,RL4
         MOVB tco_mes,RL4
         CMPB RL4,DPP0:c_tco_max_diag
@@ -1007,11 +1007,11 @@ L_C8D92:                 ; 0xc8d92
 L_C8D9A:                 ; 0xc8d9a
         MOV tco_sub_dif_diag,ZEROS
         MOVB tco_mes_dif_diag,ZEROS
-        CALLS 00CH,Diag_TPS_Det
-        CALLS 00CH,Diag_TPS_Det
-        CALLS 00CH,Diag_TPS_Det
-        CALLS 00CH,Diag_TPS_Det
-        CALLS 00CH,Diag_TPS_Det
+        CALLS SEG Diag_TPS_Det, SOF Diag_TPS_Det
+        CALLS SEG Diag_TPS_Det, SOF Diag_TPS_Det
+        CALLS SEG Diag_TPS_Det, SOF Diag_TPS_Det
+        CALLS SEG Diag_TPS_Det, SOF Diag_TPS_Det
+        CALLS SEG Diag_TPS_Det, SOF Diag_TPS_Det
         RETS
 
 ; ======== Calc_TIA_TCO_Plaus  (@0xc8db8) ========

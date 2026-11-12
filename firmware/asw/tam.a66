@@ -78,7 +78,7 @@ L_B98D4:                 ; 0xb98d4
         JMPR cc_C,L_B9902
         MOVBZ R12,tia
         MOVBZ R13,DPP0:c_tam_ofs
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         MOVB tam,RL4
         MOVB t_tam1,ZEROS
         JMPR cc_UC,L_B9902
@@ -126,7 +126,7 @@ L_B9956:                 ; 0xb9956
 Calc_TAM_Min_DiagCP_9958:
         MOVB RL4,tam
         MOVB diag_c265,RL4
-        CALLS 00BH,Acq_TAM_2
+        CALLS SEG Acq_TAM_2, SOF Acq_TAM_2
         JNB lv_err_pres_mwss.0AH,L_B9978
         MOVB RL4,tam
         CMPB RL4,tam_min_diagcp
@@ -156,7 +156,7 @@ Restore_TAM_NVM:
         MOVB tam,RL3
         RETS
 L_B99A4:                 ; 0xb99a4
-        CALLS 00BH,Set_tam_874
+        CALLS SEG Set_tam_874, SOF Set_tam_874
         RETS
 
 ; ======== NVM_Save_s643  (@0xb99aa) ========
@@ -178,7 +178,7 @@ NVM_Save_s643:
         MOV R13,R5
         MOV R14,#DATA16 0F384H
         MOV R15,#01H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         RETS
 
 ; ======== Calc_tam_min_diagcp  (@0xb99d2) ========
@@ -186,7 +186,7 @@ NVM_Save_s643:
         ; Named from single dominant output signal (auto-derived, lower confidence than hand-verified).
         ; ------------------------------------------------------------
 Calc_tam_min_diagcp:
-        CALLS 00BH,Acq_TAM
+        CALLS SEG Acq_TAM, SOF Acq_TAM
         MOVB tam_min_diagcp,ZEROS
         RETS
 
@@ -235,14 +235,14 @@ Calc_TI_FL:
         MOV R12,#DATA16 POF sstm_n_2_3
         MOV R13,#DATA16 PAG sstm_n_2_3
         MOV R14,n_C93C
-        CALLS 00FH,Get_IP_Word_Y_Axis
+        CALLS SEG Get_IP_Word_Y_Axis, SOF Get_IP_Word_Y_Axis
         MOV R12,#DATA16 POF ldp_amp_ip_ti_fl
         MOV R13,#DATA16 PAG ldp_amp_ip_ti_fl
         MOV R14,amp
-        CALLS 00FH,Get_IP_Word_X_Axis
+        CALLS SEG Get_IP_Word_X_Axis, SOF Get_IP_Word_X_Axis
         MOV R12,#DATA16 POF ip_ti_fl__n__amp
         MOV R13,#DATA16 PAG ip_ti_fl__n__amp
-        CALLS 00FH,Get_IP_Byte_3D_Table
+        CALLS SEG Get_IP_Byte_3D_Table, SOF Get_IP_Byte_3D_Table
         MOVBZ R4,RL4
         SHL R4,#04H
         MOV ti_fl,R4

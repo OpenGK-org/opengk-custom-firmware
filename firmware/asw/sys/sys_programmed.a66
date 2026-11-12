@@ -21,7 +21,7 @@ Check_VIN_Programmed:
         MOV [-R0],R9
         MOV R12,#DATA16 03E1DH
         MOV R13,#DATA16 00000H
-        CALLS 00AH,Is_Block_Erased
+        CALLS SEG Is_Block_Erased, SOF Is_Block_Erased
         JB PSW.06H,L_A6D4C
         MOVB RL4,#04H
         MOVB kwp_lid90_idx,RL4
@@ -81,7 +81,7 @@ BL_Set_ExecMagic_Full_2:
         MOVB RL1,#DATA16 00035H
         MOVB bl_exec_magic_b3,RL1
         BCLR PSW.0BH
-        CALLS 00AH,Reset_ADCIC_4da
+        CALLS SEG Reset_ADCIC_4da, SOF Reset_ADCIC_4da
         MOV R4,#DATA16 03E1DH
         MOV R5,#DATA16 00000H
         MOV bl_exec_addr_lo,R4
@@ -93,8 +93,8 @@ BL_Set_ExecMagic_Full_2:
         EXTP #00H, #02H
         MOV R4,kwp_286
         MOV R5,kwp_288
-        CALLS 00CH,Push_To_System_Stack
-        CALLS 00AH,CC26INT_Imob_Reset
+        CALLS SEG Push_To_System_Stack, SOF Push_To_System_Stack
+        CALLS SEG CC26INT_Imob_Reset, SOF CC26INT_Imob_Reset
         MOVB bl_exec_magic_b3,ZEROS
         MOVB bl_exec_magic_b2,ZEROS
         MOVB bl_exec_magic_b1,ZEROS

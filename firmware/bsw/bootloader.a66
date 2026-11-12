@@ -6736,7 +6736,7 @@ L_BE20:              ; 0x8be20
 L_BE22:              ; 0x8be22
         MOV R13,#DATA16 0F0H
         MOV R14,#00H
-        CALLS 008H,lam_bank_1_lam_up_t_lam_dly_neg
+        CALLS 008H,BL_Sub_8C778
         JMPR cc_UC,L_BE4E
 L_BE2E:              ; 0x8be2e
         JNB bl_mode_status_flags.05H,L_BE36
@@ -6858,7 +6858,7 @@ L_BF48:              ; 0x8bf48
 L_BF4A:              ; 0x8bf4a
         MOV R13,#DATA16 028A0H
         MOV R14,#00H
-        CALLS 008H,lam_bank_1_lam_up_t_lam_dly_neg
+        CALLS 008H,BL_Sub_8C778
         JMPR cc_UC,L_BF76
 L_BF56:              ; 0x8bf56
         JNB bl_mode_status_flags.05H,L_BF5E
@@ -6887,7 +6887,7 @@ L_BF8E:              ; 0x8bf8e
 L_BF90:              ; 0x8bf90
         MOV R13,#DATA16 028A0H
         MOV R14,#00H
-        CALLS 008H,lam_bank_1_lam_up_t_lam_dly_neg
+        CALLS 008H,BL_Sub_8C778
         JMPR cc_UC,L_BFBC
 L_BF9C:              ; 0x8bf9c
         JNB bl_mode_status_flags.05H,L_BFA4
@@ -6926,7 +6926,7 @@ L_BFE2:              ; 0x8bfe2
         MOV R13,[R5+#0408H]
         MOV R14,[R5+#040AH]
         NOP
-        CALLS 008H,lam_bank_1_lam_up_t_lam_dly_neg
+        CALLS 008H,BL_Sub_8C778
         JMPR cc_UC,L_C036
 L_C002:              ; 0x8c002
         JNB bl_mode_status_flags.05H,L_C00A
@@ -6986,7 +6986,7 @@ L_C08A:              ; 0x8c08a
 L_C08C:              ; 0x8c08c
         MOV R13,R8
         MOV R14,R9
-        CALLS 008H,lam_bank_1_lam_up_t_lam_dly_neg
+        CALLS 008H,BL_Sub_8C778
         JMPR cc_UC,L_C0B4
 L_C096:              ; 0x8c096
         JNB bl_mode_status_flags.05H,L_C09E
@@ -7223,7 +7223,7 @@ L_C2DA:              ; 0x8c2da
 L_C2DC:              ; 0x8c2dc
         MOV R13,#DATA16 028A0H
         MOV R14,#00H
-        CALLS 008H,lam_bank_1_lam_up_t_lam_dly_neg
+        CALLS 008H,BL_Sub_8C778
         JMPR cc_UC,L_C308
 L_C2E8:              ; 0x8c2e8
         JNB bl_mode_status_flags.05H,L_C2F0
@@ -7252,7 +7252,7 @@ L_C31E:              ; 0x8c31e
 L_C320:              ; 0x8c320
         MOV R13,#DATA16 028A0H
         MOV R14,#00H
-        CALLS 008H,lam_bank_1_lam_up_t_lam_dly_neg
+        CALLS 008H,BL_Sub_8C778
         JMPR cc_UC,L_C34C
 L_C32C:              ; 0x8c32c
         JNB bl_mode_status_flags.05H,L_C334
@@ -7714,8 +7714,8 @@ q_BL_Kline_RxByte_ToBuf:
         ADD R0,#04H
         RETS
 
-; ======== lam_bank_1_lam_up_t_lam_dly_neg  (@0x8c778) ========
-lam_bank_1_lam_up_t_lam_dly_neg:
+; ======== BL_Sub_8C778  (@0x8c778) ========
+BL_Sub_8C778:
         MOV [-R0],R14
         MOV [-R0],R13
         MOV [-R0],R12
@@ -7988,7 +7988,7 @@ L_C986:              ; 0x8c986
 L_C988:              ; 0x8c988
         MOV R13,#DATA16 028A0H
         MOV R14,#00H
-        CALLS 008H,lam_bank_1_lam_up_t_lam_dly_neg
+        CALLS 008H,BL_Sub_8C778
         JMPR cc_UC,L_C9B4
 L_C994:              ; 0x8c994
         JNB bl_mode_status_flags.05H,L_C99C
@@ -8312,7 +8312,7 @@ L_CCF4:              ; 0x8ccf4
 L_CCF6:              ; 0x8ccf6
         MOV R13,#DATA16 093E0H
         MOV R14,#04H
-        CALLS 008H,lam_bank_1_lam_up_t_lam_dly_neg
+        CALLS 008H,BL_Sub_8C778
         JMPR cc_UC,L_CD22
 L_CD02:              ; 0x8cd02
         JNB bl_mode_status_flags.05H,L_CD0A
@@ -8350,7 +8350,7 @@ L_CD46:              ; 0x8cd46
 L_CD48:              ; 0x8cd48
         MOV R13,#DATA16 093E0H
         MOV R14,#04H
-        CALLS 008H,lam_bank_1_lam_up_t_lam_dly_neg
+        CALLS 008H,BL_Sub_8C778
         JMPR cc_UC,L_CD74
 L_CD54:              ; 0x8cd54
         JNB bl_mode_status_flags.05H,L_CD5C
@@ -8648,7 +8648,7 @@ L_D07C:              ; 0x8d07c
 L_D07E:              ; 0x8d07e
         MOV R13,#DATA16 093E0H
         MOV R14,#04H
-        CALLS 008H,lam_bank_1_lam_up_t_lam_dly_neg
+        CALLS 008H,BL_Sub_8C778
         JMPR cc_UC,L_D0AA
 L_D08A:              ; 0x8d08a
         JNB bl_mode_status_flags.05H,L_D092
@@ -8686,7 +8686,7 @@ L_D0CE:              ; 0x8d0ce
 L_D0D0:              ; 0x8d0d0
         MOV R13,#DATA16 093E0H
         MOV R14,#04H
-        CALLS 008H,lam_bank_1_lam_up_t_lam_dly_neg
+        CALLS 008H,BL_Sub_8C778
         JMPR cc_UC,L_D0FC
 L_D0DC:              ; 0x8d0dc
         JNB bl_mode_status_flags.05H,L_D0E4
@@ -9386,7 +9386,7 @@ L_D808:              ; 0x8d808
 L_D80A:              ; 0x8d80a
         MOV R13,#DATA16 093E0H
         MOV R14,#04H
-        CALLS 008H,lam_bank_1_lam_up_t_lam_dly_neg
+        CALLS 008H,BL_Sub_8C778
         JMPR cc_UC,L_D836
 
 ; ======== ?KWP_SessionTick_Helper4  (@0x8d816) ========
@@ -9426,7 +9426,7 @@ L_D85A:              ; 0x8d85a
 L_D85C:              ; 0x8d85c
         MOV R13,#DATA16 093E0H
         MOV R14,#04H
-        CALLS 008H,lam_bank_1_lam_up_t_lam_dly_neg
+        CALLS 008H,BL_Sub_8C778
         JMPR cc_UC,L_D888
 L_D868:              ; 0x8d868
         JNB bl_mode_status_flags.05H,L_D870
@@ -9496,7 +9496,7 @@ L_D90E:              ; 0x8d90e
 L_D910:              ; 0x8d910
         MOV R13,#DATA16 093E0H
         MOV R14,#04H
-        CALLS 008H,lam_bank_1_lam_up_t_lam_dly_neg
+        CALLS 008H,BL_Sub_8C778
         JMPR cc_UC,L_D93C
 L_D91C:              ; 0x8d91c
         JNB bl_mode_status_flags.05H,L_D924
@@ -9534,7 +9534,7 @@ L_D960:              ; 0x8d960
 L_D962:              ; 0x8d962
         MOV R13,#DATA16 093E0H
         MOV R14,#04H
-        CALLS 008H,lam_bank_1_lam_up_t_lam_dly_neg
+        CALLS 008H,BL_Sub_8C778
         JMPR cc_UC,L_D98E
 L_D96E:              ; 0x8d96e
         JNB bl_mode_status_flags.05H,L_D976

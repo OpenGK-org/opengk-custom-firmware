@@ -83,7 +83,7 @@ L_D94C0:                 ; 0xd94c0
         MOVB [R9+#01H],RL4
         JMPA cc_UC,L_D9710
 L_D94D4:                 ; 0xd94d4
-        CALLS 00DH,DTC_Capture_FreezeFrame
+        CALLS SEG DTC_Capture_FreezeFrame, SOF DTC_Capture_FreezeFrame
         JNB dtc_status_work.06H,L_D94E0
         JMPA cc_UC,L_D96BC
 L_D94E0:                 ; 0xd94e0
@@ -229,7 +229,7 @@ L_D9680:                 ; 0xd9680
         MOVB [R9+#01H],RL4
         MOV R12,R9
         MOV R13,R8
-        CALLS 00DH,DTC_Update_Status_MIL
+        CALLS SEG DTC_Update_Status_MIL, SOF DTC_Update_Status_MIL
         MOVB RL4,#DATA16 00028H
         MOVB [R9+#03H],RL4
         MOVB RL4,[R9+#02H]
@@ -267,7 +267,7 @@ L_D96F6:                 ; 0xd96f6
         MOVB [R9],RL4
         MOV R12,R9
         MOV R13,R8
-        CALLS 00DH,DTC_Update_Status_MIL
+        CALLS SEG DTC_Update_Status_MIL, SOF DTC_Update_Status_MIL
 L_D970C:                 ; 0xd970c
         MOVB dtc_test_result,ZEROS
 L_D9710:                 ; 0xd9710
@@ -347,7 +347,7 @@ L_D97A2:                 ; 0xd97a2
         MOVB [R9+#01H],RL4
         JMPA cc_UC,L_D99FE
 L_D97B6:                 ; 0xd97b6
-        CALLS 00DH,DTC_Capture_FreezeFrame
+        CALLS SEG DTC_Capture_FreezeFrame, SOF DTC_Capture_FreezeFrame
         JNB dtc_status_work.06H,L_D97C2
         JMPA cc_UC,L_D99AA
 L_D97C2:                 ; 0xd97c2
@@ -498,7 +498,7 @@ L_D9962:                 ; 0xd9962
 L_D9984:                 ; 0xd9984
         MOV R12,R9
         MOV R13,R8
-        CALLS 00DH,DTC_Update_Status_MIL
+        CALLS SEG DTC_Update_Status_MIL, SOF DTC_Update_Status_MIL
         MOVB RL4,#DATA16 00028H
         MOVB [R9+#03H],RL4
         MOVB RL4,[R9+#02H]
@@ -536,7 +536,7 @@ L_D99E4:                 ; 0xd99e4
         MOVB [R9],RL4
         MOV R12,R9
         MOV R13,R8
-        CALLS 00DH,DTC_Update_Status_MIL
+        CALLS SEG DTC_Update_Status_MIL, SOF DTC_Update_Status_MIL
 L_D99FA:                 ; 0xd99fa
         MOVB dtc_test_result,ZEROS
 L_D99FE:                 ; 0xd99fe
@@ -584,7 +584,7 @@ L_D9A50:                 ; 0xd9a50
         MOVB dtc_st_ecu_mil,RL4
         JMPA cc_UC,L_D9BE4
 L_D9A5C:                 ; 0xd9a5c
-        CALLS 00DH,DTC_Capture_FreezeFrame
+        CALLS SEG DTC_Capture_FreezeFrame, SOF DTC_Capture_FreezeFrame
         JNB dtc_status_work.05H,L_D9A68
         JMPA cc_UC,L_D9B92
 L_D9A68:                 ; 0xd9a68
@@ -705,7 +705,7 @@ L_D9BCE:                 ; 0xd9bce
         MOVB dtc_test_result,RL4
         MOV R12,#DATA16 0D47AH
         MOV R13,#DATA16 057F0H
-        CALLS 00DH,DTC_Update_Status_MIL
+        CALLS SEG DTC_Update_Status_MIL, SOF DTC_Update_Status_MIL
         MOVB dtc_test_result,ZEROS
 L_D9BE4:                 ; 0xd9be4
         MOV R9,[R0+]

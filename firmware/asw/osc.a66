@@ -278,10 +278,10 @@ L_BBE5A:                 ; 0xbbe5a
         MOV R12,#DATA16 POF ldp_n_32_crk_seg_min_frq_osc
         MOV R13,#DATA16 PAG ldp_n_32_crk_seg_min_frq_osc
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ip_crk_seg_min_frq_osc__n_32
         MOV R13,#DATA16 PAG ip_crk_seg_min_frq_osc__n_32
-        CALLS 00FH,Get_IP_Byte_2D_Table
+        CALLS SEG Get_IP_Byte_2D_Table, SOF Get_IP_Byte_2D_Table
         MOVB crk_seg_sum_frq_osc,RL4
         MOV R4,drv0_er
         MOV R5,er_drv0_carry
@@ -298,7 +298,7 @@ L_BBEC0:                 ; 0xbbec0
         MOV R12,drv0_er
         MOV R13,er_drv0_carry
 L_BBEC8:                 ; 0xbbec8
-        CALLS 00FH,Sel_Ovf_U16
+        CALLS SEG Sel_Ovf_U16, SOF Sel_Ovf_U16
         MOV drv0_er_sum_osc,R4
         JMPR cc_UC,L_BBF18
 L_BBED2:                 ; 0xbbed2
@@ -323,10 +323,10 @@ L_BBEFE:                 ; 0xbbefe
         MOV R12,drv0_er
         MOV R13,er_drv0_carry
 L_BBF06:                 ; 0xbbf06
-        CALLS 00FH,Sel_Ovf_U16
+        CALLS SEG Sel_Ovf_U16, SOF Sel_Ovf_U16
         MOV R13,R4
         MOV R12,drv0_er_sum_osc
-        CALLS 00FH,Add_r12_r13_Return_r4
+        CALLS SEG Add_r12_r13_Return_r4, SOF Add_r12_r13_Return_r4
         MOV drv0_er_sum_osc,R4
 L_BBF18:                 ; 0xbbf18
         MOVBZ R4,seg_nr_er
@@ -347,14 +347,14 @@ L_BBF46:                 ; 0xbbf46
         MOV R12,#DATA16 POF ldp_n_32_drv0_er_thd_osc
         MOV R13,#DATA16 PAG ldp_n_32_drv0_er_thd_osc
         MOVBZ R14,n_32
-        CALLS 00FH,Get_IP_Byte_Y_Axis
+        CALLS SEG Get_IP_Byte_Y_Axis, SOF Get_IP_Byte_Y_Axis
         MOV R12,#DATA16 POF ldp_maf_drv0_er_thd_osc
         MOV R13,#DATA16 PAG ldp_maf_drv0_er_thd_osc
         MOV R14,maf_word
-        CALLS 00FH,Get_IP_Word_X_Axis
+        CALLS SEG Get_IP_Word_X_Axis, SOF Get_IP_Word_X_Axis
         MOV R12,#DATA16 POF ip_drv0_er_thd_osc__n_32__maf
         MOV R13,#DATA16 PAG ip_drv0_er_thd_osc__n_32__maf
-        CALLS 00FH,Get_IP_Word_3D_Table
+        CALLS SEG Get_IP_Word_3D_Table, SOF Get_IP_Word_3D_Table
         MOVBZ R5,seg_nr_er
         SHL R5,#01H
         MOV [R5+#0C9F8H],R4
@@ -392,9 +392,9 @@ L_BBFBE:                 ; 0xbbfbe
         ; iga_er_ad_mem / lamb_er_ad_mem (per-op-point learned smoothness).
         ; ------------------------------------------------------------
 Calc_ER_Adapt_Mem:
-        CALLS 00BH,Calc_ER_Adapt_Precond
+        CALLS SEG Calc_ER_Adapt_Precond, SOF Calc_ER_Adapt_Precond
         BMOV lv_carb_err.0BH,PSW.06H
-        CALLS 00BH,Check_ER_Adapt_State
+        CALLS SEG Check_ER_Adapt_State, SOF Check_ER_Adapt_State
         BMOV lv_carb_err.0CH,PSW.06H
         MOVB RL4,iga_er_ad_clc
         MOVB iga_er_ad_mem,RL4
@@ -423,7 +423,7 @@ Calc_ER_Adapt_State:
         MOVB RL4,er_ad_state
         MOVB er_ad_state_lst,RL4
         BSET lv_carb_err.0CH
-        CALLS 00BH,Calc_ER_Adapt_Precond
+        CALLS SEG Calc_ER_Adapt_Precond, SOF Calc_ER_Adapt_Precond
         BMOV lv_carb_err.0BH,PSW.06H
         JB lv_lam_fd2c.0FH,L_BC02C
         JB lv_ch.04H,L_BC02C

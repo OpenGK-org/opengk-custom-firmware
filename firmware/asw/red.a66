@@ -51,12 +51,12 @@ Calc_Fac_CH_Red:
         JNB abs_def.02H,L_BB04A
         MOVBZ R12,fac_ch_red_dri
         MOVBZ R13,DPP0:c_fac_ch_red_lgrd
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL4,DPP0:c_fac_ch_red_dri
         JMPR cc_ULE,L_BB038
         MOVBZ R12,fac_ch_red_dri
         MOVBZ R13,DPP0:c_fac_ch_red_lgrd
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         JMPR cc_UC,L_BB03C
 L_BB038:                 ; 0xbb038
         MOVB RL4,DPP0:c_fac_ch_red_dri
@@ -70,12 +70,12 @@ L_BB04A:                 ; 0xbb04a
         JNB state_out_fault.0EH,L_BB078
         MOVBZ R12,fac_ch_red_acin
         MOVBZ R13,DPP0:c_fac_ch_red_lgrd
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         CMPB RL4,DPP0:c_fac_ch_red_acin
         JMPR cc_ULE,L_BB06E
         MOVBZ R12,fac_ch_red_acin
         MOVBZ R13,DPP0:c_fac_ch_red_lgrd
-        CALLS 00FH,sub_r12_13_ret_r4
+        CALLS SEG sub_r12_13_ret_r4, SOF sub_r12_13_ret_r4
         JMPR cc_UC,L_BB072
 L_BB06E:                 ; 0xbb06e
         MOVB RL4,DPP0:c_fac_ch_red_acin
@@ -85,12 +85,12 @@ L_BB072:                 ; 0xbb072
 L_BB078:                 ; 0xbb078
         MOVBZ R12,fac_ch_red_acin
         MOVBZ R13,DPP0:c_fac_ch_red_lgrd
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         CMPB RL4,#DATA16 00040H
         JMPR cc_NC,L_BB098
         MOVBZ R12,fac_ch_red_acin
         MOVBZ R13,DPP0:c_fac_ch_red_lgrd
-        CALLS 00FH,Sat_Add_U8
+        CALLS SEG Sat_Add_U8, SOF Sat_Add_U8
         JMPR cc_UC,L_BB09C
 L_BB098:                 ; 0xbb098
         MOVB RL4,#DATA16 00040H
@@ -100,16 +100,16 @@ L_BB0A0:                 ; 0xbb0a0
         MOV R12,#DATA16 04874H
         MOVBZ R13,tia
         MOV R14,amp
-        CALLS 00FH,Get_IP_Byte_3D_Table_DWord_XWord_YByte
+        CALLS SEG Get_IP_Byte_3D_Table_DWord_XWord_YByte, SOF Get_IP_Byte_3D_Table_DWord_XWord_YByte
         MOVB fac_ch_red_cor,RL4
 L_BB0B4:                 ; 0xbb0b4
         MOVBZ R12,fac_ch_red_dri
         MOVBZ R13,fac_ch_red_cor
-        CALLS 00FH,Mul_U16_Sat16
+        CALLS SEG Mul_U16_Sat16, SOF Mul_U16_Sat16
         MOV R9,R4
         MOVBZ R12,fac_ch_red_acin
         MOVBZ R13,fac_ch_red_at
-        CALLS 00FH,Mul_U16_Sat16
+        CALLS SEG Mul_U16_Sat16, SOF Mul_U16_Sat16
         MOV R8,R4
         MOV R4,R9
         MULU R4,R8
@@ -118,7 +118,7 @@ L_BB0B4:                 ; 0xbb0b4
         SHR R4,#02H
         MOV R5,0FF1CH
         MOV R12,R4
-        CALLS 00FH,Sat_HiByte_ff
+        CALLS SEG Sat_HiByte_ff, SOF Sat_HiByte_ff
         MOVB fac_ch_red,RL4
         MOV R8,[R0+]
         MOV R9,[R0+]
@@ -150,7 +150,7 @@ L_BB120:                 ; 0xbb120
         MOV R13,#DATA16 05AB0H
         MOVBZ R14,DPP0:c_abc_inc_vb
         MOVBZ R15,DPP0:c_abc_max_vb
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_acp_err.03H,dtc_status_work.06H
         MOVBZ R4,diag_d644
         AND R4,#DATA16 00020H
@@ -171,7 +171,7 @@ L_BB160:                 ; 0xbb160
         MOV R13,#DATA16 05AC6H
         MOVBZ R14,DPP0:c_abc_inc_vb
         MOVBZ R15,DPP0:c_abc_max_vb
-        CALLS 00DH,DTC_Update_Debounced
+        CALLS SEG DTC_Update_Debounced, SOF DTC_Update_Debounced
         BMOV lv_acp_err.04H,dtc_status_work.06H
         MOVBZ R4,diag_d652
         AND R4,#DATA16 00020H

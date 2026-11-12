@@ -26,7 +26,7 @@ NVM_Save_s56e:
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#04H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV tmp32_lo,R4
         MOV R12,diag_f890
         MOV R13,diag_f892
@@ -41,7 +41,7 @@ NVM_Save_s56e:
         MOV R13,R5
         MOV R14,#DATA16 0D718H
         MOV R15,#04H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 00572H
@@ -55,7 +55,7 @@ NVM_Save_s56e:
         MOV R13,R5
         MOV R14,#DATA16 0F6F2H
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         RETS
 
 ; ======== NVM_Save_s574  (@0xdcc20) ========
@@ -73,7 +73,7 @@ NVM_Save_s574:
         MOV R12,[R0+]
         AND R12,#DATA16 03FFFH
         MOV R14,#02H
-        CALLS 00DH,xor_routine
+        CALLS SEG xor_routine, SOF xor_routine
         MOV tmp32_lo,R4
         MOV R12,diag_f890
         MOV R13,diag_f892
@@ -88,7 +88,7 @@ NVM_Save_s574:
         MOV R13,R5
         MOV R14,#DATA16 0D71CH
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         MOV R12,diag_f890
         MOV R13,diag_f892
         ADD R12,#DATA16 00576H
@@ -102,7 +102,7 @@ NVM_Save_s574:
         MOV R13,R5
         MOV R14,#DATA16 0F6F2H
         MOV R15,#02H
-        CALLS 00DH,Elevated_Write_Routine_prg_zone_wrapper
+        CALLS SEG Elevated_Write_Routine_prg_zone_wrapper, SOF Elevated_Write_Routine_prg_zone_wrapper
         RETS
 
 S_DCBB2 ENDS

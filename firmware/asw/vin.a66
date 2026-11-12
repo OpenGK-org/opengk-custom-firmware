@@ -75,7 +75,7 @@ L_C7F12:                 ; 0xc7f12
         MOVB diag_d492,RL3
         MOV R12,#DATA16 0D488H
         MOV R13,#DATA16 05806H
-        CALLS 00DH,DTC_Update_Immediate
+        CALLS SEG DTC_Update_Immediate, SOF DTC_Update_Immediate
         BMOV lv_ecu_err.04H,dtc_status_work.06H
         MOVBZ R4,diag_d492
         AND R4,#DATA16 00020H
@@ -85,9 +85,9 @@ L_C7F4E:                 ; 0xc7f4e
         JNB lv_ecu_err.04H,L_C7F6E
         BCLR lv_ecu_err.04H
         MOV R12,#DATA16 00044H
-        CALLS 00DH,Find_Fmy_Slot
+        CALLS SEG Find_Fmy_Slot, SOF Find_Fmy_Slot
         MOV R12,#DATA16 00044H
-        CALLS 00CH,Find_DTC_By_Status
+        CALLS SEG Find_DTC_By_Status, SOF Find_DTC_By_Status
         JMPR cc_UC,L_C7F6E
 L_C7F66:                 ; 0xc7f66
         MOV R4,#DATA16 0FFEFH
