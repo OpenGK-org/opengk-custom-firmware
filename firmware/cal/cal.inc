@@ -19594,6 +19594,7 @@ c_maf_lam_dly_p_min                  EQU  0905F4H   ; 2 byte(s)
 ; D: 0000001EH
 ; I: 00000001H,0000000AH
 ; [/OpenGK CAL export]
+; OpenGK: high-flow diagnostic threshold increased from 650 to 1300 kg/h.
 ;@a2l VALUE UWORD conv=cv_kg_per_h_2 fmt=7.2 "Constants Diagnosis"
 c_maf_max_diag                       EQU  0905F6H   ; 2 byte(s)
 
@@ -30066,7 +30067,8 @@ id_maf_fac_slop                      EQU  091B6AH   ; 32 byte(s)
 ; G: 00000064H
 ; I: 00000001H,0000000AH
 ; [/OpenGK CAL export]
-;@a2l MAP UWORD conv=cv_none fmt=6.0 x=sst_tab_lmm_1 y=sst_tab_lmm_2 "MAF linearisation table"
+; OpenGK: half the original raw values, 0.03125 kg/h per count (2048 kg/h nominal range).
+;@a2l MAP UWORD conv=cv_kg_per_h_2 fmt=7.2 x=sst_tab_lmm_1 y=sst_tab_lmm_2 "MAF linearisation table"
 id_maf_tab                           EQU  091B8AH   ; 512 byte(s)
 kwp_91bb6                            EQU  091BB6H   ; 1 byte(s)
 kwp_91bda                            EQU  091BDAH   ; 1 byte(s)

@@ -77,7 +77,9 @@ Reset_Df7e6_57e:
 Acq_MAF_Mes:
         JNB lv_err_com_resp_imob.08H,L_C35BE
         MOV R4,maf_acc_cnt
-        SHL R4,#01H
+        ; Extend the airflow capability to 2048kg/h: the table stores half the
+        ; original counts, so both averaging paths divide by sample count only.
+        SHL R4,#00H                    ; 2048kg/h: keep the sample count unchanged.
         MOV MDH,maf_acc_hi
         MOV MDL,maf_acc_lo
         DIVLU R4
@@ -89,7 +91,7 @@ Acq_MAF_Mes:
         JMPR cc_UC,L_C35E2
 L_C35BE:                 ; 0xc35be
         MOV R4,maf_acc2_cnt
-        SHL R4,#01H
+        SHL R4,#00H                    ; 2048kg/h: apply the same scaling to the second accumulator.
         MOV MDH,maf_acc2_hi
         MOV MDL,maf_acc2_lo
         DIVLU R4
@@ -116,7 +118,8 @@ L_C35E2:                 ; 0xc35e2
         SUB R12,maf_min
         MOV R13,#DATA16 0C000H
         MOV R14,n_C93C
-        SHL R14,#03H
+        ; Keep pulsation scaling unchanged with the halved table values.
+        SHL R14,#02H
         CALLS SEG multipied_r12_r13_UGT_r14_rets_r4, SOF multipied_r12_r13_UGT_r14_rets_r4
         MOV maf_puls,R4
         MOV maf_min,ONES

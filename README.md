@@ -9,6 +9,12 @@ produces a complete 512 KB flash image with all checksums fixed, and an ASAP2 (A
 description of it for INCA/CANape/CCP tools. The 1 MiB flash image and Intel HEX files
 are padded for the CPU address space.
 
+## New Features
+
+- **Extend the airflow capability to 2048kg/h.** For forced induction applications,
+  this enables larger MAF sensors to be used with a matching sensor calibration.
+  See [airflow range details](docs/airflow.md).
+
 ## Quick start
 
 ```bash
