@@ -1,0 +1,322 @@
+; Optional LZSS transfers for KWP memory reads and flash programming.
+; Recognizes the OpenGK compressed protocol, validates each decoded write block,
+; and passes programming to the existing flash handler. Ordinary requests retain
+; their original handlers, allowing the host to choose compressed or raw data.
+; Fixed entry points in protected boot2 are referenced by the low-flash tables.
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+ASSUME DPP3:SYSTEM
+WITH_ENCODER EQU 1
+WITH_PROGRAM EQU 0
+LZSS_MODE EQU 0C3F0H          ; only live in the protected programming loop
+LZSS_OUTPUT EQU 0C400H        ; 2 KiB extended XRAM, application already stopped
+bl_prog_state EQU 0E7C1H
+SFR_XPERCON DEFR 0F024H
+PUBLIC OGK_KwpCompressionEnd
+
+OGK_KWP_LZSS SECTION CODE AT 08F600H
+    JMPS SEG ReadGate,SOF ReadGate
+    JMPS SEG DownloadGate,SOF DownloadGate
+    JMPS SEG TransferGate,SOF TransferGate
+
+ReadGate:
+    MOV R4,kwp_msg_len
+    CMP R4,#8
+    JMPR cc_NE,RawRead
+    MOV R4,kwp_req_ptr
+    MOVB RL5,[R4+#5]
+    CMPB RL5,#'L'
+    JMPR cc_NE,RawRead
+    MOVB RL5,[R4+#6]
+    CMPB RL5,#'Z'
+    JMPR cc_NE,RawRead
+    MOV R15,#1
+    JMPR cc_UC,SaveRegisters
+RawRead:
+    JMPS 8,0E10CH
+DownloadGate:
+    MOV R15,#2
+    JMPR cc_UC,SaveRegisters
+TransferGate:
+    JNB bl_mode_status_flags.05H,RawTransfer
+    MOV R4,LZSS_MODE
+    CMP R4,#04C5AH
+    JMPR cc_NE,RawTransfer
+    MOVB RL4,bl_prog_state
+    CMPB RL4,#2
+    JMPR cc_NE,RawTransfer
+    MOV R15,#3
+    JMPR cc_UC,SaveRegisters
+RawTransfer:
+    JMPS 8,0E896H
+
+SaveRegisters:
+    PUSH R1
+    PUSH R2
+    PUSH R3
+    PUSH R4
+    PUSH R5
+    PUSH R6
+    PUSH R7
+    PUSH R8
+    PUSH R9
+    PUSH R10
+    PUSH R11
+    PUSH R12
+    PUSH R13
+    PUSH R14
+    PUSH R15
+    SUB R0,#32
+    CMP R15,#1
+    JMPA cc_EQ,ReadCompressed
+    CMP R15,#2
+    JMPA cc_EQ,StartDownload
+    JMPA cc_UC,TransferCompressed
+RestoreRegisters:
+    ADD R0,#32
+    POP R15
+    POP R14
+    POP R13
+    POP R12
+    POP R11
+    POP R10
+    POP R9
+    POP R8
+    POP R7
+    POP R6
+    POP R5
+    POP R4
+    POP R3
+    POP R2
+    POP R1
+    RETS
+
+ReadCompressed:
+    MOV R4,kwp_req_ptr
+    MOVB RH5,[R4+#3]
+    MOVB RL5,[R4+#4]
+    MOV [R0+#20],R5
+    CMP R5,#0
+    JMPA cc_EQ,BadRead
+    CMP R5,#0800H
+    JMPA cc_UGT,BadRead
+    ; Validate the complete requested range using the original access-table ABI.
+    MOV R4,[R0+#20]
+    MOV bl_mem_len,R4
+    MOV bl_mem_len_hi,ZEROS
+    JNB bl_mode_status_flags.05H,ApplicationAccessTable
+    EXTP #0,#2
+    MOV R4,04C2H
+    MOV R5,04C4H
+    MOV [R0+#12],R4
+    MOV [R0+#14],R5
+    EXTP #0,#1
+    MOVB RL4,04C6H
+    MOVB [R0+#16],RL4
+    JMPR cc_UC,CheckReadRange
+ApplicationAccessTable:
+    MOV R4,04444H
+    MOV R5,04446H
+    EXTP R5,#2
+    MOV R10,[R4+]
+    MOV R11,[R4]
+    MOV [R0+#12],R10
+    MOV [R0+#14],R11
+    MOV R4,04444H
+    MOV R5,04446H
+    EXTP R5,#1
+    MOVB RL3,[R4+#4]
+    MOVB [R0+#16],RL3
+CheckReadRange:
+    MOV R4,kwp_req_ptr
+    MOV 0E7C8H,R4
+    MOV R12,#027C8H
+    MOV R13,#3
+    MOV R14,R0
+    ADD R14,#12
+    AND R14,#03FFFH
+    MOV R15,#3
+    CALLS 8,0DBEAH
+    MOVB RL4,kwp_nrc
+    JMPA cc_NE,RestoreRegisters
+    MOV R8,bl_mem_addr
+    MOV R9,bl_mem_addr_hi
+    MOV [R0+#8],R8
+    MOV [R0+#10],R9
+    ; The codec reads immutable flash, never the response buffer it overwrites.
+    CMP R9,#8
+    JMPA cc_ULT,BadRead
+    CMP R9,#0FH
+    JMPA cc_UGT,BadRead
+    MOV R10,[R0+#20]
+    MOV R11,kwp_buf_base
+    ADD R11,#6
+    MOV R12,kwp_buf_limit
+    SUB R12,#7
+    CALLS SEG Encode,SOF Encode
+    CMP R15,#0
+    JMPA cc_NE,BadRead
+    MOV R4,[R0+#20]
+    MOV R5,kwp_buf_limit
+    SUB R5,#7
+    CMP R4,R5
+    JMPR cc_ULE,ReadMinimum
+    MOV R4,R5
+ReadMinimum:
+    CMP R8,R4
+    JMPR cc_ULT,ReadRaw
+    CMP R9,R8
+    JMPR cc_UGE,ReadRaw
+    MOV R6,#1
+    JMPA cc_UC,ReadHeader
+ReadRaw:
+    MOV R11,R4
+    MOV [R0+#22],R11
+    MOV R1,[R0+#8]
+    MOV R2,[R0+#10]
+    MOV R4,kwp_buf_base
+    ADD R4,#6
+    MOV R10,#0FFFFH
+ReadRawByte:
+    EXTS R2,#1
+    MOVB RL5,[R1+]
+    MOVB [R4],RL5
+    ADD R4,#1
+    MOVBZ R5,RL5
+    CALLA cc_UC,CrcByte
+    SUB R11,#1
+    JMPR cc_NE,ReadRawByte
+    MOV R8,[R0+#22]
+    MOV R9,R8
+    MOV R6,#0
+ReadHeader:
+    MOV R4,kwp_buf_base
+    MOV R5,#04CH
+    MOVB [R4],RL5
+    MOVB [R4+#1],RL6
+    MOV R5,R8
+    MOVB [R4+#2],RL5
+    MOVB [R4+#3],RH5
+    MOV R5,R10
+    MOVB [R4+#4],RL5
+    MOVB [R4+#5],RH5
+    ADD R9,#7
+    MOV kwp_msg_len,R9
+    MOV kwp_req_ptr,R4
+    MOVB kwp_nrc,ZEROS
+    MOV bl_mem_len,ZEROS
+    MOV bl_mem_len_hi,ZEROS
+    JMPA cc_UC,RestoreRegisters
+BadRead:
+    MOVB RL4,#052H
+    MOVB kwp_nrc,RL4
+    JMPA cc_UC,RestoreRegisters
+
+StartDownload:
+    MOV [R0],ZEROS
+    MOV R4,kwp_msg_len
+    CMP R4,#8
+    JMPR cc_NE,OriginalDownload
+    MOV R4,kwp_req_ptr
+    MOVB RL5,[R4+#3]
+    CMPB RL5,#0F0H
+    JMPR cc_NE,OriginalDownload
+    MOV R5,SYSCON
+    AND R5,#4
+    JMPR cc_EQ,NoCompressionRam
+    MOV R5,SFR_XPERCON
+    AND R5,#2
+    JMPR cc_EQ,NoCompressionRam
+    MOV R5,#04C5AH
+    MOV [R0],R5
+    MOVB RL5,#0
+    MOVB [R4+#3],RL5
+OriginalDownload:
+    CALLS 8,0E7D0H
+    MOVB RL4,kwp_nrc
+    JMPA cc_NE,RestoreRegisters
+    MOV R4,[R0]
+    MOV LZSS_MODE,R4
+    JMPA cc_UC,RestoreRegisters
+NoCompressionRam:
+    MOVB RL4,#022H
+    MOVB kwp_nrc,RL4
+    JMPA cc_UC,RestoreRegisters
+
+TransferCompressed:
+    MOV R4,kwp_req_ptr
+    MOV [R0],R4
+    MOV R9,kwp_msg_len
+    CMP R9,#8
+    JMPA cc_ULT,BadTransfer
+    CMP R9,#255
+    JMPA cc_UGT,BadTransfer
+    SUB R9,#7
+    MOVB RL5,[R4]
+    CMPB RL5,#04CH
+    JMPA cc_NE,BadTransfer
+    MOVB RL5,[R4+#2]
+    MOVB RH5,[R4+#3]
+    MOV [R0+#2],R5
+    MOV R11,R5
+    CMP R11,#0
+    JMPA cc_EQ,BadTransfer
+    CMP R11,#0800H
+    JMPA cc_UGT,BadTransfer
+    MOVB RL5,[R4+#4]
+    MOVB RH5,[R4+#5]
+    MOV R12,R5
+    MOV [R0+#4],R5
+    MOVB RL5,[R4+#1]
+    CMPB RL5,#0
+    JMPR cc_EQ,TransferRaw
+    CMPB RL5,#1
+    JMPA cc_NE,BadTransfer
+    MOV R8,R4
+    ADD R8,#6
+    MOV R10,#LZSS_OUTPUT
+    CALLS SEG Decode,SOF Decode
+    CMP R15,#0
+    JMPA cc_NE,BadTransfer
+    JMPR cc_UC,ProgramDecoded
+TransferRaw:
+    CMP R9,R11
+    JMPA cc_NE,BadTransfer
+    MOV R1,R4
+    ADD R1,#6
+    MOV R2,#LZSS_OUTPUT
+    MOV R3,R11
+    MOV R10,#0FFFFH
+TransferRawByte:
+    MOVB RL5,[R1+]
+    MOVB [R2],RL5
+    ADD R2,#1
+    MOVBZ R5,RL5
+    CALLA cc_UC,CrcByte
+    SUB R3,#1
+    JMPR cc_NE,TransferRawByte
+    MOV R5,[R0+#4]
+    CMP R10,R5
+    JMPA cc_NE,BadTransfer
+ProgramDecoded:
+    MOV R4,#LZSS_OUTPUT
+    MOV kwp_req_ptr,R4
+    MOV R4,[R0+#2]
+    ADD R4,#1
+    MOV kwp_msg_len,R4
+    CALLS 8,0E896H
+    MOV R4,[R0]
+    MOV kwp_req_ptr,R4
+    JMPA cc_UC,RestoreRegisters
+BadTransfer:
+    MOVB RL4,#042H
+    MOVB kwp_nrc,RL4
+    JMPA cc_UC,RestoreRegisters
+
+$INCLUDE (lzss_codec.inc)
+OGK_KwpCompressionEnd:
+OGK_KWP_LZSS ENDS
+END
+

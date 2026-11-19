@@ -38,7 +38,7 @@ import layout  # noqa: E402
 
 REPO = os.path.dirname(HERE)
 FW_DIR = os.path.join(REPO, "firmware")
-INC = [os.path.join(FW_DIR, "inc"), os.path.join(FW_DIR, "cal")]
+INC = [os.path.join(FW_DIR, "inc"), os.path.join(FW_DIR, "cal"), os.path.join(FW_DIR, "custom")]
 FLASH = 0x80000
 CAL_FILE, CAL_AT = os.path.join(FW_DIR, "cal", "opengk01.dat"), 0x10000
 LAYOUT = os.path.join(FW_DIR, "layout.txt")
@@ -190,6 +190,11 @@ for z, (first, last) in enumerate(zones):
     img[p:p + 8] = first.to_bytes(4, "little") + last.to_bytes(4, "little")
 
 # ---- checksums ----------------------------------------------------------------------
+# Cover both protected boot2 extensions, without including the coherence trailer.
+boot_end = max(asw_symbols[name] for name in ('OGK_KwpProgrammingReceiveEnd', 'OGK_KwpCompressionEnd'))
+if boot_end > 0x8FFF0:
+    sys.exit('custom KWP code overlaps the boot coherence trailer')
+img[0x3EFC:0x3F00] = (boot_end - 1).to_bytes(4, 'little')
 if not args.no_checksum:
     for name, stored, comp, zs in checksum.fix(img):
         print("cks   %-12s %04X%s" % (name, comp, "" if stored == comp else "  (was %04X)" % stored))

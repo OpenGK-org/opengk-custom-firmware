@@ -1,0 +1,76 @@
+; High-speed K-Line response transmission for application-side KWP.
+; Sends the next payload byte directly from the receive interrupt after checking
+; the previous byte's echo, avoiding a scheduler round trip for each byte.
+; Headers, checksum handling, errors and SMARTRA keep the original path.
+;
+; Entered after SCXT CP in SMARTRA_asc0_rx_isr; only its private R0/R1 are used.
+; No calls or software stack: return through the original POP CP / RETI epilogue.
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+ASSUME DPP3:SYSTEM
+
+PUBLIC OGK_KwpRxInterrupt, OGK_KwpRxInterruptEnd
+EXTERN SMARTRA_isr_epilogue:FAR
+
+KWP_TX_CHECKSUM EQU 0E77FH
+KWP_TX_REMAINING EQU 0E780H
+KWP_TX_ECHO EQU 0E783H
+
+OGK_FAST_KWP SECTION CODE
+        ; Public read-side capability, sampled before entering programming mode.
+        DB 'OGKKWP06'
+        DB 'OGKLZS01'  ; versioned compressed-read/write capability
+OGK_KwpRxInterrupt:
+        BCLR S0RIR
+        ; Optimize only the reviewed high-speed payload-echo state.
+        MOV R0,S0BG
+        CMP R0,#06H
+        JMPR cc_UGT,Deferred
+        MOVB RL0,bl_kline_proto_state
+        CMPB RL0,#0DH
+        JMPA cc_NE,Deferred
+        MOV R0,S0CON
+        AND R0,#0700H
+        JMPA cc_NE,Deferred
+        MOVB RL0,S0RBUF
+        CMPB RL0,KWP_TX_ECHO
+        JMPA cc_NE,Deferred
+        MOVB RL0,KWP_TX_REMAINING
+        CMPB RL0,#00H
+        JMPA cc_EQ,Deferred
+        MOV R0,kwp_buf_base
+        CMP R0,#0E559H
+        JMPA cc_ULT,Deferred
+        CMP R0,#0E656H
+        JMPA cc_UGT,Deferred
+        MOVB RL1,[R0]
+        MOVB KWP_TX_ECHO,RL1
+        ADDB KWP_TX_CHECKSUM,RL1
+        MOVB S0TBUF,RL1
+        MOVB RL0,KWP_TX_REMAINING
+        SUBB RL0,#01H
+        MOVB KWP_TX_REMAINING,RL0
+        JMPR cc_NE,More
+        MOVB RL0,#0EH
+        MOVB bl_kline_proto_state,RL0
+        JMPR cc_UC,Sent
+More:
+        MOV R0,kwp_buf_base
+        ADD R0,#01H
+        MOV kwp_buf_base,R0
+Sent:
+        BSET kwp_comms_flags.09H
+        BSET bl_mode_status_flags.02H
+        MOV kwp_timing_counter,ZEROS
+        JMPS SEG SMARTRA_isr_epilogue,SOF SMARTRA_isr_epilogue
+Deferred:
+        ; Original scheduler handoff for all other receive events.
+        BOR can_sched_flags1.09H,can_sched_flags0.09H
+        BMOV can_sched_flags0.09H,can_sched_flags2.09H
+        JMPS SEG SMARTRA_isr_epilogue,SOF SMARTRA_isr_epilogue
+OGK_KwpRxInterruptEnd:
+OGK_FAST_KWP ENDS
+
+END

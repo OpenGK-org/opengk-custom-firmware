@@ -347,3 +347,89 @@ Other things to know:
 - CCP DAQ lists (event channels, ODT sizes) and checksum in the A2L.
 - Choose real file names; KWP/comm is probably split too finely (43 modules).
 - Name the remaining placeholder labels (`L_xxxxx`, `T_xxxxx` jump tables).
+
+## K-Line performance
+
+Diagnostic-session selector `0x05` requests 125000 baud on the 24 MHz C167.
+The application ASC0 receive interrupt advances valid high-speed KWP response
+payload echoes directly; headers, incoming requests, response checksums,
+SMARTRA traffic and error handling keep the existing implementation.
+`firmware/custom/kwp_fast_rx.a66` contains the handler. Its end symbol extends
+the existing program checksum zone to protect the appended code.
+
+With GKFlasher's echo-paced serial requests and negotiated 10 ms P3 floor,
+three consecutive 64 KiB calibration reads on the OpenGK firmware completed 
+in about 13.0 seconds (5050 B/s), matching the GK FL1 performance.
+The firmware change is required; a host baudrate override alone does not make
+the original 115200-baud preset generate 125000 baud.
+
+Selector `0x06` accepts an unsigned, big-endian 24-bit baudrate. The custom
+bootloader corrects the inherited high-byte/sign-extension bug without moving
+its pinned code addresses. The existing achievable-rate calculation and request
+limit remain. On the 24 MHz C167 with BRS=0, exact higher rates include 150000,
+187500, 250000, 375000 and 750000 baud; 750000 is the UART divider's maximum.
+Selector `0x05` remains 125000, including the GUI default.
+
+With this custom firmware installed, GKFlasher's CLI can use the higher rate:
+
+```powershell
+python gkflasher.py --protocol kline --interface COM69 --desired-baudrate 0x06 --session-baudrate 750000 --read-calibration
+```
+
+Calibration reads on the OpenGK firmware complete in about 6.8 seconds (9,200 B/s) 
+via a regular k-line FTDI adapter. Calibration writes complete in about 2.8 seconds (10,200 B/s).
+
+The faster UART does not remove KWP's request pacing, per-frame turnaround or application 
+scheduling, so its throughput still falls short of MTOS streaming, around (45,000 B/s).
+
+`firmware/custom/kwp_program_rx.a66` accelerates incoming programming payloads in
+protected boot2, so it remains available while the program region is erased.
+It accelerates only high-speed TransferData (SID 0x36, active baudrate >= 107000).
+At ordinary baudrates, and for diagnostics or MTOS RAM uploads, it keeps the
+original receiver so boot housekeeping continues between bytes. During fast
+TransferData it receives the flowing burst directly, then yields when input pauses. 
+The existing header parser, frame checksum and flash driver remain in use. 
+The boot checksum includes this extension. Its baud gate uses the active
+32-bit diagnostic rate, so a UART divider value cannot enable the fast path
+at an ordinary session speed.
+
+The application publishes the `OGKKWP06` capability marker. GKFlasher samples
+it before erase, while that region is readable, and uses paced headers followed
+by one echo-confirmed USB burst for the rest of the frame. The paced prefix
+is checked for excessive gaps before the payload and checksum are sent. A lost
+TransferData acknowledgement is reported rather than blindly replaying a block
+that may already have advanced the write cursor.
+These changes are built into the custom firmware.
+
+MTOS uses its own UART settings. GKFlasher's `--mtos-mode read-calibration`
+streams at 750000 baud with CRC16 and returns to diagnostics automatically.
+The same mode is available in the GUI MTOS dropdown. Its reader calculates CRC
+while ASC0 transmits each byte, then drains the echo before continuing. This
+overlap needs no extra RAM and preserves the CRC and flow-control protocol.
+
+On this benchmark, two 64 KiB reads reached approximately 44-45 kB/s, versus
+approximately 36 kB/s (before compression was introduced).
+
+### Optional compressed KWP transfers
+
+`firmware/custom/kwp_compression.a66` extends the existing SID 0x23, 0x34 and
+0x36 handlers. Ordinary requests still use the original handlers. The application
+publishes `OGKLZS01` at 0x0E5E14; compatible GKFlasher discovers it before erase.
+The wrappers and codec live in protected boot2 and are included in its checksum.
+
+Extended SID 0x23 requests carry address (3 bytes, big-endian), maximum decoded
+length (2 bytes, big-endian) and `LZ`. Existing address/security tables validate
+the entire range. Replies use six header bytes: `L`, codec (0 raw / 1 LZSS),
+decoded length and CRC16/Modbus (both little-endian, CRC seed 0xFFFF), then data.
+The firmware encodes at most 2048 input bytes into one ordinary KWP reply.
+
+SID 0x34's vendor compression nibble 0xF explicitly selects the same block
+format for SID 0x36. Bounded decode and CRC validation complete before invoking
+the existing programming handler. Logical download counters, flash driver,
+erase and final verification remain unchanged. Programming requires the already
+enabled extended XRAM at 0xC400; otherwise the host falls back to raw download.
+
+`firmware/custom/lzss_codec.inc` is a vendored copy of the core in GKFlasher's
+`assets/lzss_codec.a66`, allowing each repository to build independently. Keep
+the codec bodies identical when changing the format. Decode supports a 1 KiB
+history; the ECU encoder bounds its search to 64 bytes to limit CPU work.

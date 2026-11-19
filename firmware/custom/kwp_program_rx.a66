@@ -1,0 +1,96 @@
+; High-speed K-Line request reception during flash programming.
+; Collects TransferData payload bytes in a bounded polling loop, avoiding a trip
+; through the boot main loop for each byte. Other requests and slower sessions
+; retain the original receiver and its housekeeping; incomplete frames still use
+; the existing KWP timeout. Protected boot2 keeps this available during erases.
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+ASSUME DPP3:SYSTEM
+KWP_TX_REMAINING EQU 0E780H
+KWP_TX_CHECKSUM EQU 0E77FH
+KWP_ACTIVE_BAUD_LO EQU 0E772H
+KWP_ACTIVE_BAUD_HI EQU 0E774H
+PUBLIC OGK_KwpProgrammingReceiveEnd
+; Called only by the boot protocol's state-6 payload receiver. The application
+; still returns to its scheduler for each request byte. Boot programming has no
+; engine-control work to perform between data bytes, so wait here for the rest
+; of this frame instead of traversing the whole boot loop for every byte.
+PUBLIC OGK_KwpProgrammingReceive
+OGK_KWP_PROGRAM SECTION CODE AT 08F4F8H
+        DB 'OGKKWP06'
+OGK_KwpProgrammingReceive:
+        JNB bl_mode_status_flags.05H,OriginalReceiver
+        ; Only high-speed TransferData may hold the polled receiver here.
+        ; Ordinary diagnostics and MTOS RAM uploads must keep boot housekeeping.
+        MOVB RL4,bl_kwp_sid
+        CMPB RL4,#036H
+        JMPR cc_NE,OriginalReceiver
+        MOV R4,KWP_ACTIVE_BAUD_HI
+        CMP R4,#01H
+        JMPR cc_ULT,OriginalReceiver
+        JMPR cc_UGT,FastBaud
+        MOV R4,KWP_ACTIVE_BAUD_LO
+        CMP R4,#0A1F8H        ; 107000 baud, low word
+        JMPR cc_ULT,OriginalReceiver
+FastBaud:
+        JB bl_prog_comm_flags.06H,OriginalReceiver
+        JB bl_prog_comm_flags.0DH,OriginalReceiver
+        CMP R9,#015H
+        JMPR cc_UGT,OriginalTimeout
+        ; The boot path polls RX. Do not re-enable the application RX ISR
+        ; when yielding: it can steal a pending payload/checksum byte.
+        BCLR S0RIE
+        MOVB RL4,[R0]
+ConsumeByte:
+        MOV R12,kwp_req_ptr
+        CMP R12,#0E559H
+        JMPR cc_ULT,ReceiveFailed
+        CMP R12,#0E656H
+        JMPR cc_UGT,ReceiveFailed
+        MOVB RL5,KWP_TX_REMAINING
+        CMPB RL5,#00H
+        JMPR cc_EQ,ReceiveFailed
+        ADDB KWP_TX_CHECKSUM,RL4
+        MOVB [R12],RL4
+        CMPB RL5,#01H
+        JMPR cc_EQ,PayloadComplete
+        SUBB RL5,#01H
+        MOVB KWP_TX_REMAINING,RL5
+        ADD R12,#01H
+        MOV kwp_req_ptr,R12
+        MOV R13,#0FFFFH
+        SRVWDT
+WaitByte:
+        JB S0RIR,ByteReady
+        SUB R13,#01H
+        JMPR cc_NE,WaitByte
+        ; Cover echo-paced prefix bytes and USB delivery gaps before yielding.
+        ; The original KWP timer still decides when an incomplete frame expires.
+        JMPR cc_UC,ReceiveActivity
+ByteReady:
+        MOV R14,S0CON
+        AND R14,#0700H
+        JMPR cc_NE,ReceiveFailed
+        MOVB RL4,S0RBUF
+        BCLR S0RIR
+        JMPR cc_UC,ConsumeByte
+PayloadComplete:
+        MOVB RL4,#07H
+        MOVB bl_kline_proto_state,RL4
+ReceiveActivity:
+        BSET kwp_comms_flags.09H
+        MOV kwp_timing_counter,ZEROS
+ReceiveDone:
+        JMPS 008H,0D02AH
+ReceiveFailed:
+OriginalTimeout:
+        JMPS 008H,0CC80H
+OriginalReceiver:
+        CMP R9,#015H
+        JMPR cc_UGT,OriginalTimeout
+        JMPS 008H,0CC88H
+OGK_KwpProgrammingReceiveEnd:
+OGK_KWP_PROGRAM ENDS
+END

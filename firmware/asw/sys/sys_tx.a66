@@ -6,7 +6,7 @@ $INCLUDE (REG167.INC)
 $INCLUDE (zone_syms.inc)
 
 PUBLIC  SMARTRA_asc0_rx_isr, SMARTRA_tx_len_8570, SMARTRA_tx_payload, SMARTRA_tx_payload_last, SMARTRA_tx_sync
-EXTERN  SMARTRA_isr_epilogue:NEAR
+EXTERN  SMARTRA_isr_epilogue:NEAR, OGK_KwpRxInterrupt:FAR
 
 S_SYS_TX SECTION CODE
 
@@ -40,10 +40,13 @@ SMARTRA_asc0_rx_isr:
         SCXT CP,#DATA16 0FC12H
         NOP
         JB lv_err_com_resp_imob.01H,L_A854E
-        BCLR S0RIC.07H
-        BOR can_sched_flags1.09H,can_sched_flags0.09H
-        BMOV can_sched_flags0.09H,can_sched_flags2.09H
-        JMPA cc_UC,SMARTRA_isr_epilogue
+        ; Keep the original 14-byte slot; the custom handler retains deferred RX.
+        JMPS SEG OGK_KwpRxInterrupt,SOF OGK_KwpRxInterrupt
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
 L_A854E:                 ; 0xa854e
         MOVBZ R0,smartra_io_subphase            ; r0 = sub-phase @0xf5ba -> target from RAM jump table @0x64be (runtime-filled; 0xFF statically)
         MOV R0,[R0+#064BEH]

@@ -117,7 +117,7 @@ def link(files, include_dirs, layout_path, fw_dir, cache=None):
     region usage); address map and usage are None when the link failed.
     """
     srcs = [(f, open(f, "rb").read()) for f in files]
-    rel = {f: os.path.relpath(f, fw_dir) for f, _ in srcs}
+    rel = {f: os.path.relpath(f, fw_dir).replace(os.sep, "/") for f, _ in srcs}
     sec, fixed = {}, set()
     for f, s in srcs:
         try:
