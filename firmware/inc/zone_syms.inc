@@ -1,3 +1,4 @@
+$NOLIST NOSYMLIST	; keep this file out of every module's listing and symbol table
 ; Shared symbols for the SIMK43 Program segment modules.
 
 ; --- SFRs not in REG167.INC ---
@@ -6096,3 +6097,4 @@ lv_im_rly_accout                     EQU  0FD97H
 lv_im_prs_acc                        EQU  0FD9CH
 ;@a2l MEASUREMENT UBYTE conv=cv_none_68 mask=0x80 "member of c_lv_im_accin"
 lv_im_accin                          EQU  0FDA1H
+$LIST SYMLIST

@@ -1,3 +1,4 @@
+$NOLIST NOSYMLIST	; keep this file out of every module's listing and symbol table
 ;------------------------------------------------------------------------------
 ; REG167.INC  -  C167CR / C167CS special function registers and bits
 ;
@@ -629,3 +630,4 @@ T0IE       BIT   T0IC.6
 T1IR       BIT   T1IC.7
 T1IE       BIT   T1IC.6
 
+$LIST SYMLIST
