@@ -5,9 +5,9 @@ MAF sensors, including forced induction applications. The MAF linearisation tabl
 must be calibrated for the sensor fitted; increasing the range alone does not
 provide that sensor's calibration.
 
-## Scaling
+## MAF Scaling
 
-The MAF linearisation table (`id_maf_tab`) stores half the original raw values,
+The linearisation table (`id_maf_tab`) stores half the original raw values,
 with matching averaging and pulsation scaling. Odd raw values are rounded down
 when halved.
 
@@ -19,8 +19,18 @@ Both MAF averaging paths divide by the sample count instead of twice the count.
 The pulsation calculation's denominator is also halved to preserve its physical
 scaling with the smaller table values.
 
-## Diagnosis
+## MAF Diagnosis
 
-The high-flow diagnostic threshold (`C_MAF_MAX_DIAG`) is increased from 650 to
-1300 kg/h. This check remains active above 1300 kg/h, below the nominal 2048 kg/h
-measurement range. Its calibration should match the intended application.
+The high-flow diagnostic threshold (`C_MAF_MAX_DIAG`) retains its default value
+of 650 kg/h, below the nominal 2048 kg/h measurement range. Its calibration should
+match the intended application. 
+
+Keep the default if normal airflow stays
+comfortably below it; otherwise, use validated airflow logs to select a higher
+threshold with headroom for normal peaks (but within the sensor's calibrated range).
+For example, a measured maximum of 1100 kg/h might justify a 1300 kg/h threshold.
+
+Avoid setting it to the representable maximum of 2047.96875 kg/h, which disables
+this high-flow check. 
+
+**Note:** This threshold does not clamp airflow or extend fueling and load-map coverage.

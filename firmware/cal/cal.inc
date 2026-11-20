@@ -19594,7 +19594,7 @@ c_maf_lam_dly_p_min                  EQU  0905F4H   ; 2 byte(s)
 ; D: 0000001EH
 ; I: 00000001H,0000000AH
 ; [/OpenGK CAL export]
-; OpenGK: high-flow diagnostic threshold increased from 650 to 1300 kg/h.
+; OpenGK: retain the default 650 kg/h high-flow diagnostic threshold; see docs/airflow.md.
 ;@a2l VALUE UWORD conv=cv_kg_per_h_2 fmt=7.2 "Constants Diagnosis"
 c_maf_max_diag                       EQU  0905F6H   ; 2 byte(s)
 
