@@ -1,0 +1,86 @@
+; Estimate manifold pressure and positive boost for logging from measured MAF
+; and the existing volumetric-efficiency model. Ambient pressure and every
+; engine-control signal retain their original meanings and calculations.
+; Assumes steady airflow; availability describes input validity, not accuracy
+; during manifold filling, compressor heating, EGR or throttle transients.
+$MOD167
+$SEGMENTED
+$INCLUDE (REG167.INC)
+$INCLUDE (zone_syms.inc)
+ASSUME DPP3:SYSTEM
+
+PUBLIC OGK_EstimateBoost
+
+OGK_BOOST_ESTIMATE SECTION CODE
+OGK_EstimateBoost:
+        ; Leave the caller's registers, flags and multiply/divide state intact.
+        PUSH PSW
+        MOV [-R0],R4
+        MOV [-R0],R5
+        MOV [-R0],R6
+        PUSH MDC
+        PUSH MDH
+        PUSH MDL
+        MOV boost_est_available,ZEROS
+        MOV map_est,ZEROS
+        MOV boost_est,ZEROS
+
+        MOV R4,n_C93C
+        JMPA cc_EQ,EstimateDone
+        JB lv_maf_err.02H,EstimateDone
+        JB lv_maf_plaus_err.03H,EstimateDone
+        JB lv_err_maf_det.03H,EstimateDone
+        JB lv_err_maf_plaus_det.04H,EstimateDone
+        JB lv_tia_err.02H,EstimateDone
+        JB lv_tia_plaus_err.03H,EstimateDone
+        MOV R6,eff_vol_slop
+        JMPA cc_EQ,EstimateDone
+        MOV R4,amp
+        JMPA cc_EQ,EstimateDone
+        MOV R4,maf_kgh_mes
+        JMPA cc_EQ,EstimateDone
+        CMP R4,#DATA16 0FFFFH
+        JMPA cc_EQ,EstimateDone
+
+        ; Invert flow = max(0, (map * slope >> 11) - offset).
+        ; A product saturated at 0xFFFF has no unique inverse, even when the
+        ; offset makes the final flow smaller. Reject that case before division.
+        ADD R4,eff_vol_ofs
+        JMPA cc_C,EstimateDone
+        CMP R4,#DATA16 0FFFFH
+        JMPA cc_EQ,EstimateDone
+        MOV R5,R4
+        SHR R5,#05H
+        SHL R4,#0BH
+        ; Round to the nearest pressure count using a 32-bit numerator.
+        MOV MDL,R6
+        SHR R6,#01H
+        ADD R4,R6
+        ADDC R5,#00H
+        MOV R6,MDL
+        CMP R5,R6
+        JMPA cc_UGE,EstimateDone     ; quotient would overflow the pressure word
+        MOV MDL,R4
+        MOV MDH,R5
+        DIVLU R6
+        MOV R4,MDL
+        MOV map_est,R4
+        SUB R4,amp
+        JMPR cc_NC,StoreBoost
+        MOV R4,#00H                ; retain zero boost under vacuum
+StoreBoost:
+        MOV boost_est,R4
+        MOV R4,#01H
+        MOV boost_est_available,R4  ; publish availability after both values
+EstimateDone:
+        POP MDL
+        POP MDH
+        POP MDC
+        MOV R6,[R0+]
+        MOV R5,[R0+]
+        MOV R4,[R0+]
+        POP PSW
+        RETS
+
+OGK_BOOST_ESTIMATE ENDS
+        END

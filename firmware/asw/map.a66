@@ -13,6 +13,7 @@ EXTERN  Div_Frac_U16_Q16:NEAR, MulDiv_Round_S16:NEAR, Mul_Frac_U16_Sat:NEAR, Mul
 EXTERN  Mul_Shift_S16:NEAR, Mul_Shift_U16_Sat:NEAR, Mul_Shift_U16_Sat32:NEAR, Mul_U16_Hi:NEAR
 EXTERN  Sat_Add3_U16:NEAR, Sat_Add_S16:NEAR, Sat_Add_S16_v2:NEAR, Sat_Add_U16:NEAR
 EXTERN  multipied_r12_r13_UGT_r14_rets_r4:NEAR, sub_r12_r13_rets_r4:NEAR
+EXTERN  OGK_EstimateBoost:FAR
 
 S_MAP SECTION CODE
 
@@ -403,6 +404,8 @@ L_C3FBE:                 ; 0xc3fbe
         SHL R14,#02H
         CALLS SEG MulDiv_Round_S16, SOF MulDiv_Round_S16
         MOV maf_pred,R4
+        ; Publish independent logging signals after updating the air model.
+        CALLS SEG OGK_EstimateBoost, SOF OGK_EstimateBoost
         MOV R7,[R0+]
         MOV R8,[R0+]
         MOV R9,[R0+]

@@ -3387,6 +3387,14 @@ ccp_d7ba                     EQU  0D7BAH
 ccp_d7bc                     EQU  0D7BCH
 ccp_d7be                     EQU  0D7BEH
 ccp_d7c0                     EQU  0D7C0H
+; Logging-only pressure estimates in the unused tail of application RAM.
+; Reserved 0xD7F0..0xD7F5; outside CCP state, inside startup RAM initialization.
+;@a2l MEASUREMENT UWORD conv=cv_hpa fmt=7.1 "Estimated manifold absolute pressure; steady-state MAF model, logging only"
+map_est                     EQU  0D7F0H
+;@a2l MEASUREMENT UWORD conv=cv_hpa fmt=7.1 "Estimated positive manifold boost above ambient; logging only"
+boost_est                   EQU  0D7F2H
+;@a2l MEASUREMENT UWORD conv=cv_none_68 fmt=1.0 "Estimate available from model inputs; not a transient accuracy guarantee"
+boost_est_available         EQU  0D7F4H
 ;@a2l MEASUREMENT UBYTE conv=cv_none fmt=2.0
 cyl_id_sam_trig              EQU  0E000H
 lamb_mv                      EQU  0E002H

@@ -1015,7 +1015,7 @@ L_E3E44:                 ; 0xe3e44
         MOV R9,#DATA16 00022H
         JMPA cc_UC,L_E44D4
 L_E3E4C:                 ; 0xe3e4c
-        MOV R9,#DATA16 00031H
+        MOV R9,#DATA16 00031H    ;@reloc-ok KWP NRC requestOutOfRange, not a page
         JMPA cc_UC,L_E44D4
 L_E3E54:                 ; 0xe3e54
         MOV R9,#DATA16 00079H
@@ -1076,7 +1076,7 @@ L_E3EE6:                 ; 0xe3ee6
         MOV R9,#DATA16 00022H
         JMPA cc_UC,L_E44D4
 L_E3EEE:                 ; 0xe3eee
-        MOV R9,#DATA16 00031H
+        MOV R9,#DATA16 00031H    ;@reloc-ok KWP NRC requestOutOfRange, not a page
         JMPA cc_UC,L_E44D4
 L_E3EF6:                 ; 0xe3ef6
         MOV R9,#DATA16 00079H
@@ -1118,7 +1118,7 @@ L_E3F56:                 ; 0xe3f56
         MOV R9,#DATA16 00022H
         JMPA cc_UC,L_E44D4
 L_E3F5E:                 ; 0xe3f5e
-        MOV R9,#DATA16 00031H
+        MOV R9,#DATA16 00031H    ;@reloc-ok KWP NRC requestOutOfRange, not a page
         JMPA cc_UC,L_E44D4
 L_E3F66:                 ; 0xe3f66
         MOV R9,#DATA16 00079H

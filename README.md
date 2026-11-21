@@ -14,6 +14,9 @@ are padded for the CPU address space.
 - **Extend the airflow capability to 2048kg/h.** For forced induction applications,
   this enables larger MAF sensors to be used with a matching sensor calibration.
   See [airflow range details](docs/airflow.md).
+- **Estimated boost pressure for logging.** Estimate manifold pressure and
+  positive boost from the existing airflow model, without changing engine
+  control. See [signals and limitations](docs/boost-estimate.md).
 
 ## Quick start
 

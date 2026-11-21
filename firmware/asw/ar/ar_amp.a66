@@ -24,6 +24,9 @@ Reset_amp_ad_00c:
 
 ; ======== Reset_amp_mdl_026  (@0xc4026) ========
 Reset_amp_mdl_026:
+        MOV boost_est_available,ZEROS
+        MOV map_est,ZEROS
+        MOV boost_est,ZEROS
         MOV R4,amp_ad
         MOV amp_mdl,R4
         MOV amp,R4

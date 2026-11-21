@@ -166,7 +166,6 @@ region C 0xC0000 0xD0000
     asw/diag/diag_s1a4.a66
     asw/maf/maf_variables.a66
     asw/map.a66
-    asw/ar/ar_amp.a66
     asw/ar/ar_amp_2.a66
     asw/ex.a66
     asw/diag/diag_s4aa.a66
@@ -321,6 +320,8 @@ region E 0xE0000 0xF0000
     asw/sw/sw_pump_2.a66
     asw/fuel/fuel_lih.a66
     asw/sched.a66
+    @0xE5E0C                    # public KWP capability addresses used by GKFlasher
+    custom/kwp_fast_rx.a66
     *                           # new modules (firmware/custom/, unlisted asw files)
 
 region F 0xF0000 0xFE200
