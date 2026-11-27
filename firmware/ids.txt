@@ -1,0 +1,22 @@
+# ECU identification, the version strings diagnostic tools read (KWP 0x1A).
+# tools/build.py writes them into the image after linking, so this is the one
+# place to bump them: whatever the sources and opengk01.dat hold there is
+# overwritten.  Format: <field> <value>.  A value shorter than its field is
+# padded with '-', the way the OEM strings are; longer is a build error.
+# Printable ASCII, no spaces.  See "Identification" in README.md.
+
+# Platform the firmware is for: chassis / displacement / engine (8).
+# 0x90000 and 0x9004C (0x8E "Calibration version").
+chassis      GK20G4GC
+
+# Calibration layout (6). The application only accepts a calibration with
+# the same value (else ECU error + MIL): bump it when a change to the
+# calibration layout makes old calibrations unusable, not for new values.
+# 0x90008 (cal) and 0xA0056 (application), 0x8F.
+calibration  OGC001
+
+# Application software version (10). 0xA005C, 0x8D "Program code version".
+asw          OGA0.1.0
+
+# Boot software version (10), firmware/bsw. 0x3FDA, 0x8C "Bootloader version".
+boot         OGB0.1.0

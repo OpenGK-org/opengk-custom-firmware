@@ -29,6 +29,8 @@ S_A0000 SECTION CODE AT 0A0000H
         ; ------------------------------------------------------------
         ; ECU identification block: calibration/program part numbers, 'KR' region, Hyundai VIN template
         ; (KMHD...). Read by the ReadEcuIdentification path. Data, not code.
+        ; tools/build.py overwrites the calibration ID at 0xA0056 (6) and the ASW version at
+        ; 0xA005C (10) with the values in firmware/ids.txt: change them there.
         ; ------------------------------------------------------------
         ; data @0xa004e (92 bytes)
         DB      04FH,050H,045H,04EH,047H,04BH,030H,031H,04FH,047H,030H,030H,030H,031H,04FH,050H

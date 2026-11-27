@@ -12,8 +12,9 @@ Link units (each is its own program, as the OEM built them separately):
   cal   firmware/cal/opengk01.dat, copied to 0x90000 (file 0x10000)
 
 Every byte lands at file offset `addr & 0x7FFFF`; two units writing the same
-byte is an error.  Unwritten bytes stay 0xFF (erased flash).  Then the Boot,
-Calibration and Program checksums are recomputed (tools/checksum.py).
+byte is an error.  Unwritten bytes stay 0xFF (erased flash).  Then the
+identification strings from firmware/ids.txt are written in (tools/ids.py),
+and the Boot, Calibration and Program checksums recomputed (tools/checksum.py).
 
 Usage:
   python3 tools/build.py                 build -> build/out/opengk01.bin
@@ -33,6 +34,7 @@ import openc166
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import checksum  # noqa: E402
+import ids  # noqa: E402
 import intel_hex  # noqa: E402
 import layout  # noqa: E402
 
@@ -167,6 +169,13 @@ else:
 
 if fail:
     sys.exit("build FAILED")
+
+# ---- identification strings (firmware/ids.txt) ----------------------------------------
+try:
+    ids_set = ids.apply(img)
+except ids.IdsError as e:
+    sys.exit("build FAILED: %s" % e)
+print("ids   " + "  ".join("%s %s" % kv for kv in ids_set.items()))
 
 # ---- Program checksum zones -----------------------------------------------------------
 # One zone per 64 KB segment, from the first to the last non-erased application byte

@@ -88,6 +88,7 @@ firmware/
     cal.inc                    every calibration label + description + ;@a2l annotation
   custom/                      new modules (linked with asw)
   layout.txt                   where each application module goes (the linker script)
+  ids.txt                      ECU identification: chassis, calibration, ASW and boot versions
   inc/
     REG167.INC                 C167 SFRs (from openc166, MIT)
     zone_syms.inc              shared RAM/SFR/bit names for asw (+ ;@a2l measurements)
@@ -96,6 +97,7 @@ a2l/
   ccp.aml                      CCP A2ML interface description (ASAM CCP 2.1)
 tools/
   build.py  checksum.py
+  ids.py                       writes the firmware/ids.txt strings into the image
   layout.py                    module placement (layout.txt) + near-reference check
   reloc_scan.py                finds numeric references into movable code
   layout_shuffle.py            scrambled layout for relocation tests
@@ -141,7 +143,8 @@ The application addresses are those of the stock layout; edits move code around
 Bytes nobody writes stay 0xFF. The build fails if two units write the same byte, if
 two sections overlap (openc166 warning OC1), if a layout region overflows, or if a
 near reference crosses a segment. It writes `build/out/opengk01.map` (module
-addresses). Then the Program checksum zones are set from the layout (one per 64 KB
+addresses). Then the identification strings from `firmware/ids.txt` are written in
+(see [Identification](#identification)), the Program checksum zones are set from the layout (one per 64 KB
 segment, from its first to its last non-erased application byte) and the three
 region checksums are recomputed (`tools/checksum.py`):
 
@@ -161,6 +164,47 @@ build assembles the application once.
 
 openc166 emits some warnings the inherited code triggers (for example `RETS`/`RETI`
 outside a `PROC`, or SFR accesses around `EXTR`). The build only counts them.
+
+## Identification
+
+Diagnostic tools identify the firmware by four strings (KWP2000 `ReadEcuIdentification`,
+SID 0x1A). They are set in one place, `firmware/ids.txt`:
+
+```
+chassis      GK20G4GC
+calibration  OGC001
+asw          OGA0.1.0
+boot         OGB0.1.0
+```
+
+`tools/build.py` writes them into the image after linking, over whatever the sources and
+`opengk01.dat` hold at those addresses, and the checksums are fixed afterwards. Don't
+edit the strings in `boot_info.a66`, `asw_header.a66` or the calibration file: the
+build overwrites them.
+
+| Field | Length | Written to | KWP 0x1A | Change it when |
+|---|---|---|---|---|
+| `chassis` | 8 | 0x90000, 0x9004C | 0x8E "Calibration version" | the firmware targets another platform: chassis, displacement, engine (GK, 2.0, G4GC) |
+| `calibration` | 6 | 0x90008, 0xA0056 | 0x8F | the calibration layout changes so that old calibrations don't fit (a map moves or changes size); not for new values |
+| `asw` | 10 | 0xA005C | 0x8D "Program code version" | the application changes |
+| `boot` | 10 | 0x3FDA | 0x8C "Bootloader version" | anything in `firmware/bsw/` changes |
+
+A value shorter than its field is padded with `-`, as in the OEM strings; a longer one
+fails the build. Use printable ASCII without spaces.
+
+The `calibration` value is a compatibility check: the application compares the 6
+characters at 0x90008 (calibration) with its own copy at 0xA0056 (`Calc_ECU_Diag_SF`)
+and sets an ECU error and the MIL when they differ. Both copies come from the same line,
+so a build always matches itself. Only a calibration from an older build, flashed on its
+own, trips the check, and that is the point of bumping it.
+
+The A2L's EPK (0x90000) is `chassis` + `calibration`, also taken from `ids.txt`.
+
+The versions are not tied to the GitHub releases: bump them by hand in the commit that
+makes the change. Releases keep their own `vX.Y.Z` tags.
+
+Other strings in these blocks (the coherence parts `111OG001…`, the hardware number
+5WY1A83A, the VIN template) are not version numbers and stay in the sources.
 
 ## A2L
 
@@ -221,8 +265,8 @@ CI runs the same check before packaging, so an invalid A2L never reaches a relea
 
 **CCP:** station 0x01, CRO 0x6A0, DTO 0x6A1, 500 kbit/s (from the CAN message-object
 table at 0xA2378, which also has DAQ IDs 0x6A2-0x6A4). DAQ lists and checksum
-aren't described yet, so INCA measures by polling. **EPK:**
-`OPENGK01OG0001` at 0x90000.
+aren't described yet, so INCA measures by polling. **EPK:** at 0x90000, the
+`chassis` and `calibration` fields of `firmware/ids.txt` (`GK20G4GCOGC001`).
 
 **Calibration pages:** two pages, both at 0x90000 (64 KB), declared with `CCP_PAGE`:
 page 1 "Working page" (RAM, initialised by the ECU, flash-back) and page 2
@@ -337,11 +381,9 @@ Other things to know:
   `ax_<DAMOS name>` or `ax_<input>_<addr>` when shared. `cal.inc` lists which maps use
   each axis. The routine named `Get_IP_*_Y_Axis` feeds the *first* map input (and
   every curve); `*_X_Axis` feeds the second.
-- **Identification strings** (cal header 0x90000, ASW block 0xA004E, boot info 0x3F20-0x3FFF)
-  are free text except one rule: the 6 characters at 0x90008 (cal) must equal those at
-  0xA0056 (ASW). `Calc_ECU_Diag_SF` compares them and sets an ECU error (DTC/MIL) on a
-  mismatch. Both are `OG0001` now. The CRC init values sit inside these strings, so the
-  build's checksum fix takes care of any change.
+- **Version strings** are bumped in `firmware/ids.txt`, not in the sources (see
+  [Identification](#identification)). The CRC init values sit inside the ID strings, so
+  the build's checksum fix takes care of any change.
 - **Names are case-insensitive** in A166. A section named `MY_FEATURE` clashes with
   a label `My_Feature`.
 - **`%` starts an MPL macro call**, even inside a comment. Write `pct`.

@@ -10,7 +10,8 @@
 ;@a2l PROJECT OPENGK "OpenGK custom firmware"
 ;@a2l MODULE OPENGK01 "SIMK43 OPENGK01"
 ;@a2l VERSION "OPENGK01"
-;@a2l EPK 0x90000 "OPENGK01OG0001"
+; EPK without text: chassis + calibration from firmware/ids.txt
+;@a2l EPK 0x90000
 ;@a2l MEMORY _BOOT CODE FLASH 0x00000 0x4000 "boot software: vectors, runtime helpers, boot info"
 ;@a2l MEMORY _BOOTLOADER CODE FLASH 0x88000 0x8000 "seg-8 bootloader"
 ;@a2l MEMORY _CAL DATA FLASH 0x90000 0x10000 "calibration data"

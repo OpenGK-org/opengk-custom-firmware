@@ -239,7 +239,11 @@ def generate(output, link_symbols=None):
         elif k == "VERSION":
             proj[k] = toks[1]
         elif k == "EPK":
-            proj[k] = (int(toks[1], 0), toks[2])
+            if len(toks) > 2:
+                proj[k] = (int(toks[1], 0), toks[2])
+            else:                   # no text: chassis + calibration from firmware/ids.txt
+                import ids
+                proj[k] = (int(toks[1], 0), ids.epk())
         elif k == "MEMORY":
             proj[k].append(toks[1:])
         elif k == "CCP":
